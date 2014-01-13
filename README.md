@@ -1,4 +1,4 @@
 pywwt
 =====
 
-Python bindings for World Wide Telescope
+Python interface to World Wide Telescope
