@@ -67,10 +67,10 @@ def convert_xyz_to_spherical(x, y, z, is_astro=True, ra_units="degrees"):
     coords[dec_name] = np.rad2deg(np.arccos(z/coords["ALT"])) - 90.
     return coords
 
-def write_data_to_csv(data, filename):
-    f = open(filename, "wb")
+def write_data_to_csv(data, filename, mode="wb"):
+    f = open(filename, mode)
     w = csv.DictWriter(f, data.keys())
-    w.writeheader()
+    if mode == "wb": w.writeheader()
     num_points = len(data.values()[0])
     for i in ProgressBar(xrange(num_points)):
         row = dict([(k,v[i]) for k,v in data.items()])
