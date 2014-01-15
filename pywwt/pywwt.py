@@ -107,6 +107,7 @@ class WWTController(object):
         params["cmd"] = "load"
         params["filename"] = filename
         params["frame"] = frame
+        params["name"] = name
         params["color"] = color
         params["startdate"] = start_date
         params["enddate"] = end_date
