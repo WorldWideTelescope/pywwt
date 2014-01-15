@@ -81,7 +81,6 @@ class WWTController(object):
         params["faderange"] = fade_range
         u = requests.post(self.wwt_url, params=params, data=field_string)
         layer_str = u.text
-        self._handle_response(layer_str)
         soup = BeautifulSoup(layer_str)
         layer_id = soup.layerapi.findChild(name="newlayerid").string
         if len(layer_id) != 36:

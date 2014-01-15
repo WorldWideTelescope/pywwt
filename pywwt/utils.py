@@ -1,10 +1,12 @@
 import numpy as np
+import csv
+import matplotlib.cm as mcm
+from matplotlib.colors import LogNorm, Normalize
+import struct
+from astropy.utils.console import ProgressBar
 
 def map_array_to_colors(arr, cmap, scale="linear",
                             vmin=None, vmax=None):
-    import matplotlib.cm as mcm
-    from matplotlib.colors import LogNorm, Normalize
-    import struct
 
     if vmin is None:
         vmin = arr.min()
@@ -62,8 +64,19 @@ def convert_xyz_to_spherical(x, y, z, is_astro=True, ra_units="degrees"):
     coords = {}
     coords["ALT"] = np.sqrt(x*x+y*y+z*z)
     coords[ra_name] = (np.rad2deg(np.arctan2(y, x)) + 180.)*ra_scale
-    coords[dec_name] = np.rad2deg(np.arccos(z/data["ALT"])) - 90.
+    coords[dec_name] = np.rad2deg(np.arccos(z/coords["ALT"])) - 90.
     return coords
+
+def write_data_to_csv(data, filename):
+    f = open(filename, "wb")
+    w = csv.DictWriter(f, data.keys())
+    w.writeheader()
+    num_points = len(data.values()[0])
+    for i in ProgressBar(xrange(num_points)):
+        row = dict([(k,v[i]) for k,v in data.items()])
+        w.writerow(row)
+    f.close()
+
 
 
 
