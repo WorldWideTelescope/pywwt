@@ -5,16 +5,77 @@ import logging
 requests_log = logging.getLogger("requests")
 requests_log.setLevel(logging.WARNING)
 from astropy.utils.console import ProgressBar
+from tempfile import mkstemp
+import csv
+
+def _handle_response(resp_str):
+    soup = BeautifulSoup(resp_str)
+    success = soup.layerapi.status.string
+    if success != "Success":
+        raise WWTException(success)
 
 class WWTException(Exception):
     pass
 
 class WWTLayer(object):
-    def __init__(self, name, id, fields):
+    def __init__(self, name, id, fields, wwt):
         self.name = name
         self.id = id
         self.fields = fields
-        
+        self.wwt = wwt
+
+    def set_property(self, property_name, property_value):
+        params = {}
+        params["cmd"] = "setprop"
+        params["id"] = self.id
+        params["propname"] = property_name
+        params["propvalue"] = property_value
+        u = requests.post(self.wwt.wwt_url, params=params)
+        prop_str = u.text
+        _handle_response(prop_str)
+
+    def set_properties(self, props_dict):
+        props_string = "<?xml version='1.0' encoding='UTF-8'?><LayerApi><Layer "
+        for key, value in props_dict.items():
+            props_string += "%s=\"%s\" " % (key, value)
+        props_string += " /></LayerApi>"
+        params = {}
+        params["cmd"] = "setprops"
+        params["id"] = self.id
+        u = requests.post(self.wwt.wwt_url, params=params, data=props_string)
+        props_str = u.text
+        _handle_response(props_str)
+
+    def update(self, data, no_purge=False, purge_all=False):
+        params = {}
+        params["cmd"] = "update"
+        params["id"] = self.id
+        params["purgeall"] = str(purge_all).lower()
+        params["nopurge"] = str(no_purge).lower()
+        fields = self.fields
+        nevents = len(data[fields[0]])
+        for i in ProgressBar(xrange(nevents)):
+            data_string = "\t".join([str(data[k][i]) for k in fields])
+            u = requests.post(self.wwt.wwt_url, params=params, data=data_string)
+            update_str = u.text
+            _handle_response(update_str)
+
+    def activate(self):
+        params = {}
+        params["cmd"] = "activate"
+        params["id"] = self.id
+        u = requests.get(self.wwt.wwt_url, params=params)
+        layer_str = u.text
+        _handle_response(layer_str)
+
+    def delete(self):
+        params = {}
+        params["cmd"] = "delete"
+        params["id"] = self.id
+        u = requests.get(self.wwt.wwt_url, params=params)
+        layer_str = u.text
+        _handle_response(layer_str)
+
 class WWTController(object):
     def __init__(self, host=None):
         if host is None:
@@ -25,8 +86,7 @@ class WWTController(object):
         if not self._check_for_server():
             raise WWTException("WWT has not been started at this address, " +
                                "or is unreachable, or is not the required version.")
-        self.layers = {}
-        
+
     def _check_for_server(self):
         try:
             params = {"cmd":"version"}
@@ -41,32 +101,24 @@ class WWTController(object):
             pass
         return False
 
-    def _handle_response(self, resp_str):
-        soup = BeautifulSoup(resp_str)
-        success = soup.layerapi.status.string
-        if success != "Success":
-            raise WWTException(success)
-
     def change_mode(self, mode):
         params = {}
         params["cmd"] = "mode"
         params["lookat"] = mode
         u = requests.get(self.wwt_url, params=params)
         mode_str = u.text
-        self._handle_response(mode_str)
+        _handle_response(mode_str)
 
     def move_view(self, parameter):
         params = {"cmd":"move", "move":parameter}
         u = requests.get(self.wwt_url, params=params)
         move_str = u.text
-        self._handle_response(move_str)
+        _handle_response(move_str)
 
     def new_layer(self, frame, name, fields=None,
                   color=None, start_date=None,
                   end_date=None, fade_type=None,
                   fade_range=None):
-        if name in self.layers:
-            raise WWTException("Layer already exists with this name! Choose a different one.")
         if fields is None:
             field_string = ""
         else:
@@ -85,16 +137,15 @@ class WWTController(object):
         layer_id = soup.layerapi.findChild(name="newlayerid").string
         if len(layer_id) != 36:
             raise WWTException("Invalid Layer ID received")
-        self.layers[name] = WWTLayer(name, layer_id, fields)
+        return WWTLayer(name, layer_id, fields, self)
 
     def load(self, source, frame, name, color=None,
              start_date=None, end_date=None,
              fade_type=None, fade_range=None):
-        from tempfile import mkstemp
-        import csv
         if isinstance(source, basestring):
             filename = source
         elif isinstance(source, dict):
+            fields = source.keys()
             handle, filename = mkstemp(suffix=".csv")
             w = csv.DictWriter(handle, source.keys())
             w.writeheader()
@@ -115,55 +166,9 @@ class WWTController(object):
         params["faderange"] = fade_range
         u = requests.get(self.wwt_url, params=params)
         load_str = u.text
-        self._handle_response(load_str)
-
-    def update_layer(self, name, data,
-                     no_purge=False, purge_all=False):
-        layer_id = self.layers[name].id
-        params = {}
-        params["cmd"] = "update"
-        params["id"] = layer_id
-        params["purgeall"] = str(purge_all).lower()
-        params["nopurge"] = str(no_purge).lower()
-        fields = self.layers[name].fields
-        nevents = len(data[fields[0]])
-        for i in ProgressBar(xrange(nevents)):
-            data_string = "\t".join([str(data[k][i]) for k in fields])
-            u = requests.post(self.wwt_url, params=params, data=data_string)
-            update_str = u.text
-            self._handle_response(update_str)
-        
-    def set_properties(self, name, props_dict):
-        layer_id = self.layers[name].id
-        props_string = "<?xml version='1.0' encoding='UTF-8'?><LayerApi><Layer "
-        for key, value in props_dict.items():
-            props_string += "%s=\"%s\" " % (key, value)
-        props_string += " /></LayerApi>"
-        params = {}
-        params["cmd"] = "setprops"
-        params["id"] = layer_id
-        u = requests.post(self.wwt_url, params=params, data=props_string)
-        props_str = u.text
-        self._handle_response(props_str)
-
-    def activate_layer(self, name):
-        layer_id = self.layers[name].id
-        params = {}
-        params["cmd"] = "activate"
-        params["id"] = layer_id
-        u = requests.get(self.wwt_url, params=params)
-        layer_str = u.text
-        self._handle_response(layer_str)
-
-    def delete_layer(self, name):
-        layer_id = self.layers[name].id
-        params = {}
-        params["cmd"] = "delete"
-        params["id"] = layer_id
-        u = requests.get(self.wwt_url, params=params)
-        layer_str = u.text
-        self._handle_response(layer_str)
-        self.layers.pop(name)
+        _handle_response(load_str)
+        layer_id = 0
+        return WWTLayer(name, layer_id, fields, self)
 
     def new_layer_group(self, frame, name):
         params = {"cmd":"group",
