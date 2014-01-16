@@ -4,9 +4,11 @@ import matplotlib.cm as mcm
 from matplotlib.colors import LogNorm, Normalize
 import struct
 from astropy.utils.console import ProgressBar
+from datetime import datetime, timedelta
+from dateutil import tz
 
 def map_array_to_colors(arr, cmap, scale="linear",
-                            vmin=None, vmax=None):
+                        vmin=None, vmax=None):
 
     if vmin is None:
         vmin = arr.min()
@@ -27,9 +29,6 @@ def map_array_to_colors(arr, cmap, scale="linear",
     return colors
 
 def generate_utc_times(num_steps, step_size, start_time=None):
-
-    from datetime import datetime, timedelta
-    from dateutil import tz
 
     if start_time is None:
         start_time = datetime.utcnow()
