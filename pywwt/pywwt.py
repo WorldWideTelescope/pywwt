@@ -1,4 +1,3 @@
-import socket
 import requests
 from bs4 import BeautifulSoup
 import logging
@@ -79,7 +78,7 @@ class WWTLayer(object):
 class WWTController(object):
     def __init__(self, host=None):
         if host is None:
-            self.host = socket.gethostbyname(socket.gethostname())
+            self.host = "127.0.0.1"
         else:
             self.host = host
         self.wwt_url = "http://%s:5050/layerApi.aspx" % (self.host)
@@ -144,6 +143,10 @@ class WWTController(object):
              fade_type=None, fade_range=None):
         if isinstance(source, basestring):
             filename = source
+            f = open(filename, "r")
+            line = f.readline()
+            f.close()
+            fields = line.strip("\n").split(",")
         elif isinstance(source, dict):
             fields = source.keys()
             handle, filename = mkstemp(suffix=".csv")
@@ -165,9 +168,11 @@ class WWTController(object):
         params["fadetype"] = fade_type
         params["faderange"] = fade_range
         u = requests.get(self.wwt_url, params=params)
-        load_str = u.text
-        _handle_response(load_str)
-        layer_id = 0
+        layer_str = u.text
+        soup = BeautifulSoup(layer_str)
+        layer_id = soup.layerapi.findChild(name="newlayerid").string
+        if len(layer_id) != 36:
+            raise WWTException("Invalid Layer ID received")
         return WWTLayer(name, layer_id, fields, self)
 
     def new_layer_group(self, frame, name):
