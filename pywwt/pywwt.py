@@ -207,9 +207,9 @@ class WWTLayer(object):
     def __str__(self):
         return self.name
 
-class WWTController(object):
+class WWTClient(object):
     r"""
-    Initialize a WWTController, connecting to a WWT client.
+    Initialize a WWTClient, connecting to a WWT client.
 
     Parameters
     ----------
@@ -494,6 +494,9 @@ class WWTController(object):
         return layer_list
 
     def __repr__(self):
-        return "WWTController(host=\"%s\")" % (self.host)
+        return "WWTClient(host=\"%s\")" % (self.host)
+
+    def __str__(self):
+        return self.host
 
     

@@ -1,4 +1,4 @@
-from pywwt import WWTController
+from pywwt import WWTClient
 from utils import \
     map_array_to_colors, \
     convert_xyz_to_spherical, \
