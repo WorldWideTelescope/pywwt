@@ -11,4 +11,4 @@ build/*
 
 dist/*
 
-pywwt.egg-info
+pywwt.egg-info/*
