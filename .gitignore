@@ -6,3 +6,9 @@
 *.xml
 
 *.iml
+
+build/*
+
+dist/*
+
+pywwt.egg-info
