@@ -22,6 +22,7 @@ pywwt requires the following packages:
 - [Matplotlib](http://matplotlib.org)
 - [AstroPy](http://www.astropy.org)
 - [Beautiful Soup 4](http://www.crummy.com/software/BeautifulSoup)
+- [Requests](http://docs.python-requests.org/en/latest/)
 - [Dateutil](http://labix.org/python-dateutil)
 
 To install the library system-wide
