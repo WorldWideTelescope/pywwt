@@ -209,7 +209,8 @@ class WWTClient(object):
         """
         layers = self.get_layer_list()
         layer_id = layers[name]["id"]
-        return WWTLayer(name, layer_id, self)
+        fields = []
+        return WWTLayer(name, layer_id, fields, self)
 
     def new_layer_group(self, frame, name, **kwargs):
         r"""
