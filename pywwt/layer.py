@@ -14,11 +14,12 @@ def exists(func):
     return _exists
 
 class WWTLayer(object):
-    def __init__(self, name, id, wwt):
+    def __init__(self, name, id, fields, wwt):
         self.name = name
         self.id = id
         self.wwt = wwt
         self.exists = True
+        self.fields = fields
 
     @exists
     def set_property(self, property_name, property_value, **kwargs):
@@ -135,21 +136,17 @@ class WWTLayer(object):
         params = {}
         params["cmd"] = "update"
         params["id"] = self.id
-        if data is None:
-            params["hasheader"] = "False"
-        else:
-            params["hasheader"] = "True"
+        params["hasheader"] = "False"
         params["name"] = name
         params["purgeall"] = str(purge_all).lower()
         params["nopurge"] = str(no_purge).lower()
         params["show"] = str(show).lower()
         parse_kwargs(params, kwargs)
+        data_string = ""
         if data is not None:
-            fields = data.keys()
-            data_string = "\t".join(fields)+"\n"
-            nevents = len(data[fields[0]])
+            nevents = len(data[self.fields[0]])
             for i in xrange(nevents):
-                data_string += "\t".join([str(data[k][i]) for k in fields])+"\n"
+                data_string += "\t".join([str(data[k][i]) for k in self.fields])+"\n"
         u = requests.post(self.wwt.wwt_url, params=params, data=data_string)
         update_str = u.text
         handle_response(update_str)

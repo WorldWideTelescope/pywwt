@@ -74,7 +74,7 @@ class WWTClient(object):
         move_str = u.text
         handle_response(move_str)
 
-    def new_layer(self, frame, name,
+    def new_layer(self, frame, name, fields,
                   color=None, start_date=None,
                   end_date=None, fade_type=None,
                   fade_range=None, **kwargs):
@@ -121,13 +121,14 @@ class WWTClient(object):
         params["fadetype"] = fade_type
         params["faderange"] = fade_range
         parse_kwargs(params, kwargs)
-        u = requests.post(self.wwt_url, params=params)
+        field_string = "\t".join(fields)
+        u = requests.post(self.wwt_url, params=params, data=field_string)
         layer_str = u.text
         soup = BeautifulSoup(layer_str)
         layer_id = soup.layerapi.findChild(name="newlayerid").string
         if len(layer_id) != 36:
             raise WWTException("Invalid Layer ID received")
-        return WWTLayer(name, layer_id, self)
+        return WWTLayer(name, layer_id, fields, self)
 
     def load(self, filename, frame, name, color=None,
              start_date=None, end_date=None,
@@ -171,6 +172,7 @@ class WWTClient(object):
         f = open(filename, "r")
         line = f.readline()
         f.close()
+        fields = line.strip("\n").split(",")
         params = {}
         params["cmd"] = "load"
         params["filename"] = filename
@@ -188,7 +190,7 @@ class WWTClient(object):
         layer_id = soup.layerapi.findChild(name="newlayerid").string
         if len(layer_id) != 36:
             raise WWTException("Invalid Layer ID received")
-        return WWTLayer(name, layer_id, self)
+        return WWTLayer(name, layer_id, fields, self)
 
     def get_existing_layer(self, name):
         r"""
