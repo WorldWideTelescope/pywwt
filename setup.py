@@ -15,7 +15,3 @@ setup(name='pywwt',
           ],
       packages = find_packages()
     )
-
-if __name__ == "__main__":
-    setup()
-

@@ -5,15 +5,20 @@ requests_log = logging.getLogger("requests")
 requests_log.setLevel(logging.WARNING)
 from .misc import WWTException, handle_response, parse_kwargs
 
-def exists(func):
-    def _exists(self, *args, **kwargs):
-        if self.exists:
-            return func(self, *args, **kwargs)
-        else:
-            raise WWTException("You deleted this layer already!")
-    return _exists
-
 class WWTLayer(object):
+    r"""
+    A ``WWTLayer`` object corresponding to a layer in WWT's Layer Manager.
+
+    :param name: The name of the layer.
+    :type name: string
+    :param id: The ID of the layer.
+    :type id: string
+    :param fields: The fields in the layer
+    :type fields: list of strings
+    :param wwt: The WWT client where this layer exists.
+    :type wwt: ``pywwt.client.WWTClient``
+    :returns: A ``WWTLayer`` object.
+    """
     def __init__(self, name, id, fields, wwt):
         self.name = name
         self.id = id
@@ -21,7 +26,10 @@ class WWTLayer(object):
         self.exists = True
         self.fields = fields
 
-    @exists
+    def _check_exists(self):
+        if not self.exists:
+            raise WWTException("This layer has been deleted!")
+
     def set_property(self, property_name, property_value, **kwargs):
         r"""
         Set a single property. For a list of properties see:
@@ -35,6 +43,7 @@ class WWTLayer(object):
 
         Also takes the standard keyword arguments.
         """
+        self._check_exists()
         params = {}
         params["cmd"] = "setprop"
         params["id"] = self.id
@@ -45,7 +54,6 @@ class WWTLayer(object):
         prop_str = u.text
         handle_response(prop_str)
 
-    @exists
     def set_properties(self, props_dict, **kwargs):
         r"""
         Set the properties of the layer. For a list of properties
@@ -58,6 +66,7 @@ class WWTLayer(object):
 
         Also takes the standard keyword arguments.
         """
+        self._check_exists()
         props_string = "<?xml version='1.0' encoding='UTF-8'?><LayerApi><Layer "
         for key, value in props_dict.items():
             props_string += "%s=\"%s\" " % (key, value)
@@ -70,7 +79,6 @@ class WWTLayer(object):
         props_str = u.text
         handle_response(props_str)
 
-    @exists
     def get_property(self, property_name):
         r"""
         Return a property. For a list of properties see:
@@ -81,6 +89,7 @@ class WWTLayer(object):
         :type property_name: string
         :returns: The value of the property specified by *property_name*.
         """
+        self._check_exists()
         params = {}
         params["cmd"] = "getprop"
         params["id"] = self.id
@@ -91,7 +100,6 @@ class WWTLayer(object):
         soup = BeautifulSoup(prop_str)
         return soup.layer.attrs[property_name.lower()]
 
-    @exists
     def get_properties(self):
         r"""
         Return all the properties of the layer. For a list of properties
@@ -101,6 +109,7 @@ class WWTLayer(object):
 
         :returns: All of the properties in a dict of key, value pairs.
         """
+        self._check_exists()
         params = {}
         params["cmd"] = "getprops"
         params["id"] = self.id
@@ -110,7 +119,6 @@ class WWTLayer(object):
         soup = BeautifulSoup(props_str)
         return soup.layer.attrs
 
-    @exists
     def update(self, data=None, name=None,
                no_purge=False, purge_all=False,
                show=True, **kwargs):
@@ -133,6 +141,7 @@ class WWTLayer(object):
 
         Also takes the standard keyword arguments.
         """
+        self._check_exists()
         params = {}
         params["cmd"] = "update"
         params["id"] = self.id
@@ -151,13 +160,13 @@ class WWTLayer(object):
         update_str = u.text
         handle_response(update_str)
 
-    @exists
     def activate(self, **kwargs):
         r"""
         Highlight this layer in the layer manager.
 
         Also takes the standard keyword arguments.
         """
+        self._check_exists()
         params = {}
         params["cmd"] = "activate"
         params["id"] = self.id
@@ -166,11 +175,11 @@ class WWTLayer(object):
         layer_str = u.text
         handle_response(layer_str)
 
-    @exists
     def delete(self):
         r"""
         Delete the layer.
         """
+        self._check_exists()
         params = {}
         params["cmd"] = "delete"
         params["id"] = self.id
