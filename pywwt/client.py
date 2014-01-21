@@ -85,6 +85,8 @@ class WWTClient(object):
         :type frame: string
         :param name: The name of the layer.
         :type name: string
+        :param fields: The names of the fields to be loaded in the layer.
+        :type fields: list of strings
         :param color: ARBG hex value of the color to be used when rendering
             the events of the layer. Default: "FFFFFFFF" (white)
         :type color: string, optional
@@ -169,10 +171,13 @@ class WWTClient(object):
 
         Also accepts the default keyword arguments.
         """
-        f = open(filename, "r")
-        line = f.readline()
-        f.close()
-        fields = line.strip("\n").split(",")
+        if filename.endswith("csv"):
+            f = open(filename, "r")
+            line = f.readline()
+            f.close()
+            fields = line.replace("\t",",").strip("\n").split(",")
+        else:
+            fields = []
         params = {}
         params["cmd"] = "load"
         params["filename"] = filename
