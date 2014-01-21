@@ -184,7 +184,6 @@ class WWTLayer(object):
             self.name, self.id, self.wwt.host)
 
     def __str__(self):
-        return self.name
 
 class WWTClient(object):
     r"""
