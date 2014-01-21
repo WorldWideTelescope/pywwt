@@ -12,25 +12,20 @@ def map_array_to_colors(arr, cmap, scale="linear",
     r"""
     Map a NumPy array to a colormap using Matplotlib.
 
-    Parameters
-    ----------
-    arr : NumPy array of floats or ints
-        The array to be mapped onto a colormap.
-    cmap : string
-        The name of a Matplotlib colormap.
-    scale : string, optional
-        The scaling of the data as mapped to the
-        colormap. Takes "linear" or "log", default "linear".
-    vmin : float or int
-        The value associated with the lowest end of the colormap.
-        Defaults to the minimum value of *arr*.
-    vmax : float or int
-        The value associated with the highest end of the colormap.
-        Defaults to the maximum value of *arr*.
-
-    Returns
-    -------
-    A list of colors, encoded in ARGB hex values.
+    :param arr: The array to be mapped onto a colormap.
+    :type arr: NumPy array of floats
+    :param cmap: The name of a Matplotlib colormap.
+    :type cmap: string
+    :param scale: The scaling of the data as mapped to the
+        colormap. Takes "linear" or "log". Default: "linear"
+    :type scale: string
+    :param vmin: The value associated with the low end of the colormap.
+        Default: the minimum value of *arr*.
+    :type vmin: float
+    :param vmax: The value associated with the high end of the colormap.
+        Default: the maximum value of *arr*.
+    :type vmax: float
+    :returns: A list of colors, encoded in ARGB hex values.
     """
     if vmin is None:
         vmin = arr.min()
@@ -54,29 +49,22 @@ def generate_utc_times(num_steps, step_size, start_time=None):
     r"""
     Generate a series of equally linearly spaced times in UTC.
 
-    Parameters
-    ----------
-    num_steps : int
-        The number of times to generate.
-    step_size : dict
-        A dictionary corresponding to the step size between
+    :param num_steps: The number of times to generate.
+    :type num_steps: int
+    :param step_size: A dictionary corresponding to the step size between
         the times, with keys referring to the unit (seconds,
         minutes, days, etc.) and the values of the step in that unit.
-    start_time : string, optional
-        A string corresponding to a time in the local time zone
-        at which to start the timesteps. Defaults to the current
-        system time.
+    :type step_size: dict
+    :param start_time: A string corresponding to a time in the local time zone
+        at which to start the timesteps. Default: the current system time.
         Formats (month/day/year):
         "1/1/2010 11:00:00 PM"
         "1/1/2010 11:30 AM"
         "1/1/2010 11 am"
         "1/1/2000"
         "1/2000"
-
-    Returns
-    -------
-    A list of formatted date/time strings in UTC readable by
-    World Wide Telescope.
+    :type start_time: string, optional
+    :returns: A list of formatted date/time strings in UTC readable by World Wide Telescope.
     """
     if start_time is None:
         start_time = datetime.utcnow()
@@ -103,25 +91,19 @@ def convert_xyz_to_spherical(x, y, z, is_astro=True, ra_units="degrees"):
     Convert rectangular coordinates (x,y,z) to spherical coordinates
     (Lat, Lon, Alt) or (RA, Dec, Alt).
 
-    Parameters
-    ----------
-    x : NumPy array of floats
-        The x-coordinates of the data.
-    y : NumPy array of floats
-        The y-coordinates of the data.
-    z : NumPy array of floats
-        The z-coordinates of the data.
-    is_astro : boolean, optional
-        Is the coordinate system astronomical (RA, Dec)
-        or geographical (Lat, Lon)? Defaults to True.
-    ra_units : string, optional
-        The unit of the RA/Lon coordinate, "degrees" or
-        "hours". Defaults to "degrees".
-
-    Returns
-    -------
-    A dict of NumPy arrays corresponding to the positions in
-    spherical coordinates.
+    :param x: The x-coordinates of the data.
+    :type x: NumPy array of floats
+    :param y: The y-coordinates of the data.
+    :type y: NumPy array of floats
+    :param z: The z-coordinates of the data.
+    :type z: NumPy array of floats
+    :param is_astro: Is the coordinate system astronomical (RA, Dec)
+        or geographical (Lat, Lon)? Default: True
+    :type is_astro: boolean, optional
+    :param ra_units: The unit of the RA/Lon coordinate, "degrees" or
+        "hours". Default: "degrees"
+    :type ra_units: string, optional
+    :returns: A dict of NumPy arrays corresponding to the positions in spherical coordinates.
     """
     if ra_units == "degrees" or not is_astro:
         ra_scale = 1.
@@ -143,15 +125,13 @@ def write_data_to_csv(data, filename, mode="new"):
     r"""
     Write a dataset to a CSV-formatted file with a data header.
 
-    Parameters
-    ----------
-    data : dictionary of NumPy arrays
-        The data to be written.
-    filename : string
-        The filename to write the data to.
-    mode : string, optional
-        Write a "new" file or "append" to an existing file?
-        Default "new".
+    :param data: The data to be written.
+    :type data: dictionary of NumPy arrays
+    :param filename: The filename to write the data to.
+    :type filename: string
+    :param mode:  Write a "new" file or "append" to an existing file?
+        Default: "new"
+    :type mode: string, optional
     """
     if mode == "new":
         fmode = "wb"
