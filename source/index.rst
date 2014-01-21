@@ -9,10 +9,11 @@ pywwt Documentation
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
-   overview
+   users_guide
    installing
+   api/pywwt
 
 Indices and tables
 ==================
