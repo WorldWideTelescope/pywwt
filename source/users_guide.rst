@@ -10,6 +10,11 @@ User's Guide
 .. _WWTLayer: api/pywwt.layer.html
 .. _update: api/pywwt.layer.html#pywwt.layer.WWTLayer.update
 
+.. _convert_xyz_to_spherical: api/pywwt.utils.html#pywwt.utils.convert_xyz_to_spherical
+.. _generate_utc_times: api/pywwt.utils.html#pywwt.utils.generate_utc_times
+.. _map_array_to_colors: api/pywwt.utils.html#pywwt.utils.map_array_to_colors
+.. _write_data_to_csv: api/pywwt.utils.html#pywwt.utils.write_data_to_csv
+
 ``pywwt`` is a Python interface for the Microsoft `World Wide Telescope <http://www.worldwidetelescope.org>`_
 (WWT) Windows client, using the
 `Layer Control API (LCAPI) <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#load>`_.
@@ -79,7 +84,7 @@ You can use the load_ method to generate a new layer with data uploaded from a f
 
 .. code-block:: python
 
-    my_layer = my_wwt.load("particles.csv","Sun","Vulcan")
+    my_layer = my_wwt.load("particles.csv", "Sun", "Vulcan")
 
 where the file in this case is a CSV file with values separated by commas or tabs. The
 second two arguments are the ``frame`` to load the data into, and the ``name`` for the new layer.
@@ -93,7 +98,7 @@ control the fading in and out of data.
 
 .. code-block:: python
 
-    my_layer = my_wwt.load("particles.csv","Sun","Vulcan", color="FFFFFFFF",
+    my_layer = my_wwt.load("particles.csv", "Sun", "Vulcan", color="FFFFFFFF",
                            start_date="1/11/2009 12:00 AM", end_date="12/31/2010 5:00 PM",
                            fade_type="In", fade_range=2)
 
@@ -108,7 +113,7 @@ To create a new layer without loading data from a file, use the new_layer_ metho
 
 .. code-block:: python
 
-    new_layer = my_wwt.new_layer("Sky","My Star",["RA","DEC","ALT","color"])
+    new_layer = my_wwt.new_layer("Sky", "My Star", ["RA","DEC","ALT","color"])
 
 where the first two arguments are the ``frame`` to create the layer and the ``name`` of the
 new layer. The last argument is a list of ``fields`` that are the names of the data arrays
@@ -122,7 +127,7 @@ new_layer_group
 
 .. code-block:: python
 
-    my_wwt.new_layer_group("Sun","my asteroids")
+    my_wwt.new_layer_group("Sun", "my asteroids")
 
 get_existing_layer
 ++++++++++++++++++
@@ -166,12 +171,63 @@ for WWT.
 convert_xyz_to_spherical
 ++++++++++++++++++++++++
 
+convert_xyz_to_spherical_ takes a set of Cartesian coordinates and returns a dictionary of NumPy arrays
+containing the coordinates converted to spherical coordinates:
+
+.. code-block:: python
+
+    sp_crd = convert_xyz_to_spherical(x, y, z, is_astro=True, ra_units="degrees")
+
+where ``x``, ``y``, and ``z`` are NumPy arrays corresponding to the Cartesian coordinates, assumed to have
+an origin at (0,0,0). From this call, ``sp_crd`` will have ``"RA"``, ``"DEC"``, and ``"ALT"`` as fields. If
+``is_astro`` is set to ``False``, the fields will be ``"LAT"``, ``"LON"``, and ``"ALT"``. ``ra_units`` controls
+whether the ``"RA"`` coordinate will be in degrees or hours.
+
 generate_utc_times
 ++++++++++++++++++
+
+For data that does not have a time component, generate_utc_times_ will generate a list of times that may be
+used by WWT:
+
+.. code-block:: python
+
+    num_steps = 100
+    step_size = {"days":5, "hours":12, "minutes":5}
+    start_time = "1/1/2013 12:00 AM"
+    my_times = generate_utc_times(num_steps, step_size, start_time=start_time)
+
+The first two arguments, ``num_steps`` and ``step_size``, set the number of times and the step between the times.
+``start_time`` is a keyword argument that defaults to the current system time if it is not specified. ``my_times``
+will be a list of time strings.
 
 map_array_to_colors
 +++++++++++++++++++
 
+map_array_to_colors_ takes a NumPy array of floats, and a Matplotlib colormap, and converts the floating-point
+values to colors, which may be used as colors for event data in WWT:
+
+.. code-block:: python
+
+    colors = map_array_to_colors(temperature, "spectral", scale="log", vmin=1., vmax=7.)
+
+where the first two arguments are the NumPy array ``arr`` to be converted and a string representing the Matplotlib
+colormap ``cmap``. The ``scale`` of the color map may be set to ``"linear"`` or ``"log"``, and the maximum and minimum
+values of the data may be set by ``vmin`` and ``vmax``. If they are not set, they are set to the minimum and maximum
+values of the array ``arr`` by default.
+
 write_data_to_csv
 +++++++++++++++++
 
+write_data_to_csv_ takes a dict of NumPy arrays or lists of data and writes them to a file in CSV format, which may be
+read in by load_:
+
+.. code-block:: python
+
+    particles = {}
+    particles["x"] = x
+    particles["y"] = y
+    particles["z"] = z
+    particles["color"] = colors
+    write_data_to_csv(particles, "my_particles.csv", mode="new")
+
+The keyword argument ``mode`` may be set to ``"new"`` or ``"append"``.
