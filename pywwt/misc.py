@@ -13,7 +13,7 @@ def parse_kwargs(params, kwargs):
     if "date_time" in kwargs:
         params["datetime"] = kwargs["date_time"]
     if "time_rate" in kwargs:
-        params["timerate"] = kwargs["time_rate"]
+        params["timerate"] = str(kwargs["time_rate"])
     if "fly_to" in kwargs:
         params["flyto"] = ",".join([str(i) for i in kwargs["fly_to"]])
     if "instant" in kwargs:
