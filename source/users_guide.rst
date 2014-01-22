@@ -6,6 +6,12 @@ User's Guide
 .. _new_layer: api/pywwt.client.html#pywwt.client.WWTClient.new_layer
 .. _new_layer_group: api/pywwt.client.html#pywwt.client.WWTClient.new_layer_group
 .. _get_existing_layer: api/pywwt.client.html#pywwt.client.WWTClient.get_existing_layer
+.. _change_mode: api/pywwt.client.html#pywwt.client.WWTClient.change_mode
+.. _get_frame_list: api/pywwt.client.html#pywwt.client.WWTClient.get_frame_list
+.. _get_layer_list: api/pywwt.client.html#pywwt.client.WWTClient.get_layer_list
+.. _get_state: api/pywwt.client.html#pywwt.client.WWTClient.get_state
+.. _move_view: api/pywwt.client.html#pywwt.client.WWTClient.move_view
+.. _ui_settings: api/pywwt.client.html#pywwt.client.WWTClient.ui_settings
 
 .. _WWTLayer: api/pywwt.layer.html
 .. _update: api/pywwt.layer.html#pywwt.layer.WWTLayer.update
@@ -152,7 +158,32 @@ update
 Other Commands
 ~~~~~~~~~~~~~~
 
-There are several remaining methods for a WWTClient_ that may be used to
+There are several remaining methods for WWTClient_ that may be used to control the appearance of the WWT client
+and the layers.
+
+change_mode
++++++++++++
+
+change_mode_ changes the view to one of: Earth, Planet, Sky, Panorama, SolarSystem.
+
+.. code-block:: python
+
+    my_wwt.change_mode("SolarSystem")
+
+get_frame_list
+++++++++++++++
+
+get_layer_list
+++++++++++++++
+
+get_state
++++++++++
+
+move_view
++++++++++
+
+ui_settings
++++++++++++
 
 Standard Keyword Arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
