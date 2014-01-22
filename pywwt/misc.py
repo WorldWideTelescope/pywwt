@@ -5,9 +5,13 @@ class WWTException(Exception):
 
 def handle_response(resp_str):
     soup = BeautifulSoup(resp_str)
-    success = soup.layerapi.status.string
-    if success != "Success":
-        raise WWTException(success)
+    try:
+        success = soup.layerapi.status.string
+        if success != "Success":
+            raise WWTException(success)
+    except AttributeError:
+        error = soup.html.body.h2.string
+        raise WWTException(error)
 
 def parse_kwargs(params, kwargs):
     if "date_time" in kwargs:
