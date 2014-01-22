@@ -170,26 +170,149 @@ change_mode_ changes the view to one of: Earth, Planet, Sky, Panorama, SolarSyst
 
     my_wwt.change_mode("SolarSystem")
 
+`LCAPI Reference: Mode <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#mode>`_
+
 get_frame_list
 ++++++++++++++
+
+get_frame_list_ returns a dictionary of the WWT client's reference frames:
+
+.. code-block:: python
+
+    frame_list = my_wwt.get_frame_list()
+
+returns something like:
+
+.. code-block:: python
+
+    {'Adrastea': {'enabled': 'True'},
+     'Aegir': {'enabled': 'True'},
+     'Aitne': {'enabled': 'True'},
+     'Albiorix': {'enabled': 'True'},
+     ...
+     'Umbriel': {'enabled': 'True'},
+     'Uranus': {'enabled': 'True'},
+     'Venus': {'enabled': 'True'},
+     'Ymir': {'enabled': 'True'}}
+
+`LCAPI Reference: LayerList <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#layerlist>`_
 
 get_layer_list
 ++++++++++++++
 
+get_layer_list_ returns a dictionary of the WWT client's layers:
+
+.. code-block:: python
+
+    layer_list = my_wwt.get_layer_list()
+
+returns something like:
+
+.. code-block:: python
+
+    {'2D Sky': {'enabled': 'True',
+                'id': 'b92911c1-dd66-4abe-b777-c2acd477801f',
+                'type': 'SkyOverlays',
+                'version': '3'},
+     '3d Solar System': {'enabled': 'True',
+                         'id': 'efb51d38-d429-4346-a13f-cbcc1e81bafd',
+                         'type': 'SkyOverlays',
+                         'version': '3'},
+     'ISS Model  (Toshiyuki Takahei)': {'enabled': 'False',
+                                        'id': '00000001-0002-0003-0405-060708090a0b',
+                                        'type': 'ISSLayer',
+                                        'version': '2'},
+     'Overlays': {'enabled': 'True',
+                  'id': '3cf608b5-9971-4fbb-9e2a-5656de3cb3f7',
+                  'type': 'SkyOverlays',
+                  'version': '2'}}
+
+`LCAPI Reference: LayerList <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#layerlist>`_
+
 get_state
 +++++++++
+
+get_state_ returns a dict of some of the details of the current view.
+
+.. code-block:: python
+
+    my_wwt.get_state()
+
+returns something along the lines of:
+
+.. code-block:: python
+
+    {'angle': '0',
+     'lat': '0',
+     'lng': '0',
+     'lookat': 'SolarSystem',
+     'referenceframe': 'Sun',
+     'rotation': '0',
+     'time': '1/22/2014 6:42:11 PM',
+     'timerate': '1',
+     'viewtoken': 'GGGGGM80764GGGGHC84214753FD759FD143CGGD02B82257507733FGGG',
+     'zoom': '360',
+     'zoomtext': '160 au'}
+
+`LCAPI Reference: State <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#state>`_
 
 move_view
 +++++++++
 
+move_view_ changes the view depending on the supplied parameter:
+
+.. code-block:: python
+
+    my_wwt.move_view("ZoomIn")
+
+where the parameter may be one of:
+
+- ``"ZoomIn"``: Zoom in on the current view.
+- ``"ZoomOut"``: Zoom out of the current view.
+- ``"Up"``: Move the current view up.
+- ``"Down"``: Move the current view down.
+- ``"Left"``: Move the current view left.
+- ``"Right"``: Move the current view right.
+- ``"Clockwise"``: Rotate the view clockwise 0.2 of one radian.
+- ``"CounterClockwise"``: Rotate the view counterclockwise 0.2 of one radian.
+- ``"TiltUp"``: Angle the view up 0.2 of one radian.
+- ``"TiltDown"``: Angle the view down 0.2 of one radian.
+- ``"Finder"``: Currently unimplemented.
+
+`LCAPI Reference: Move <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#move>`_
+
 ui_settings
 +++++++++++
+
+ui_settings_ changes user interface settings without altering the layer data:
+
+.. code-block:: python
+
+    my_wwt.ui_settings("ShowConstellationBoundries", "True")
+
+To see the list of possible settings see the
+`LCAPI section on uisettings <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#uisettings>`_.
 
 Standard Keyword Arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Many of the ``pywwt`` methods take a standard set of keyword arguments that may be applied
 along with that method's particular arguments.
+
+- ``date_time`` (string): Sets the viewing clock to the given date and time, in UTC format, for example: "1/1/2000 12:02:46 AM"
+- ``time_rate`` (float):	The accelerated time to render the visualization, as a multiple of 10.
+- ``fly_to`` (list of floats): Sets the position of the view camera. Requires five floating point numbers, in this order:
+
+ 1. Latitude is in decimal degrees, positive to the North.
+ 2. Longitude is in decimal degrees, positive to the East.
+ 3. Zoom level varies from 360 (the most distant view) to 0.00023 (the closest view).
+ 4. Rotation is in radians, positive moves the camera to the left.
+ 5. Angle is in radians, positive moves the camera forward.
+ 6. (optional) The name of the frame to change the view to.
+
+- ``instant`` (boolean): Used with the ``fly_to`` parameter, set this to ``True`` to specify that the camera should jump to
+the location, or ``False`` that the camera should smoothly pan and zoom to the location.
+- ``autoloop`` (boolean): True sets the layer manager to auto loop.
 
 `LCAPI Reference: General Parameters <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#general_parameters>`_
 
