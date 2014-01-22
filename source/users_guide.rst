@@ -210,8 +210,8 @@ values to colors, which may be used as colors for event data in WWT:
 
     colors = map_array_to_colors(temperature, "spectral", scale="log", vmin=1., vmax=7.)
 
-where the first two arguments are the NumPy array ``arr`` to be converted and a string representing the Matplotlib
-colormap ``cmap``. The ``scale`` of the color map may be set to ``"linear"`` or ``"log"``, and the maximum and minimum
+where the first two arguments are the NumPy array ``arr`` to be converted, and a string ``cmap`` representing the
+Matplotlib colormap. The ``scale`` of the color map may be set to ``"linear"`` or ``"log"``, and the maximum and minimum
 values of the data may be set by ``vmin`` and ``vmax``. If they are not set, they are set to the minimum and maximum
 values of the array ``arr`` by default.
 
