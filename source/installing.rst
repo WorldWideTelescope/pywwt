@@ -1,5 +1,5 @@
 Installing ``pywwt``
-----------------
+--------------------
 
 ``pywwt`` requires the following packages:
 

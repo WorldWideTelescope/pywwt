@@ -14,20 +14,17 @@ User's Guide
 .. _ui_settings: api/pywwt.client.html#pywwt.client.WWTClient.ui_settings
 
 .. _WWTLayer: api/pywwt.layer.html
+.. _activate: api/pywwt.layer.html#pywwt.layer.WWTLayer.activate
+.. _set_properties: api/pywwt.layer.html#pywwt.layer.WWTLayer.set_properties
+.. _set_property: api/pywwt.layer.html#pywwt.layer.WWTLayer.set_property
+.. _get_properties: api/pywwt.layer.html#pywwt.layer.WWTLayer.get_properties
+.. _get_property: api/pywwt.layer.html#pywwt.layer.WWTLayer.get_property
 .. _update: api/pywwt.layer.html#pywwt.layer.WWTLayer.update
 
 .. _convert_xyz_to_spherical: api/pywwt.utils.html#pywwt.utils.convert_xyz_to_spherical
 .. _generate_utc_times: api/pywwt.utils.html#pywwt.utils.generate_utc_times
 .. _map_array_to_colors: api/pywwt.utils.html#pywwt.utils.map_array_to_colors
 .. _write_data_to_csv: api/pywwt.utils.html#pywwt.utils.write_data_to_csv
-
-``pywwt`` is a Python interface for the Microsoft `World Wide Telescope <http://www.worldwidetelescope.org>`_
-(WWT) Windows client, using the
-`Layer Control API (LCAPI) <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#load>`_.
-The LCAPI provides an interface to WWT's Layer Manager by sending data and information in the form of
-strings over HTTP. ``pywwt`` simply provides a Python interface to make these
-calls, enabling the control of WWT from scripts or an IPython notebook. Most importantly, it
-enables the passing of data created within a Python environment to WWT.
 
 To use ``pywwt`` from Python, first import its modules:
 
@@ -310,9 +307,33 @@ along with that method's particular arguments.
  5. Angle is in radians, positive moves the camera forward.
  6. (optional) The name of the frame to change the view to.
 
-- ``instant`` (boolean): Used with the ``fly_to`` parameter, set this to ``True`` to specify that the camera should jump to
-the location, or ``False`` that the camera should smoothly pan and zoom to the location.
+- ``instant`` (boolean): Used with the ``fly_to`` parameter, set this to ``True`` to specify that the camera should jump to the location, or ``False`` that the camera should smoothly pan and zoom to the location. Default
 - ``autoloop`` (boolean): True sets the layer manager to auto loop.
+
+The following methods take these keyword arguments:
+
+- WWTClient:
+    + change_mode_
+    + load_
+    + move_view_
+    + new_layer_
+    + new_layer_group_
+    + ui_settings_
+
+- WWTLayer:
+    + activate_
+    + set_properties_
+    + set_property_
+    + update_
+
+An example call:
+
+.. code-block:: python
+
+    my_wwt.move_view("Clockwise", date_time="1/1/2000", time_rate=100.)
+
+which would rotate the view clockwise, set the current date and time to 1/1/2000 at 12:00:00 AM UTC, and increase the
+rate of the passage of time by a factor of 100.
 
 `LCAPI Reference: General Parameters <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#general_parameters>`_
 

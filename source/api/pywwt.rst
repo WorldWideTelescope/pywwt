@@ -1,5 +1,5 @@
-pywwt API
-=========
+``pywwt`` API
+=============
 
 .. toctree::
 
