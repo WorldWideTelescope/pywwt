@@ -36,7 +36,7 @@ Or, to install locally, use
 Then make sure your Python path points to this location.
 
 On the WWT side, to control the client from a remote host, remote
-hosts must be enabled under Settings --> Remote Access Control...
+hosts must be enabled under `Settings --> Remote Access Control...`
 
 Documentation
 -------------
