@@ -25,6 +25,10 @@ pywwt requires the following packages:
 - [Requests](http://docs.python-requests.org/en/latest/)
 - [Dateutil](http://labix.org/python-dateutil)
 
+pywwt can be installed from pip:
+
+    pip install pywwt
+    
 To install the library system-wide
 
     [~]$ python setup.py install
