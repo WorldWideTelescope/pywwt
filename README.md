@@ -41,4 +41,4 @@ hosts must be enabled under Settings --> Remote Access Control...
 Documentation
 -------------
 
-The documentation for pywwt can be found at [http://www.jzuhone.com/pywwt].
+The documentation for pywwt can be found at http://www.jzuhone.com/pywwt.
