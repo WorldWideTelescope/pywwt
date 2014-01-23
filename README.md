@@ -28,12 +28,12 @@ pywwt requires the following packages:
 pywwt can be installed from pip:
 
     pip install pywwt
-    
-To install the library system-wide
+
+Or, to install the library system-wide from source:
 
     [~]$ python setup.py install
 
-Or, to install locally, use
+Or, to install locally, use:
 
     [~]$ python setup.py install --prefix=/path/to/location/
 
