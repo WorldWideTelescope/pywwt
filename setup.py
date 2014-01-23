@@ -8,7 +8,7 @@ setup(name='pywwt',
       author='John ZuHone',
       author_email='jzuhone@gmail.com',
       url='http://github.com/jzuhone/pywwt',
-      download_url='https://github.com/jzuhone/pywwt/tarball/0.1.0'
+      download_url='https://github.com/jzuhone/pywwt/tarball/0.1.0',
       classifiers=[
           'Intended Audience :: Science/Research',
           'Operating System :: OS Independent',
