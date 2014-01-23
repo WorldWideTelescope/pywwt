@@ -33,7 +33,7 @@ Or, to install locally, use
 
     [~]$ python setup.py install --prefix=/path/to/location/
 
-Then make sure your Python path points to this location.
+Then make sure your `PYTHONPATH` points to this location.
 
 On the WWT side, to control the client from a remote host, remote
 hosts must be enabled under `Settings --> Remote Access Control...`
