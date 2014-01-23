@@ -11,7 +11,7 @@ setup(name='pywwt',
           'Intended Audience :: Science/Research',
           'Operating System :: OS Independent',
           'Programming Language :: Python :: 2.7',
-          'Topic :: Scientific/Engineering :: Data Visualization',
+          'Topic :: Scientific/Engineering :: Visualization',
           ],
       packages = find_packages()
     )
