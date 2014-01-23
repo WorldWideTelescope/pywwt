@@ -10,7 +10,7 @@ setup(name='pywwt',
       url='http://github.com/jzuhone/pywwt',
       download_url='https://github.com/jzuhone/pywwt/tarball/0.1.0',
       install_requires = ["numpy","beautifulsoup4","matplotlib",
-                          "astropy","requests"]
+                          "astropy","requests"],
       classifiers=[
           'Intended Audience :: Science/Research',
           'Operating System :: OS Independent',
