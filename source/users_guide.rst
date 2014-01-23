@@ -20,6 +20,7 @@ User's Guide
 .. _get_properties: api/pywwt.layer.html#pywwt.layer.WWTLayer.get_properties
 .. _get_property: api/pywwt.layer.html#pywwt.layer.WWTLayer.get_property
 .. _update: api/pywwt.layer.html#pywwt.layer.WWTLayer.update
+.. _delete: api/pywwt.layer.html#pywwt.layer.WWTLayer.delete
 
 .. _convert_xyz_to_spherical: api/pywwt.utils.html#pywwt.utils.convert_xyz_to_spherical
 .. _generate_utc_times: api/pywwt.utils.html#pywwt.utils.generate_utc_times
@@ -128,9 +129,16 @@ the same keyword arguments as load_.
 new_layer_group
 +++++++++++++++
 
+new_layer_group_ creates a new layer group, which is an organizational aid when using the layer manager. The user will
+be able to collapse and expand groups in the Layer Manager, and have groups that are sub-sets of other groups.
+
 .. code-block:: python
 
     my_wwt.new_layer_group("Sun", "my asteroids")
+
+The first argument is the reference ``frame`` for the group and the second is the ``name`` of the group.
+
+`LCAPI Reference: Group <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#group>`_
 
 get_existing_layer
 ++++++++++++++++++
@@ -150,7 +158,114 @@ of the layer and working with its data.
 update
 ++++++
 
+update_ adds data to layers, removes data, and changes other aspects of the layer. The ``data`` to
+be added is a dict of NumPy arrays or lists:
+
+.. code-block:: python
+
+    data = {}
+    data["RA"] = ra_coord
+    data["DEC"] = dec_coord
+    data["ALT"] = alt_coord
+    data["color"] = colors
+    my_layer.update(data=data, purge_all=True, no_purge=False, show=True)
+
+Where the keys of the dict must correspond to the names of the ``fields`` specified in the new_layer_
+call that created this layer. ``purge_all`` controls whether or not all existing data will be cleared
+from the layer. Setting ``no_purge`` to ``True`` will prevent data that has already occurred from being
+deleted from the layer, which would happen by default. ``show`` controls whether the layer is shown or hidden.
+
 `LCAPI Reference: Update <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#update>`_
+
+activate
+++++++++
+
+The activate_ method highlights the selected layer in the layer manager:
+
+.. code-block:: python
+
+    my_layer.activate()
+
+`LCAPI Reference: Activate <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#activate>`_
+
+There are a number of properties associated with each layer, and there are methods for getting and setting
+these properties. There is a
+`list of properties <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#Table_of_Properties>`_
+for layers at the WWT website.
+
+get_property
+++++++++++++
+
+get_property_ returns the value of a property given its ``property_name``:
+
+.. code-block:: python
+
+    prop = my_layer.get_property("CoordinatesType")
+
+`LCAPI Reference: Getprop <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#getprop>`_
+
+get_properties
+++++++++++++++
+
+get_properties_ returns all of the properties for a layer in a Python dict:
+
+.. code-block:: python
+
+    prop_dict = my_layer.get_properties()
+
+`LCAPI Reference: Getprops <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#getprops>`_
+
+set_property
+++++++++++++
+
+set_property_ sets a property with ``property_name`` to ``property_value``:
+
+.. code-block:: python
+
+    my_layer.set_property("AltUnit","MegaParsecs")
+
+The ``property_name`` and ``property_value`` must both be strings.
+
+`LCAPI Reference: Setprop <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#setprop>`_
+
+set_properties
+++++++++++++++
+
+set_properties_ sets a number of properties which have been organized into a dict of
+{``property_name``,``property_value``} pairs:
+
+.. code-block:: python
+
+    props_dict = {"CoordinatesType":"Spherical",
+                  "MarkerScale":"Screen",
+                  "PointScaleType":"Constant",
+                  "ScaleFactor":"16",
+                  "ShowFarSide":"True",
+                  "TimeSeries":"False",
+                  "AltUnit":"MegaParsecs",
+                  "RaUnits":"Degrees"}
+    my_layer.set_properties(props_dict)
+
+Each name and value must be a string.
+
+`LCAPI Reference: Setprops <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#Setprops>`_
+
+delete
+++++++
+
+delete_ deletes the layer from the Layer Manager:
+
+.. code-block:: python
+
+    my_layer.delete()
+
+If you try to call a method on the associated layer, you will get an error message:
+
+.. code-block:: none
+
+    WWTException: This layer has been deleted!
+
+`LCAPI Reference: Delete <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#delete>`_
 
 Other Commands
 ~~~~~~~~~~~~~~
