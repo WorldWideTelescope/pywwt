@@ -128,10 +128,15 @@ fly-to stops) and see that it matches up with the coordinates of our
      'zoomtext': '1.2 Mpc'}
 
 
-
 If this all worked correctly, the view should look like this:
 
-.. image:: images/minihalo.png
+.. raw:: html
+
+    <iframe src="http://player.vimeo.com/video/84869801" width="700" height="393" frameborder="0"
+    webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+    <p><a href="http://vimeo.com/84869801">FLASH Particle Data in World Wide Telescope</a>
+    from <a href="http://vimeo.com/jzuhone">John ZuHone</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
+
 
 
     
