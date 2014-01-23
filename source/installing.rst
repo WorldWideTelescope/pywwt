@@ -10,13 +10,19 @@ Installing ``pywwt``
 - `Requests <http://docs.python-requests.org/en/latest/>`_
 - `Dateutil <http://labix.org/python-dateutil>`_
 
-To install the library system-wide
+``pywwt`` can be installed from pip:
+
+.. code-block:: bash
+
+    [~]$ pip install pywwt
+
+Or, to install the library system-wide from `source <http://github.com/jzuhone/pywwt>`_:
 
 .. code-block:: bash
 
     [~]$ python setup.py install
 
-Or, to install locally, use
+Or, to install locally, use:
 
 .. code-block:: bash
 

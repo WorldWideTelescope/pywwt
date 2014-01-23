@@ -4,8 +4,8 @@ A Worked ``pywwt`` Example
 This is a worked example of how to get a particle dataset into ``pywwt``. To run it yourself,
 you'll need the following:
 
-- `This IPython notebook <files/pywwt_example.ipynb>`_
-- `This data file <files/radio_halo_1kpc_hdf5_part_0200_reduced.h5>`_
+- :download:`This IPython notebook<files/pywwt_example.ipynb>`
+- :download:`This data file<files/radio_halo_1kpc_hdf5_part_0200_reduced.h5>`
 
 You may need to change things in this notebook like the ``host`` address, etc.
 
