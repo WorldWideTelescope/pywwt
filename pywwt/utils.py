@@ -6,6 +6,7 @@ import struct
 from astropy.utils.console import ProgressBar
 from datetime import datetime, timedelta
 from dateutil import tz, parser
+import codecs
 
 def map_array_to_colors(arr, cmap, scale="linear",
                         vmin=None, vmax=None):
@@ -40,10 +41,13 @@ def map_array_to_colors(arr, cmap, scale="linear",
     my_cmap = mcm.ScalarMappable(norm=norm, cmap=cmap)
     colors = my_cmap.to_rgba(arr, bytes=True)
 
-    colors = ["FF"+struct.pack('BBB',*color[:3]).encode('hex').upper()
-              for color in colors]
+    hex_colors = []
+    
+    for color in colors:
+        hex_color = codecs.getencoder('hex')(struct.pack('BBB',*color[:3]))[0]
+        hex_colors.append("FF"+hex_color.decode().upper())
 
-    return colors
+    return hex_colors
 
 def generate_utc_times(num_steps, step_size, start_time=None):
     r"""
