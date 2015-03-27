@@ -33,7 +33,7 @@ class WWTClient(object):
         version_str = u.text
         soup = BeautifulSoup(version_str)
         if soup.layerapi.findChild("status") is not None:
-            _handle_response(version_str)
+            handle_response(version_str)
         tag = soup.layerapi.version
         version_numbers = tag.string.split(".")
         if float(".".join(version_numbers[:2])) < 2.8:
