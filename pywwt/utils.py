@@ -7,6 +7,7 @@ from astropy.utils.console import ProgressBar
 from datetime import datetime, timedelta
 from dateutil import tz, parser
 import codecs
+import sys
 
 def map_array_to_colors(arr, cmap, scale="linear",
                         vmin=None, vmax=None):
@@ -138,10 +139,13 @@ def write_data_to_csv(data, filename, mode="new"):
     :type mode: string, optional
     """
     if mode == "new":
-        fmode = "wb"
+        fmode = "w"
     elif mode == "append":
-        fmode = "a+b"
-    f = open(filename, fmode)
+        fmode = "a+"
+    if sys.version_info >= (3,0,0):
+        f = open(filename, fmode, newline='')
+    else:
+        f = open(filename, fmode+'b')
     w = csv.DictWriter(f, list(data.keys()))
     if mode == "new": w.writeheader()
     num_points = len(list(data.values())[0])
