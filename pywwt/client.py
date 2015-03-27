@@ -118,6 +118,7 @@ class WWTClient(object):
         params["cmd"] = "new"
         params["name"] = name
         params["frame"] = frame
+        params["color"] = color
         params["startdate"] = start_date
         params["enddate"] = end_date
         params["fadetype"] = fade_type
@@ -307,7 +308,7 @@ class WWTClient(object):
         return frames
 
     def __repr__(self):
-        return "WWTClient(host=\"%s\")" % (self.host)
+        return "WWTClient(host=\"%s\")" % self.host
 
     def __str__(self):
         return self.host
