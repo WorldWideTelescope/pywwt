@@ -80,7 +80,7 @@ def generate_utc_times(num_steps, step_size, start_time=None):
 
     time_arr = []
     new_time = start_time
-    for i in xrange(num_steps):
+    for i in range(num_steps):
         time_arr.append(new_time.strftime("%m/%d/%Y %I:%M:%S %p"))
         new_time += timedelta(**step_size)
 
@@ -138,11 +138,11 @@ def write_data_to_csv(data, filename, mode="new"):
     elif mode == "append":
         fmode = "a+b"
     f = open(filename, fmode)
-    w = csv.DictWriter(f, data.keys())
+    w = csv.DictWriter(f, list(data.keys()))
     if mode == "new": w.writeheader()
-    num_points = len(data.values()[0])
-    for i in ProgressBar(xrange(num_points)):
-        row = dict([(k,v[i]) for k,v in data.items()])
+    num_points = len(list(data.values())[0])
+    for i in ProgressBar(list(range(num_points))):
+        row = dict([(k,v[i]) for k,v in list(data.items())])
         w.writerow(row)
     f.close()
 

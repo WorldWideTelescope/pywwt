@@ -68,7 +68,7 @@ class WWTLayer(object):
         """
         self._check_exists()
         props_string = "<?xml version='1.0' encoding='UTF-8'?><LayerApi><Layer "
-        for key, value in props_dict.items():
+        for key, value in list(props_dict.items()):
             props_string += "%s=\"%s\" " % (key, value)
         props_string += " /></LayerApi>"
         params = {}
@@ -154,7 +154,7 @@ class WWTLayer(object):
         data_string = ""
         if data is not None:
             nevents = len(data[self.fields[0]])
-            for i in xrange(nevents):
+            for i in range(nevents):
                 data_string += "\t".join([str(data[k][i]) for k in self.fields])+"\n"
         u = requests.post(self.wwt.wwt_url, params=params, data=data_string)
         update_str = u.text
