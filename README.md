@@ -16,7 +16,7 @@ provides a set of tools to facilitate importing data into WWT.
 Installation
 ------------
 
-pywwt requires the following packages:
+pywwt is compatible with Python 2.7 or 3.4, and requires the following Python packages:
 
 - [NumPy](http://www.numpy.org)
 - [Matplotlib](http://matplotlib.org)
@@ -26,15 +26,22 @@ pywwt requires the following packages:
 - [Dateutil](http://labix.org/python-dateutil)
 - [lxml](http://lxml.de)
 
-pywwt can be installed from pip:
+pywwt can be installed using pip. pip will attempt to download the dependencies and 
+install them, if they are not already installed in your Python distribution. For an easy
+installation of the dependencies, using a Python package distribution is recommended. For
+example, using the [Anaconda Python Distribution](https://store.continuum.io/cshop/anaconda):
+  
+    [~]$ conda install setuptools numpy matplotlib astropy beautiful-soup requests dateutil lxml
 
-    pip install pywwt
+Once you have all of the dependencies, install ``pywwt`` using pip:
 
-Or, to install the library system-wide from source:
+    [~]$ pip install pywwt
+
+Or, to install into your Python distribution from source:
 
     [~]$ python setup.py install
 
-Or, to install locally, use:
+Or, to install to a local directory, use:
 
     [~]$ python setup.py install --prefix=/path/to/location/
 
