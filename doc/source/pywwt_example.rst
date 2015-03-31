@@ -1,21 +1,21 @@
 A Worked ``pywwt`` Example
 --------------------------
 
-This is a worked example of how to get a particle dataset into ``pywwt``. To run it yourself,
-you'll need the following:
+This is a worked example of how to get a particle dataset into ``pywwt``. To 
+run it yourself, you'll need the following:
 
 - :download:`This IPython notebook<files/pywwt_example.ipynb>`
 - :download:`This data file<files/radio_halo_1kpc_hdf5_part_0200_reduced.h5>`
 
 You may need to change things in this notebook like the ``host`` address, etc.
 
-First, we'll import the ``pywwt`` modules, as well as ``numpy`` and
-``h5py``, which we'll need for this example. We also define a conversion
-between centimeters and megaparsecs, ``cm_per_mpc``.
+First, we'll import ``pywwt``, as well as ``numpy`` and ``h5py``, which we'll 
+need only for this example. We also define a conversion between centimeters 
+and megaparsecs, ``cm_per_mpc``.
 
 .. code:: python
 
-    from pywwt.mods import *
+    import pywwt
     import numpy as np
     import h5py
     cm_per_mpc = 3.0856e24
@@ -26,7 +26,7 @@ machine as the host.
 
 .. code:: python
 
-    my_wwt = WWTClient(host="192.168.1.3")
+    my_wwt = pywwt.WWTClient(host="192.168.1.3")
 
 Now, we'll create a layer which we'll put data in later. Since this is
 tracer particle data from a radio minihalo simulation of a galaxy
@@ -85,8 +85,8 @@ coordinates to spherical. We'll put all of this in a dict, ``data``.
     y = f["y"][:]/cm_per_mpc
     z = f["z"][:]/cm_per_mpc
     c = f["radio"][:]
-    color = map_array_to_colors(c, "spectral", scale="log", vmin=1.0e-40, vmax=4.0e-23)
-    data = convert_xyz_to_spherical(x, y, z)
+    color = pywwt.map_array_to_colors(c, "spectral", scale="log", vmin=1.0e-40, vmax=4.0e-23)
+    data = pywwt.convert_xyz_to_spherical(x, y, z)
     data["color"] = color
     f.close()
 

@@ -24,6 +24,7 @@ pywwt requires the following packages:
 - [Beautiful Soup 4](http://www.crummy.com/software/BeautifulSoup)
 - [Requests](http://docs.python-requests.org/en/latest/)
 - [Dateutil](http://labix.org/python-dateutil)
+- [lxml](http://lxml.de)
 
 pywwt can be installed from pip:
 

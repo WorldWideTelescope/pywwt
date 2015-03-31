@@ -9,6 +9,7 @@ Installing ``pywwt``
 - `Beautiful Soup 4 <http://www.crummy.com/software/BeautifulSoup>`_
 - `Requests <http://docs.python-requests.org/en/latest/>`_
 - `Dateutil <http://labix.org/python-dateutil>`_
+- `lxml <http://lxml.de>`_
 
 ``pywwt`` can be installed from pip:
 

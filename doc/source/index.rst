@@ -9,6 +9,7 @@ strings over HTTP. ``pywwt`` simply provides a Python interface to make these
 calls, enabling the control of WWT from scripts or an IPython notebook. Most importantly, it
 enables the passing of data created within a Python environment to WWT.
 
+The current version of ``pywwt``, v0.2.0, is 
 Contents:
 
 .. toctree::

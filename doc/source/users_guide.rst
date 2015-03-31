@@ -27,11 +27,19 @@ User's Guide
 .. _map_array_to_colors: api/pywwt.utils.html#pywwt.utils.map_array_to_colors
 .. _write_data_to_csv: api/pywwt.utils.html#pywwt.utils.write_data_to_csv
 
-To use ``pywwt`` from Python, first import its modules:
+To use ``pywwt`` from Python, first import it:
+
+.. code-block:: python
+
+    import pywwt
+    
+Alternatively, you can import the ``pywwt`` classes and functions into the namespace:
 
 .. code-block:: python
 
     from pywwt.mods import *
+
+In this guide we'll be using the first method in all of the examples, but either works well.
 
 Connecting to a WWT Client
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,14 +49,14 @@ a WWTClient_ instance:
 
 .. code-block:: python
 
-    my_wwt = WWTClient()
+    my_wwt = pywwt.WWTClient()
 
 If WWT is running on a separate host, and you have enabled access from
 remote hosts, you can connect to it by specifying the hostname or IP address:
 
 .. code-block:: python
 
-    my_wwt = WWTClient(host="192.168.1.3")
+    my_wwt = pywwt.WWTClient(host="192.168.1.3")
 
 If the WWT client has not been started on the host you are attempting to connect
 to, or if you have not enabled remote access, or if the firewall is blocking port
@@ -71,9 +79,8 @@ If the version of WWT is not the required version, you will get this error messa
 
 .. note::
 
-    Some tasks require loading files from disk. In this case, if the current WWTClient_
-    instance and the WWT client itself are not running on the same host, they must have
-    access to a common filesystem from which the files may be loaded.
+    Some tasks require loading files from disk. These will currently only work if the 
+    current WWTClient_ instance and the WWT client itself are running on the same host.
 
 Creating New Layers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -466,7 +473,7 @@ containing the coordinates converted to spherical coordinates:
 
 .. code-block:: python
 
-    sp_crd = convert_xyz_to_spherical(x, y, z, is_astro=True, ra_units="degrees")
+    sp_crd = pywwt.convert_xyz_to_spherical(x, y, z, is_astro=True, ra_units="degrees")
 
 where ``x``, ``y``, and ``z`` are NumPy arrays corresponding to the Cartesian coordinates, assumed to have
 an origin at (0,0,0). From this call, ``sp_crd`` will have ``"RA"``, ``"DEC"``, and ``"ALT"`` as fields. If
@@ -484,7 +491,7 @@ used by WWT:
     num_steps = 100
     step_size = {"days":5, "hours":12, "minutes":5}
     start_time = "1/1/2013 12:00 AM"
-    my_times = generate_utc_times(num_steps, step_size, start_time=start_time)
+    my_times = pywwt.generate_utc_times(num_steps, step_size, start_time=start_time)
 
 The first two arguments, ``num_steps`` and ``step_size``, set the number of times and the step between the times.
 ``start_time`` is a keyword argument that defaults to the current system time if it is not specified. ``my_times``
@@ -498,7 +505,7 @@ values to colors, which may be used as colors for event data in WWT:
 
 .. code-block:: python
 
-    colors = map_array_to_colors(temperature, "spectral", scale="log", vmin=1., vmax=7.)
+    colors = pywwt.map_array_to_colors(temperature, "spectral", scale="log", vmin=1., vmax=7.)
 
 where the first two arguments are the NumPy array ``arr`` to be converted, and a string ``cmap`` representing the
 Matplotlib colormap. The ``scale`` of the color map may be set to ``"linear"`` or ``"log"``, and the maximum and minimum
@@ -518,6 +525,6 @@ read in by load_:
     particles["y"] = y
     particles["z"] = z
     particles["color"] = colors
-    write_data_to_csv(particles, "my_particles.csv", mode="new")
+    pywwt.write_data_to_csv(particles, "my_particles.csv", mode="new")
 
 The keyword argument ``mode`` may be set to ``"new"`` or ``"append"``.
