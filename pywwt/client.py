@@ -1,3 +1,4 @@
+from __future__ import print_function
 import requests
 from requests import ConnectionError
 from bs4 import BeautifulSoup
@@ -20,6 +21,7 @@ class WWTClient(object):
             self.host = "127.0.0.1"
         else:
             self.host = host
+        print("Connecting to WWT on host %s." % self.host)
         self.wwt_url = "http://%s:5050/layerApi.aspx" % (self.host)
         self._check_for_server()
 
@@ -172,6 +174,9 @@ class WWTClient(object):
 
         Also accepts the default keyword arguments.
         """
+        if self.host not in ["127.0.0.1", "localhost", "localhost.localdomain"]:
+            raise WWTException("The 'load' method only works if you are on the same machine "
+                               "as the WWT client.")
         if filename.endswith("csv"):
             f = open(filename, "r")
             line = f.readline()
