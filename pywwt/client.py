@@ -2,10 +2,7 @@ from __future__ import print_function
 import requests
 from requests import ConnectionError
 from bs4 import BeautifulSoup
-import logging
-requests_log = logging.getLogger("requests")
-requests_log.setLevel(logging.WARNING)
-from .misc import WWTException, handle_response, parse_kwargs
+from .misc import WWTException, handle_response, parse_kwargs, get_soup
 from .layer import WWTLayer
 
 class WWTClient(object):
@@ -32,11 +29,11 @@ class WWTClient(object):
         except ConnectionError:
             raise WWTException("World Wide Telescope has not been started " +
                                "on this host or is otherwise unreachable.")
-        version_str = u.text
-        soup = BeautifulSoup(version_str)
-        if soup.layerapi.findChild("status") is not None:
+        version_str = u.content
+        soup = BeautifulSoup(version_str, "xml")
+        if soup.LayerApi.findChild("Status") is not None:
             handle_response(version_str)
-        tag = soup.layerapi.version
+        tag = soup.LayerApi.Version
         version_numbers = tag.string.split(".")
         if float(".".join(version_numbers[:2])) < 2.8:
             raise WWTException("World Wide Telescope is not the required version (>= 2.8)")
@@ -55,7 +52,7 @@ class WWTClient(object):
         params["lookat"] = mode
         parse_kwargs(params, kwargs)
         u = requests.get(self.wwt_url, params=params)
-        mode_str = u.text
+        mode_str = u.content
         handle_response(mode_str)
 
     def move_view(self, parameter, **kwargs):
@@ -73,7 +70,7 @@ class WWTClient(object):
         params = {"cmd":"move", "move":parameter}
         parse_kwargs(params, kwargs)
         u = requests.get(self.wwt_url, params=params)
-        move_str = u.text
+        move_str = u.content
         handle_response(move_str)
 
     def new_layer(self, frame, name, fields,
@@ -128,9 +125,9 @@ class WWTClient(object):
         parse_kwargs(params, kwargs)
         field_string = "\t".join(fields)
         u = requests.post(self.wwt_url, params=params, data=field_string)
-        layer_str = u.text
-        soup = BeautifulSoup(layer_str)
-        layer_id = soup.layerapi.findChild(name="newlayerid").string
+        layer_str = u.content
+        soup = BeautifulSoup(layer_str, "xml")
+        layer_id = soup.LayerApi.findChild(name="NewLayerID").string
         if len(layer_id) != 36:
             raise WWTException("Invalid Layer ID received")
         return WWTLayer(name, layer_id, fields, self)
@@ -195,10 +192,8 @@ class WWTClient(object):
         params["fadetype"] = fade_type
         params["faderange"] = fade_range
         parse_kwargs(params, kwargs)
-        u = requests.get(self.wwt_url, params=params)
-        layer_str = u.text
-        soup = BeautifulSoup(layer_str)
-        layer_id = soup.layerapi.findChild(name="newlayerid").string
+        soup, resp = get_soup(self.wwt_url, params)
+        layer_id = soup.LayerApi.findChild(name="NewLayerID").string
         if len(layer_id) != 36:
             raise WWTException("Invalid Layer ID received")
         return WWTLayer(name, layer_id, fields, self)
@@ -234,7 +229,7 @@ class WWTClient(object):
                   "name":name}
         parse_kwargs(params, kwargs)
         u = requests.get(self.wwt_url, params=params)
-        group_str = u.text
+        group_str = u.content
         handle_response(group_str)
 
     def ui_settings(self, setting_name, setting_value, **kwargs):
@@ -255,7 +250,7 @@ class WWTClient(object):
                   setting_name:setting_value}
         parse_kwargs(params, kwargs)
         u = requests.get(self.wwt_url, params=params)
-        ui_str = u.text
+        ui_str = u.content
         handle_response(ui_str)
 
     def get_state(self):
@@ -265,11 +260,9 @@ class WWTClient(object):
         :returns: The state information as a dict of key, value pairs.
         """
         params = {"cmd":"state"}
-        u = requests.get(self.wwt_url, params=params)
-        state_str = u.text
-        handle_response(state_str)
-        soup = BeautifulSoup(state_str)
-        state = soup.layerapi.viewstate
+        soup, resp = get_soup(self.wwt_url, params)
+        handle_response(resp)
+        state = soup.LayerApi.ViewState
         return state.attrs
 
     def get_layer_list(self):
@@ -281,14 +274,12 @@ class WWTClient(object):
         """
         params = {"cmd":"layerlist",
                   "layersonly":"True"}
-        u = requests.get(self.wwt_url, params=params)
-        layer_str = u.text
-        handle_response(layer_str)
-        soup = BeautifulSoup(layer_str)
-        layer_list = soup.layerapi.layerlist
+        soup, resp = get_soup(self.wwt_url, params)
+        handle_response(resp)
+        layer_list = soup.LayerApi.LayerList
         layers = {}
-        for layer in layer_list.findAll("layer"):
-            layer_name = layer.attrs.pop("name")
+        for layer in layer_list.findAll("Layer"):
+            layer_name = layer.attrs.pop("Name")
             layers[layer_name] = layer.attrs
         return layers
 
@@ -301,14 +292,12 @@ class WWTClient(object):
         """
         params = {"cmd":"layerlist",
                   "layersonly":"False"}
-        u = requests.get(self.wwt_url, params=params)
-        layer_str = u.text
-        handle_response(layer_str)
-        soup = BeautifulSoup(layer_str)
-        layer_list = soup.layerapi.layerlist
+        soup, resp = get_soup(self.wwt_url, params)
+        handle_response(resp)
+        layer_list = soup.LayerApi.LayerList
         frames = {}
-        for frame in layer_list.findAll("referenceframe"):
-            frame_name = frame.attrs.pop("name")
+        for frame in layer_list.findAll("ReferenceFrame"):
+            frame_name = frame.attrs.pop("Name")
             frames[frame_name] = frame.attrs
         return frames
 

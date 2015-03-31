@@ -1,9 +1,5 @@
 import requests
-from bs4 import BeautifulSoup
-import logging
-requests_log = logging.getLogger("requests")
-requests_log.setLevel(logging.WARNING)
-from .misc import WWTException, handle_response, parse_kwargs
+from .misc import WWTException, handle_response, parse_kwargs, get_soup
 
 class WWTLayer(object):
     r"""
@@ -51,7 +47,7 @@ class WWTLayer(object):
         params["propvalue"] = property_value
         parse_kwargs(params, kwargs)
         u = requests.post(self.wwt.wwt_url, params=params)
-        prop_str = u.text
+        prop_str = u.content
         handle_response(prop_str)
 
     def set_properties(self, props_dict, **kwargs):
@@ -76,7 +72,7 @@ class WWTLayer(object):
         params["id"] = self.id
         parse_kwargs(params, kwargs)
         u = requests.post(self.wwt.wwt_url, params=params, data=props_string)
-        props_str = u.text
+        props_str = u.content
         handle_response(props_str)
 
     def get_property(self, property_name):
@@ -94,11 +90,9 @@ class WWTLayer(object):
         params["cmd"] = "getprop"
         params["id"] = self.id
         params["propname"] = property_name
-        u = requests.post(self.wwt.wwt_url, params=params)
-        prop_str = u.text
-        handle_response(prop_str)
-        soup = BeautifulSoup(prop_str)
-        return soup.layer.attrs[property_name.lower()]
+        soup, resp = get_soup(self.wwt.wwt_url, params)
+        handle_response(resp)
+        return soup.Layer.attrs[property_name]
 
     def get_properties(self):
         r"""
@@ -113,11 +107,9 @@ class WWTLayer(object):
         params = {}
         params["cmd"] = "getprops"
         params["id"] = self.id
-        u = requests.post(self.wwt.wwt_url, params=params)
-        props_str = u.text
-        handle_response(props_str)
-        soup = BeautifulSoup(props_str)
-        return soup.layer.attrs
+        soup, resp = get_soup(self.wwt.wwt_url, params)
+        handle_response(resp)
+        return soup.Layer.attrs
 
     def update(self, data=None, name=None,
                no_purge=False, purge_all=False,
@@ -157,7 +149,7 @@ class WWTLayer(object):
             for i in range(nevents):
                 data_string += "\t".join([str(data[k][i]) for k in self.fields])+"\n"
         u = requests.post(self.wwt.wwt_url, params=params, data=data_string)
-        update_str = u.text
+        update_str = u.content
         handle_response(update_str)
 
     def activate(self, **kwargs):
@@ -172,7 +164,7 @@ class WWTLayer(object):
         params["id"] = self.id
         parse_kwargs(params, kwargs)
         u = requests.get(self.wwt.wwt_url, params=params)
-        layer_str = u.text
+        layer_str = u.content
         handle_response(layer_str)
 
     def delete(self):
@@ -184,7 +176,7 @@ class WWTLayer(object):
         params["cmd"] = "delete"
         params["id"] = self.id
         u = requests.get(self.wwt.wwt_url, params=params)
-        layer_str = u.text
+        layer_str = u.content
         handle_response(layer_str)
         self.exists = False
 
