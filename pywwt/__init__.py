@@ -1,4 +1,4 @@
-__version__ = "0.2.0-dev"
+__version__ = "0.2.0"
 
 import logging
 requests_log = logging.getLogger("requests")

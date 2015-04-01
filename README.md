@@ -13,6 +13,17 @@ running on the same host or from another host. Event data can be passed to
 layers in the WWT client directly from memory or by loading from a file. It also
 provides a set of tools to facilitate importing data into WWT.
 
+New in version 0.2.0:
+
+- Compatibility with Python 2.7 and 3.4
+- All commands now return case-sensitive results
+- Fixed a bug where the color parameter was not being passed correctly when creating a new layer
+- Attempting to use the `WWTClient.load` method when controlling WWT over a network now raises an error. 
+
+Outstanding Issues in version 0.2.0:
+
+- The `ui_settings` method does not change anything in the WWT client, apparently due to a bug on the WWT side.
+
 Installation
 ------------
 

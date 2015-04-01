@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(name='pywwt',
       packages = ['pywwt'],
-      version='0.2.0-dev',
+      version='0.2.0',
       description = 'Python interface to World Wide Telescope',
       author='John ZuHone',
       author_email='jzuhone@gmail.com',
