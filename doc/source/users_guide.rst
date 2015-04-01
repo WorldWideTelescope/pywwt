@@ -304,15 +304,15 @@ returns something like:
 
 .. code-block:: python
 
-    {'Adrastea': {'enabled': 'True'},
-     'Aegir': {'enabled': 'True'},
-     'Aitne': {'enabled': 'True'},
-     'Albiorix': {'enabled': 'True'},
+    {'Adrastea': {'Enabled': 'True'},
+     'Aegir': {'Enabled': 'True'},
+     'Aitne': {'Enabled': 'True'},
+     'Albiorix': {'Enabled': 'True'},
      ...
-     'Umbriel': {'enabled': 'True'},
-     'Uranus': {'enabled': 'True'},
-     'Venus': {'enabled': 'True'},
-     'Ymir': {'enabled': 'True'}}
+     'Umbriel': {'Enabled': 'True'},
+     'Uranus': {'Enabled': 'True'},
+     'Venus': {'Enabled': 'True'},
+     'Ymir': {'Enabled': 'True'}}
 
 `LCAPI Reference: LayerList <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#layerlist>`_
 
@@ -329,22 +329,22 @@ returns something like:
 
 .. code-block:: python
 
-    {'2D Sky': {'enabled': 'True',
-                'id': 'b92911c1-dd66-4abe-b777-c2acd477801f',
-                'type': 'SkyOverlays',
-                'version': '3'},
-     '3d Solar System': {'enabled': 'True',
-                         'id': 'efb51d38-d429-4346-a13f-cbcc1e81bafd',
-                         'type': 'SkyOverlays',
-                         'version': '3'},
-     'ISS Model  (Toshiyuki Takahei)': {'enabled': 'False',
-                                        'id': '00000001-0002-0003-0405-060708090a0b',
-                                        'type': 'ISSLayer',
-                                        'version': '2'},
-     'Overlays': {'enabled': 'True',
-                  'id': '3cf608b5-9971-4fbb-9e2a-5656de3cb3f7',
-                  'type': 'SkyOverlays',
-                  'version': '2'}}
+    {'2D Sky': {'Enabled': 'True',
+      'ID': 'fffe96fc-b485-44bb-8f78-538e0f2348d4',
+      'Type': 'SkyOverlays',
+      'Version': '3'},
+     '3d Solar System': {'Enabled': 'True',
+      'ID': 'cb87eaec-534d-4490-b3d9-4d9013574895',
+      'Type': 'SkyOverlays',
+      'Version': '3'},
+     'ISS Model  (Toshiyuki Takahei)': {'Enabled': 'False',
+      'ID': '00000001-0002-0003-0405-060708090a0b',
+      'Type': 'ISSLayer',
+      'Version': '2'},
+     'Overlays': {'Enabled': 'True',
+      'ID': '531f48c6-f8f5-44db-bce5-b81301a25b60',
+      'Type': 'SkyOverlays',
+      'Version': '2'}}
 
 `LCAPI Reference: LayerList <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#layerlist>`_
 
@@ -361,17 +361,17 @@ returns something along the lines of:
 
 .. code-block:: python
 
-    {'angle': '0',
-     'lat': '0',
-     'lng': '0',
-     'lookat': 'SolarSystem',
-     'referenceframe': 'Sun',
-     'rotation': '0',
-     'time': '1/22/2014 6:42:11 PM',
-     'timerate': '1',
-     'viewtoken': 'GGGGGM80764GGGGHC84214753FD759FD143CGGD02B82257507733FGGG',
-     'zoom': '360',
-     'zoomtext': '160 au'}
+   {'ReferenceFrame': 'Sun',
+    'ViewToken': 'GK484GJ28CH2E59766142GGGGIC8427AA1468BBD2D453FB0A22FA365486C3F21FB521FD2E8683FGGG',
+    'ZoomText': '1.2 Mpc',
+    'angle': '0',
+    'lat': '48',
+    'lng': '-12',
+    'lookat': 'SolarSystem',
+    'rotation': '0',
+    'time': '4/1/2015 2:38:13 PM',
+    'timerate': '1',
+    'zoom': '600000000000'}
 
 `LCAPI Reference: State <http://www.worldwidetelescope.org/Developers/?LayerControlAPI#state>`_
 

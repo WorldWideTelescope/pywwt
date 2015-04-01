@@ -119,13 +119,13 @@ fly-to stops) and see that it matches up with the coordinates of our
      'lat': '48',
      'lng': '-12',
      'lookat': 'SolarSystem',
-     'referenceframe': 'Sun',
+     'ReferenceFrame': 'Sun',
      'rotation': '0',
      'time': '1/22/2014 11:05:32 PM',
      'timerate': '1',
-     'viewtoken': 'GK484GJ28CH2E59766142GGGGIC8427AA1468BBD2D453FB0A22FA365486C3F21FB521FD2E8683FGGG',
+     'ViewToken': 'GK484GJ28CH2E59766142GGGGIC8427AA1468BBD2D453FB0A22FA365486C3F21FB521FD2E8683FGGG',
      'zoom': '600000000000',
-     'zoomtext': '1.2 Mpc'}
+     'ZoomText': '1.2 Mpc'}
 
 
 If this all worked correctly, the view should look like this:
