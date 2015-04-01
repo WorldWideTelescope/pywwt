@@ -12,9 +12,9 @@ Installing ``pywwt``
 - `lxml <http://lxml.de>`_
 
 ``pywwt`` can be installed using pip. pip will attempt to download the dependencies and 
- install them, if they are not already installed in your Python distribution. For an easy
- installation of the dependencies, using a Python package distribution is recommended. For
- example, using the `Anaconda Python Distribution <https://store.continuum.io/cshop/anaconda/>`_:
+install them, if they are not already installed in your Python distribution. For an easy
+installation of the dependencies, using a Python package distribution is recommended. For
+example, using the `Anaconda Python Distribution <https://store.continuum.io/cshop/anaconda/>`_:
   
 .. code-block:: bash
 
