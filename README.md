@@ -18,7 +18,7 @@ New in version 0.2.0:
 - Compatibility with Python 2.7 and 3.4
 - All commands now return case-sensitive results
 - Fixed a bug where the color parameter was not being passed correctly when creating a new layer
-- Attempting to use the ``WWTClient.load`` method when controlling WWT over a network now raises an error. 
+- Attempting to use the ``WWTClient.load`` method when controlling WWT over a network now raises an error.
 
 Outstanding Issues in version 0.2.0:
 
@@ -37,11 +37,11 @@ pywwt is compatible with Python 2.7 or 3.4, and requires the following Python pa
 - [Dateutil](http://labix.org/python-dateutil)
 - [lxml](http://lxml.de)
 
-pywwt can be installed using pip. pip will attempt to download the dependencies and 
+pywwt can be installed using pip. pip will attempt to download the dependencies and
 install them, if they are not already installed in your Python distribution. For an easy
 installation of the dependencies, using a Python package distribution is recommended. For
 example, using the [Anaconda Python Distribution](https://store.continuum.io/cshop/anaconda):
-  
+
     [~]$ conda install setuptools numpy matplotlib astropy beautiful-soup requests dateutil lxml
 
 Once you have all of the dependencies, install ``pywwt`` using pip:
@@ -64,4 +64,4 @@ hosts must be enabled under `Settings --> Remote Access Control...`
 Documentation
 -------------
 
-The documentation for pywwt can be found at http://www.jzuhone.com/pywwt.
+The documentation for pywwt can be found at http://hea-www.cfa.harvard.edu/~jzuhone/pywwt.
