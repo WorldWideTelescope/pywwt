@@ -209,7 +209,7 @@ class WWTClient(object):
         Also takes the standard keyword arguments.
         """
         layers = self.get_layer_list()
-        layer_id = layers[name]["id"]
+        layer_id = layers[name]["ID"]
         fields = []
         return WWTLayer(name, layer_id, fields, self)
 
