@@ -1,49 +1,50 @@
 var widgets = require('@jupyter-widgets/base');
-var _ = require('lodash');
+var _ = require("underscore");
 
 
-// Custom Model. Custom widgets models must at least provide default values
-// for model attributes, including
-//
-//  - `_view_name`
-//  - `_view_module`
-//  - `_view_module_version`
-//
-//  - `_model_name`
-//  - `_model_module`
-//  - `_model_module_version`
-//
-//  when different from the base class.
-
-// When serialiazing the entire widget state for embedding, only values that
-// differ from the defaults will be specified.
-var HelloModel = widgets.DOMWidgetModel.extend({
+var WWTModel = widgets.DOMWidgetModel.extend({
     defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
-        _model_name : 'HelloModel',
-        _view_name : 'HelloView',
-        _model_module : 'pywwt-web',
-        _view_module : 'pywwt-web',
+        _model_name : 'WWTModel',
+        _view_name : 'WWTView',
+        _model_module : 'pywwt_web',
+        _view_module : 'pywwt_web',
         _model_module_version : '0.1.0',
         _view_module_version : '0.1.0',
-        value : 'Hello World'
     })
 });
 
+var WWTView = widgets.DOMWidgetView.extend({
 
-// Custom View. Renders the widget model.
-var HelloView = widgets.DOMWidgetView.extend({
+    // initialize : function() {
+    //
+    //     console.log("INITIALIZING");
+    //
+    //     this.div1 = document.createElement("div");
+    //     this.div1.setAttribute("id", "WorldWideTelescopeControlHost")
+    //
+    //     this.div2 = document.createElement("div");
+    //     this.div2.setAttribute("id", "UI")
+    //
+    //     this.div3 = document.createElement("div");
+    //     this.div3.setAttribute("id", "WWTCanvas")
+    //
+    //     WWTView.__super__.initialize.apply(this, arguments);
+    //
+    // },
+
     render: function() {
-        this.value_changed();
-        this.model.on('change:value', this.value_changed, this);
+        this.model.on('msg:custom', this.handle_custom_message, this);
     },
 
-    value_changed: function() {
-        this.el.textContent = this.model.get('value');
+    handle_custom_message: function(msg) {
+      console.log(msg);
     }
+
+
 });
 
 
 module.exports = {
-    HelloModel : HelloModel,
-    HelloView : HelloView
+    WWTModel : WWTModel,
+    WWTView : WWTView
 };

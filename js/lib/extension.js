@@ -7,7 +7,7 @@ if (window.require) {
     window.require.config({
         map: {
             "*" : {
-                "pywwt-web": "nbextensions/pywwt-web/index",
+                "pywwt_web": "nbextensions/pywwt_web/index",
             }
         }
     });

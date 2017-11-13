@@ -42,7 +42,7 @@ module.exports = [
         },
         externals: ['@jupyter-widgets/base']
     },
-    {// Embeddable pywwt-web bundle
+    {// Embeddable pywwt_web bundle
      //
      // This bundle is generally almost identical to the notebook bundle
      // containing the custom widget views and models.
@@ -61,7 +61,7 @@ module.exports = [
             filename: 'index.js',
             path: path.resolve(__dirname, 'dist'),
             libraryTarget: 'amd',
-            publicPath: 'https://unpkg.com/pywwt-web@' + version + '/dist/'
+            publicPath: 'https://unpkg.com/pywwt_web@' + version + '/dist/'
         },
         devtool: 'source-map',
         module: {

@@ -1,4 +1,4 @@
-Jupyter WorldWideTelescope widget
+WorldWideTelescope Jupyter widget
 
 Package Install
 ---------------
@@ -7,5 +7,5 @@ Package Install
 - [node](http://nodejs.org/)
 
 ```bash
-npm install --save pywwt-web
+npm install --save pywwt_web
 ```

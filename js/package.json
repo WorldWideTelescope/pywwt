@@ -1,12 +1,12 @@
 {
-  "name": "pywwt-web",
+  "name": "pywwt_web",
   "version": "0.1.0",
-  "description": "Jupyter WorldWideTelescope widget",
+  "description": "WorldWideTelescope Jupyter widget",
   "author": "Thomas P. Robitaille",
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/astrofrog/pywwt-web.git"
+    "url": "https://github.com/astrofrog/pywwt_web.git"
   },
   "keywords": [
     "jupyter",

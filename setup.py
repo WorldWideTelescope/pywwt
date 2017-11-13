@@ -1,140 +1,175 @@
-#!/usr/bin/env python
-# Licensed under a 3-clause BSD style license - see LICENSE.rst
-
-import glob
+from __future__ import print_function
+from setuptools import setup, find_packages, Command
+from setuptools.command.sdist import sdist
+from setuptools.command.build_py import build_py
+from setuptools.command.egg_info import egg_info
+from subprocess import check_call
 import os
 import sys
+import platform
 
-import ah_bootstrap
-from setuptools import setup
+here = os.path.dirname(os.path.abspath(__file__))
+node_root = os.path.join(here, 'js')
+is_repo = os.path.exists(os.path.join(here, '.git'))
 
-# A dirty hack to get around some early import/configurations ambiguities
-if sys.version_info[0] >= 3:
-    import builtins
-else:
-    import __builtin__ as builtins
-builtins._ASTROPY_SETUP_ = True
+npm_path = os.pathsep.join([
+    os.path.join(node_root, 'node_modules', '.bin'),
+                os.environ.get('PATH', os.defpath),
+])
 
-from astropy_helpers.setup_helpers import (register_commands, get_debug_option,
-                                           get_package_info)
-from astropy_helpers.git_helpers import get_git_devstr
-from astropy_helpers.version_helpers import generate_version_py
+from distutils import log
+log.set_verbosity(log.DEBUG)
+log.info('setup.py entered')
+log.info('$PATH=%s' % os.environ['PATH'])
 
-# Get some values from the setup.cfg
-try:
-    from ConfigParser import ConfigParser
-except ImportError:
-    from configparser import ConfigParser
+LONG_DESCRIPTION = 'WorldWideTelescope Jupyter widget'
 
-conf = ConfigParser()
-conf.read(['setup.cfg'])
-metadata = dict(conf.items('metadata'))
+def js_prerelease(command, strict=False):
+    """decorator for building minified js/css prior to another command"""
+    class DecoratedCommand(command):
+        def run(self):
+            jsdeps = self.distribution.get_command_obj('jsdeps')
+            if not is_repo and all(os.path.exists(t) for t in jsdeps.targets):
+                # sdist, nothing to do
+                command.run(self)
+                return
 
-PACKAGENAME = metadata.get('package_name', 'packagename')
-DESCRIPTION = metadata.get('description', 'packagename')
-AUTHOR = metadata.get('author', 'Astropy Developers')
-AUTHOR_EMAIL = metadata.get('author_email', '')
-LICENSE = metadata.get('license', 'unknown')
-URL = metadata.get('url', 'http://astropy.org')
+            try:
+                self.distribution.run_command('jsdeps')
+            except Exception as e:
+                missing = [t for t in jsdeps.targets if not os.path.exists(t)]
+                if strict or missing:
+                    log.warn('rebuilding js and css failed')
+                    if missing:
+                        log.error('missing files: %s' % missing)
+                    raise e
+                else:
+                    log.warn('rebuilding js and css failed (not a problem)')
+                    log.warn(str(e))
+            command.run(self)
+            update_package_data(self.distribution)
+    return DecoratedCommand
 
-# order of priority for long_description:
-#   (1) set in setup.cfg,
-#   (2) load LONG_DESCRIPTION.rst,
-#   (3) load README.rst,
-#   (4) package docstring
-readme_glob = 'README*'
-_cfg_long_description = metadata.get('long_description', '')
-if _cfg_long_description:
-    LONG_DESCRIPTION = _cfg_long_description
-
-elif os.path.exists('LONG_DESCRIPTION.rst'):
-    with open('LONG_DESCRIPTION.rst') as f:
-        LONG_DESCRIPTION = f.read()
-
-elif len(glob.glob(readme_glob)) > 0:
-    with open(glob.glob(readme_glob)[0]) as f:
-        LONG_DESCRIPTION = f.read()
-
-else:
-    # Get the long description from the package's docstring
-    __import__(PACKAGENAME)
-    package = sys.modules[PACKAGENAME]
-    LONG_DESCRIPTION = package.__doc__
-
-# Store the package name in a built-in variable so it's easy
-# to get from other parts of the setup infrastructure
-builtins._ASTROPY_PACKAGE_NAME_ = PACKAGENAME
-
-# VERSION should be PEP440 compatible (http://www.python.org/dev/peps/pep-0440)
-VERSION = metadata.get('version', '0.0.dev0')
-
-# Indicates if this version is a release version
-RELEASE = 'dev' not in VERSION
-
-if not RELEASE:
-    VERSION += get_git_devstr(False)
-
-# Populate the dict of setup command overrides; this should be done before
-# invoking any other functionality from distutils since it can potentially
-# modify distutils' behavior.
-cmdclassd = register_commands(PACKAGENAME, VERSION, RELEASE)
-
-# Freeze build information in version.py
-generate_version_py(PACKAGENAME, VERSION, RELEASE,
-                    get_debug_option(PACKAGENAME))
-
-# Treat everything in scripts except README* as a script to be installed
-scripts = [fname for fname in glob.glob(os.path.join('scripts', '*'))
-           if not os.path.basename(fname).startswith('README')]
+def update_package_data(distribution):
+    """update package_data to catch changes during setup"""
+    build_py = distribution.get_command_obj('build_py')
+    # distribution.package_data = find_package_data()
+    # re-init build_py options which load package_data
+    build_py.finalize_options()
 
 
-# Get configuration information from all of the various subpackages.
-# See the docstring for setup_helpers.update_package_files for more
-# details.
-package_info = get_package_info()
+class NPM(Command):
+    description = 'install package.json dependencies using npm'
 
-# Add the project-global data
-package_info['package_data'].setdefault(PACKAGENAME, [])
-package_info['package_data'][PACKAGENAME].append('data/*')
+    user_options = []
 
-# Define entry points for command-line scripts
-entry_points = {'console_scripts': []}
+    node_modules = os.path.join(node_root, 'node_modules')
 
-if conf.has_section('entry_points'):
-    entry_point_list = conf.items('entry_points')
-    for entry_point in entry_point_list:
-        entry_points['console_scripts'].append('{0} = {1}'.format(
-            entry_point[0], entry_point[1]))
+    targets = [
+        os.path.join(here, 'pywwt_web', 'static', 'extension.js'),
+        os.path.join(here, 'pywwt_web', 'static', 'index.js')
+    ]
 
-# Include all .c files, recursively, including those generated by
-# Cython, since we can not do this in MANIFEST.in with a "dynamic"
-# directory name.
-c_files = []
-for root, dirs, files in os.walk(PACKAGENAME):
-    for filename in files:
-        if filename.endswith('.c'):
-            c_files.append(
-                os.path.join(
-                    os.path.relpath(root, PACKAGENAME), filename))
-package_info['package_data'][PACKAGENAME].extend(c_files)
+    def initialize_options(self):
+        pass
 
-# Note that requires and provides should not be included in the call to
-# ``setup``, since these are now deprecated. See this link for more details:
-# https://groups.google.com/forum/#!topic/astropy-dev/urYO8ckB2uM
+    def finalize_options(self):
+        pass
 
-setup(name=PACKAGENAME,
-      version=VERSION,
-      description=DESCRIPTION,
-      scripts=scripts,
-      install_requires=[s.strip() for s in metadata.get('install_requires', 'astropy').split(',')],
-      author=AUTHOR,
-      author_email=AUTHOR_EMAIL,
-      license=LICENSE,
-      url=URL,
-      long_description=LONG_DESCRIPTION,
-      cmdclass=cmdclassd,
-      zip_safe=False,
-      use_2to3=False,
-      entry_points=entry_points,
-      **package_info
-)
+    def get_npm_name(self):
+        npmName = 'npm';
+        if platform.system() == 'Windows':
+            npmName = 'npm.cmd';
+            
+        return npmName;
+    
+    def has_npm(self):
+        npmName = self.get_npm_name();
+        try:
+            check_call([npmName, '--version'])
+            return True
+        except:
+            return False
+
+    def should_run_npm_install(self):
+        package_json = os.path.join(node_root, 'package.json')
+        node_modules_exists = os.path.exists(self.node_modules)
+        return self.has_npm()
+
+    def run(self):
+        has_npm = self.has_npm()
+        if not has_npm:
+            log.error("`npm` unavailable.  If you're running this command using sudo, make sure `npm` is available to sudo")
+
+        env = os.environ.copy()
+        env['PATH'] = npm_path
+
+        if self.should_run_npm_install():
+            log.info("Installing build dependencies with npm.  This may take a while...")
+            npmName = self.get_npm_name();
+            check_call([npmName, 'install'], cwd=node_root, stdout=sys.stdout, stderr=sys.stderr)
+            os.utime(self.node_modules, None)
+
+        for t in self.targets:
+            if not os.path.exists(t):
+                msg = 'Missing file: %s' % t
+                if not has_npm:
+                    msg += '\nnpm is required to build a development version of a widget extension'
+                raise ValueError(msg)
+
+        # update package data in case this created new files
+        update_package_data(self.distribution)
+
+version_ns = {}
+with open(os.path.join(here, 'pywwt_web', '_version.py')) as f:
+    exec(f.read(), {}, version_ns)
+
+setup_args = {
+    'name': 'pywwt_web',
+    'version': version_ns['__version__'],
+    'description': 'WorldWideTelescope Jupyter widget',
+    'long_description': LONG_DESCRIPTION,
+    'include_package_data': True,
+    'data_files': [
+        ('share/jupyter/nbextensions/pywwt_web', [
+            'pywwt_web/static/extension.js',
+            'pywwt_web/static/index.js',
+            'pywwt_web/static/index.js.map',
+        ]),
+    ],
+    'install_requires': [
+        'ipywidgets>=7.0.0',
+    ],
+    'packages': find_packages(),
+    'zip_safe': False,
+    'cmdclass': {
+        'build_py': js_prerelease(build_py),
+        'egg_info': js_prerelease(egg_info),
+        'sdist': js_prerelease(sdist, strict=True),
+        'jsdeps': NPM,
+    },
+
+    'author': 'Thomas P. Robitaille',
+    'author_email': 'thomas.robitaille@gmail.com',
+    'url': 'https://github.com/astrofrog/pywwt_web',
+    'keywords': [
+        'ipython',
+        'jupyter',
+        'widgets',
+    ],
+    'classifiers': [
+        'Development Status :: 4 - Beta',
+        'Framework :: IPython',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'Topic :: Multimedia :: Graphics',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+    ],
+}
+
+setup(**setup_args)
