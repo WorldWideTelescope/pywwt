@@ -29,6 +29,9 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^1.0.0",
-    "lodash": "^4.17.4"
+    "concat-stream": "^1.6.0",
+    "jquery": "^1.8.3",
+    "lodash": "^4.17.4",
+    "mock-browser": "^0.92.14"
   }
 }

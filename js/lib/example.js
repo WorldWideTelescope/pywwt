@@ -1,6 +1,7 @@
 var widgets = require('@jupyter-widgets/base');
 var _ = require("underscore");
 
+var wwtmodule = require('./wwtsdk.js');
 
 var WWTModel = widgets.DOMWidgetModel.extend({
     defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
@@ -15,22 +16,28 @@ var WWTModel = widgets.DOMWidgetModel.extend({
 
 var WWTView = widgets.DOMWidgetView.extend({
 
-    // initialize : function() {
-    //
-    //     console.log("INITIALIZING");
-    //
-    //     this.div1 = document.createElement("div");
-    //     this.div1.setAttribute("id", "WorldWideTelescopeControlHost")
-    //
-    //     this.div2 = document.createElement("div");
-    //     this.div2.setAttribute("id", "UI")
-    //
-    //     this.div3 = document.createElement("div");
-    //     this.div3.setAttribute("id", "WWTCanvas")
-    //
-    //     WWTView.__super__.initialize.apply(this, arguments);
-    //
-    // },
+    initialize : function() {
+
+        var div = document.createElement("div");
+        div.setAttribute("id", "WWTCanvas");
+        div.setAttribute("style", "width: 640px; height: 480px; border-style: none; border-width: 0px;")
+        this.el.appendChild(div);
+
+        WWTView.__super__.initialize.apply(this, arguments);
+
+        this.wwt = wwtlib.WWTControl.initControl(div);
+        this.wwt.add_ready(this.wwtReady);
+
+    },
+
+    wwtReady: function() {
+      this.loadImageCollection('http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys');
+      this.settings.set_showConstellationBoundries(false);
+      this.settings.set_showConstellationFigures(false);
+      this.setForegroundImageByName('Digitized Sky Survey (Color)');
+      this.setBackgroundImageByName('SFD Dust Map (Infrared)');
+      this.setForegroundOpacity(0.5);
+    },
 
     render: function() {
         this.model.on('msg:custom', this.handle_custom_message, this);
@@ -38,8 +45,10 @@ var WWTView = widgets.DOMWidgetView.extend({
 
     handle_custom_message: function(msg) {
       console.log(msg);
+      if (msg['event'] == 'center_on_coordinates') {
+        this.wwt.gotoRaDecZoom(msg['ra'], msg['dec'], msg['fov'], msg['instant']);
+      }
     }
-
 
 });
 
