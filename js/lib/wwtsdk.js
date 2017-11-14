@@ -25001,14 +25001,15 @@ window.wwtlib = function(){
         this.renderType = 2;
       }
       var sizeChange = false;
-      if (this.canvas.width !== parseInt(this.canvas.parentNode.style.width)) {
-        this.canvas.width = parseInt(this.canvas.parentNode.style.width);
+      if (this.canvas.width !== parseInt(this.canvas.parentElement.offsetWidth)) {
+        this.canvas.width = parseInt(this.canvas.parentElement.offsetWidth);
         sizeChange = true;
       }
-      if (this.canvas.height !== parseInt(this.canvas.parentNode.style.height)) {
-        this.canvas.height = parseInt(this.canvas.parentNode.style.height);
+      if (this.canvas.height !== parseInt(this.canvas.parentElement.offsetHeight)) {
+        this.canvas.height = parseInt(this.canvas.parentElement.offsetHeight);
         sizeChange = true;
       }
+
       if (sizeChange) {
         if (this.explorer != null) {
           this.explorer.refresh();

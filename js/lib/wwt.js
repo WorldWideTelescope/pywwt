@@ -21,13 +21,15 @@ var WWTView = widgets.DOMWidgetView.extend({
 
         var div = document.createElement("div");
         div.setAttribute("id", "WWTCanvas");
-        div.setAttribute("style", "width: 640px; height: 480px; border-style: none; border-width: 0px;")
+        div.setAttribute("style", "width: 100%; height: 100%; border-style: none; border-width: 0px;")
         this.el.appendChild(div);
 
         WWTView.__super__.initialize.apply(this, arguments);
 
         this.wwt = wwtlib.WWTControl.initControl(div);
         this.wwt.add_ready(this.wwtReady);
+
+        window.onresize = this.resize_canvas;
 
     },
 
@@ -43,6 +45,21 @@ var WWTView = widgets.DOMWidgetView.extend({
     render: function() {
         this.model.on('msg:custom', this.handle_custom_message, this);
     },
+
+    resize_canvas: function() {
+      div = document.getElementById('WWTCanvas');
+      console.log(div);
+      if (div != null) {
+        canvas = div.getElementsByTagName('canvas')[0]
+        console.log(canvas)
+        if (canvas != null) {
+          canvas.width = div.parentElement.offsetWidth;
+          canvas.height = div.parentElement.offsetHeight;
+          console.log(canvas.width, canvas.height);
+        }
+      }
+    },
+
 
     handle_custom_message: function(msg) {
       console.log(msg);
