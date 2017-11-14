@@ -6,7 +6,7 @@
 import ipywidgets as widgets
 from traitlets import Unicode, default
 
-from .model import BaseWWTWidget
+from .core import BaseWWTWidget
 
 __all__ = ['WWTJupyterWidget']
 

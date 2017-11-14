@@ -11,7 +11,7 @@ import json
 from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
 from qtpy import QtWidgets, QtCore
 
-from .model import BaseWWTWidget
+from .core import BaseWWTWidget
 
 __all__ = ['WWTQtWidget']
 
