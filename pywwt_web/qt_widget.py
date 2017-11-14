@@ -12,6 +12,10 @@ from .model import WWTModel
 __all__ = ['WWTQtWidget']
 
 WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), 'wwt.html')
+WWT_JSON_FILE = os.path.join(os.path.dirname(__file__), 'wwt_json_api.js')
+
+with open(WWT_JSON_FILE) as f:
+    WWT_JSON = f.read()
 
 with open(WWT_HTML_FILE) as f:
     WWT_HTML = f.read()
@@ -65,12 +69,23 @@ class WWTQWebEnginePage(QWebEnginePage):
                 self.wwt_ready.emit()
 
 
-class WWTQtWidget(QtWidgets.QWidget, WWTModel):
+class WWTQtWidget(WWTModel):
+
+    def __init__(self):
+        super(WWTModel, self).__init__()
+        self.widget = WWTQtWebpage()
+        self.widget.show()
+
+    def send_msg(self, **kwargs):
+        msg = json.dumps(kwargs)
+        return self.widget._run_js("wwt_apply_json_message(wwt, {0})".format(msg))
+
+
+class WWTQtWebpage(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
 
-        QtWidgets.QWidget.__init__(self, parent=parent)
-        WWTModel.__init__(self)
+        super(WWTQtWebpage, self).__init__(parent=parent)
 
         self.web = QWebEngineView()
         self.page = WWTQWebEnginePage()
@@ -89,9 +104,10 @@ class WWTQtWidget(QtWidgets.QWidget, WWTModel):
 
     def send_msg(self, **kwargs):
         msg = json.dumps(kwargs)
-        self._run_js("wwt_receive_message({0})".format(msg))
+        return self._run_js("wwt_apply_json_message(wwt, {0})".format(msg))
 
     def _on_wwt_ready(self):
+        self._run_js(WWT_JSON)
         self._wwt_ready = True
         self._run_js(self._js_queue)
         self._js_queue = ""
@@ -101,7 +117,7 @@ class WWTQtWidget(QtWidgets.QWidget, WWTModel):
             return
         if self._wwt_ready:
             print('Running javascript: %s' % js)
-            self.page.runJavaScript(js)
+            return self.page.runJavaScript(js)
         else:
             print('Caching javascript: %s' % js)
             self._js_queue += js + '\n'

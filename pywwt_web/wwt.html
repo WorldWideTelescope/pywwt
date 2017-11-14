@@ -8,6 +8,7 @@
     <title>Simple WWT Web Client</title>
     <script src="http://www.worldwidetelescope.org/scripts/wwtsdk.aspx"></script>
     <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+    <script src="{WWT_JSON_API}"></script>
 
     <!-- The following is to avoid scrollbars -->
     <style type="text/css">
@@ -41,12 +42,6 @@
         wwt.settings.set_showConstellationFigures(false);
         wwt.setForegroundImageByName('WISE All Sky (Infrared)');
         wwt_ready = 1;
-      }
-
-      function wwt_receive_message(msg) {
-        if (msg['event'] == 'center_on_coordinates') {
-          wwt.gotoRaDecZoom(msg['ra'], msg['dec'], msg['fov'], msg['instant']);
-        }
       }
 
     </script>

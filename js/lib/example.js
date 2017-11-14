@@ -2,6 +2,7 @@ var widgets = require('@jupyter-widgets/base');
 var _ = require("underscore");
 
 var wwtmodule = require('./wwtsdk.js');
+var wwtjson = require('./wwt_json_api.js');
 
 var WWTModel = widgets.DOMWidgetModel.extend({
     defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
@@ -45,9 +46,7 @@ var WWTView = widgets.DOMWidgetView.extend({
 
     handle_custom_message: function(msg) {
       console.log(msg);
-      if (msg['event'] == 'center_on_coordinates') {
-        this.wwt.gotoRaDecZoom(msg['ra'], msg['dec'], msg['fov'], msg['instant']);
-      }
+      wwt_apply_json_message(this.wwt, msg)
     }
 
 });
