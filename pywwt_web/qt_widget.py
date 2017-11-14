@@ -1,3 +1,8 @@
+# This file contains the defintion of the Qt widget. Most of the code here
+# deals with differences between WebEngine and WebKit (either of which may be
+# available in Qt) and also deals with figuring out how we know once WWT is
+# set up.
+
 from __future__ import absolute_import, division, print_function
 
 import os
@@ -6,16 +11,16 @@ import json
 from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
 from qtpy import QtWidgets, QtCore
 
-from .model import WWTModel
-
+from .model import BaseWWTWidget
 
 __all__ = ['WWTQtWidget']
 
-WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), 'wwt.html')
 WWT_JSON_FILE = os.path.join(os.path.dirname(__file__), 'wwt_json_api.js')
 
 with open(WWT_JSON_FILE) as f:
     WWT_JSON = f.read()
+
+WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), 'wwt.html')
 
 with open(WWT_HTML_FILE) as f:
     WWT_HTML = f.read()
@@ -69,23 +74,11 @@ class WWTQWebEnginePage(QWebEnginePage):
                 self.wwt_ready.emit()
 
 
-class WWTQtWidget(WWTModel):
-
-    def __init__(self):
-        super(WWTModel, self).__init__()
-        self.widget = WWTQtWebpage()
-        self.widget.show()
-
-    def send_msg(self, **kwargs):
-        msg = json.dumps(kwargs)
-        return self.widget._run_js("wwt_apply_json_message(wwt, {0})".format(msg))
-
-
-class WWTQtWebpage(QtWidgets.QWidget):
+class CoreWWTQtWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
 
-        super(WWTQtWebpage, self).__init__(parent=parent)
+        super(CoreWWTQtWidget, self).__init__(parent=parent)
 
         self.web = QWebEngineView()
         self.page = WWTQWebEnginePage()
@@ -121,3 +114,15 @@ class WWTQtWebpage(QtWidgets.QWidget):
         else:
             print('Caching javascript: %s' % js)
             self._js_queue += js + '\n'
+
+
+class WWTQtWidget(BaseWWTWidget):
+
+    def __init__(self):
+        super(WWTQtWidget, self).__init__()
+        self.widget = CoreWWTQtWidget()
+        self.widget.show()
+
+    def _send_msg(self, **kwargs):
+        msg = json.dumps(kwargs)
+        return self.widget._run_js("wwt_apply_json_message(wwt, {0})".format(msg))

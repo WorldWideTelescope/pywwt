@@ -14,9 +14,12 @@ function wwt_apply_json_message(wwt, msg) {
     case 'setting_set':
       var name = msg['setting'];
       wwt.settings["set_" + name](msg['value']);
+      break;
 
   }
 
 }
 
+// We need to do this so that wwt_apply_json_message is available as a global
+// function in the Jupyter widgets code.
 window.wwt_apply_json_message = wwt_apply_json_message
