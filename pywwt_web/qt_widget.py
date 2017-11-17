@@ -12,6 +12,7 @@ from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
 from qtpy import QtWidgets, QtCore
 
 from .core import BaseWWTWidget
+from .logger import logger
 
 __all__ = ['WWTQtWidget']
 
@@ -109,19 +110,32 @@ class CoreWWTQtWidget(QtWidgets.QWidget):
         if not js:
             return
         if self._wwt_ready:
-            print('Running javascript: %s' % js)
+            logger.debug('Running javascript: %s' % js)
             return self.page.runJavaScript(js)
         else:
-            print('Caching javascript: %s' % js)
+            logger.debug('Caching javascript: %s' % js)
             self._js_queue += js + '\n'
+
+
+app = None
 
 
 class WWTQtWidget(BaseWWTWidget):
 
-    def __init__(self):
+    def __init__(self, block_until_ready=False):
         super(WWTQtWidget, self).__init__()
+        global app
+        if app is None:
+            app = QtWidgets.QApplication.instance()
+            if app is None:
+                app = QtWidgets.QApplication([''])
         self.widget = CoreWWTQtWidget()
         self.widget.show()
+        if block_until_ready:
+            while True:
+                app.processEvents()
+                if self.widget._wwt_ready:
+                    break
 
     def _send_msg(self, **kwargs):
         msg = json.dumps(kwargs)
