@@ -1,4 +1,10 @@
 from traitlets import Bool, HasTraits
+from astropy import units as u
+
+from .annotation import Circle
+
+# The WWT web control API is described here:
+# https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
 
 
 class BaseWWTWidget(HasTraits):
@@ -29,7 +35,16 @@ class BaseWWTWidget(HasTraits):
 
     # TODO: need to add more methods here.
 
-    def center_on_coordinates(self, ra, dec, fov, instant=True):
-        # TODO: make this method take SkyCoord objects
+    def center_on_coordinates(self, coord, fov, instant=True):
+        coord_icrs = coord.icrs
         self._send_msg(event='center_on_coordinates',
-                       ra=ra, dec=dec, fov=fov, instant=instant)
+                       ra=coord_icrs.ra.deg,
+                       dec=coord_icrs.dec.deg,
+                       fov=fov.to(u.deg).value,
+                       instant=instant)
+
+    # TODO: need to implement more annotation types
+
+    def create_circle(self):
+        # TODO: could buffer JS call here
+        return Circle(self)

@@ -5,6 +5,10 @@
 
 function wwt_apply_json_message(wwt, msg) {
 
+  if (!wwt.hasOwnProperty('annotations')) {
+    wwt.annotations = {};
+  }
+
   switch(msg['event']) {
 
     case 'center_on_coordinates':
@@ -14,6 +18,34 @@ function wwt_apply_json_message(wwt, msg) {
     case 'setting_set':
       var name = msg['setting'];
       wwt.settings["set_" + name](msg['value']);
+      break;
+
+    case 'annotation_create':
+
+      switch(msg['shape']) {
+        case 'circle':
+          // TODO: check if ID already exists
+          circle = wwt.createCircle();
+          circle.set_id(msg['id']);
+          wwt.addAnnotation(circle);
+          wwt.annotations[msg['id']] = circle;
+      }
+      break;
+
+    case 'annotation_set':
+
+      var name = msg['setting'];
+      // TODO: nice error message if annotation doesn't exist
+      annotation = wwt.annotations[msg['id']];
+      annotation["set_" + name](msg['value']);
+      break;
+
+    case 'circle_set_center':
+
+      var name = msg["setting"];
+      // TODO: nice error message if annotation doesn't exist
+      circle = wwt.annotations[msg['id']];
+      circle.setCenter(msg['ra'], msg['dec']);
       break;
 
   }
