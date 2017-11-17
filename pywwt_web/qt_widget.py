@@ -118,10 +118,18 @@ class CoreWWTQtWidget(QtWidgets.QWidget):
 
 class WWTQtWidget(BaseWWTWidget):
 
-    def __init__(self):
+    def __init__(self, block_until_ready=False):
         super(WWTQtWidget, self).__init__()
+        app = QtWidgets.QApplication.instance()
+        if app is None:
+            app = QtWidgets.QApplication([''])
         self.widget = CoreWWTQtWidget()
         self.widget.show()
+        if block_until_ready:
+            while True:
+                app.processEvents()
+                if self.widget._wwt_ready:
+                    break
 
     def _send_msg(self, **kwargs):
         msg = json.dumps(kwargs)
