@@ -5,10 +5,13 @@
 
 import ipywidgets as widgets
 from traitlets import Unicode, default
+from ipyevents import Event as DOMListener
 
 from .core import BaseWWTWidget
 
 __all__ = ['WWTJupyterWidget']
+
+dom_listener = DOMListener()
 
 
 @widgets.register
@@ -20,6 +23,13 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     _model_module = Unicode('pywwt_web').tag(sync=True)
     _view_module_version = Unicode('^0.1.0').tag(sync=True)
     _model_module_version = Unicode('^0.1.0').tag(sync=True)
+
+    def __init__(self):
+        widgets.DOMWidget.__init__(self)
+        BaseWWTWidget.__init__(self)
+        dom_listener.source = self
+        dom_listener.prevent_default_action = True
+        dom_listener.watched_events = ['wheel']
 
     @default('layout')
     def _default_layout(self):

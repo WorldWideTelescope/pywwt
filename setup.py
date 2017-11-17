@@ -139,7 +139,9 @@ setup_args = {
     ],
     'install_requires': [
         'ipywidgets>=7.0.0',
-        'astropy'
+        'ipyevents',
+        'traitlets',
+        'astropy',
     ],
     'packages': find_packages(),
     'zip_safe': False,
