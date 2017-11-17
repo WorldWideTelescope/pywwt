@@ -1,7 +1,15 @@
+.. image:: https://travis-ci.org/astrofrog/pywwt-web.svg?branch=tests
+    :target: https://travis-ci.org/astrofrog/pywwt-web
+    
+.. image:: https://ci.appveyor.com/api/projects/status/hqacnus6g197uo2d/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/astrofrog/pywwt-web
+    
 WorldWideTelescope from Python/Jupyter
 ======================================
 
-This is a package currently under development which aims to make it easy to use
+**Note: This package is currently under heavy development**.
+
+The pywwt-web package aims to make it easy to use
 WorldWideTelescope from Python, including from the Jupyter notebook. Only a very
 small subset of functionality is implemented for now, and we will be adding
 functionality over the coming weeks.
