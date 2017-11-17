@@ -9,7 +9,8 @@ functionality over the coming weeks.
 Installation
 ------------
 
-### conda
+conda
+^^^^^
 
 If you normally use conda and
 just want to try out the latest developer version, you can do this with::
@@ -19,7 +20,8 @@ just want to try out the latest developer version, you can do this with::
 This will install a version built in the last 24 hours so may not strictly be
 the absolute latest version.
 
-### pip
+pip
+^^^
 
 If you don't use conda and/or want to use the very latest version, you can clone
 this repository and install the package manually (note that this requires
