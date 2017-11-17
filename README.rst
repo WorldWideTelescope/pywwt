@@ -68,3 +68,9 @@ Reporting issues
 
 If you run into any issues, please open an issue `here
 <https://github.com/astrofrog/pywwt-web/issues>`_
+
+Acknowledgments
+---------------
+
+This work is funded through the American Astronomical Society WorldWideTelescope
+project.
