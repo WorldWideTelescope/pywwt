@@ -37,3 +37,26 @@ If you want to use the Jupyter widget, you will also need to run::
     jupyter nbextension enable --py --sys-prefix ipyvolume
 
 (this is not needed if you install the conda package).
+
+Using
+-----
+
+Jupyter widget
+^^^^^^^^^^^^^^
+
+The Jupyter widget can be used as follows in the Jupyter notebook::
+
+    In [1]: from pywwt_web.jupyter_widget import WWTJupyterWidget
+
+    In [2]: wwt = WWTJupyterWidget()
+       ...: wwt
+
+This will then look like:
+
+.. image:: jupyter.png
+
+Reporting issues
+----------------
+
+If you run into any issues, please open an issue `here
+<https://github.com/astrofrog/pywwt-web/issues>`_
