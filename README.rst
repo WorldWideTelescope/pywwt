@@ -46,13 +46,15 @@ If you want to use the Jupyter widget, you will also need to run::
 
 (this is not needed if you install the conda package).
 
-Using
------
+Creating a widget
+-----------------
 
 Jupyter widget
 ^^^^^^^^^^^^^^
 
-The Jupyter widget can be used as follows in the Jupyter notebook::
+The Jupyter widget can be used as follows in the Jupyter notebook:
+
+.. code-block:: python
 
     In [1]: from pywwt_web.jupyter_widget import WWTJupyterWidget
 
@@ -62,6 +64,44 @@ The Jupyter widget can be used as follows in the Jupyter notebook::
 This will then look like:
 
 .. image:: jupyter.png
+
+Qt widget
+^^^^^^^^^
+
+To use the Qt widget, start up an IPython session and do:
+
+.. code-block:: python
+
+    In [1]: from pywwt_web.qt_widget import WWTQtWidget
+
+    In [2]: %gui qt
+
+    In [3]: wwt = WWTQtWidget()
+
+(note that the order is important - for now ``WWTQtWidget`` has to be imported before ``%gui qt`` is run).
+
+Using the widgets
+-----------------
+
+Once a Jupyter or Qt widget has been created, the programmatic user interface is the same. The widget objects should include properties that can be changed, e.g:
+
+.. code-block:: python
+
+    In [4]: wwt.constellation_figures = True
+    
+and methods that can be called:
+
+.. code-block:: python
+
+    In [4]: from astropy.coordinates import SkyCoord
+
+    In [5]: from astropy import units as u
+
+    In [6]: coord = SkyCoord.from_name('M42')
+
+    In [7]: widget.center_on_coordinates(coord, fov=10 * u.deg)
+
+We are in the process of writing documentation that includes a full list of available properties and methods that can be used.
 
 Reporting issues
 ----------------
