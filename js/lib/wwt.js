@@ -1,9 +1,6 @@
 var widgets = require('@jupyter-widgets/base');
 var _ = require("underscore");
 
-var wwtmodule = require('./wwtsdk.js');
-var wwtjson = require('./wwt_json_api.js');
-
 var WWTModel = widgets.DOMWidgetModel.extend({
     defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
         _model_name : 'WWTModel',
@@ -19,21 +16,22 @@ var WWTView = widgets.DOMWidgetView.extend({
 
     initialize : function() {
 
+        // We use an iframe to show WorldWideTelescope, because it does not
+        // otherwise support having multiple instances running on the same
+        // page. We use the same HTML file as for the Qt client.
         var div = document.createElement("div");
-        div.setAttribute("id", "WWTCanvas");
-        div.setAttribute("style", "width: 100%; height: 100%; border-style: none; border-width: 0px;")
+        div.innerHTML = "<iframe width='100%' height='480' style='border: none;' src='/nbextensions/pywwt_web/wwt.html'></iframe>"
         this.el.appendChild(div);
 
         WWTView.__super__.initialize.apply(this, arguments);
 
-        this.wwt = wwtlib.WWTControl.initControl(div);
-        this.wwt.add_ready(this.wwtReady);
-
-        window.onresize = this.resize_canvas;
-
     },
 
+
     wwtReady: function() {
+      // The following should really be set from Python rather than here. We
+      // should move this once the corresponding methods/settings exist in the
+      // core Python object.
       this.loadImageCollection('http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys');
       this.settings.set_showConstellationBoundries(false);
       this.settings.set_showConstellationFigures(false);
@@ -43,27 +41,23 @@ var WWTView = widgets.DOMWidgetView.extend({
     },
 
     render: function() {
+        // We pass all messages via msg:custom rather than look for trait events
+        // because we just want to use the same JSON messaging interface for
+        // the Qt widget and the Jupyter widget.
         this.model.on('msg:custom', this.handle_custom_message, this);
     },
 
-    resize_canvas: function() {
-      div = document.getElementById('WWTCanvas');
-      console.log(div);
-      if (div != null) {
-        canvas = div.getElementsByTagName('canvas')[0]
-        console.log(canvas)
-        if (canvas != null) {
-          canvas.width = div.parentElement.offsetWidth;
-          canvas.height = div.parentElement.offsetHeight;
-          console.log(canvas.width, canvas.height);
+    handle_custom_message: function(msg) {
+      if (this.wwt_window == null) {
+        iframe = this.el.getElementsByTagName('iframe')[0];
+        if (iframe != null) {
+          this.wwt_window = iframe.contentWindow
+          this.wwt_window.wwt.add_ready(this.wwtReady);
+        } else {
+          return  // Not ready yet
         }
       }
-    },
-
-
-    handle_custom_message: function(msg) {
-      console.log(msg);
-      wwt_apply_json_message(this.wwt, msg)
+      this.wwt_window.wwt_apply_json_message(this.wwt_window.wwt, msg);
     }
 
 });

@@ -1,1 +1,0 @@
-../../pywwt_web/wwt_json_api.js
