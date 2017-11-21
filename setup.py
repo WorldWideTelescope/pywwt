@@ -135,6 +135,8 @@ setup_args = {
             'pywwt_web/static/extension.js',
             'pywwt_web/static/index.js',
             'pywwt_web/static/index.js.map',
+            'pywwt_web/static/wwt.html',
+            'pywwt_web/static/wwt_json_api.js',
         ]),
     ],
     'install_requires': [
@@ -172,8 +174,7 @@ setup_args = {
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
-    ],
-    'package_data': {'pywwt_web': ['static/wwt_json_api.js', 'static/wwt.html']}
+    ]
 }
 
 setup(**setup_args)
