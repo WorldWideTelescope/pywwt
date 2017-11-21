@@ -20,7 +20,6 @@ var WWTView = widgets.DOMWidgetView.extend({
         // otherwise support having multiple instances running on the same
         // page. We use the same HTML file as for the Qt client.
         var div = document.createElement("div");
-        div.setAttribute("id", "Frame");
         div.innerHTML = "<iframe width='100%' height='480' style='border: none;' src='/nbextensions/pywwt_web/wwt.html'></iframe>"
         this.el.appendChild(div);
 
@@ -30,6 +29,9 @@ var WWTView = widgets.DOMWidgetView.extend({
 
 
     wwtReady: function() {
+      // The following should really be set from Python rather than here. We
+      // should move this once the corresponding methods/settings exist in the
+      // core Python object.
       this.loadImageCollection('http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys');
       this.settings.set_showConstellationBoundries(false);
       this.settings.set_showConstellationFigures(false);
@@ -39,6 +41,9 @@ var WWTView = widgets.DOMWidgetView.extend({
     },
 
     render: function() {
+        // We pass all messages via msg:custom rather than look for trait events
+        // because we just want to use the same JSON messaging interface for
+        // the Qt widget and the Jupyter widget.
         this.model.on('msg:custom', this.handle_custom_message, this);
     },
 
