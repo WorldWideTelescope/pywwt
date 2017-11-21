@@ -173,7 +173,7 @@ setup_args = {
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
     ],
-    'package_data': {'pywwt_web': ['wwt_json_api.js', 'wwt.html']}
+    'package_data': {'pywwt_web': ['static/wwt_json_api.js', 'static/wwt.html']}
 }
 
 setup(**setup_args)
