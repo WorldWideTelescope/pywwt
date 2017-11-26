@@ -1,4 +1,4 @@
-from traitlets import Bool, HasTraits
+from traitlets import Bool, HasTraits, Float, Unicode
 from astropy import units as u
 
 from .annotation import Circle
@@ -30,11 +30,28 @@ class BaseWWTWidget(HasTraits):
         raise NotImplementedError()
 
     # TODO: need to add all settings as traits
+    # many settings are listed as 'not yet implemented' in the documentation. still true?
 
-    constellation_figures = Bool(False, help='Whether to show the constellations').tag(wwt='showConstellationFigures', sync=True)
+    # include hex colors (0xAA00FF00)?
+    constellation_boundary_color  = Unicode('blue', help='').tag(wwt='constellationBoundryColor', sync=True)
+    constellation_figure_color    = Unicode('red', help='').tag(wwt='constellationFigureColor', sync=True)
+    constellation_selection_color = Unicode('yellow', help='').tag(wwt='constellationSelectionColor', sync=True)
+
+    local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude').tag(wwt='localHorizonMode', sync=True)
+    location_altitude  = Float(0, help='Assigns altitude (in meters) for view location').tag(wwt='locationAltitude', sync=True)
+    location_latitude  = Float(47.633, help='Assigns latitude for view location').tag(wwt='locationLat', sync=True)
+    location_longitude = Float(122.133333, help='Assigns longitude for view location').tag(wwt='locationLng', sync=True)
+
+    constellation_boundaries = Bool(False, help='Whether to show the boundaries that separate constellations').tag(wwt='showConstellationBoundries', sync=True)
+    constellation_figures    = Bool(False, help='Whether to show the constellations').tag(wwt='showConstellationFigures', sync=True)
+
+    crosshairs = Bool(True, help='Whether to show cross-hairs').tag(wwt='showCrosshairs', sync=True)
+    ecliptic   = Bool(False, help='Whether to show the path of the Sun').tag(wwt='showEcliptic', sync=True)
+    grid       = Bool(False, help='Whether to show the equatorial grid').tag(wwt='showGrid', sync=True)
 
     # TODO: need to add more methods here.
 
+    # add smooth_animation as arg in case instant=False?
     def center_on_coordinates(self, coord, fov, instant=True):
         coord_icrs = coord.icrs
         self._send_msg(event='center_on_coordinates',
