@@ -32,7 +32,6 @@ class BaseWWTWidget(HasTraits):
     # TODO: need to add all settings as traits
     # many settings are listed as 'not yet implemented' in the documentation. still true?
 
-    # include hex colors (0xAA00FF00)?
     constellation_boundary_color  = Unicode('blue', help='').tag(wwt='constellationBoundryColor', sync=True)
     constellation_figure_color    = Unicode('red', help='').tag(wwt='constellationFigureColor', sync=True)
     constellation_selection_color = Unicode('yellow', help='').tag(wwt='constellationSelectionColor', sync=True)
@@ -51,7 +50,6 @@ class BaseWWTWidget(HasTraits):
 
     # TODO: need to add more methods here.
 
-    # add smooth_animation as arg in case instant=False?
     def center_on_coordinates(self, coord, fov, instant=True):
         coord_icrs = coord.icrs
         self._send_msg(event='center_on_coordinates',
