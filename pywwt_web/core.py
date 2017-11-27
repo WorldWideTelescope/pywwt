@@ -32,9 +32,9 @@ class BaseWWTWidget(HasTraits):
     # TODO: need to add all settings as traits
     # many settings are listed as 'not yet implemented' in the documentation. still true?
 
-    constellation_boundary_color  = Unicode('blue', help='').tag(wwt='constellationBoundryColor', sync=True)
-    constellation_figure_color    = Unicode('red', help='').tag(wwt='constellationFigureColor', sync=True)
-    constellation_selection_color = Unicode('yellow', help='').tag(wwt='constellationSelectionColor', sync=True)
+    constellation_boundary_color  = Unicode('blue', help='Sets color for constellation boundary').tag(wwt='constellationBoundryColor', sync=True)
+    constellation_figure_color    = Unicode('red', help='Sets color for constellation figure').tag(wwt='constellationFigureColor', sync=True)
+    constellation_selection_color = Unicode('yellow', help='Sets color for constellation selection').tag(wwt='constellationSelectionColor', sync=True)
 
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude').tag(wwt='localHorizonMode', sync=True)
     location_altitude  = Float(0, help='Assigns altitude (in meters) for view location').tag(wwt='locationAltitude', sync=True)
