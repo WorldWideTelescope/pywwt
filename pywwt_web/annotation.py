@@ -54,19 +54,7 @@ class Circle(Annotation):
     radius     = Float(10, help='Sets the radius for the circle').tag(wwt='radius', sync=True)
     sky_relative = Bool(False, help='Whether the size of the circle is absolute or relative').tag(wwt='skyRelative', sync=True)
 
-    # def fill_color(self, color):
-    #     self.parent._send_msg(event='circle_set_fillColor', id=self.id,
-    #                           argb=color)
-
-    # def line_color(self, color):
-    #     self.parent._send_msg(event='circle_set_lineColor', id=self.id,
-    #                           argb=color) # correct?
-
-    # def line_width(self, width):
-    #     self.parent._send_msg(event='', id=self.id,
-    #                           lw=width)
-
-    def set_center(self, coord): # the original
+    def set_center(self, coord):
         coord_icrs = coord.icrs
         self.parent._send_msg(event='circle_set_center', id=self.id,
                               ra=coord_icrs.ra.degree,
