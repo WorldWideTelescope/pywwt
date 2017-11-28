@@ -136,8 +136,7 @@ setup_args = {
             'pywwt_web/static/index.js',
             'pywwt_web/static/index.js.map',
             'pywwt_web/static/wwt.html',
-            'pywwt_web/static/wwt_json_api.js',
-            'pywwt_web/static/jquery-1.8.3.min.js'
+            'pywwt_web/static/wwt_json_api.js'
         ]),
     ],
     'install_requires': [
