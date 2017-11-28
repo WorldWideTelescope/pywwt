@@ -61,7 +61,7 @@ class Circle(Annotation):
                               dec=coord_icrs.dec.degree)
 
 
-class Poly():
+class Poly(Annotation):
 
     shape = 'poly'
 
@@ -77,7 +77,7 @@ class Poly():
                               dec=coord_icrs.dec.degree)
 
 
-class PolyLine():
+class PolyLine(Annotation):
 
     shape = 'polyLine'
 

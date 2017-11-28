@@ -1,7 +1,7 @@
 from traitlets import Bool, HasTraits, Float, Unicode
 from astropy import units as u
 
-from .annotation import Circle
+from .annotation import Circle, Poly, PolyLine
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -63,3 +63,11 @@ class BaseWWTWidget(HasTraits):
     def create_circle(self):
         # TODO: could buffer JS call here
         return Circle(self)
+
+    def add_polygon(self):
+        # same TODO as above
+        return Poly(self)
+
+    def add_polyline(self):
+        # same TODO as above
+        return PolyLine(self)
