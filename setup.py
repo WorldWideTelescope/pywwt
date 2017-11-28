@@ -144,6 +144,7 @@ setup_args = {
         'ipyevents',
         'traitlets',
         'astropy',
+        'requests'
     ],
     'packages': find_packages(),
     'zip_safe': False,
