@@ -11,6 +11,22 @@ function wwt_apply_json_message(wwt, msg) {
 
   switch(msg['event']) {
 
+    case 'load_image_collection':
+      wwt.loadImageCollection(msg['url']);
+      break;
+
+    case 'set_foreground_by_name':
+      wwt.setForegroundImageByName(msg['name']);
+      break;
+
+    case 'set_background_by_name':
+      wwt.setBackgroundImageByName(msg['name']);
+      break;
+
+    case 'set_foreground_opacity':
+      wwt.setForegroundOpacity(msg['value']);
+      break;
+
     case 'center_on_coordinates':
       wwt.gotoRaDecZoom(msg['ra'], msg['dec'], msg['fov'], msg['instant']);
       break;

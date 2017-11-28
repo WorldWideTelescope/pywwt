@@ -8,7 +8,7 @@ notifications:
 env:
   global:
     - SETUP_XVFB=True
-    - CONDA_DEPENDENCIES="astropy qtpy traitlets pyqt pytest"
+    - CONDA_DEPENDENCIES="astropy qtpy traitlets pyqt pytest requests"
   matrix:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.5
