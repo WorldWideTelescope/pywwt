@@ -1,5 +1,5 @@
 // This file is a mini-library that translates JSON messages into actions
-// on the WWT side. The reason for having this in it's own file is that
+// on the WWT side. The reason for having this in its own file is that
 // we can then use it for both the Jupyter widget and other front-ends such
 // as the Qt one.
 
@@ -29,6 +29,20 @@ function wwt_apply_json_message(wwt, msg) {
           circle.set_id(msg['id']);
           wwt.addAnnotation(circle);
           wwt.annotations[msg['id']] = circle;
+
+        case 'poly':
+          // same TODO as above
+          poly = wwt.createPolygon();
+          poly.set_id(msg['id']);
+          wwt.addAnnotation(poly);
+          wwt.annotations[msg['id']] = poly;
+
+        case 'polyLine':
+          // same TODO as above
+          polyLine = wwt.createPolyLine();
+          polyLine.set_id(msg['id']);
+          wwt.addAnnotation(polyLine);
+          wwt.annotations[msg['id']] = polyLine;
       }
       break;
 
@@ -46,6 +60,22 @@ function wwt_apply_json_message(wwt, msg) {
       // TODO: nice error message if annotation doesn't exist
       circle = wwt.annotations[msg['id']];
       circle.setCenter(msg['ra'], msg['dec']);
+      break;
+
+    case 'poly_add_point':
+
+      var name = msg["setting"];
+      // same TODO as above
+      poly = wwt.annotations[msg['id']];
+      poly.addPoint(msg['ra'], msg['dec']);
+      break;
+
+    case 'polyLine_add_point':
+
+      var name = msg["setting"];
+      // same TODO as above
+      polyLine = wwt.annotations[msg['id']];
+      polyLine.addPoint(msg['ra'], msg['dec']);
       break;
 
   }

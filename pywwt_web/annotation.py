@@ -47,8 +47,45 @@ class Circle(Annotation):
 
     shape = 'circle'
 
+    fill = Bool(False, help='Whether or not the circle should be filled').tag(wwt='fill', sync=True)
+    fill_color = Unicode('white', help='Assigns fill color for the circle').tag(wwt='fillColor', sync=True)
+    line_color = Unicode('white', help='Assigns line color for the circle').tag(wwt='lineColor', sync=True)
+    line_width = Float(1, help='Assigns line width (in pixels)').tag(wwt='linewidth', sync=True)
+    radius     = Float(10, help='Sets the radius for the circle').tag(wwt='radius', sync=True)
+    sky_relative = Bool(False, help='Whether the size of the circle is absolute or relative').tag(wwt='skyRelative', sync=True)
+
     def set_center(self, coord):
         coord_icrs = coord.icrs
         self.parent._send_msg(event='circle_set_center', id=self.id,
+                              ra=coord_icrs.ra.degree,
+                              dec=coord_icrs.dec.degree)
+
+
+class Poly(Annotation):
+
+    shape = 'poly'
+
+    fill = Bool(False, help='Whether or not the polygon should be filled').tag(wwt='fill', sync=True)
+    fill_color = Unicode('white', help='Assigns fill color for the polygon').tag(wwt='fillColor', sync=True)
+    line_color = Unicode('white', help='Assigns line color for the polygon').tag(wwt='lineColor', sync=True)
+    line_width = Float(1, help='Assigns line width (in pixels)').tag(wwt='linewidth', sync=True)
+
+    def add_point(self,coord):
+        coord_icrs = coord.icrs
+        self.parent._send_msg(event='poly_add_point', id=self.id,
+                              ra=coord_icrs.ra.degree,
+                              dec=coord_icrs.dec.degree)
+
+
+class PolyLine(Annotation):
+
+    shape = 'polyLine'
+
+    line_color = Unicode('white', help='Assigns polyline color').tag(wwt='lineColor', sync=True)
+    line_width = Float(1, help='Assigns polyline width (in pixels)').tag(wwt='linewidth', sync=True)
+
+    def add_point(self,coord):
+        coord_icrs = coord.icrs
+        self.parent._send_msg(event='polyLine_add_point', id=self.id,
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
