@@ -123,19 +123,23 @@ app = None
 class WWTQtWidget(BaseWWTWidget):
 
     def __init__(self, block_until_ready=False):
-        super(WWTQtWidget, self).__init__()
+
         global app
         if app is None:
             app = QtWidgets.QApplication.instance()
             if app is None:
                 app = QtWidgets.QApplication([''])
+
         self.widget = CoreWWTQtWidget()
         self.widget.show()
+
         if block_until_ready:
             while True:
                 app.processEvents()
                 if self.widget._wwt_ready:
                     break
+
+        super(WWTQtWidget, self).__init__()
 
     def _send_msg(self, **kwargs):
         msg = json.dumps(kwargs)
