@@ -1,10 +1,13 @@
-from traitlets import Bool, HasTraits, Float, Unicode
+from traitlets import Bool, HasTraits, Float, Unicode, observe, validate, TraitError
 from astropy import units as u
 
 from .annotation import Circle
+from .imagery import get_imagery_layers
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
+
+DEFAULT_SURVEYS_URL = 'http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys'
 
 
 class BaseWWTWidget(HasTraits):
@@ -12,6 +15,8 @@ class BaseWWTWidget(HasTraits):
     def __init__(self):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
+        self._available_layers = []
+        self.load_image_collection(DEFAULT_SURVEYS_URL)
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
@@ -58,6 +63,53 @@ class BaseWWTWidget(HasTraits):
                        dec=coord_icrs.dec.deg,
                        fov=fov.to(u.deg).value,
                        instant=instant)
+
+    def load_image_collection(self, url):
+        self._available_layers += get_imagery_layers(url)
+        self._send_msg(event='load_image_collection', url=url)
+
+    @property
+    def available_layers(self):
+        return self._available_layers
+
+    foreground = Unicode('Digitized Sky Survey (Color)')
+
+    @observe('foreground')
+    def _on_foreground_change(self, changed):
+        self._send_msg(event='set_foreground_by_name', name=changed['new'])
+
+    @validate('foreground')
+    def _validate_foreground(self, proposal):
+        if proposal['value'] in self.available_layers:
+            return proposal['value']
+        else:
+            raise TraitError('foreground is not one of the available layers')
+
+    background = Unicode('SFD Dust Map (Infrared)')
+
+    @observe('background')
+    def _on_background_change(self, changed):
+        self._send_msg(event='set_background_by_name', name=changed['new'])
+
+    @validate('background')
+    def _validate_background(self, proposal):
+        if proposal['value'] in self.available_layers:
+            return proposal['value']
+        else:
+            raise TraitError('background is not one of the available layers')
+
+    foreground_opacity = Float(0.5)
+
+    @observe('foreground_opacity')
+    def _on_foreground_opacity_change(self, changed):
+        self._send_msg(event='set_opacity', value=changed['new'])
+
+    @validate('foreground_opacity')
+    def _validate_foreground_opacity(self, proposal):
+        if 0 <= proposal['value'] <= 1:
+            return proposal['value']
+        else:
+            raise TraitError('foreground_opacity should be between 0 and 1')
 
     # TODO: need to implement more annotation types
 
