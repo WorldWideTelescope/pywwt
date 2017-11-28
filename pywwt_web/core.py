@@ -41,8 +41,9 @@ class BaseWWTWidget(HasTraits):
     location_latitude  = Float(47.633, help='Assigns latitude for view location').tag(wwt='locationLat', sync=True)
     location_longitude = Float(122.133333, help='Assigns longitude for view location').tag(wwt='locationLng', sync=True)
 
-    constellation_boundaries = Bool(False, help='Whether to show the boundaries that separate constellations').tag(wwt='showConstellationBoundries', sync=True)
+    constellation_boundaries = Bool(False, help='Whether to show boundaries for the selected constellations').tag(wwt='showConstellationBoundries', sync=True)
     constellation_figures    = Bool(False, help='Whether to show the constellations').tag(wwt='showConstellationFigures', sync=True)
+    constellation_selection  = Bool(False, help='Whether to only show boundaries for the selected constellation').tag(wwt='showConstellationSelection', sync=True)
 
     crosshairs = Bool(True, help='Whether to show cross-hairs').tag(wwt='showCrosshairs', sync=True)
     ecliptic   = Bool(False, help='Whether to show the path of the Sun').tag(wwt='showEcliptic', sync=True)
