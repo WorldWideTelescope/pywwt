@@ -13,7 +13,7 @@ DEFAULT_SURVEYS_URL = 'http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=s
 class BaseWWTWidget(HasTraits):
     
     def __init__(self):
-        super(BaseWWTWidget, self).__init__() # does super() alone do the same?
+        super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
         self._available_layers = []
         self.load_image_collection(DEFAULT_SURVEYS_URL)
@@ -26,10 +26,8 @@ class BaseWWTWidget(HasTraits):
         # its own, we only want to react to changes in traits that have the wwt
         # metadata attribute (which indicates the name of the corresponding WWT
         # setting).
-        print('accessed')
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         if wwt_name is not None:
-            print(changed)
             self._send_msg(event='setting_set',
                            setting=wwt_name,
                            value=changed['new'])
