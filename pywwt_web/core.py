@@ -11,12 +11,14 @@ DEFAULT_SURVEYS_URL = 'http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=s
 
 
 class BaseWWTWidget(HasTraits):
-
+    
     def __init__(self):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
         self._available_layers = []
         self.load_image_collection(DEFAULT_SURVEYS_URL)
+        for name in self.trait_names():
+            self._on_trait_change({'name': name, 'new': getattr(self,name), 'type': 'change'})
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
