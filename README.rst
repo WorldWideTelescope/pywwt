@@ -7,12 +7,19 @@
 WorldWideTelescope from Python/Jupyter
 ======================================
 
-**Note: This package is currently under heavy development**.
+**IMPORTANT NOTE ABOUT THIS PACKAGE:** this package is under heavy development
+and is not ready for general use. It will replace, once released, the existing
+`pywwt <http://github.com/jzuhone/pywwt>`_ package. The new package will include
+both a way to drive the web version of WWT, and the Windows version (using, for
+the latter, code from the original pywwt package).
 
-The pywwt package aims to make it easy to use
-WorldWideTelescope from Python, including from the Jupyter notebook. Only a very
-small subset of functionality is implemented for now, and we will be adding
-functionality over the coming weeks.
+About
+-----
+
+The pywwt package aims to make it easy to use WorldWideTelescope from Python,
+including from the Jupyter notebook. Only a very small subset of functionality
+is implemented for now, and we will be adding functionality over the coming
+weeks.
 
 Installation
 ------------
@@ -41,8 +48,8 @@ this repository and install the package manually (note that this requires
 
 If you want to use the Jupyter widget, you will also need to run::
 
-    jupyter nbextension install --py --symlink --sys-prefix ipyvolume
-    jupyter nbextension enable --py --sys-prefix ipyvolume
+    jupyter nbextension install --py --symlink --sys-prefix pywwt
+    jupyter nbextension enable --py --sys-prefix pywwt
 
 (this is not needed if you install the conda package).
 
@@ -101,7 +108,8 @@ and methods that can be called:
 
     In [7]: widget.center_on_coordinates(coord, fov=10 * u.deg)
 
-We are in the process of writing documentation that includes a full list of available properties and methods that can be used.
+We are in the process of writing documentation that includes a full list of
+available properties and methods that can be used.
 
 Reporting issues
 ----------------
