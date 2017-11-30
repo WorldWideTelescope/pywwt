@@ -6,7 +6,7 @@
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/astrofrog/pywwt.git"
+    "url": "https://github.com/WorldWideTelescope/pywwt.git"
   },
   "keywords": [
     "jupyter",
