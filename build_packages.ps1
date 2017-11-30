@@ -60,7 +60,7 @@ foreach ($package in $packages) {
     continue
   }
 
-  if ($env:APPVEYOR_PULL_REQUEST_NUMBER -eq $null -and $env:APPVEYOR_REPO_BRANCH -eq "master") {
+  if ($env:APPVEYOR_PULL_REQUEST_NUMBER -eq $null -and $env:APPVEYOR_REPO_BRANCH -eq "conda-dev") {
     if ($env:STABLE -match "true") {
       anaconda -t $env:ANACONDA_TOKEN upload $BUILD_OUTPUT;
     } else {

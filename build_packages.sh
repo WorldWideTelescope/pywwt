@@ -54,7 +54,7 @@ for package in $packages; do
     continue;
   fi
 
-  if [[ $TRAVIS_EVENT_TYPE != pull_request && $TRAVIS_BRANCH == master ]]; then
+  if [[ $TRAVIS_EVENT_TYPE != pull_request && $TRAVIS_BRANCH == conda-dev ]]; then
     if [[ $STABLE == true ]]; then
       anaconda -t $ANACONDA_TOKEN upload $output;
     else
