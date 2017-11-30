@@ -9,6 +9,9 @@ conda install conda-build anaconda-client
 # Install PyQt and jinja2 for the prepare script to work
 conda install jinja2 pyqt requests
 
+# Install node for building Jupyter widgets
+conda install node
+
 # Don't auto-upload, instead we upload manually specifying a token.
 conda config --set anaconda_upload no
 
