@@ -1,3 +1,3 @@
 import logging
 
-logger = logging.getLogger('pywwt_web')
+logger = logging.getLogger('pywwt')

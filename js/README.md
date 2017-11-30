@@ -7,5 +7,5 @@ Package Install
 - [node](http://nodejs.org/)
 
 ```bash
-npm install --save pywwt_web
+npm install --save pywwt
 ```

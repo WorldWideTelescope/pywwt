@@ -66,8 +66,8 @@ class NPM(Command):
     node_modules = os.path.join(node_root, 'node_modules')
 
     targets = [
-        os.path.join(here, 'pywwt_web', 'static', 'extension.js'),
-        os.path.join(here, 'pywwt_web', 'static', 'index.js')
+        os.path.join(here, 'pywwt', 'static', 'extension.js'),
+        os.path.join(here, 'pywwt', 'static', 'index.js')
     ]
 
     def initialize_options(self):
@@ -121,22 +121,22 @@ class NPM(Command):
         update_package_data(self.distribution)
 
 version_ns = {}
-with open(os.path.join(here, 'pywwt_web', '_version.py')) as f:
+with open(os.path.join(here, 'pywwt', '_version.py')) as f:
     exec(f.read(), {}, version_ns)
 
 setup_args = {
-    'name': 'pywwt_web',
+    'name': 'pywwt',
     'version': version_ns['__version__'],
     'description': 'WorldWideTelescope Jupyter widget',
     'long_description': LONG_DESCRIPTION,
     'include_package_data': True,
     'data_files': [
-        ('share/jupyter/nbextensions/pywwt_web', [
-            'pywwt_web/static/extension.js',
-            'pywwt_web/static/index.js',
-            'pywwt_web/static/index.js.map',
-            'pywwt_web/static/wwt.html',
-            'pywwt_web/static/wwt_json_api.js'
+        ('share/jupyter/nbextensions/pywwt', [
+            'pywwt/static/extension.js',
+            'pywwt/static/index.js',
+            'pywwt/static/index.js.map',
+            'pywwt/static/wwt.html',
+            'pywwt/static/wwt_json_api.js'
         ]),
     ],
     'install_requires': [
@@ -157,7 +157,7 @@ setup_args = {
 
     'author': 'Thomas P. Robitaille',
     'author_email': 'thomas.robitaille@gmail.com',
-    'url': 'https://github.com/astrofrog/pywwt_web',
+    'url': 'https://github.com/astrofrog/pywwt',
     'keywords': [
         'ipython',
         'jupyter',

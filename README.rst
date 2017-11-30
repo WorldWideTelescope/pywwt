@@ -1,15 +1,15 @@
-.. image:: https://travis-ci.org/astrofrog/pywwt-web.svg?branch=tests
-    :target: https://travis-ci.org/astrofrog/pywwt-web
-    
+.. image:: https://travis-ci.org/WorldWideTelescope/pywwt.svg?branch=tests
+    :target: https://travis-ci.org/WorldWideTelescope/pywwt
+
 .. image:: https://ci.appveyor.com/api/projects/status/hqacnus6g197uo2d/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/astrofrog/pywwt-web
-    
+    :target: https://ci.appveyor.com/project/WorldWideTelescope/pywwt
+
 WorldWideTelescope from Python/Jupyter
 ======================================
 
 **Note: This package is currently under heavy development**.
 
-The pywwt-web package aims to make it easy to use
+The pywwt package aims to make it easy to use
 WorldWideTelescope from Python, including from the Jupyter notebook. Only a very
 small subset of functionality is implemented for now, and we will be adding
 functionality over the coming weeks.
@@ -23,7 +23,7 @@ conda
 If you normally use conda and
 just want to try out the latest developer version, you can do this with::
 
-    conda install -c conda-forge -c astrofrog/label/dev pywwt-web
+    conda install -c conda-forge -c astrofrog/label/dev pywwt
 
 This will install a version built in the last 24 hours so may not strictly be
 the absolute latest version.
@@ -35,8 +35,8 @@ If you don't use conda and/or want to use the very latest version, you can clone
 this repository and install the package manually (note that this requires
 `npm <https://www.npmjs.com>`_ to be installed)::
 
-    git clone https://github.com/astrofrog/pywwt-web.git
-    cd pywwt-web
+    git clone https://github.com/WorldWideTelescope/pywwt.git
+    cd pywwt
     pip install -e .
 
 If you want to use the Jupyter widget, you will also need to run::
@@ -56,7 +56,7 @@ The Jupyter widget can be used as follows in the Jupyter notebook:
 
 .. code-block:: python
 
-    In [1]: from pywwt_web.jupyter_widget import WWTJupyterWidget
+    In [1]: from pywwt.jupyter_widget import WWTJupyterWidget
 
     In [2]: wwt = WWTJupyterWidget()
        ...: wwt
@@ -72,7 +72,7 @@ To use the Qt widget, start up an IPython session and do:
 
 .. code-block:: python
 
-    In [1]: from pywwt_web.qt_widget import WWTQtWidget
+    In [1]: from pywwt.qt_widget import WWTQtWidget
 
     In [2]: %gui qt
 
@@ -88,7 +88,7 @@ Once a Jupyter or Qt widget has been created, the programmatic user interface is
 .. code-block:: python
 
     In [4]: wwt.constellation_figures = True
-    
+
 and methods that can be called:
 
 .. code-block:: python
@@ -107,7 +107,7 @@ Reporting issues
 ----------------
 
 If you run into any issues, please open an issue `here
-<https://github.com/astrofrog/pywwt-web/issues>`_
+<https://github.com/WorldWideTelescope/pywwt/issues>`_
 
 Acknowledgments
 ---------------
