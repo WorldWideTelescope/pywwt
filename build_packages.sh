@@ -23,7 +23,11 @@ for package in $packages; do
 
   else
 
-    git clone "git://github.com/astrofrog/"$package".git"
+    if [[ $package == pywwt ]]; then
+      git clone "git://github.com/WorldWideTelescope/"$package".git";
+    else
+      git clone "git://github.com/astrofrog/"$package".git";
+    fi
 
     # The following puts the correct version number in the recipes
     python prepare_recipe.py $package;

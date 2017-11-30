@@ -28,7 +28,11 @@ foreach ($package in $packages) {
 
   } else {
 
-    git clone git://github.com/astrofrog/$package
+    if ($package -match "pywwt") {
+      git clone git://github.com/WorldWideTelesope/$package
+    } else {
+      git clone git://github.com/astrofrog/$package
+    }
 
     # The following puts the correct version number in the recipes
     python prepare_recipe.py $package
