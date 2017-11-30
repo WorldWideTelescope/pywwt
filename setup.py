@@ -157,7 +157,7 @@ setup_args = {
 
     'author': 'Thomas P. Robitaille',
     'author_email': 'thomas.robitaille@gmail.com',
-    'url': 'https://github.com/astrofrog/pywwt',
+    'url': 'https://github.com/WorldWideTelescope/pywwt',
     'keywords': [
         'ipython',
         'jupyter',
