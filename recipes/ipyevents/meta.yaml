@@ -1,0 +1,28 @@
+package:
+  name: ipyevents
+  version: {{version}}
+
+{{source}}
+
+build:
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record record.txt
+
+requirements:
+
+  build:
+    - python
+    - setuptools
+
+  run:
+    - python
+    - ipywidgets >=7.0
+
+test:
+  imports:
+    - ipyevents
+
+about:
+  home: http://github.com/astrofrog/ipyevents
+  license: BSD 3-Clause
+  summary: A custom widget for returning mouse and keyboard events to Python

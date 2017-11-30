@@ -1,0 +1,25 @@
+language: c
+
+sudo: false
+
+os:
+    - linux
+    - osx
+
+env:
+  matrix:
+    - PYTHON_VERSION=2.7 STABLE=false
+    - PYTHON_VERSION=3.5 STABLE=false
+    - PYTHON_VERSION=3.6 STABLE=false
+  global:
+    - CONDA_DEPENDENCIES='jinja2 requests'
+
+before_install:
+
+  # Install ci-helpers and set up conda
+  - git clone git://github.com/astropy/ci-helpers.git
+  - source ci-helpers/travis/setup_conda.sh
+
+
+script:
+  - ./build_packages.sh
