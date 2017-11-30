@@ -58,6 +58,16 @@ class BaseWWTWidget(HasTraits):
 
     # TODO: need to add more methods here.
 
+    def load_tour(self,url):
+        # should this throw an error if url doesn't end in '.wwt'?
+        self._send_msg(event='load_tour',url=url)
+
+    def play_tour(self):
+        self._send_msg(event='play_tour')
+
+    def stop_tour(self):
+        self._send_msg(event='stop_tour')
+
     def center_on_coordinates(self, coord, fov, instant=True):
         coord_icrs = coord.icrs
         self._send_msg(event='center_on_coordinates',

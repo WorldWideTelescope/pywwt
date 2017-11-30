@@ -11,6 +11,18 @@ function wwt_apply_json_message(wwt, msg) {
 
   switch(msg['event']) {
 
+    case 'load_tour':
+      wwt.loadTour(msg['url']);
+      break;
+
+    case 'play_tour':
+      wwt.playTour();
+      break;
+
+    case 'stop_tour':
+      wwt.stopTour();
+      break;
+
     case 'load_image_collection':
       wwt.loadImageCollection(msg['url']);
       break;
