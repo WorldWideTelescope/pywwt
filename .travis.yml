@@ -19,4 +19,4 @@ install:
   - source ci-helpers/travis/setup_conda.sh
 
 script:
-  - py.test pywwt_web
+  - py.test pywwt

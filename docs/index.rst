@@ -1,5 +1,5 @@
 Documentation
 =============
 
-This is the documentation for pywwt_web
+This is the documentation for pywwt
 

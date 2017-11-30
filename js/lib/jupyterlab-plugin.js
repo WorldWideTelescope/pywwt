@@ -6,11 +6,11 @@ var base = require('@jupyter-widgets/base');
  * The widget manager provider.
  */
 module.exports = {
-  id: 'pywwt_web',
+  id: 'pywwt',
   requires: [base.IJupyterWidgetRegistry],
   activate: function(app, widgets) {
       widgets.registerWidget({
-          name: 'pywwt_web',
+          name: 'pywwt',
           version: wwt.version,
           exports: wwt
       });
