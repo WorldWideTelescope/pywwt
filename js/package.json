@@ -1,6 +1,6 @@
 {
   "name": "pywwt",
-  "version": "0.1.0",
+  "version": "0.3.0a0",
   "description": "WorldWideTelescope Jupyter widget",
   "author": "Thomas P. Robitaille",
   "main": "lib/index.js",
