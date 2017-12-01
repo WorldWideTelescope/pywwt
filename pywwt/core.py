@@ -2,6 +2,7 @@ from traitlets import Bool, HasTraits, Float, Unicode, Any, observe, validate, T
 from astropy import units as u
 
 from .annotation import Circle, Poly, PolyLine
+from .quantity_trait import AstropyQuantity
 from .imagery import get_imagery_layers
 
 # The WWT web control API is described here:
@@ -96,9 +97,9 @@ class BaseWWTWidget(HasTraits):
                        instant=instant)
 
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude').tag(wwt='localHorizonMode', sync=True)
-    location_altitude  = Any(0, help='Assigns altitude (in meters) for view location').tag(wwt='locationAltitude', sync=True)
-    location_latitude  = Any(47.633, help='Assigns latitude for view location').tag(wwt='locationLat', sync=True)
-    location_longitude = Any(122.133333, help='Assigns longitude for view location').tag(wwt='locationLng', sync=True)
+    location_altitude  = AstropyQuantity(0 * u.m, help='Assigns altitude (in meters) for view location').tag(wwt='locationAltitude', sync=True)
+    location_latitude  = AstropyQuantity(47.633 * u.deg, help='Assigns latitude for view location').tag(wwt='locationLat', sync=True)
+    location_longitude = AstropyQuantity(122.133333 * u.deg, help='Assigns longitude for view location').tag(wwt='locationLng', sync=True)
     
     @validate('location_altitude')
     def _validate_altitude(self,proposal):
