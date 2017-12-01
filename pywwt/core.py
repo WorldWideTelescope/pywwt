@@ -1,4 +1,4 @@
-from traitlets import Bool, HasTraits, Float, Unicode, observe, validate, TraitError
+from traitlets import Bool, HasTraits, Float, Unicode, Any, observe, validate, TraitError
 from astropy import units as u
 
 from .annotation import Circle, Poly, PolyLine
@@ -42,11 +42,6 @@ class BaseWWTWidget(HasTraits):
     constellation_boundary_color  = Unicode('blue', help='Sets color for constellation boundary').tag(wwt='constellationBoundryColor', sync=True)
     constellation_figure_color    = Unicode('red', help='Sets color for constellation figure').tag(wwt='constellationFigureColor', sync=True)
     constellation_selection_color = Unicode('yellow', help='Sets color for constellation selection').tag(wwt='constellationSelectionColor', sync=True)
-
-    local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude').tag(wwt='localHorizonMode', sync=True)
-    location_altitude  = Float(0, help='Assigns altitude (in meters) for view location').tag(wwt='locationAltitude', sync=True)
-    location_latitude  = Float(47.633, help='Assigns latitude for view location').tag(wwt='locationLat', sync=True)
-    location_longitude = Float(122.133333, help='Assigns longitude for view location').tag(wwt='locationLng', sync=True)
 
     constellation_boundaries = Bool(False, help='Whether to show boundaries for the selected constellations').tag(wwt='showConstellationBoundries', sync=True)
     constellation_figures    = Bool(False, help='Whether to show the constellations').tag(wwt='showConstellationFigures', sync=True)
@@ -93,6 +88,32 @@ class BaseWWTWidget(HasTraits):
                        dec=coord_icrs.dec.deg,
                        fov=fov.to(u.deg).value,
                        instant=instant)
+
+    local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude').tag(wwt='localHorizonMode', sync=True)
+    location_altitude  = Any(0, help='Assigns altitude (in meters) for view location').tag(wwt='locationAltitude', sync=True)
+    location_latitude  = Any(47.633, help='Assigns latitude for view location').tag(wwt='locationLat', sync=True)
+    location_longitude = Any(122.133333, help='Assigns longitude for view location').tag(wwt='locationLng', sync=True)
+    
+    @validate('location_altitude')
+    def _validate_altitude(self,proposal):
+        if proposal['value'].unit in u.meter.find_equivalent_units():
+            return proposal['value'].to(u.meter).value
+        else:
+            raise TraitError('location_altitude not in units of length')
+        
+    @validate('location_latitude')
+    def _validate_latiitude(self,proposal):
+        if proposal['value'].unit == u.degree:
+            return proposal['value'].value
+        else:
+            raise TraitError('location_latitude not in degrees')
+        
+    @validate('location_longitude')
+    def _validate_longitude(self,proposal):
+        if proposal['value'].unit == u.degree:
+            return proposal['value'].value
+        else:
+            raise TraitError('location_longitude not in degrees')
 
     def load_image_collection(self, url):
         self._available_layers += get_imagery_layers(url)
