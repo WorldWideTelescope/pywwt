@@ -26,7 +26,7 @@ conda install jinja2 pyqt requests git
 checkLastExitCode
 
 # Install node for building Jupyter widgets
-conda install node
+conda install nodejs
 checkLastExitCode
 
 # Don't auto-upload, instead we upload manually specifying a token.
