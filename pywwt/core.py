@@ -1,4 +1,4 @@
-from traitlets import Bool, HasTraits, Float, Unicode, Any, observe, validate, TraitError
+from traitlets import Bool, HasTraits, Float, Unicode, observe, validate, TraitError
 from astropy import units as u
 
 from .annotation import Circle, Poly, PolyLine
