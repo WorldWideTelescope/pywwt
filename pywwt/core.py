@@ -26,11 +26,17 @@ class BaseWWTWidget(HasTraits):
         # its own, we only want to react to changes in traits that have the wwt
         # metadata attribute (which indicates the name of the corresponding WWT
         # setting).
-        wwt_name = self.trait_metadata(changed['name'], 'wwt')
+        wwt_name  = self.trait_metadata(changed['name'], 'wwt')
+        new_value = changed['new']
         if wwt_name is not None:
-            self._send_msg(event='setting_set',
-                           setting=wwt_name,
-                           value=changed['new'])
+            if hasattr(new_value, 'value') and hasattr(new_value, 'unit'):
+                self._send_msg(event='setting_set',
+                               setting=wwt_name,
+                               value=new_value.value)                
+            else:
+                self._send_msg(event='setting_set',
+                               setting=wwt_name,
+                               value=new_value)
 
     def _send_msg(self, **kwargs):
         # This method should be overridden and should send the message to WWT
@@ -96,22 +102,22 @@ class BaseWWTWidget(HasTraits):
     
     @validate('location_altitude')
     def _validate_altitude(self,proposal):
-        if proposal['value'].unit in u.meter.find_equivalent_units():
-            return proposal['value'].to(u.meter).value
+        if proposal['value'].unit.physical_type == 'length':
+            return proposal['value'].to(u.meter)
         else:
             raise TraitError('location_altitude not in units of length')
-        
+   
     @validate('location_latitude')
     def _validate_latiitude(self,proposal):
         if proposal['value'].unit == u.degree:
-            return proposal['value'].value
+            return proposal['value']
         else:
             raise TraitError('location_latitude not in degrees')
-        
+
     @validate('location_longitude')
     def _validate_longitude(self,proposal):
         if proposal['value'].unit == u.degree:
-            return proposal['value'].value
+            return proposal['value']
         else:
             raise TraitError('location_longitude not in degrees')
 
