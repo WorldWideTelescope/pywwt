@@ -10,6 +10,11 @@ def get_imagery_layers(url):
     Get the list of available image layers that can be used as background
     or foreground based on the URL to a WTML (WorldWide Telescope image
     collection file).
+
+    Parameters
+    ----------
+    url : str
+        The URL of the chosen layer.
     """
 
     available_layers = OrderedDict()

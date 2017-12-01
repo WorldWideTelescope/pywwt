@@ -60,13 +60,28 @@ class BaseWWTWidget(HasTraits):
 
     def load_tour(self,url):
         # should this throw an error if url doesn't end in '.wwt'?
+        """
+        Load and begin playing a tour based on the URL to a .wtt file from 
+        the WorldWideTelescope website.
+
+        Parameters
+        ----------
+        url : str
+            The URL of the chosen tour (a .wtt file)
+        """
         self._send_msg(event='load_tour',url=url)
 
-    def play_tour(self):
-        self._send_msg(event='play_tour')
-
     def stop_tour(self):
+        """
+        Stop a loaded tour.
+        """
         self._send_msg(event='stop_tour')
+
+    def play_tour(self):
+        """
+        Play a stopped tour.
+        """
+        self._send_msg(event='play_tour')
 
     def center_on_coordinates(self, coord, fov, instant=True):
         coord_icrs = coord.icrs
