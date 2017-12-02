@@ -14,7 +14,7 @@ def get_imagery_layers(url):
     Parameters
     ----------
     url : str
-        The URL of the chosen layer.
+        The URL of the image collection.
     """
 
     available_layers = OrderedDict()
