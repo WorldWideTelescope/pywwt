@@ -7,6 +7,6 @@ class AstropyQuantity(TraitType):
     info_text = 'Custom trait to handle astropy quantities with units'
 
     def validate(self, obj, value):
-        if hasattr(value, 'value') and hasattr(value, 'unit'):
+        if isinstance(value,u.Quantity):
             return value
         self.error(obj, value)

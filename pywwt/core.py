@@ -29,15 +29,13 @@ class BaseWWTWidget(HasTraits):
         # setting).
         wwt_name  = self.trait_metadata(changed['name'], 'wwt')
         new_value = changed['new']
-        if wwt_name is not None:
-            if hasattr(new_value, 'value') and hasattr(new_value, 'unit'):
-                self._send_msg(event='setting_set',
-                               setting=wwt_name,
-                               value=new_value.value)                
-            else:
-                self._send_msg(event='setting_set',
-                               setting=wwt_name,
-                               value=new_value)
+        if wwt_name is not None:            
+            if isinstance(new_value,u.Quantity):
+                new_value = new_value.value
+
+            self._send_msg(event='setting_set',
+                           setting=wwt_name,
+                           value=new_value)
 
     def _send_msg(self, **kwargs):
         # This method should be overridden and should send the message to WWT
