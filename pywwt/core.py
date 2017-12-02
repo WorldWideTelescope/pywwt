@@ -59,7 +59,6 @@ class BaseWWTWidget(HasTraits):
     # TODO: need to add more methods here.
 
     def load_tour(self,url):
-        # should this throw an error if url doesn't end in '.wwt'?
         """
         Load and begin playing a tour based on the URL to a .wtt file from 
         the WorldWideTelescope website.
@@ -69,7 +68,11 @@ class BaseWWTWidget(HasTraits):
         url : str
             The URL of the chosen tour (a .wtt file)
         """
-        self._send_msg(event='load_tour',url=url)
+        # throw error if url doesn't end in .wtt
+        if url[-4:] == '.wtt':
+            self._send_msg(event='load_tour',url=url)
+        else:
+            raise ValueError('url must end in \'.wwt\'')
 
     def stop_tour(self):
         """
