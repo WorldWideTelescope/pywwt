@@ -107,15 +107,15 @@ class BaseWWTWidget(HasTraits):
             raise TraitError('location_altitude not in units of length')
    
     @validate('location_latitude')
-    def _validate_latiitude(self,proposal):
-        if proposal['value'].unit == u.degree:
+    def _validate_latitude(self,proposal):
+        if proposal['value'].unit.physical_type == 'angle':
             return proposal['value']
         else:
             raise TraitError('location_latitude not in degrees')
 
     @validate('location_longitude')
     def _validate_longitude(self,proposal):
-        if proposal['value'].unit == u.degree:
+        if proposal['value'].unit.physical_type == 'angle':
             return proposal['value']
         else:
             raise TraitError('location_longitude not in degrees')
