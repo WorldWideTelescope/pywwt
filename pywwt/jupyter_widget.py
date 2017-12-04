@@ -3,15 +3,21 @@
 # because we instead use JSON messages to transmit any changes between the
 # Python and Javascript parts so that we can re-use this for the Qt client.
 
+import sys
+PY2 = sys.version_info[0] == 2
+
 import ipywidgets as widgets
 from traitlets import Unicode, default
-from ipyevents import Event as DOMListener
+
+if not PY2:
+    from ipyevents import Event as DOMListener
 
 from .core import BaseWWTWidget
 
 __all__ = ['WWTJupyterWidget']
 
-dom_listener = DOMListener()
+if not PY2:
+    dom_listener = DOMListener()
 
 
 @widgets.register
@@ -27,9 +33,10 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     def __init__(self):
         widgets.DOMWidget.__init__(self)
         BaseWWTWidget.__init__(self)
-        dom_listener.source = self
-        dom_listener.prevent_default_action = True
-        dom_listener.watched_events = ['wheel']
+        if not PY2:
+            dom_listener.source = self
+            dom_listener.prevent_default_action = True
+            dom_listener.watched_events = ['wheel']
 
     @default('layout')
     def _default_layout(self):
