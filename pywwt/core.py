@@ -33,7 +33,6 @@ class BaseWWTWidget(HasTraits):
         # setting).
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         new_value = changed['new']
-        #print('_otc: ',changed,sep=' ')
         if wwt_name is not None:            
             if isinstance(new_value,u.Quantity):
                 new_value = new_value.value

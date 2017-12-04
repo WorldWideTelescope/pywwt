@@ -40,7 +40,6 @@ class Annotation(HasTraits):
         # its own, we only want to react to changes in traits that have the wwt
         # metadata attribute (which indicates the name of the corresponding WWT
         # setting).
-        #print('an _otc: ',changed,sep=' ')
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         if wwt_name is not None:
             self.parent._send_msg(event='annotation_set',
@@ -67,21 +66,18 @@ class Circle(Annotation):
                               dec=coord_icrs.dec.degree)
 
     def _on_trait_change(self, changed):
-        #print('new _otc: ', changed, sep=' ')
         if changed['name'] == 'radius':
             if changed['new'].unit.is_equivalent(u.pixel):
-                # self.parent._send_msg(event='annotation_set',
-                #                       id=self.id,
-                #                       setting='sky_relative',
-                #                       value='true')
-                self.sky_relative = True
+                self.parent._send_msg(event='annotation_set',
+                                      id=self.id,
+                                      setting='skyRelative',
+                                      value=True)
                 changed['new'] = changed['new'].to(u.pixel).value
             elif changed['new'].unit.is_equivalent(u.arcsec):
-                # self.parent._send_msg(event='annotation_set',
-                #                       id=self.id,
-                #                       setting='sky_relative',
-                #                       value='false')
-                self.sky_relative = False
+                self.parent._send_msg(event='annotation_set',
+                                      id=self.id,
+                                      setting='skyRelative',
+                                      value=False)
                 changed['new'] = changed['new'].to(u.arcsec).value
             else:
                 raise TraitError('radius must be in pixel or arcsecond equivalent unit')
