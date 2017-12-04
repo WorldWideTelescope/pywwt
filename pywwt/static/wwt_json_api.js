@@ -54,10 +54,11 @@ function wwt_apply_json_message(wwt, msg) {
         case 'circle':
           // TODO: check if ID already exists
           circle = wwt.createCircle();
+          circle.setCenter(0, 0);
           circle.set_id(msg['id']);
           wwt.addAnnotation(circle);
           wwt.annotations[msg['id']] = circle;
-          break
+          break;
 
         case 'poly':
           // same TODO as above
@@ -65,7 +66,7 @@ function wwt_apply_json_message(wwt, msg) {
           poly.set_id(msg['id']);
           wwt.addAnnotation(poly);
           wwt.annotations[msg['id']] = poly;
-          break
+          break;
 
         case 'polyLine':
           // same TODO as above
@@ -73,7 +74,7 @@ function wwt_apply_json_message(wwt, msg) {
           polyLine.set_id(msg['id']);
           wwt.addAnnotation(polyLine);
           wwt.annotations[msg['id']] = polyLine;
-          break
+          break;
       }
       break;
 

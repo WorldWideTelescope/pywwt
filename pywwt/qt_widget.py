@@ -148,4 +148,5 @@ class WWTQtWidget(BaseWWTWidget):
 
     def _send_msg(self, **kwargs):
         msg = json.dumps(kwargs)
+        #print('_send_msg: ',msg,sep=' ')
         return self.widget._run_js("wwt_apply_json_message(wwt, {0})".format(msg))
