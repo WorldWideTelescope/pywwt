@@ -8,7 +8,9 @@ notifications:
 env:
   global:
     - SETUP_XVFB=True
-    - CONDA_DEPENDENCIES="astropy qtpy traitlets pyqt pytest requests"
+    - CONDA_CHANNELS="astrofrog/label/dev"
+    - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest requests nomkl"
+    - PIP_DEPENDENCIES="sphinx-automodapi numpydoc"
   matrix:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.5
