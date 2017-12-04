@@ -20,3 +20,4 @@ install:
 
 script:
   - py.test pywwt
+  - cd docs ; make html
