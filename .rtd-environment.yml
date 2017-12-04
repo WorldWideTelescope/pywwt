@@ -12,6 +12,6 @@ dependencies:
   - pyqt
   - widgetsnbextension
   - ipyevents
-  pip:
+  - pip:
     - sphinx-automodapi
     - numpydoc
