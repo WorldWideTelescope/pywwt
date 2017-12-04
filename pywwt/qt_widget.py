@@ -55,7 +55,7 @@ class WWTQWebEnginePage(QWebEnginePage):
         def javaScriptConsoleMessage(self, level=None, message=None,
                                      line_number=None, source_id=None):
             if not self._check_running or 'wwt_ready' not in message:
-                print(message)
+                print('{0} (level={1}, line_number={2}, source_id={3})'.format(message, level, line_number, source_id))
 
         def _check_ready(self):
             if not self._check_running:
@@ -63,6 +63,11 @@ class WWTQWebEnginePage(QWebEnginePage):
                 self.runJavaScript('wwt_ready;', self._wwt_ready_callback)
 
     else:
+
+        def javaScriptConsoleMessage(self, message=None, line_number=None,
+                                     source_id=None):
+            if 'wwt_ready' not in message:
+                print('{0} (line_number={1}, source_id={2})'.format(message, line_number, source_id))
 
         def runJavaScript(self, code):
             result = self._frame.evaluateJavaScript(code)
