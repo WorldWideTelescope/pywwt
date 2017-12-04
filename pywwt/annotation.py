@@ -4,6 +4,8 @@ from traitlets import Bool, Unicode, Float, HasTraits
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
 
+__all__ = ['Annotation', 'Circle', 'Poly', 'PolyLine']
+
 
 class Annotation(HasTraits):
 

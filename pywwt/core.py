@@ -10,6 +10,8 @@ from .imagery import get_imagery_layers
 
 DEFAULT_SURVEYS_URL = 'http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys'
 
+__all__ = ['BaseWWTWidget']
+
 
 class BaseWWTWidget(HasTraits):
     
