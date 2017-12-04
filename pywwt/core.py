@@ -2,6 +2,7 @@ from traitlets import Bool, HasTraits, Float, Unicode, observe, validate, TraitE
 from astropy import units as u
 
 from .annotation import Circle, Poly, PolyLine
+from .quantity_trait import AstropyQuantity
 from .imagery import get_imagery_layers
 
 # The WWT web control API is described here:
@@ -26,11 +27,15 @@ class BaseWWTWidget(HasTraits):
         # its own, we only want to react to changes in traits that have the wwt
         # metadata attribute (which indicates the name of the corresponding WWT
         # setting).
-        wwt_name = self.trait_metadata(changed['name'], 'wwt')
-        if wwt_name is not None:
+        wwt_name  = self.trait_metadata(changed['name'], 'wwt')
+        new_value = changed['new']
+        if wwt_name is not None:            
+            if isinstance(new_value,u.Quantity):
+                new_value = new_value.value
+
             self._send_msg(event='setting_set',
                            setting=wwt_name,
-                           value=changed['new'])
+                           value=new_value)
 
     def _send_msg(self, **kwargs):
         # This method should be overridden and should send the message to WWT
@@ -42,11 +47,6 @@ class BaseWWTWidget(HasTraits):
     constellation_boundary_color  = Unicode('blue', help='Sets color for constellation boundary').tag(wwt='constellationBoundryColor', sync=True)
     constellation_figure_color    = Unicode('red', help='Sets color for constellation figure').tag(wwt='constellationFigureColor', sync=True)
     constellation_selection_color = Unicode('yellow', help='Sets color for constellation selection').tag(wwt='constellationSelectionColor', sync=True)
-
-    local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude').tag(wwt='localHorizonMode', sync=True)
-    location_altitude  = Float(0, help='Assigns altitude (in meters) for view location').tag(wwt='locationAltitude', sync=True)
-    location_latitude  = Float(47.633, help='Assigns latitude for view location').tag(wwt='locationLat', sync=True)
-    location_longitude = Float(122.133333, help='Assigns longitude for view location').tag(wwt='locationLng', sync=True)
 
     constellation_boundaries = Bool(False, help='Whether to show boundaries for the selected constellations').tag(wwt='showConstellationBoundries', sync=True)
     constellation_figures    = Bool(False, help='Whether to show the constellations').tag(wwt='showConstellationFigures', sync=True)
@@ -93,6 +93,32 @@ class BaseWWTWidget(HasTraits):
                        dec=coord_icrs.dec.deg,
                        fov=fov.to(u.deg).value,
                        instant=instant)
+
+    local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude').tag(wwt='localHorizonMode', sync=True)
+    location_altitude  = AstropyQuantity(0 * u.m, help='Assigns altitude (in meters) for view location').tag(wwt='locationAltitude', sync=True)
+    location_latitude  = AstropyQuantity(47.633 * u.deg, help='Assigns latitude for view location').tag(wwt='locationLat', sync=True)
+    location_longitude = AstropyQuantity(122.133333 * u.deg, help='Assigns longitude for view location').tag(wwt='locationLng', sync=True)
+    
+    @validate('location_altitude')
+    def _validate_altitude(self,proposal):
+        if proposal['value'].unit.physical_type == 'length':
+            return proposal['value'].to(u.meter)
+        else:
+            raise TraitError('location_altitude not in units of length')
+   
+    @validate('location_latitude')
+    def _validate_latitude(self,proposal):
+        if proposal['value'].unit.physical_type == 'angle':
+            return proposal['value'].to(u.degree)
+        else:
+            raise TraitError('location_latitude not in angle units')
+
+    @validate('location_longitude')
+    def _validate_longitude(self,proposal):
+        if proposal['value'].unit.physical_type == 'angle':
+            return proposal['value'].to(u.degree)
+        else:
+            raise TraitError('location_longitude not in angle units')
 
     def load_image_collection(self, url):
         self._available_layers += get_imagery_layers(url)
