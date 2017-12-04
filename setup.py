@@ -155,7 +155,7 @@ setup_args = {
         'jsdeps': NPM,
     },
 
-    'author': 'Thomas P. Robitaille',
+    'author': 'Thomas P. Robitaille, Justin Otor, and John ZuHone',
     'author_email': 'thomas.robitaille@gmail.com',
     'url': 'https://github.com/WorldWideTelescope/pywwt',
     'keywords': [

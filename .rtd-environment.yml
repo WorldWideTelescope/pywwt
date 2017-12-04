@@ -1,12 +1,19 @@
-name: packagename
+name: pywwt
 
 channels:
-    - astropy
+  - conda-forge
 
 dependencies:
-    - astropy
-    - Cython
-    - matplotlib
-    - numpy
-#   - pip:
-#       - dependency_from_pip
+  - python>=3
+  - traitlets
+  - ipywidgets>=7.0
+  - astropy
+  - qtpy
+  - pyqt
+  - widgetsnbextension
+  - ipyevents
+  - nomkl
+  - nodejs
+  - pip:
+    - sphinx-automodapi
+    - numpydoc
