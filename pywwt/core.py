@@ -109,16 +109,16 @@ class BaseWWTWidget(HasTraits):
     @validate('location_latitude')
     def _validate_latitude(self,proposal):
         if proposal['value'].unit.physical_type == 'angle':
-            return proposal['value']
+            return proposal['value'].to(u.degree)
         else:
-            raise TraitError('location_latitude not in degrees')
+            raise TraitError('location_latitude not in angle units')
 
     @validate('location_longitude')
     def _validate_longitude(self,proposal):
         if proposal['value'].unit.physical_type == 'angle':
-            return proposal['value']
+            return proposal['value'].to(u.degree)
         else:
-            raise TraitError('location_longitude not in degrees')
+            raise TraitError('location_longitude not in angle units')
 
     def load_image_collection(self, url):
         self._available_layers += get_imagery_layers(url)
