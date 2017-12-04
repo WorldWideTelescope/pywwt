@@ -1,10 +1,12 @@
-from ._version import version_info, __version__
+from ._version import version_info, __version__  # noqa
+from .core import *  # noqa
+from .jupyter_widget import *  # noqa
+from .qt_widget import *  # noqa
+from .annotation import *  # noqa
 
 
 def _jupyter_nbextension_paths():
-    return [{
-        'section': 'notebook',
-        'src': 'static',
-        'dest': 'pywwt',
-        'require': 'pywwt/extension'
-    }]
+    return [{'section': 'notebook',
+             'src': 'static',
+             'dest': 'pywwt',
+             'require': 'pywwt/extension'}]

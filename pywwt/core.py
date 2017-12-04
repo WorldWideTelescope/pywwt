@@ -1,8 +1,10 @@
-from traitlets import Bool, HasTraits, Float, Unicode, observe, validate, TraitError
+from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
 
+# We import the trait classes from .traits since we do various customizations
+from .traits import Bool, Float, Unicode, AstropyQuantity
+
 from .annotation import Circle, Poly, PolyLine
-from .quantity_trait import AstropyQuantity
 from .imagery import get_imagery_layers
 
 # The WWT web control API is described here:
@@ -14,14 +16,14 @@ __all__ = ['BaseWWTWidget']
 
 
 class BaseWWTWidget(HasTraits):
-    
+
     def __init__(self):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
         self._available_layers = []
         self.load_image_collection(DEFAULT_SURVEYS_URL)
         for name in self.trait_names():
-            self._on_trait_change({'name': name, 'new': getattr(self,name), 'type': 'change'})
+            self._on_trait_change({'name': name, 'new': getattr(self, name), 'type': 'change'})
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
@@ -29,10 +31,10 @@ class BaseWWTWidget(HasTraits):
         # its own, we only want to react to changes in traits that have the wwt
         # metadata attribute (which indicates the name of the corresponding WWT
         # setting).
-        wwt_name  = self.trait_metadata(changed['name'], 'wwt')
+        wwt_name = self.trait_metadata(changed['name'], 'wwt')
         new_value = changed['new']
-        if wwt_name is not None:            
-            if isinstance(new_value,u.Quantity):
+        if wwt_name is not None:
+            if isinstance(new_value, u.Quantity):
                 new_value = new_value.value
 
             self._send_msg(event='setting_set',
@@ -46,23 +48,23 @@ class BaseWWTWidget(HasTraits):
     # TODO: need to add all settings as traits
     # many settings are listed as 'not yet implemented' in the documentation. still true?
 
-    constellation_boundary_color  = Unicode('blue', help='Sets color for constellation boundary').tag(wwt='constellationBoundryColor', sync=True)
-    constellation_figure_color    = Unicode('red', help='Sets color for constellation figure').tag(wwt='constellationFigureColor', sync=True)
-    constellation_selection_color = Unicode('yellow', help='Sets color for constellation selection').tag(wwt='constellationSelectionColor', sync=True)
+    constellation_boundary_color = Unicode('blue', help='The color of the constellation boundaries (:class:`str`)').tag(wwt='constellationBoundryColor', sync=True)
+    constellation_figure_color = Unicode('red', help='The color of the constellation figure (:class:`str`)').tag(wwt='constellationFigureColor', sync=True)
+    constellation_selection_color = Unicode('yellow', help='The color of the constellation selection (:class:`str`)').tag(wwt='constellationSelectionColor', sync=True)
 
-    constellation_boundaries = Bool(False, help='Whether to show boundaries for the selected constellations').tag(wwt='showConstellationBoundries', sync=True)
-    constellation_figures    = Bool(False, help='Whether to show the constellations').tag(wwt='showConstellationFigures', sync=True)
-    constellation_selection  = Bool(False, help='Whether to only show boundaries for the selected constellation').tag(wwt='showConstellationSelection', sync=True)
+    constellation_boundaries = Bool(False, help='Whether to show boundaries for the selected constellations (:class:`bool`)').tag(wwt='showConstellationBoundries', sync=True)
+    constellation_figures = Bool(False, help='Whether to show the constellations (:class:`bool`)').tag(wwt='showConstellationFigures', sync=True)
+    constellation_selection = Bool(False, help='Whether to only show boundaries for the selected constellation (:class:`bool`)').tag(wwt='showConstellationSelection', sync=True)
 
-    crosshairs = Bool(True, help='Whether to show cross-hairs').tag(wwt='showCrosshairs', sync=True)
-    ecliptic   = Bool(False, help='Whether to show the path of the Sun').tag(wwt='showEcliptic', sync=True)
-    grid       = Bool(False, help='Whether to show the equatorial grid').tag(wwt='showGrid', sync=True)
+    crosshairs = Bool(True, help='Whether to show crosshairs at the center of the field (:class:`bool`)').tag(wwt='showCrosshairs', sync=True)
+    ecliptic = Bool(False, help='Whether to show the path of the ecliptic').tag(wwt='showEcliptic', sync=True)
+    grid = Bool(False, help='Whether to show the equatorial grid (:class:`bool`)').tag(wwt='showGrid', sync=True)
 
     # TODO: need to add more methods here.
 
-    def load_tour(self,url):
+    def load_tour(self, url):
         """
-        Load and begin playing a tour based on the URL to a .wtt file from 
+        Load and begin playing a tour based on the URL to a .wtt file from
         the WorldWideTelescope website.
 
         Parameters
@@ -72,7 +74,7 @@ class BaseWWTWidget(HasTraits):
         """
         # throw error if url doesn't end in .wtt
         if url[-4:] == '.wtt':
-            self._send_msg(event='load_tour',url=url)
+            self._send_msg(event='load_tour', url=url)
         else:
             raise ValueError('url must end in \'.wwt\'')
 
@@ -96,27 +98,27 @@ class BaseWWTWidget(HasTraits):
                        fov=fov.to(u.deg).value,
                        instant=instant)
 
-    local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude').tag(wwt='localHorizonMode', sync=True)
-    location_altitude  = AstropyQuantity(0 * u.m, help='Assigns altitude (in meters) for view location').tag(wwt='locationAltitude', sync=True)
-    location_latitude  = AstropyQuantity(47.633 * u.deg, help='Assigns latitude for view location').tag(wwt='locationLat', sync=True)
-    location_longitude = AstropyQuantity(122.133333 * u.deg, help='Assigns longitude for view location').tag(wwt='locationLng', sync=True)
-    
+    local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode', sync=True)
+    location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude', sync=True)
+    location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location  (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat', sync=True)
+    location_longitude = AstropyQuantity(122.133333 * u.deg, help='The longitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationLng', sync=True)
+
     @validate('location_altitude')
-    def _validate_altitude(self,proposal):
+    def _validate_altitude(self, proposal):
         if proposal['value'].unit.physical_type == 'length':
             return proposal['value'].to(u.meter)
         else:
             raise TraitError('location_altitude not in units of length')
-   
+
     @validate('location_latitude')
-    def _validate_latitude(self,proposal):
+    def _validate_latitude(self, proposal):
         if proposal['value'].unit.physical_type == 'angle':
             return proposal['value'].to(u.degree)
         else:
             raise TraitError('location_latitude not in angle units')
 
     @validate('location_longitude')
-    def _validate_longitude(self,proposal):
+    def _validate_longitude(self, proposal):
         if proposal['value'].unit.physical_type == 'angle':
             return proposal['value'].to(u.degree)
         else:
@@ -130,7 +132,7 @@ class BaseWWTWidget(HasTraits):
     def available_layers(self):
         return self._available_layers
 
-    foreground = Unicode('Digitized Sky Survey (Color)')
+    foreground = Unicode('Digitized Sky Survey (Color)', help='The layer to show in the foreground (:class:`str`)')
 
     @observe('foreground')
     def _on_foreground_change(self, changed):
@@ -143,7 +145,7 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('foreground is not one of the available layers')
 
-    background = Unicode('SFD Dust Map (Infrared)')
+    background = Unicode('SFD Dust Map (Infrared)', help='The layer to show in the background (:class:`str`)')
 
     @observe('background')
     def _on_background_change(self, changed):
@@ -156,7 +158,7 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('background is not one of the available layers')
 
-    foreground_opacity = Float(0.5)
+    foreground_opacity = Float(0.5, help='The opacity of the foreground layer (float)')
 
     @observe('foreground_opacity')
     def _on_foreground_opacity_change(self, changed):
