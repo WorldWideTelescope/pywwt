@@ -57,6 +57,7 @@ function wwt_apply_json_message(wwt, msg) {
           circle.set_id(msg['id']);
           wwt.addAnnotation(circle);
           wwt.annotations[msg['id']] = circle;
+          break
 
         case 'poly':
           // same TODO as above
@@ -64,6 +65,7 @@ function wwt_apply_json_message(wwt, msg) {
           poly.set_id(msg['id']);
           wwt.addAnnotation(poly);
           wwt.annotations[msg['id']] = poly;
+          break
 
         case 'polyLine':
           // same TODO as above
@@ -71,6 +73,7 @@ function wwt_apply_json_message(wwt, msg) {
           polyLine.set_id(msg['id']);
           wwt.addAnnotation(polyLine);
           wwt.annotations[msg['id']] = polyLine;
+          break
       }
       break;
 
