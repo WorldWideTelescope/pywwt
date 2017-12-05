@@ -9,7 +9,7 @@ import os
 import json
 
 from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtGui, QtCore
 
 from .core import BaseWWTWidget
 from .logger import logger
@@ -142,7 +142,7 @@ app = None
 
 class WWTQtWidget(BaseWWTWidget):
 
-    def __init__(self, block_until_ready=False):
+    def __init__(self, block_until_ready=False, size=None):
 
         global app
         if app is None:
@@ -151,6 +151,8 @@ class WWTQtWidget(BaseWWTWidget):
                 app = QtWidgets.QApplication([''])
 
         self.widget = CoreWWTQtWidget()
+        if size is not None:
+            self.widget.resize(*size)
         self.widget.show()
 
         if block_until_ready:
@@ -164,3 +166,10 @@ class WWTQtWidget(BaseWWTWidget):
     def _send_msg(self, **kwargs):
         msg = json.dumps(kwargs)
         return self.widget._run_js("wwt_apply_json_message(wwt, {0})".format(msg))
+
+    def render(self, filename):
+        image = QtGui.QImage(self.widget.size(), QtGui.QImage.Format_RGB32)
+        painter = QtGui.QPainter(image)
+        self.widget.render(painter)
+        image.save(filename)
+        painter.end()
