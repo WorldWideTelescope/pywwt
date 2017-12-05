@@ -1,5 +1,5 @@
 import uuid
-from traitlets import HasTraits, TraitError
+from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
 
 from .traits import Bool, Float, Unicode, AstropyQuantity
@@ -58,6 +58,24 @@ class Circle(Annotation):
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
     radius     = AstropyQuantity(10 * u.pixel, help='Sets the radius for the circle').tag(wwt='radius', sync=True)
 
+    # validate line_color & fill_color next
+
+    @validate('line_width')
+    def _validate_linewidth(self, proposal):
+        if proposal['value'].unit.is_equivalent(u.pixel):
+            return proposal['value'].to(u.pixel)
+        else:
+            raise TraitError('line width must be in pixel equivalent unit')
+    
+    @validate('radius')
+    def _validate_radius(self, proposal):
+        if proposal['value'].unit.is_equivalent(u.pixel):
+            return proposal['value'].to(u.pixel)
+        elif proposal['value'].unit.is_equivalent(u.arcsec):
+            return proposal['value'].to(u.arcsec)
+        else:
+            raise TraitError('radius must be in pixel or arcsec equivalent unit')
+
     def set_center(self, coord):
         coord_icrs = coord.icrs
         self.parent._send_msg(event='circle_set_center', id=self.id,
@@ -68,26 +86,23 @@ class Circle(Annotation):
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
+        # still need radius check to change sky_rel. new_value = changed['new']
+        # if radius, then change sky_relative
+        # then if isinstance
         if changed['name'] == 'radius':
             if changed['new'].unit.is_equivalent(u.pixel):
                 self.parent._send_msg(event='annotation_set',
                                       id=self.id,
                                       setting='skyRelative',
                                       value=True)
-                changed['new'] = changed['new'].to(u.pixel).value
             elif changed['new'].unit.is_equivalent(u.arcsec):
                 self.parent._send_msg(event='annotation_set',
                                       id=self.id,
                                       setting='skyRelative',
                                       value=False)
-                changed['new'] = changed['new'].to(u.arcsec).value
-            else:
-                raise TraitError('radius must be in pixel or arcsecond equivalent unit')
-        if changed['name'] == 'line_width':
-            if changed['new'].unit.is_equivalent(u.pixel):
-                changed['new'] = changed['new'].to(u.pixel).value
-            else:
-                raise TraitError('line width must be in pixel equivalent unit')
+        if isinstance(changed['new'],u.Quantity):
+            changed['new'] = changed['new'].value
+
         super(Circle, self)._on_trait_change(changed)
 
 
@@ -100,6 +115,15 @@ class Polygon(Annotation):
     line_color = Unicode('white', help='Assigns line color for the polygon').tag(wwt='lineColor', sync=True)
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
 
+    # validate line_color next
+
+    @validate('line_width')
+    def _validate_linewidth(self, proposal):
+        if proposal['value'].unit.is_equivalent(u.pixel):
+            return proposal['value'].to(u.pixel)
+        else:
+            raise TraitError('line width must be in pixel equivalent unit')
+
     def add_point(self,coord):
         coord_icrs = coord.icrs
         self.parent._send_msg(event='polygon_add_point', id=self.id,
@@ -110,11 +134,9 @@ class Polygon(Annotation):
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
-        if changed['name'] == 'line_width':
-            if changed['new'].unit.is_equivalent(u.pixel):
-                changed['new'] = changed['new'].to(u.pixel).value
-            else:
-                raise TraitError('line width must be in pixel equivalent unit')
+        if isinstance(changed['new'],u.Quantity):
+            changed['new'] = changed['new'].value
+    
         super(Polygon, self)._on_trait_change(changed)
 
 
@@ -124,6 +146,15 @@ class Line(Annotation):
 
     line_color = Unicode('white', help='Assigns line color').tag(wwt='lineColor', sync=True)
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
+
+    # validate line_color next
+
+    @validate('line_width')
+    def _validate_linewidth(self, proposal):
+        if proposal['value'].unit.is_equivalent(u.pixel):
+            return proposal['value'].to(u.pixel)
+        else:
+            raise TraitError('line width must be in pixel equivalent unit')
 
     def add_point(self,coord):
         coord_icrs = coord.icrs
@@ -135,9 +166,7 @@ class Line(Annotation):
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
-        if changed['name'] == 'line_width':
-            if changed['new'].unit.is_equivalent(u.pixel):
-                changed['new'] = changed['new'].to(u.pixel).value
-            else:
-                raise TraitError('line width must be in pixel equivalent unit')
+        if isinstance(changed['new'],u.Quantity):
+            changed['new'] = changed['new'].value
+    
         super(Line, self)._on_trait_change(changed)
