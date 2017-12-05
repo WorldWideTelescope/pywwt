@@ -1,5 +1,8 @@
 import uuid
-from traitlets import Bool, Unicode, Float, HasTraits
+from traitlets import Bool, Unicode, Float, HasTraits, TraitError
+from astropy import units as u
+
+from .quantity_trait import AstropyQuantity
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -52,15 +55,38 @@ class Circle(Annotation):
     fill = Bool(False, help='Whether or not the circle should be filled').tag(wwt='fill', sync=True)
     fill_color = Unicode('white', help='Assigns fill color for the circle').tag(wwt='fillColor', sync=True)
     line_color = Unicode('white', help='Assigns line color for the circle').tag(wwt='lineColor', sync=True)
-    line_width = Float(1, help='Assigns line width (in pixels)').tag(wwt='linewidth', sync=True)
-    radius     = Float(10, help='Sets the radius for the circle').tag(wwt='radius', sync=True)
-    sky_relative = Bool(False, help='Whether the size of the circle is absolute or relative').tag(wwt='skyRelative', sync=True)
+    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
+    radius     = AstropyQuantity(10 * u.pixel, help='Sets the radius for the circle').tag(wwt='radius', sync=True)
+    sky_relative = Bool(False, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec)').tag(wwt='skyRelative', sync=True)
 
     def set_center(self, coord):
         coord_icrs = coord.icrs
         self.parent._send_msg(event='circle_set_center', id=self.id,
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
+
+    def _on_trait_change(self, changed):
+        if changed['name'] == 'radius':
+            if changed['new'].unit.is_equivalent(u.pixel):
+                self.parent._send_msg(event='annotation_set',
+                                      id=self.id,
+                                      setting='skyRelative',
+                                      value=True)
+                changed['new'] = changed['new'].to(u.pixel).value
+            elif changed['new'].unit.is_equivalent(u.arcsec):
+                self.parent._send_msg(event='annotation_set',
+                                      id=self.id,
+                                      setting='skyRelative',
+                                      value=False)
+                changed['new'] = changed['new'].to(u.arcsec).value
+            else:
+                raise TraitError('radius must be in pixel or arcsecond equivalent unit')
+        if changed['name'] == 'line_width':
+            if changed['new'].unit.is_equivalent(u.pixel):
+                changed['new'] = changed['new'].to(u.pixel).value
+            else:
+                raise TraitError('line width must be in pixel equivalent unit')
+        super(Circle, self)._on_trait_change(changed)
 
 
 class Poly(Annotation):
@@ -70,7 +96,7 @@ class Poly(Annotation):
     fill = Bool(False, help='Whether or not the polygon should be filled').tag(wwt='fill', sync=True)
     fill_color = Unicode('white', help='Assigns fill color for the polygon').tag(wwt='fillColor', sync=True)
     line_color = Unicode('white', help='Assigns line color for the polygon').tag(wwt='lineColor', sync=True)
-    line_width = Float(1, help='Assigns line width (in pixels)').tag(wwt='linewidth', sync=True)
+    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
 
     def add_point(self,coord):
         coord_icrs = coord.icrs
@@ -78,16 +104,32 @@ class Poly(Annotation):
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
 
+    def _on_trait_change(self, changed):
+        if changed['name'] == 'line_width':
+            if changed['new'].unit.is_equivalent(u.pixel):
+                changed['new'] = changed['new'].to(u.pixel).value
+            else:
+                raise TraitError('line width must be in pixel equivalent unit')
+        super(Poly, self)._on_trait_change(changed)
+
 
 class PolyLine(Annotation):
 
     shape = 'polyLine'
 
     line_color = Unicode('white', help='Assigns polyline color').tag(wwt='lineColor', sync=True)
-    line_width = Float(1, help='Assigns polyline width (in pixels)').tag(wwt='linewidth', sync=True)
+    line_width = AstropyQuantity(1 * u.pixel, help='Assigns polyline width (in pixels)').tag(wwt='lineWidth', sync=True)
 
     def add_point(self,coord):
         coord_icrs = coord.icrs
         self.parent._send_msg(event='polyLine_add_point', id=self.id,
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
+
+    def _on_trait_change(self, changed):
+        if changed['name'] == 'line_width':
+            if changed['new'].unit.is_equivalent(u.pixel):
+                changed['new'] = changed['new'].to(u.pixel).value
+            else:
+                raise TraitError('line width must be in pixel equivalent unit')
+        super(PolyLine, self)._on_trait_change(changed)
