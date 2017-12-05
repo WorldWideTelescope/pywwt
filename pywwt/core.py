@@ -62,6 +62,18 @@ class BaseWWTWidget(HasTraits):
 
     # TODO: need to add more methods here.
 
+    def get_dec(self):
+        """
+        Return declination for the current view.
+        """
+        return self._send_msg(event='get_dec')
+
+    def get_ra(self):
+        """
+        Return right ascension for the current view.
+        """
+        return self._send_msg(event='get_ra')
+    
     def load_tour(self, url):
         """
         Load and begin playing a tour based on the URL to a .wtt file from

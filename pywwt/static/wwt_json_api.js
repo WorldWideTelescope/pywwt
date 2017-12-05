@@ -11,6 +11,14 @@ function wwt_apply_json_message(wwt, msg) {
 
   switch(msg['event']) {
 
+    case 'get_dec':
+      return wwt.getDec();
+      break;
+
+    case 'get_ra':
+      return wwt.getRA();
+      break;
+
     case 'load_tour':
       wwt.loadTour(msg['url']);
       break;
