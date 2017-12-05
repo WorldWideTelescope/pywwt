@@ -130,6 +130,16 @@ function wwt_apply_json_message(wwt, msg) {
       line.addPoint(msg['ra'], msg['dec']);
       break;
 
+    case 'set_datetime':
+
+      var date = new Date(msg['year'], msg['month'], msg['day'],
+                          msg['hour'], msg['minute'], msg['second'],
+                          msg['millisecond']);
+
+      stc = wwtlib.SpaceTimeController;
+      stc.set_now(date);
+      break;
+
   }
 
 }

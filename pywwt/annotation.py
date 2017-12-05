@@ -15,15 +15,15 @@ class Annotation(HasTraits):
 
     shape = None
 
-    label = Unicode(help='Contains descriptive text '
-                         'for the annotation').tag(wwt='label')
+    label = Unicode('', help='Contains descriptive text '
+                             'for the annotation').tag(wwt='label')
 
-    opacity = Float(help='Specifies the opacity to be applied to the '
-                         'complete annotation').tag(wwt='opacity')
+    opacity = Float(1, help='Specifies the opacity to be applied to the '
+                            'complete annotation').tag(wwt='opacity')
 
-    hover_label = Bool(help='Specifies whether to render the label '
-                            'if the mouse is hovering over the '
-                            'annotation').tag(wwt='showHoverLabel')
+    hover_label = Bool(False, help='Specifies whether to render the label '
+                                   'if the mouse is hovering over the '
+                                   'annotation').tag(wwt='showHoverLabel')
 
     tag = Unicode(help='Contains a string for use by '
                        'the web client').tag(wwt='tag')
@@ -91,7 +91,7 @@ class Circle(Annotation):
             return proposal['value'].to(u.pixel)
         else:
             raise TraitError('line width must be in pixel equivalent unit')
-    
+
     @validate('radius')
     def _validate_radius(self, proposal):
         if proposal['value'].unit.is_equivalent(u.pixel):
@@ -117,14 +117,20 @@ class Circle(Annotation):
                                       id=self.id,
                                       setting='skyRelative',
                                       value=True)
+                changed['new'] = changed['new'].to(u.pixel).value
             elif changed['new'].unit.is_equivalent(u.arcsec):
                 self.parent._send_msg(event='annotation_set',
                                       id=self.id,
                                       setting='skyRelative',
                                       value=False)
-        if isinstance(changed['new'],u.Quantity):
-            changed['new'] = changed['new'].value
-
+                changed['new'] = changed['new'].to(u.deg).value
+            else:
+                raise TraitError('radius must be in angle equivalent unit')
+        if changed['name'] == 'line_width':
+            if changed['new'].unit.is_equivalent(u.pixel):
+                changed['new'] = changed['new'].to(u.pixel).value
+            else:
+                raise TraitError('line width must be in pixel equivalent unit')
         super(Circle, self)._on_trait_change(changed)
 
 
@@ -177,7 +183,7 @@ class Polygon(Annotation):
     def _on_trait_change(self, changed):
         if isinstance(changed['new'],u.Quantity):
             changed['new'] = changed['new'].value
-    
+
         super(Polygon, self)._on_trait_change(changed)
 
 
@@ -219,5 +225,5 @@ class Line(Annotation):
     def _on_trait_change(self, changed):
         if isinstance(changed['new'],u.Quantity):
             changed['new'] = changed['new'].value
-    
+
         super(Line, self)._on_trait_change(changed)

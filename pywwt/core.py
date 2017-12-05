@@ -24,6 +24,9 @@ class BaseWWTWidget(HasTraits):
         self.observe(self._on_trait_change, type='change')
         self._available_layers = []
         self.load_image_collection(DEFAULT_SURVEYS_URL)
+        self._on_foreground_change({'new': self.foreground})
+        self._on_background_change({'new': self.background})
+        self._on_foreground_opacity_change({'new': self.foreground_opacity})
         for name in self.trait_names():
             self._on_trait_change({'name': name, 'new': getattr(self, name), 'type': 'change'})
 
@@ -36,7 +39,7 @@ class BaseWWTWidget(HasTraits):
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         new_value = changed['new']
         if wwt_name is not None:
-            if isinstance(new_value,u.Quantity):
+            if isinstance(new_value, u.Quantity):
                 new_value = new_value.value
 
             self._send_msg(event='setting_set',
@@ -140,6 +143,12 @@ class BaseWWTWidget(HasTraits):
                        fov=fov.to(u.deg).value,
                        instant=instant)
 
+    def set_current_time(self, dt):
+        self._send_msg(event='set_datetime',
+                       year=dt.year, month=dt.month, day=dt.day,
+                       hour=dt.hour, minute=dt.minute, second=dt.second,
+                       millisecond=int(dt.microsecond / 1000.))
+
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode', sync=True)
     location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude', sync=True)
     location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location  (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat', sync=True)
@@ -187,7 +196,7 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('foreground is not one of the available layers')
 
-    background = Unicode('SFD Dust Map (Infrared)', help='The layer to show in the background (:class:`str`)')
+    background = Unicode('Hydrogen Alpha Full Sky Map', help='The layer to show in the background (:class:`str`)')
 
     @observe('background')
     def _on_background_change(self, changed):
@@ -200,11 +209,11 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('background is not one of the available layers')
 
-    foreground_opacity = Float(0.5, help='The opacity of the foreground layer (float)')
+    foreground_opacity = Float(0.8, help='The opacity of the foreground layer (float)')
 
     @observe('foreground_opacity')
     def _on_foreground_opacity_change(self, changed):
-        self._send_msg(event='set_opacity', value=changed['new'])
+        self._send_msg(event='set_foreground_opacity', value=changed['new'] * 100)
 
     @validate('foreground_opacity')
     def _validate_foreground_opacity(self, proposal):

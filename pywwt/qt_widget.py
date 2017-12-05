@@ -108,6 +108,7 @@ class CoreWWTQtWidget(QtWidgets.QWidget):
         self.web.setHtml(WWT_HTML)
 
         layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
         layout.addWidget(self.web)
 
@@ -155,13 +156,13 @@ class WWTQtWidget(BaseWWTWidget):
             self.widget.resize(*size)
         self.widget.show()
 
+        super(WWTQtWidget, self).__init__()
+
         if block_until_ready:
             while True:
                 app.processEvents()
                 if self.widget._wwt_ready:
                     break
-
-        super(WWTQtWidget, self).__init__()
 
     def _send_msg(self, **kwargs):
         msg = json.dumps(kwargs)
