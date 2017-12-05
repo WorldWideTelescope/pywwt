@@ -11,6 +11,10 @@ function wwt_apply_json_message(wwt, msg) {
 
   switch(msg['event']) {
 
+    case 'clear_annotations':
+      return wwt.clearAnnotations();
+      break;
+
     case 'get_dec':
       return wwt.getDec();
       break;
@@ -92,6 +96,14 @@ function wwt_apply_json_message(wwt, msg) {
       // TODO: nice error message if annotation doesn't exist
       annotation = wwt.annotations[msg['id']];
       annotation["set_" + name](msg['value']);
+      break;
+
+    case 'remove_annotation':
+
+      var name = msg["setting"];
+      // TODO: nice error message if annotation doesn't exist
+      shape = wwt.annotations[msg['id']];
+      wwt.removeAnnotation(shape);
       break;
 
     case 'circle_set_center':

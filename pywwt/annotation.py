@@ -1,8 +1,8 @@
 import uuid
-from traitlets import Bool, Unicode, Float, HasTraits, TraitError
+from traitlets import HasTraits, TraitError
 from astropy import units as u
 
-from .quantity_trait import AstropyQuantity
+from .traits import Bool, Float, Unicode, AstropyQuantity
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -65,6 +65,9 @@ class Circle(Annotation):
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
 
+    def remove_annotation(self):
+        self.parent._send_msg(event='remove_annotation', id=self.id)
+
     def _on_trait_change(self, changed):
         if changed['name'] == 'radius':
             if changed['new'].unit.is_equivalent(u.pixel):
@@ -104,6 +107,9 @@ class Poly(Annotation):
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
 
+    def remove_annotation(self):
+        self.parent._send_msg(event='remove_annotation', id=self.id)
+
     def _on_trait_change(self, changed):
         if changed['name'] == 'line_width':
             if changed['new'].unit.is_equivalent(u.pixel):
@@ -125,6 +131,9 @@ class PolyLine(Annotation):
         self.parent._send_msg(event='polyLine_add_point', id=self.id,
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
+
+    def remove_annotation(self):
+        self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
         if changed['name'] == 'line_width':

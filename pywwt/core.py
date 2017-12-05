@@ -62,6 +62,12 @@ class BaseWWTWidget(HasTraits):
 
     # TODO: need to add more methods here.
 
+    def clear_annotations(self):
+        """
+        Clears all annotations from the current view.
+        """
+        return self._send_msg(event='clear_annotations')
+    
     def get_dec(self):
         """
         Return declination for the current view.
