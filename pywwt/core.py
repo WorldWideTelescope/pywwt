@@ -1,5 +1,6 @@
 from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
+from astropy.coordinates import SkyCoord
 
 # We import the trait classes from .traits since we do various customizations
 from .traits import Bool, Float, Unicode, AstropyQuantity
@@ -67,19 +68,15 @@ class BaseWWTWidget(HasTraits):
         Clears all annotations from the current view.
         """
         return self._send_msg(event='clear_annotations')
-    
-    def get_dec(self):
-        """
-        Return declination for the current view.
-        """
-        return self._send_msg(event='get_dec')
 
-    def get_ra(self):
+    def get_center(self):
         """
-        Return right ascension for the current view.
+        Return the view's current right ascension and declination in degrees.
         """
-        return self._send_msg(event='get_ra')
-    
+        return SkyCoord(self._send_msg(event='get_ra'),
+                        self._send_msg(event='get_dec'),
+                        unit=(u.hourangle, u.deg))
+        
     def load_tour(self, url):
         """
         Load and begin playing a tour based on the URL to a .wtt file from
