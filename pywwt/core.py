@@ -5,7 +5,7 @@ from astropy.coordinates import SkyCoord
 # We import the trait classes from .traits since we do various customizations
 from .traits import Bool, Float, Unicode, AstropyQuantity
 
-from .annotation import Circle, Poly, PolyLine
+from .annotation import Circle, Polygon, Line
 from .imagery import get_imagery_layers
 
 # The WWT web control API is described here:
@@ -194,8 +194,8 @@ class BaseWWTWidget(HasTraits):
 
     def add_polygon(self):
         # same TODO as above
-        return Poly(self)
+        return Polygon(self)
 
-    def add_polyline(self):
+    def add_line(self):
         # same TODO as above
-        return PolyLine(self)
+        return Line(self)
