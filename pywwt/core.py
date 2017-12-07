@@ -99,11 +99,11 @@ class BaseWWTWidget(HasTraits):
         """
         self._send_msg(event='stop_tour')
 
-    def play_tour(self):
+    def resume_tour(self):
         """
-        Play a stopped tour.
+        Resume a stopped tour.
         """
-        self._send_msg(event='play_tour')
+        self._send_msg(event='resume_tour')
 
     def center_on_coordinates(self, coord, fov, instant=True):
         coord_icrs = coord.icrs

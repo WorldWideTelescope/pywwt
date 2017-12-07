@@ -27,7 +27,7 @@ function wwt_apply_json_message(wwt, msg) {
       wwt.loadTour(msg['url']);
       break;
 
-    case 'play_tour':
+    case 'resume_tour':
       wwt.playTour();
       break;
 
