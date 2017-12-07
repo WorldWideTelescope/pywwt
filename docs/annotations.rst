@@ -1,20 +1,29 @@
 Showing annotations in WorldWide Telescope
 ==========================================
 
-Annotation objects are shapes that a user can manually add to the viewer in order to add another dimension of adaptability for a variety of uses in tours, presentations, and the like. Users can generate several annotations at once, choosing from circles, polygons, and lines.
+Annotation objects are shapes that can be manually added to the viewer in 
+order to add another dimension of adaptability for use in tours, 
+presentations, and the like. It's possible to generate several annotations at once, 
+and you can choose from circles, polygons, and lines.
 
-Annotations must first be instantiated, then, in the cases of lines and polygons, extended point by point. You can use these principles to create a line that traces the Big Dipper with help from astropy's ``SkyCoord`` class in providing coordinates for each star in the constellation:
+Annotations must first be instantiated, then, in the cases of lines and 
+polygons, extended point by point. You can use these principles to create a line 
+that traces the Big Dipper with help from astropy's ``SkyCoord`` class in 
+providing coordinates for each star in the constellation:
 
 .. code-block:: python
 
     In [1]: line = wwt.add_line()
 
-    In [2]: line.add_point(SkyCoord.from_name('Alkaid')) # stars of the Big Dipper
+    In [2]: line.add_point(SkyCoord.from_name('Alkaid')) # stars of the Big 
+Dipper
        ...: line.add_point(SkyCoord.from_name('Mizar'))
        ...: line.add_point(SkyCoord.from_name('Alioth'))
        ...: # (and so on...)
 
-The color and width of the line are also adjustable. Line width is specified in pixels, while the color .. takes any type of value allowable through ``matplotlib.color.to_hex``, (contingent on pull for color-valid branch)
+The color and width of the line are also adjustable. Line width is specified in 
+pixels, while the color .. takes any type of value allowable through 
+``matplotlib.color.to_hex``, (contingent on pull for color-valid branch)
 as shown below:
 
 .. code-block:: python
@@ -28,23 +37,32 @@ An additional adjustment to the line width results in:
 
 [picture generated from commented code at bottom of file]
 
-Polygons are made in the same way as lines, though the viewer will automatically connect the last point added to the first in order to form a closed shape. This leads to the availability of a fill color (which can be toggled on and off) as well as an ample variety of possible shapes.
+Polygons are made in the same way as lines, though the viewer will automatically 
+connect the last point added to the first in order to form a closed shape. This 
+leads to the availability of a fill color (which can be toggled on and off) as 
+well as an ample variety of possible shapes.
 
 [picture of nice-looking polygon]
 
-Circles are similar in that their fill and line options are also changeable, but instead of adding points, you must specify a center coordinate with a ``SkyCoord`` value:
+Circles are similar in that their fill and line options are also changeable, but 
+instead of adding points, you must specify a center coordinate with a 
+``SkyCoord`` value:
 
 .. code-block:: python
 
-    In [4]: wwt.center_on_coordinates(SkyCoord(188, -57, unit=u.deg), fov = 100 * u.deg)
+    In [4]: wwt.center_on_coordinates(SkyCoord(188, -57, unit=u.deg), fov = 100 
+* u.deg)
 
     In [5]: circle = wwt.create_circle()
 
     In [6]: circle.set_center(SkyCoord(188, -57, unit=u.deg))
 
-Radii can be assigned in pixels or arcseconds, following user preference.
+Radii can be assigned in pixels or arcseconds, according to preference.
 
-Once an annotation is no longer needed, it can be removed via its ``remove_annotation`` method. If there are multiple annotations and you want them all gone at once, you can call on the widget's ``clear_annotations`` method.
+Once an annotation is no longer needed, it can be removed via its 
+``remove_annotation`` method. If there are multiple annotations and you want 
+them all gone at once, you can call on the widget's ``clear_annotations`` 
+method.
 
 
 .. code for big dipper example:
