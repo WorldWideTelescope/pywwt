@@ -90,14 +90,14 @@ def test_full(tmpdir, capsys):
     wwt.set_current_time(REFERENCE_TIME)
     wwt.foreground_opacity = 1.
 
-    wait(2)
+    wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step0.png')
 
     gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='galactic')
     wwt.center_on_coordinates(gc, 60 * u.deg)
 
-    wait(2)
+    wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step1.png')
 
@@ -108,7 +108,7 @@ def test_full(tmpdir, capsys):
     wwt.constellation_boundaries = True
     wwt.constellation_figures = True
 
-    wait(2)
+    wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step2.png')
 
@@ -118,13 +118,13 @@ def test_full(tmpdir, capsys):
     wwt.ecliptic = True
     wwt.grid = True
 
-    wait(2)
+    wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step3.png')
 
     wwt.foreground = 'SFD Dust Map (Infrared)'
 
-    wait(2)
+    wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step4.png')
 
@@ -175,6 +175,6 @@ def test_full(tmpdir, capsys):
     polyline.line_color = 'green'
     polyline.line_width = 3 * u.pixel
 
-    wait(2)
+    wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step5.png')
