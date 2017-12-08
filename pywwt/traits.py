@@ -1,4 +1,5 @@
 from traitlets import (TraitType,
+                       Any as OriginalAny,
                        Bool as OriginalBool,
                        Float as OriginalFloat,
                        Unicode as OriginalUnicode)
@@ -7,6 +8,12 @@ from astropy import units as u
 
 # We inherit the original trait classes to make sure that the docstrings are set
 
+class Any(OriginalAny):
+
+    def __init__(self, *args, **kwargs):
+        super(Any, self).__init__(*args, **kwargs)
+        if self.help:
+            self.__doc__ = self.help
 
 class Bool(OriginalBool):
 

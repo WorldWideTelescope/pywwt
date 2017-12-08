@@ -1,9 +1,9 @@
 import uuid
-from traitlets import Any, HasTraits, TraitError, validate
+from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
 from matplotlib import colors
 
-from .traits import Bool, Float, Unicode, AstropyQuantity
+from .traits import Any, Bool, Float, Unicode, AstropyQuantity
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -54,8 +54,8 @@ class Circle(Annotation):
     shape = 'circle'
 
     fill = Bool(False, help='Whether or not the circle should be filled (:class:`bool`)').tag(wwt='fill', sync=True)
-    fill_color = Any('w', help='Assigns fill color for the circle').tag(wwt='fillColor', sync=True)
-    line_color = Any('w', help='Assigns line color for the circle').tag(wwt='lineColor', sync=True)
+    fill_color = Any('w', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor', sync=True)
+    line_color = Any('w', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
     radius     = AstropyQuantity(10 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius', sync=True)
     sky_relative = Bool(False, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec) (:class:`~astropy.units.Quantity`)').tag(wwt='skyRelative', sync=True)
@@ -122,8 +122,8 @@ class Polygon(Annotation):
     shape = 'polygon'
 
     fill = Bool(False, help='Whether or not the polygon should be filled (:class:`bool`)').tag(wwt='fill', sync=True)
-    fill_color = Any('w', help='Assigns fill color for the polygon').tag(wwt='fillColor', sync=True)
-    line_color = Any('w', help='Assigns line color for the polygon').tag(wwt='lineColor', sync=True)
+    fill_color = Any('w', help='Assigns fill color for the polygon (:class:`str` or `tuple`)').tag(wwt='fillColor', sync=True)
+    line_color = Any('w', help='Assigns line color for the polygon (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
 
     @validate('fill_color')
@@ -167,8 +167,8 @@ class Line(Annotation):
 
     shape = 'line'
 
-    line_color = Any('w', help='Assigns line color').tag(wwt='lineColor', sync=True)
-    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
+    line_color = Any('w', help='Assigns polyline color (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
+    line_width = AstropyQuantity(1 * u.pixel, help='Assigns polyline width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
 
     @validate('line_color')
     def _validate_linecolor(self, proposal):
