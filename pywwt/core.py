@@ -105,7 +105,7 @@ class BaseWWTWidget(HasTraits):
         """
         self._send_msg(event='resume_tour')
 
-    def center_on_coordinates(self, coord, fov, instant=True):
+    def center_on_coordinates(self, coord, fov=60*u.deg, instant=True):
         coord_icrs = coord.icrs
         self._send_msg(event='center_on_coordinates',
                        ra=coord_icrs.ra.deg,
@@ -190,7 +190,12 @@ class BaseWWTWidget(HasTraits):
 
     def create_circle(self):
         # TODO: could buffer JS call here
-        return Circle(self)
+        circle = Circle(self)
+        self._send_msg(event='circle_set_center',
+                       id=circle.id,
+                       ra=self.get_center().ra.deg,
+                       dec=self.get_center().dec.deg)
+        return circle
 
     def add_polygon(self):
         # same TODO as above

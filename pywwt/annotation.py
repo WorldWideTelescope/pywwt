@@ -57,7 +57,6 @@ class Circle(Annotation):
     line_color = Unicode('white', help='Assigns line color for the circle').tag(wwt='lineColor', sync=True)
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
     radius     = AstropyQuantity(10 * u.pixel, help='Sets the radius for the circle').tag(wwt='radius', sync=True)
-    sky_relative = Bool(False, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec)').tag(wwt='skyRelative', sync=True)
 
     def set_center(self, coord):
         coord_icrs = coord.icrs
