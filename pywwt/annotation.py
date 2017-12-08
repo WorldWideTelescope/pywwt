@@ -1,13 +1,13 @@
 import uuid
-from traitlets import Bool, Unicode, Float, HasTraits, TraitError
+from traitlets import HasTraits, TraitError
 from astropy import units as u
 
-from .quantity_trait import AstropyQuantity
+from .traits import Bool, Float, Unicode, AstropyQuantity
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
 
-__all__ = ['Annotation', 'Circle', 'Poly', 'PolyLine']
+__all__ = ['Annotation', 'Circle', 'Polygon', 'Line']
 
 
 class Annotation(HasTraits):
@@ -57,13 +57,15 @@ class Circle(Annotation):
     line_color = Unicode('white', help='Assigns line color for the circle').tag(wwt='lineColor', sync=True)
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
     radius     = AstropyQuantity(10 * u.pixel, help='Sets the radius for the circle').tag(wwt='radius', sync=True)
-    sky_relative = Bool(False, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec)').tag(wwt='skyRelative', sync=True)
 
     def set_center(self, coord):
         coord_icrs = coord.icrs
         self.parent._send_msg(event='circle_set_center', id=self.id,
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
+
+    def remove_annotation(self):
+        self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
         if changed['name'] == 'radius':
@@ -89,9 +91,9 @@ class Circle(Annotation):
         super(Circle, self)._on_trait_change(changed)
 
 
-class Poly(Annotation):
+class Polygon(Annotation):
 
-    shape = 'poly'
+    shape = 'polygon'
 
     fill = Bool(False, help='Whether or not the polygon should be filled').tag(wwt='fill', sync=True)
     fill_color = Unicode('white', help='Assigns fill color for the polygon').tag(wwt='fillColor', sync=True)
@@ -100,9 +102,12 @@ class Poly(Annotation):
 
     def add_point(self,coord):
         coord_icrs = coord.icrs
-        self.parent._send_msg(event='poly_add_point', id=self.id,
+        self.parent._send_msg(event='polygon_add_point', id=self.id,
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
+
+    def remove_annotation(self):
+        self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
         if changed['name'] == 'line_width':
@@ -110,21 +115,24 @@ class Poly(Annotation):
                 changed['new'] = changed['new'].to(u.pixel).value
             else:
                 raise TraitError('line width must be in pixel equivalent unit')
-        super(Poly, self)._on_trait_change(changed)
+        super(Polygon, self)._on_trait_change(changed)
 
 
-class PolyLine(Annotation):
+class Line(Annotation):
 
-    shape = 'polyLine'
+    shape = 'line'
 
-    line_color = Unicode('white', help='Assigns polyline color').tag(wwt='lineColor', sync=True)
-    line_width = AstropyQuantity(1 * u.pixel, help='Assigns polyline width (in pixels)').tag(wwt='lineWidth', sync=True)
+    line_color = Unicode('white', help='Assigns line color').tag(wwt='lineColor', sync=True)
+    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
 
     def add_point(self,coord):
         coord_icrs = coord.icrs
-        self.parent._send_msg(event='polyLine_add_point', id=self.id,
+        self.parent._send_msg(event='line_add_point', id=self.id,
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
+
+    def remove_annotation(self):
+        self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
         if changed['name'] == 'line_width':
@@ -132,4 +140,4 @@ class PolyLine(Annotation):
                 changed['new'] = changed['new'].to(u.pixel).value
             else:
                 raise TraitError('line width must be in pixel equivalent unit')
-        super(PolyLine, self)._on_trait_change(changed)
+        super(Line, self)._on_trait_change(changed)

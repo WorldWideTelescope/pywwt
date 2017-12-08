@@ -1,10 +1,11 @@
 from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
+from astropy.coordinates import SkyCoord
 
 # We import the trait classes from .traits since we do various customizations
 from .traits import Bool, Float, Unicode, AstropyQuantity
 
-from .annotation import Circle, Poly, PolyLine
+from .annotation import Circle, Polygon, Line
 from .imagery import get_imagery_layers
 
 # The WWT web control API is described here:
@@ -62,6 +63,20 @@ class BaseWWTWidget(HasTraits):
 
     # TODO: need to add more methods here.
 
+    def clear_annotations(self):
+        """
+        Clears all annotations from the current view.
+        """
+        return self._send_msg(event='clear_annotations')
+
+    def get_center(self):
+        """
+        Return the view's current right ascension and declination in degrees.
+        """
+        return SkyCoord(self._send_msg(event='get_ra'),
+                        self._send_msg(event='get_dec'),
+                        unit=(u.hourangle, u.deg))
+        
     def load_tour(self, url):
         """
         Load and begin playing a tour based on the URL to a .wtt file from
@@ -84,13 +99,13 @@ class BaseWWTWidget(HasTraits):
         """
         self._send_msg(event='stop_tour')
 
-    def play_tour(self):
+    def resume_tour(self):
         """
-        Play a stopped tour.
+        Resume a stopped tour.
         """
-        self._send_msg(event='play_tour')
+        self._send_msg(event='resume_tour')
 
-    def center_on_coordinates(self, coord, fov, instant=True):
+    def center_on_coordinates(self, coord, fov=60*u.deg, instant=True):
         coord_icrs = coord.icrs
         self._send_msg(event='center_on_coordinates',
                        ra=coord_icrs.ra.deg,
@@ -175,12 +190,17 @@ class BaseWWTWidget(HasTraits):
 
     def create_circle(self):
         # TODO: could buffer JS call here
-        return Circle(self)
+        circle = Circle(self)
+        self._send_msg(event='circle_set_center',
+                       id=circle.id,
+                       ra=self.get_center().ra.deg,
+                       dec=self.get_center().dec.deg)
+        return circle
 
     def add_polygon(self):
         # same TODO as above
-        return Poly(self)
+        return Polygon(self)
 
-    def add_polyline(self):
+    def add_line(self):
         # same TODO as above
-        return PolyLine(self)
+        return Line(self)

@@ -11,11 +11,23 @@ function wwt_apply_json_message(wwt, msg) {
 
   switch(msg['event']) {
 
+    case 'clear_annotations':
+      return wwt.clearAnnotations();
+      break;
+
+    case 'get_dec':
+      return wwt.getDec();
+      break;
+
+    case 'get_ra':
+      return wwt.getRA();
+      break;
+
     case 'load_tour':
       wwt.loadTour(msg['url']);
       break;
 
-    case 'play_tour':
+    case 'resume_tour':
       wwt.playTour();
       break;
 
@@ -54,26 +66,26 @@ function wwt_apply_json_message(wwt, msg) {
         case 'circle':
           // TODO: check if ID already exists
           circle = wwt.createCircle();
-          circle.setCenter(0, 0);
+          //circle.setCenter(wwt.getRA()/15, wwt.getDec());
           circle.set_id(msg['id']);
           wwt.addAnnotation(circle);
           wwt.annotations[msg['id']] = circle;
           break;
 
-        case 'poly':
+        case 'polygon':
           // same TODO as above
-          poly = wwt.createPolygon();
-          poly.set_id(msg['id']);
-          wwt.addAnnotation(poly);
-          wwt.annotations[msg['id']] = poly;
+          polygon = wwt.createPolygon();
+          polygon.set_id(msg['id']);
+          wwt.addAnnotation(polygon);
+          wwt.annotations[msg['id']] = polygon;
           break;
 
-        case 'polyLine':
+        case 'line':
           // same TODO as above
-          polyLine = wwt.createPolyLine();
-          polyLine.set_id(msg['id']);
-          wwt.addAnnotation(polyLine);
-          wwt.annotations[msg['id']] = polyLine;
+          line = wwt.createPolyLine();
+          line.set_id(msg['id']);
+          wwt.addAnnotation(line);
+          wwt.annotations[msg['id']] = line;
           break;
       }
       break;
@@ -86,6 +98,14 @@ function wwt_apply_json_message(wwt, msg) {
       annotation["set_" + name](msg['value']);
       break;
 
+    case 'remove_annotation':
+
+      var name = msg["setting"];
+      // TODO: nice error message if annotation doesn't exist
+      shape = wwt.annotations[msg['id']];
+      wwt.removeAnnotation(shape);
+      break;
+
     case 'circle_set_center':
 
       var name = msg["setting"];
@@ -94,20 +114,20 @@ function wwt_apply_json_message(wwt, msg) {
       circle.setCenter(msg['ra'], msg['dec']);
       break;
 
-    case 'poly_add_point':
+    case 'polygon_add_point':
 
       var name = msg["setting"];
       // same TODO as above
-      poly = wwt.annotations[msg['id']];
-      poly.addPoint(msg['ra'], msg['dec']);
+      polygon = wwt.annotations[msg['id']];
+      polygon.addPoint(msg['ra'], msg['dec']);
       break;
 
-    case 'polyLine_add_point':
+    case 'line_add_point':
 
       var name = msg["setting"];
       // same TODO as above
-      polyLine = wwt.annotations[msg['id']];
-      polyLine.addPoint(msg['ra'], msg['dec']);
+      line = wwt.annotations[msg['id']];
+      line.addPoint(msg['ra'], msg['dec']);
       break;
 
   }

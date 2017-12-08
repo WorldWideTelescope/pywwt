@@ -45,6 +45,11 @@ class TestWWTWidget:
         self.widget.center_on_coordinates(M42, fov=10 * u.deg)
         wait_and_check_output(1, capsys)
 
+    def test_coordinates(self, capsys):
+        self.widget.center_on_coordinates(M42, fov=10 * u.deg)
+        assert M42.separation(self.widget.get_center()).arcsec < 1.e-6
+        wait_and_check_output(1, capsys)
+
     def test_annotations(self, capsys):
         circle = self.widget.create_circle()
         circle.opacity = 0.8
