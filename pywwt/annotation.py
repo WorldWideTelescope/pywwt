@@ -62,17 +62,17 @@ class Circle(Annotation):
 
     @validate('fill_color')
     def _validate_fillcolor(self, proposal):
-        if isinstance(proposal['value'],str) or isinstance(proposal['value'],tuple):
+        if isinstance(proposal['value'], str):
             return colors.to_hex(proposal['value'])
-        else:
-            raise TraitError('fill color must be a string or a tuple of floats')
-
-    @validate('line_color')
-    def _validate_linecolor(self, proposal):
-        if isinstance(proposal['value'],str) or isinstance(proposal['value'],tuple):
-            return colors.to_hex(proposal['value'])
-        else:
-            raise TraitError('line color must be a string or a tuple of floats')
+        elif isinstance(proposal['value'], tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+            if len(proposal['value']) == 4:
+                self.parent._send_msg(event='annotation_set',
+                                      id=self.id,
+                                      setting='opacity',
+                                      value=proposal['value'][-1])
+                return colors.to_hex(proposal['value'][:3])
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
