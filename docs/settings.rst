@@ -23,8 +23,8 @@ Show the constellations themselves by changing another setting:
     In [2]: wwt.constellation_figures = True
 
 Numerical settings all take astropy Quantities, which are floats with associated 
-units. To demonstrate, say you'd like to simulate the celestial view from from 
-the top of the tallest building in Santiago, Chile. You would enter:
+units. To demonstrate, say you'd like to simulate the celestial view from the 
+top of the tallest building in Santiago, Chile. You would enter:
 
 .. code-block:: python
 
@@ -41,10 +41,6 @@ The preceding results in the following view:
 [run code, include gif of viewer?]
 
 Many other visual settings are available...
-
-.. here we should describe the settings accessible via traits, e.g.
-.. whether or not to show constellations, etc. We don't need to list them
-.. exhaustively, just show a few examples.
 
 Foreground/background layers
 -----------------------------
@@ -72,7 +68,10 @@ star Alpha Centauri, the process looks like this:
 
     In [9]: coord = SkyCoord.from_name('Alpha Centauri')
 
-    In [10]: widget.center_on_coordinates(coord, fov=10 * u.deg)
+    In [10]: widget.center_on_coordinates(coord)
+    
+(``center_on_coordinates`` also has a default argument in astropy pixel units 
+that can change the scale of the viewer.)
 
 Running tours
 ------------------------

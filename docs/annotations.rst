@@ -15,23 +15,21 @@ providing coordinates for each star in the constellation:
 
     In [1]: line = wwt.add_line()
 
-    In [2]: line.add_point(SkyCoord.from_name('Alkaid')) # stars of the Big 
-Dipper
+    In [2]: line.add_point(SkyCoord.from_name('Alkaid')) # stars in Big Dipper
        ...: line.add_point(SkyCoord.from_name('Mizar'))
        ...: line.add_point(SkyCoord.from_name('Alioth'))
        ...: # (and so on...)
 
 The color and width of the line are also adjustable. Line width is specified in 
 pixels, while the color .. takes any type of value allowable through 
-``matplotlib.color.to_hex``, (contingent on pull for color-valid branch)
-as shown below:
+``matplotlib.color.to_hex``, as shown below:
 
 .. code-block:: python
 
     In [3]: line.line_color = '#C4D600' # hex strings
        ...: # line.line_color = 'g' # matplotlib default colors
        ...: # line.line_color = 'thistle' # extended html colors
-       ...: # line.line_color = (19, 39, 79) # rgb tuples
+       ...: # line.line_color = (.07, .15, ,.31, .5) # rgb tuples with opacity
 
 An additional adjustment to the line width results in:
 
@@ -50,14 +48,13 @@ instead of adding points, you must specify a center coordinate with a
 
 .. code-block:: python
 
-    In [4]: wwt.center_on_coordinates(SkyCoord(188, -57, unit=u.deg), fov = 100 
-* u.deg)
+    In [4]: wwt.center_on_coordinates(SkyCoord(188, -57, unit=u.deg))
 
     In [5]: circle = wwt.create_circle()
 
     In [6]: circle.set_center(SkyCoord(188, -57, unit=u.deg))
 
-Radii can be assigned in pixels or arcseconds, according to preference.
+Radii can be assigned in pixels or arcseconds as preferred.
 
 Once an annotation is no longer needed, it can be removed via its 
 ``remove_annotation`` method. If there are multiple annotations and you want 
