@@ -173,9 +173,10 @@ class Polygon(Annotation):
 
     def add_point(self,coord):
         coord_icrs = coord.icrs
-        self.parent._send_msg(event='polygon_add_point', id=self.id,
-                              ra=coord_icrs.ra.degree,
-                              dec=coord_icrs.dec.degree)
+        for point in coord_icrs:
+            self.parent._send_msg(event='polygon_add_point', id=self.id,
+                                  ra=point.ra.degree,
+                                  dec=point.dec.degree)
 
     def remove_annotation(self):
         self.parent._send_msg(event='remove_annotation', id=self.id)
@@ -215,9 +216,10 @@ class Line(Annotation):
 
     def add_point(self,coord):
         coord_icrs = coord.icrs
-        self.parent._send_msg(event='line_add_point', id=self.id,
-                              ra=coord_icrs.ra.degree,
-                              dec=coord_icrs.dec.degree)
+        for point in coord_icrs:
+            self.parent._send_msg(event='polygon_add_point', id=self.id,
+                                  ra=point.ra.degree,
+                                  dec=point.dec.degree)
 
     def remove_annotation(self):
         self.parent._send_msg(event='remove_annotation', id=self.id)
