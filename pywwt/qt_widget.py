@@ -127,7 +127,7 @@ app = None
 
 class WWTQtWidget(BaseWWTWidget):
 
-    def __init__(self, block_until_ready=False):
+    def __init__(self, block_until_ready=False, size=None, **kwargs):
 
         global app
         if app is None:
@@ -144,7 +144,7 @@ class WWTQtWidget(BaseWWTWidget):
                 if self.widget._wwt_ready:
                     break
 
-        super(WWTQtWidget, self).__init__()
+        super(WWTQtWidget, self).__init__(**kwargs)
 
     def _send_msg(self, **kwargs):
         msg = json.dumps(kwargs)
