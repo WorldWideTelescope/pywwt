@@ -171,12 +171,17 @@ class Polygon(Annotation):
         else:
             raise TraitError('line width must be in pixel equivalent unit')
 
-    def add_point(self,coord):
+    def add_point(self, coord):
         coord_icrs = coord.icrs
-        for point in coord_icrs:
+        if coord_icrs.isscalar: # if coord only has one point
             self.parent._send_msg(event='polygon_add_point', id=self.id,
-                                  ra=point.ra.degree,
-                                  dec=point.dec.degree)
+                                  ra=coord_icrs.ra.degree,
+                                  dec=coord_icrs.dec.degree)
+        else:
+            for point in coord_icrs:
+                self.parent._send_msg(event='polygon_add_point', id=self.id,
+                                      ra=point.ra.degree,
+                                      dec=point.dec.degree)
 
     def remove_annotation(self):
         self.parent._send_msg(event='remove_annotation', id=self.id)
@@ -214,12 +219,17 @@ class Line(Annotation):
         else:
             raise TraitError('width must be in pixel equivalent unit')
 
-    def add_point(self,coord):
+    def add_point(self, coord):
         coord_icrs = coord.icrs
-        for point in coord_icrs:
-            self.parent._send_msg(event='polygon_add_point', id=self.id,
-                                  ra=point.ra.degree,
-                                  dec=point.dec.degree)
+        if coord_icrs.isscalar: # if coord only has one point
+            self.parent._send_msg(event='line_add_point', id=self.id,
+                                  ra=coord_icrs.ra.degree,
+                                  dec=coord_icrs.dec.degree)
+        else:
+            for point in coord_icrs:
+                self.parent._send_msg(event='line_add_point', id=self.id,
+                                      ra=point.ra.degree,
+                                      dec=point.dec.degree)
 
     def remove_annotation(self):
         self.parent._send_msg(event='remove_annotation', id=self.id)
