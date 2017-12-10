@@ -19,8 +19,8 @@ __all__ = ['BaseWWTWidget']
 
 class BaseWWTWidget(HasTraits):
 
-    def __init__(self):
-        super(BaseWWTWidget, self).__init__()
+    def __init__(self, **kwargs):
+        super(BaseWWTWidget, self).__init__(**kwargs)
         self.observe(self._on_trait_change, type='change')
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
 
