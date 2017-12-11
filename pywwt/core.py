@@ -103,8 +103,8 @@ class BaseWWTWidget(HasTraits):
         """
         Return the view's current right ascension and declination in degrees.
         """
-        return SkyCoord(self._send_msg(event='get_ra'),
-                        self._send_msg(event='get_dec'),
+        return SkyCoord(self._send_msg(event='get_ra', async=False),
+                        self._send_msg(event='get_dec', async=False),
                         unit=(u.hourangle, u.deg))
 
     def load_tour(self, url):

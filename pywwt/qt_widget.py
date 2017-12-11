@@ -127,7 +127,7 @@ class CoreWWTQtWidget(QtWidgets.QWidget):
         self._run_js(self._js_queue, async=True)
         self._js_queue = ""
 
-    def _run_js(self, js, async=False):
+    def _run_js(self, js, async=True):
         if not js:
             return
         if self._wwt_ready:
@@ -164,9 +164,9 @@ class WWTQtWidget(BaseWWTWidget):
                 if self.widget._wwt_ready:
                     break
 
-    def _send_msg(self, **kwargs):
+    def _send_msg(self, async=True, **kwargs):
         msg = json.dumps(kwargs)
-        return self.widget._run_js("wwt_apply_json_message(wwt, {0})".format(msg))
+        return self.widget._run_js("wwt_apply_json_message(wwt, {0});".format(msg), async=async)
 
     def render(self, filename):
         image = QtGui.QImage(self.widget.size(), QtGui.QImage.Format_RGB32)

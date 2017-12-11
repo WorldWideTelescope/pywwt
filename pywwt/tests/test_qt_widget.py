@@ -168,7 +168,7 @@ def test_full(tmpdir, capsys):
 
     coord = SkyCoord([10, 5, 2], [5, 2, 2], unit=('deg', 'deg'), frame='galactic')
 
-    polyline = wwt.add_polyline()
+    polyline = wwt.add_line()
     polyline.add_point(coord[0])
     polyline.add_point(coord[1])
     polyline.add_point(coord[2])
