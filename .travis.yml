@@ -2,7 +2,9 @@ language: c
 
 os:
   - linux
-  - osx
+  # For now the image tests don't work well on MacOS X, which requires WebEngine. The
+  # tests only pass if the Qt window is always in the foreground.
+  # - osx
 
 sudo: false
 
