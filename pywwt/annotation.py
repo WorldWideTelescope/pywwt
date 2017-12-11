@@ -64,15 +64,24 @@ class Circle(Annotation):
     def _validate_fillcolor(self, proposal):
         if isinstance(proposal['value'], str):
             return colors.to_hex(proposal['value'])
-        elif isinstance(proposal['value'], tuple):
+        if isinstance(proposal['value'], tuple):
             if len(proposal['value']) == 3:
                 return colors.to_hex(proposal['value'])
             if len(proposal['value']) == 4:
-                self.parent._send_msg(event='annotation_set',
-                                      id=self.id,
-                                      setting='opacity',
-                                      value=proposal['value'][-1])
+                self.opacity = proposal['value'][-1]
                 return colors.to_hex(proposal['value'][:3])
+        raise TraitError('fill color must be a string or a tuple of 3 or 4 floats')
+
+    @validate('line_color')
+    def _validate_linecolor(self, proposal):
+        if isinstance(proposal['value'],str):
+            return colors.to_hex(proposal['value'])
+        if isinstance(proposal['value'],tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+            else:
+                pass
+        raise TraitError('line color must be a string or a tuple of 3 floats')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -128,17 +137,24 @@ class Polygon(Annotation):
 
     @validate('fill_color')
     def _validate_fillcolor(self, proposal):
-        if isinstance(proposal['value'],str) or isinstance(proposal['value'],tuple):
+        if isinstance(proposal['value'], str):
             return colors.to_hex(proposal['value'])
-        else:
-            raise TraitError('fill color must be a string or a tuple of floats')
+        if isinstance(proposal['value'], tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+            if len(proposal['value']) == 4:
+                self.opacity = proposal['value'][-1]
+                return colors.to_hex(proposal['value'][:3])
+        raise TraitError('fill color must be a string or a tuple of 3 or 4 floats')
 
     @validate('line_color')
     def _validate_linecolor(self, proposal):
-        if isinstance(proposal['value'],str) or isinstance(proposal['value'],tuple):
+        if isinstance(proposal['value'],str):
             return colors.to_hex(proposal['value'])
-        else:
-            raise TraitError('line color must be a string or a tuple of floats')
+        if isinstance(proposal['value'],tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+        raise TraitError('line color must be a string or a tuple of 3 floats')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -167,22 +183,27 @@ class Line(Annotation):
 
     shape = 'line'
 
-    line_color = Any('w', help='Assigns polyline color (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
-    line_width = AstropyQuantity(1 * u.pixel, help='Assigns polyline width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
+    color = Any('w', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
+    width = AstropyQuantity(1 * u.pixel, help='Assigns width for the line in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
 
-    @validate('line_color')
-    def _validate_linecolor(self, proposal):
-        if isinstance(proposal['value'],str) or isinstance(proposal['value'],tuple):
+    @validate('color')
+    def _validate_color(self, proposal):
+        if isinstance(proposal['value'], str):
             return colors.to_hex(proposal['value'])
-        else:
-            raise TraitError('line color must be a string or a tuple of floats')
+        if isinstance(proposal['value'], tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+            if len(proposal['value']) == 4:
+                self.opacity = proposal['value'][-1]
+                return colors.to_hex(proposal['value'][:3])
+        raise TraitError('color must be a string or a tuple of 3 or 4 floats')
 
-    @validate('line_width')
-    def _validate_linewidth(self, proposal):
+    @validate('width')
+    def _validate_width(self, proposal):
         if proposal['value'].unit.is_equivalent(u.pixel):
             return proposal['value'].to(u.pixel)
         else:
-            raise TraitError('line width must be in pixel equivalent unit')
+            raise TraitError('width must be in pixel equivalent unit')
 
     def add_point(self,coord):
         coord_icrs = coord.icrs

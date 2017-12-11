@@ -186,8 +186,6 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('foreground_opacity should be between 0 and 1')
 
-    # TODO: need to implement more annotation types
-
     def create_circle(self):
         # TODO: could buffer JS call here
         circle = Circle(self)
