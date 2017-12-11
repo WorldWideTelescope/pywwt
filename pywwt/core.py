@@ -215,12 +215,7 @@ class BaseWWTWidget(HasTraits):
 
     def create_circle(self):
         # TODO: could buffer JS call here
-        circle = Circle(self)
-        self._send_msg(event='circle_set_center',
-                       id=circle.id,
-                       ra=self.get_center().ra.deg,
-                       dec=self.get_center().dec.deg)
-        return circle
+        return Circle(self)
 
     def add_polygon(self):
         # same TODO as above
