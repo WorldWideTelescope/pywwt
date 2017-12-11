@@ -35,7 +35,7 @@ class BaseWWTWidget(HasTraits):
         # setting).
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         new_value = changed['new']
-        if wwt_name is not None:            
+        if wwt_name is not None:
             if isinstance(new_value,u.Quantity):
                 new_value = new_value.value
 
@@ -103,7 +103,7 @@ class BaseWWTWidget(HasTraits):
         return SkyCoord(self._send_msg(event='get_ra'),
                         self._send_msg(event='get_dec'),
                         unit=(u.hourangle, u.deg))
-        
+
     def load_tour(self, url):
         """
         Load and begin playing a tour based on the URL to a .wtt file from

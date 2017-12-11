@@ -60,7 +60,22 @@ class WWTQWebEnginePage(QWebEnginePage):
         def _check_ready(self):
             if not self._check_running:
                 self._check_running = True
-                self.runJavaScript('wwt_ready;', self._wwt_ready_callback)
+                super(WWTQWebEnginePage, self).runJavaScript('wwt_ready;', self._wwt_ready_callback)
+
+        def _process_js_response(self, result):
+            self._js_response_received = True
+            self._js_response = result
+
+        def runJavaScript(self, code, async=True):
+            if async:
+                super(WWTQWebEnginePage, self).runJavaScript(code)
+            else:
+                self._js_response_received = False
+                self._js_response = None
+                super(WWTQWebEnginePage, self).runJavaScript(code, self._process_js_response)
+                while not self._js_response_received:
+                    app.processEvents()
+                return self._js_response
 
     else:
 
@@ -108,15 +123,15 @@ class CoreWWTQtWidget(QtWidgets.QWidget):
     def _on_wwt_ready(self):
         self._run_js(WWT_JSON)
         self._wwt_ready = True
-        self._run_js(self._js_queue)
+        self._run_js(self._js_queue, async=True)
         self._js_queue = ""
 
-    def _run_js(self, js):
+    def _run_js(self, js, async=False):
         if not js:
             return
         if self._wwt_ready:
             logger.debug('Running javascript: %s' % js)
-            return self.page.runJavaScript(js)
+            return self.page.runJavaScript(js, async=async)
         else:
             logger.debug('Caching javascript: %s' % js)
             self._js_queue += js + '\n'
