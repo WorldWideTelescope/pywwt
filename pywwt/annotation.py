@@ -34,6 +34,8 @@ class Annotation(HasTraits):
         self.observe(self._on_trait_change, type='change')
         self.id = str(uuid.uuid4())
         self.parent._send_msg(event='annotation_create', id=self.id, shape=self.shape)
+        for name in self.trait_names():
+            self._on_trait_change({'name': name, 'new': getattr(self, name), 'type': 'change'})
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
@@ -54,11 +56,11 @@ class Circle(Annotation):
     shape = 'circle'
 
     fill = Bool(False, help='Whether or not the circle should be filled (:class:`bool`)').tag(wwt='fill', sync=True)
-    fill_color = Any('w', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor', sync=True)
-    line_color = Any('w', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
+    fill_color = Any('white', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor', sync=True)
+    line_color = Any('white', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
-    radius     = AstropyQuantity(10 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius', sync=True)
-    sky_relative = Bool(False, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec) (:class:`~astropy.units.Quantity`)').tag(wwt='skyRelative', sync=True)
+    radius     = AstropyQuantity(1 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius', sync=True)
+    sky_relative = Bool(True, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec) (:class:`~astropy.units.Quantity`)').tag(wwt='skyRelative', sync=True)
 
     @validate('fill_color')
     def _validate_fillcolor(self, proposal):
@@ -131,8 +133,8 @@ class Polygon(Annotation):
     shape = 'polygon'
 
     fill = Bool(False, help='Whether or not the polygon should be filled (:class:`bool`)').tag(wwt='fill', sync=True)
-    fill_color = Any('w', help='Assigns fill color for the polygon (:class:`str` or `tuple`)').tag(wwt='fillColor', sync=True)
-    line_color = Any('w', help='Assigns line color for the polygon (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
+    fill_color = Any('white', help='Assigns fill color for the polygon (:class:`str` or `tuple`)').tag(wwt='fillColor', sync=True)
+    line_color = Any('white', help='Assigns line color for the polygon (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
 
     @validate('fill_color')
@@ -183,7 +185,7 @@ class Line(Annotation):
 
     shape = 'line'
 
-    color = Any('w', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
+    color = Any('white', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
     width = AstropyQuantity(1 * u.pixel, help='Assigns width for the line in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
 
     @validate('color')
