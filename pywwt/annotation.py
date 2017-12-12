@@ -84,7 +84,7 @@ class Circle(Annotation):
         elif proposal['value'].unit.is_equivalent(u.degree):
             return proposal['value'].to(u.degree)
         else:
-            raise TraitError('radius must be in pixel or arcsec equivalent unit')
+            raise TraitError('radius must be in pixel or degree equivalent unit')
 
     def set_center(self, coord):
         """

@@ -154,6 +154,11 @@ class BaseWWTWidget(HasTraits):
                        hour=dt.hour, minute=dt.minute, second=dt.second,
                        millisecond=int(dt.microsecond / 1000.))
 
+    def plot_table(self, col, **kwargs):
+        col_icrs = col.icrs
+        for point in col_icrs:
+            test = self.create_circle(center=point,**kwargs)
+
     galactic_mode = Bool(False, help='Whether the galactic plane should be horizontal in the viewer (:class:`bool`)').tag(wwt='galacticMode')
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode')
     location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location in local horizon mode(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
