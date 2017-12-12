@@ -1,8 +1,9 @@
 import uuid
-from traitlets import HasTraits, TraitError
+from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
+from matplotlib import colors
 
-from .traits import Bool, Float, Unicode, AstropyQuantity
+from .traits import Any, Bool, Float, Unicode, AstropyQuantity
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -33,6 +34,8 @@ class Annotation(HasTraits):
         self.observe(self._on_trait_change, type='change')
         self.id = str(uuid.uuid4())
         self.parent._send_msg(event='annotation_create', id=self.id, shape=self.shape)
+        for name in self.trait_names():
+            self._on_trait_change({'name': name, 'new': getattr(self, name), 'type': 'change'})
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
@@ -52,11 +55,51 @@ class Circle(Annotation):
 
     shape = 'circle'
 
-    fill = Bool(False, help='Whether or not the circle should be filled').tag(wwt='fill', sync=True)
-    fill_color = Unicode('white', help='Assigns fill color for the circle').tag(wwt='fillColor', sync=True)
-    line_color = Unicode('white', help='Assigns line color for the circle').tag(wwt='lineColor', sync=True)
-    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
-    radius     = AstropyQuantity(10 * u.pixel, help='Sets the radius for the circle').tag(wwt='radius', sync=True)
+    fill = Bool(False, help='Whether or not the circle should be filled (:class:`bool`)').tag(wwt='fill', sync=True)
+    fill_color = Any('white', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor', sync=True)
+    line_color = Any('white', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
+    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
+    radius     = AstropyQuantity(1 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius', sync=True)
+    sky_relative = Bool(True, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec) (:class:`~astropy.units.Quantity`)').tag(wwt='skyRelative', sync=True)
+
+    @validate('fill_color')
+    def _validate_fillcolor(self, proposal):
+        if isinstance(proposal['value'], str):
+            return colors.to_hex(proposal['value'])
+        if isinstance(proposal['value'], tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+            if len(proposal['value']) == 4:
+                self.opacity = proposal['value'][-1]
+                return colors.to_hex(proposal['value'][:3])
+        raise TraitError('fill color must be a string or a tuple of 3 or 4 floats')
+
+    @validate('line_color')
+    def _validate_linecolor(self, proposal):
+        if isinstance(proposal['value'],str):
+            return colors.to_hex(proposal['value'])
+        if isinstance(proposal['value'],tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+            else:
+                pass
+        raise TraitError('line color must be a string or a tuple of 3 floats')
+
+    @validate('line_width')
+    def _validate_linewidth(self, proposal):
+        if proposal['value'].unit.is_equivalent(u.pixel):
+            return proposal['value'].to(u.pixel)
+        else:
+            raise TraitError('line width must be in pixel equivalent unit')
+    
+    @validate('radius')
+    def _validate_radius(self, proposal):
+        if proposal['value'].unit.is_equivalent(u.pixel):
+            return proposal['value'].to(u.pixel)
+        elif proposal['value'].unit.is_equivalent(u.arcsec):
+            return proposal['value'].to(u.arcsec)
+        else:
+            raise TraitError('radius must be in pixel or arcsec equivalent unit')
 
     def set_center(self, coord):
         coord_icrs = coord.icrs
@@ -74,20 +117,14 @@ class Circle(Annotation):
                                       id=self.id,
                                       setting='skyRelative',
                                       value=True)
-                changed['new'] = changed['new'].to(u.pixel).value
             elif changed['new'].unit.is_equivalent(u.arcsec):
                 self.parent._send_msg(event='annotation_set',
                                       id=self.id,
                                       setting='skyRelative',
                                       value=False)
-                changed['new'] = changed['new'].to(u.arcsec).value
-            else:
-                raise TraitError('radius must be in pixel or arcsecond equivalent unit')
-        if changed['name'] == 'line_width':
-            if changed['new'].unit.is_equivalent(u.pixel):
-                changed['new'] = changed['new'].to(u.pixel).value
-            else:
-                raise TraitError('line width must be in pixel equivalent unit')
+        if isinstance(changed['new'],u.Quantity):
+            changed['new'] = changed['new'].value
+
         super(Circle, self)._on_trait_change(changed)
 
 
@@ -95,10 +132,38 @@ class Polygon(Annotation):
 
     shape = 'polygon'
 
-    fill = Bool(False, help='Whether or not the polygon should be filled').tag(wwt='fill', sync=True)
-    fill_color = Unicode('white', help='Assigns fill color for the polygon').tag(wwt='fillColor', sync=True)
-    line_color = Unicode('white', help='Assigns line color for the polygon').tag(wwt='lineColor', sync=True)
-    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
+    fill = Bool(False, help='Whether or not the polygon should be filled (:class:`bool`)').tag(wwt='fill', sync=True)
+    fill_color = Any('white', help='Assigns fill color for the polygon (:class:`str` or `tuple`)').tag(wwt='fillColor', sync=True)
+    line_color = Any('white', help='Assigns line color for the polygon (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
+    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
+
+    @validate('fill_color')
+    def _validate_fillcolor(self, proposal):
+        if isinstance(proposal['value'], str):
+            return colors.to_hex(proposal['value'])
+        if isinstance(proposal['value'], tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+            if len(proposal['value']) == 4:
+                self.opacity = proposal['value'][-1]
+                return colors.to_hex(proposal['value'][:3])
+        raise TraitError('fill color must be a string or a tuple of 3 or 4 floats')
+
+    @validate('line_color')
+    def _validate_linecolor(self, proposal):
+        if isinstance(proposal['value'],str):
+            return colors.to_hex(proposal['value'])
+        if isinstance(proposal['value'],tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+        raise TraitError('line color must be a string or a tuple of 3 floats')
+
+    @validate('line_width')
+    def _validate_linewidth(self, proposal):
+        if proposal['value'].unit.is_equivalent(u.pixel):
+            return proposal['value'].to(u.pixel)
+        else:
+            raise TraitError('line width must be in pixel equivalent unit')
 
     def add_point(self,coord):
         coord_icrs = coord.icrs
@@ -110,11 +175,9 @@ class Polygon(Annotation):
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
-        if changed['name'] == 'line_width':
-            if changed['new'].unit.is_equivalent(u.pixel):
-                changed['new'] = changed['new'].to(u.pixel).value
-            else:
-                raise TraitError('line width must be in pixel equivalent unit')
+        if isinstance(changed['new'],u.Quantity):
+            changed['new'] = changed['new'].value
+    
         super(Polygon, self)._on_trait_change(changed)
 
 
@@ -122,8 +185,27 @@ class Line(Annotation):
 
     shape = 'line'
 
-    line_color = Unicode('white', help='Assigns line color').tag(wwt='lineColor', sync=True)
-    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width (in pixels)').tag(wwt='lineWidth', sync=True)
+    color = Any('white', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor', sync=True)
+    width = AstropyQuantity(1 * u.pixel, help='Assigns width for the line in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth', sync=True)
+
+    @validate('color')
+    def _validate_color(self, proposal):
+        if isinstance(proposal['value'], str):
+            return colors.to_hex(proposal['value'])
+        if isinstance(proposal['value'], tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+            if len(proposal['value']) == 4:
+                self.opacity = proposal['value'][-1]
+                return colors.to_hex(proposal['value'][:3])
+        raise TraitError('color must be a string or a tuple of 3 or 4 floats')
+
+    @validate('width')
+    def _validate_width(self, proposal):
+        if proposal['value'].unit.is_equivalent(u.pixel):
+            return proposal['value'].to(u.pixel)
+        else:
+            raise TraitError('width must be in pixel equivalent unit')
 
     def add_point(self,coord):
         coord_icrs = coord.icrs
@@ -135,9 +217,7 @@ class Line(Annotation):
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
-        if changed['name'] == 'line_width':
-            if changed['new'].unit.is_equivalent(u.pixel):
-                changed['new'] = changed['new'].to(u.pixel).value
-            else:
-                raise TraitError('line width must be in pixel equivalent unit')
+        if isinstance(changed['new'],u.Quantity):
+            changed['new'] = changed['new'].value
+    
         super(Line, self)._on_trait_change(changed)

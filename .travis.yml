@@ -9,7 +9,7 @@ env:
   global:
     - SETUP_XVFB=True
     - CONDA_CHANNELS="astrofrog/label/dev"
-    - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest requests nomkl"
+    - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest requests nomkl matplotlib"
     - PIP_DEPENDENCIES="sphinx-automodapi numpydoc sphinx_rtd_theme"
   matrix:
     - PYTHON_VERSION=2.7

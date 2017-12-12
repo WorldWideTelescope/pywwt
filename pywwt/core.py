@@ -1,9 +1,10 @@
 from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
 from astropy.coordinates import SkyCoord
+from matplotlib import colors
 
 # We import the trait classes from .traits since we do various customizations
-from .traits import Bool, Float, Unicode, AstropyQuantity
+from .traits import Any, Bool, Float, Unicode, AstropyQuantity
 
 from .annotation import Circle, Polygon, Line
 from .imagery import get_imagery_layers
@@ -47,11 +48,37 @@ class BaseWWTWidget(HasTraits):
         raise NotImplementedError()
 
     # TODO: need to add all settings as traits
-    # many settings are listed as 'not yet implemented' in the documentation. still true?
 
-    constellation_boundary_color = Unicode('blue', help='The color of the constellation boundaries (:class:`str`)').tag(wwt='constellationBoundryColor', sync=True)
-    constellation_figure_color = Unicode('red', help='The color of the constellation figure (:class:`str`)').tag(wwt='constellationFigureColor', sync=True)
-    constellation_selection_color = Unicode('yellow', help='The color of the constellation selection (:class:`str`)').tag(wwt='constellationSelectionColor', sync=True)
+    constellation_boundary_color = Any('blue', help='The color of the constellation boundaries (:class:`str` or `tuple`)').tag(wwt='constellationBoundryColor', sync=True)
+    constellation_figure_color = Any('red', help='The color of the constellation figure (:class:`str` or `tuple`)').tag(wwt='constellationFigureColor', sync=True)
+    constellation_selection_color = Any('yellow', help='The color of the constellation selection (:class:`str` or `tuple`)').tag(wwt='constellationSelectionColor', sync=True)
+
+    @validate('constellation_boundary_color')
+    def _validate_boundarycolor(self, proposal):
+        if isinstance(proposal['value'],str):
+            return colors.to_hex(proposal['value'])
+        if isinstance(proposal['value'],tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+        raise TraitError('constellation boundary color must be a string or a tuple of 3 floats')
+
+    @validate('constellation_figure_color')
+    def _validate_figurecolor(self, proposal):
+        if isinstance(proposal['value'],str):
+            return colors.to_hex(proposal['value'])
+        if isinstance(proposal['value'],tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+        raise TraitError('constellation figure color must be a string or a tuple of 3 floats')
+
+    @validate('constellation_selection_color')
+    def _validate_selectioncolor(self, proposal):
+        if isinstance(proposal['value'],str):
+            return colors.to_hex(proposal['value'])
+        if isinstance(proposal['value'],tuple):
+            if len(proposal['value']) == 3:
+                return colors.to_hex(proposal['value'])
+        raise TraitError('constellation selection color must be a string or a tuple of 3 floats')
 
     constellation_boundaries = Bool(False, help='Whether to show boundaries for the selected constellations (:class:`bool`)').tag(wwt='showConstellationBoundries', sync=True)
     constellation_figures = Bool(False, help='Whether to show the constellations (:class:`bool`)').tag(wwt='showConstellationFigures', sync=True)
@@ -185,8 +212,6 @@ class BaseWWTWidget(HasTraits):
             return proposal['value']
         else:
             raise TraitError('foreground_opacity should be between 0 and 1')
-
-    # TODO: need to implement more annotation types
 
     def create_circle(self):
         # TODO: could buffer JS call here
