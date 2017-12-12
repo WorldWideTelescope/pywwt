@@ -52,9 +52,9 @@ class BaseWWTWidget(HasTraits):
 
     # TODO: need to add all settings as traits
 
-    constellation_boundary_color = Any('blue', help='The color of the constellation boundaries (:class:`str` or `tuple`)').tag(wwt='constellationBoundryColor', sync=True)
-    constellation_figure_color = Any('red', help='The color of the constellation figure (:class:`str` or `tuple`)').tag(wwt='constellationFigureColor', sync=True)
-    constellation_selection_color = Any('yellow', help='The color of the constellation selection (:class:`str` or `tuple`)').tag(wwt='constellationSelectionColor', sync=True)
+    constellation_boundary_color = Any('blue', help='The color of the constellation boundaries (:class:`str` or `tuple`)').tag(wwt='constellationBoundryColor')
+    constellation_figure_color = Any('red', help='The color of the constellation figure (:class:`str` or `tuple`)').tag(wwt='constellationFigureColor')
+    constellation_selection_color = Any('yellow', help='The color of the constellation selection (:class:`str` or `tuple`)').tag(wwt='constellationSelectionColor')
 
     @validate('constellation_boundary_color')
     def _validate_boundarycolor(self, proposal):
@@ -83,13 +83,13 @@ class BaseWWTWidget(HasTraits):
                 return colors.to_hex(proposal['value'])
         raise TraitError('constellation selection color must be a string or a tuple of 3 floats')
 
-    constellation_boundaries = Bool(False, help='Whether to show boundaries for the selected constellations (:class:`bool`)').tag(wwt='showConstellationBoundries', sync=True)
-    constellation_figures = Bool(False, help='Whether to show the constellations (:class:`bool`)').tag(wwt='showConstellationFigures', sync=True)
-    constellation_selection = Bool(False, help='Whether to only show boundaries for the selected constellation (:class:`bool`)').tag(wwt='showConstellationSelection', sync=True)
+    constellation_boundaries = Bool(False, help='Whether to show boundaries for the selected constellations (:class:`bool`)').tag(wwt='showConstellationBoundries')
+    constellation_figures = Bool(False, help='Whether to show the constellations (:class:`bool`)').tag(wwt='showConstellationFigures')
+    constellation_selection = Bool(False, help='Whether to only show boundaries for the selected constellation (:class:`bool`)').tag(wwt='showConstellationSelection')
 
-    crosshairs = Bool(True, help='Whether to show crosshairs at the center of the field (:class:`bool`)').tag(wwt='showCrosshairs', sync=True)
-    ecliptic = Bool(False, help='Whether to show the path of the ecliptic').tag(wwt='showEcliptic', sync=True)
-    grid = Bool(False, help='Whether to show the equatorial grid (:class:`bool`)').tag(wwt='showGrid', sync=True)
+    crosshairs = Bool(True, help='Whether to show crosshairs at the center of the field (:class:`bool`)').tag(wwt='showCrosshairs')
+    ecliptic = Bool(False, help='Whether to show the path of the ecliptic').tag(wwt='showEcliptic')
+    grid = Bool(False, help='Whether to show the equatorial grid (:class:`bool`)').tag(wwt='showGrid')
 
     # TODO: need to add more methods here.
 
@@ -149,10 +149,10 @@ class BaseWWTWidget(HasTraits):
                        hour=dt.hour, minute=dt.minute, second=dt.second,
                        millisecond=int(dt.microsecond / 1000.))
 
-    local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode', sync=True)
-    location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude', sync=True)
-    location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location  (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat', sync=True)
-    location_longitude = AstropyQuantity(122.133333 * u.deg, help='The longitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationLng', sync=True)
+    local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode')
+    location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
+    location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location  (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
+    location_longitude = AstropyQuantity(122.133333 * u.deg, help='The longitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationLng')
 
     @validate('location_altitude')
     def _validate_altitude(self, proposal):
