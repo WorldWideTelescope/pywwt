@@ -19,7 +19,7 @@ __all__ = ['BaseWWTWidget']
 
 class BaseWWTWidget(HasTraits):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
@@ -150,6 +150,7 @@ class BaseWWTWidget(HasTraits):
                        hour=dt.hour, minute=dt.minute, second=dt.second,
                        millisecond=int(dt.microsecond / 1000.))
 
+    galactic_mode = Bool(False, help='Whether the galactic plane should be horizontal in the viewer (:class:`bool`)').tag(wwt='galacticMode')
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode')
     location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
     location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location  (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
@@ -223,14 +224,23 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('foreground_opacity should be between 0 and 1')
 
-    def create_circle(self):
+    def create_circle(self, center=None, **kwargs):
         # TODO: could buffer JS call here
-        return Circle(self)
+        circle = Circle(parent=self, **kwargs)
+        if center:
+            circle.set_center(center)
+        return circle
 
-    def add_polygon(self):
+    def add_polygon(self, points=None, **kwargs):
         # same TODO as above
-        return Polygon(self)
+        polygon = Polygon(parent=self, **kwargs)
+        if points:
+            polygon.add_point(points)
+        return polygon
 
-    def add_line(self):
+    def add_line(self, points=None, **kwargs):
         # same TODO as above
-        return Line(self)
+        line = Line(parent=self, **kwargs)
+        if points:
+            line.add_point(points)
+        return line
