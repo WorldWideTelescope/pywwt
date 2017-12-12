@@ -1,4 +1,8 @@
 import os
+
+import pytest
+from traitlets import TraitError
+
 from ..core import BaseWWTWidget, DEFAULT_SURVEYS_URL
 
 WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), '..', 'static', 'wwt.html')
@@ -38,3 +42,21 @@ def test_settings_in_html():
 
     cmd = 'wwt.loadImageCollection({0!r})'.format(DEFAULT_SURVEYS_URL)
     assert cmd in WWT_HTML
+
+
+def test_color_validation():
+
+    widget = BaseWWTWidget()
+
+    widget.constellation_figure_color = 'red'
+    assert widget.constellation_figure_color == '#ff0000'
+
+    widget.constellation_figure_color = '#ff0000'
+    assert widget.constellation_figure_color == '#ff0000'
+
+    widget.constellation_figure_color = (1, 0, 0)
+    assert widget.constellation_figure_color == '#ff0000'
+
+    with pytest.raises(TraitError) as exc:
+        widget.constellation_figure_color = (1, 0, 0, 2)
+    assert exc.value.args[0] == 'color must be a string or a tuple of 3 floats'
