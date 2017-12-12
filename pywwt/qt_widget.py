@@ -9,7 +9,7 @@ import os
 import json
 
 from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets, QtGui, QtCore
 
 from .core import BaseWWTWidget
 from .logger import logger
@@ -60,7 +60,22 @@ class WWTQWebEnginePage(QWebEnginePage):
         def _check_ready(self):
             if not self._check_running:
                 self._check_running = True
-                self.runJavaScript('wwt_ready;', self._wwt_ready_callback)
+                super(WWTQWebEnginePage, self).runJavaScript('wwt_ready;', self._wwt_ready_callback)
+
+        def _process_js_response(self, result):
+            self._js_response_received = True
+            self._js_response = result
+
+        def runJavaScript(self, code, async=True):
+            if async:
+                super(WWTQWebEnginePage, self).runJavaScript(code)
+            else:
+                self._js_response_received = False
+                self._js_response = None
+                super(WWTQWebEnginePage, self).runJavaScript(code, self._process_js_response)
+                while not self._js_response_received:
+                    app.processEvents()
+                return self._js_response
 
     else:
 
@@ -69,9 +84,8 @@ class WWTQWebEnginePage(QWebEnginePage):
             if 'wwt_ready' not in message:
                 print('{0} (line_number={1}, source_id={2})'.format(message, line_number, source_id))
 
-        def runJavaScript(self, code):
-            result = self._frame.evaluateJavaScript(code)
-            return result
+        def runJavaScript(self, code, async=False):
+            return self._frame.evaluateJavaScript(code)
 
         def _check_ready(self):
             result = self.runJavaScript('wwt_ready;')
@@ -93,6 +107,7 @@ class CoreWWTQtWidget(QtWidgets.QWidget):
         self.web.setHtml(WWT_HTML)
 
         layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
         layout.addWidget(self.web)
 
@@ -108,15 +123,15 @@ class CoreWWTQtWidget(QtWidgets.QWidget):
     def _on_wwt_ready(self):
         self._run_js(WWT_JSON)
         self._wwt_ready = True
-        self._run_js(self._js_queue)
+        self._run_js(self._js_queue, async=True)
         self._js_queue = ""
 
-    def _run_js(self, js):
+    def _run_js(self, js, async=True):
         if not js:
             return
         if self._wwt_ready:
             logger.debug('Running javascript: %s' % js)
-            return self.page.runJavaScript(js)
+            return self.page.runJavaScript(js, async=async)
         else:
             logger.debug('Caching javascript: %s' % js)
             self._js_queue += js + '\n'
@@ -127,7 +142,7 @@ app = None
 
 class WWTQtWidget(BaseWWTWidget):
 
-    def __init__(self, block_until_ready=False):
+    def __init__(self, block_until_ready=False, size=None):
 
         global app
         if app is None:
@@ -136,7 +151,11 @@ class WWTQtWidget(BaseWWTWidget):
                 app = QtWidgets.QApplication([''])
 
         self.widget = CoreWWTQtWidget()
+        if size is not None:
+            self.widget.resize(*size)
         self.widget.show()
+
+        super(WWTQtWidget, self).__init__()
 
         if block_until_ready:
             while True:
@@ -144,8 +163,13 @@ class WWTQtWidget(BaseWWTWidget):
                 if self.widget._wwt_ready:
                     break
 
-        super(WWTQtWidget, self).__init__()
-
-    def _send_msg(self, **kwargs):
+    def _send_msg(self, async=True, **kwargs):
         msg = json.dumps(kwargs)
-        return self.widget._run_js("wwt_apply_json_message(wwt, {0})".format(msg))
+        return self.widget._run_js("wwt_apply_json_message(wwt, {0});".format(msg), async=async)
+
+    def render(self, filename):
+        image = QtGui.QImage(self.widget.size(), QtGui.QImage.Format_RGB32)
+        painter = QtGui.QPainter(image)
+        self.widget.render(painter)
+        image.save(filename)
+        painter.end()

@@ -11,7 +11,7 @@ environment:
                         # of 32 bit and 64 bit builds are needed, move this
                         # to the matrix section.
 
-      CONDA_DEPENDENCIES: "astropy qtpy traitlets pyqt pytest requests"
+      CONDA_DEPENDENCIES: "astropy qtpy traitlets pyqt pytest requests matplotlib"
 
   matrix:
       - PYTHON_VERSION: "2.7"

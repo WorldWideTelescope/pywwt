@@ -1,5 +1,11 @@
 language: c
 
+os:
+  - linux
+  # For now the image tests don't work well on MacOS X, which requires WebEngine. The
+  # tests only pass if the Qt window is always in the foreground.
+  # - osx
+
 sudo: false
 
 notifications:
@@ -10,7 +16,7 @@ env:
     - SETUP_XVFB=True
     - CONDA_CHANNELS="astrofrog/label/dev"
     - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest requests nomkl matplotlib"
-    - PIP_DEPENDENCIES="sphinx-automodapi numpydoc sphinx_rtd_theme"
+    - PIP_DEPENDENCIES="sphinx-automodapi numpydoc sphinx_rtd_theme pytest-faulthandler"
   matrix:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.5

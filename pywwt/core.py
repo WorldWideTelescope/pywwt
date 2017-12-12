@@ -24,6 +24,9 @@ class BaseWWTWidget(HasTraits):
         self.observe(self._on_trait_change, type='change')
         self._available_layers = []
         self.load_image_collection(DEFAULT_SURVEYS_URL)
+        self._on_foreground_change({'new': self.foreground})
+        self._on_background_change({'new': self.background})
+        self._on_foreground_opacity_change({'new': self.foreground_opacity})
         for name in self.trait_names():
             self._on_trait_change({'name': name, 'new': getattr(self, name), 'type': 'change'})
 
@@ -35,8 +38,8 @@ class BaseWWTWidget(HasTraits):
         # setting).
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         new_value = changed['new']
-        if wwt_name is not None:            
-            if isinstance(new_value,u.Quantity):
+        if wwt_name is not None:
+            if isinstance(new_value, u.Quantity):
                 new_value = new_value.value
 
             self._send_msg(event='setting_set',
@@ -100,10 +103,10 @@ class BaseWWTWidget(HasTraits):
         """
         Return the view's current right ascension and declination in degrees.
         """
-        return SkyCoord(self._send_msg(event='get_ra'),
-                        self._send_msg(event='get_dec'),
+        return SkyCoord(self._send_msg(event='get_ra', async=False),
+                        self._send_msg(event='get_dec', async=False),
                         unit=(u.hourangle, u.deg))
-        
+
     def load_tour(self, url):
         """
         Load and begin playing a tour based on the URL to a .wtt file from
@@ -139,6 +142,12 @@ class BaseWWTWidget(HasTraits):
                        dec=coord_icrs.dec.deg,
                        fov=fov.to(u.deg).value,
                        instant=instant)
+
+    def set_current_time(self, dt):
+        self._send_msg(event='set_datetime',
+                       year=dt.year, month=dt.month, day=dt.day,
+                       hour=dt.hour, minute=dt.minute, second=dt.second,
+                       millisecond=int(dt.microsecond / 1000.))
 
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode', sync=True)
     location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude', sync=True)
@@ -187,7 +196,7 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('foreground is not one of the available layers')
 
-    background = Unicode('SFD Dust Map (Infrared)', help='The layer to show in the background (:class:`str`)')
+    background = Unicode('Hydrogen Alpha Full Sky Map', help='The layer to show in the background (:class:`str`)')
 
     @observe('background')
     def _on_background_change(self, changed):
@@ -200,11 +209,11 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('background is not one of the available layers')
 
-    foreground_opacity = Float(0.5, help='The opacity of the foreground layer (float)')
+    foreground_opacity = Float(0.8, help='The opacity of the foreground layer (float)')
 
     @observe('foreground_opacity')
     def _on_foreground_opacity_change(self, changed):
-        self._send_msg(event='set_opacity', value=changed['new'])
+        self._send_msg(event='set_foreground_opacity', value=changed['new'] * 100)
 
     @validate('foreground_opacity')
     def _validate_foreground_opacity(self, proposal):
@@ -215,12 +224,7 @@ class BaseWWTWidget(HasTraits):
 
     def create_circle(self):
         # TODO: could buffer JS call here
-        circle = Circle(self)
-        self._send_msg(event='circle_set_center',
-                       id=circle.id,
-                       ra=self.get_center().ra.deg,
-                       dec=self.get_center().dec.deg)
-        return circle
+        return Circle(self)
 
     def add_polygon(self):
         # same TODO as above

@@ -66,8 +66,8 @@ function wwt_apply_json_message(wwt, msg) {
         case 'circle':
           // TODO: check if ID already exists
           circle = wwt.createCircle();
-          //circle.setCenter(wwt.getRA()/15, wwt.getDec());
           circle.set_id(msg['id']);
+          circle.setCenter(wwt.getRA(), wwt.getDec());
           wwt.addAnnotation(circle);
           wwt.annotations[msg['id']] = circle;
           break;
@@ -130,10 +130,20 @@ function wwt_apply_json_message(wwt, msg) {
       line.addPoint(msg['ra'], msg['dec']);
       break;
 
+    case 'set_datetime':
+
+      var date = new Date(msg['year'], msg['month'], msg['day'],
+                          msg['hour'], msg['minute'], msg['second'],
+                          msg['millisecond']);
+
+      stc = wwtlib.SpaceTimeController;
+      stc.set_now(date);
+      break;
+
   }
 
 }
 
 // We need to do this so that wwt_apply_json_message is available as a global
 // function in the Jupyter widgets code.
-window.wwt_apply_json_message = wwt_apply_json_message
+window.wwt_apply_json_message = wwt_apply_json_message;
