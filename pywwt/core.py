@@ -22,13 +22,14 @@ class BaseWWTWidget(HasTraits):
     def __init__(self):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
-        self._available_layers = []
-        self.load_image_collection(DEFAULT_SURVEYS_URL)
-        self._on_foreground_change({'new': self.foreground})
-        self._on_background_change({'new': self.background})
-        self._on_foreground_opacity_change({'new': self.foreground_opacity})
-        for name in self.trait_names():
-            self._on_trait_change({'name': name, 'new': getattr(self, name), 'type': 'change'})
+        self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
+
+        # NOTE: we deliberately don't force _on_trait_change to be called here
+        # for the WWT settings, as the default values are hard-coded in wwt.html
+        # This is done because there is otherwise no reliable way of making sure
+        # that we would call _on_trait_change once WWT is ready to receive
+        # commands. There is a test in test_core.py that ensures that the
+        # defaults here are in sync with the defaults in wwt.html
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class

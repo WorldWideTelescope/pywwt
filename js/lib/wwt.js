@@ -28,19 +28,6 @@ var WWTView = widgets.DOMWidgetView.extend({
 
     },
 
-
-    wwtReady: function() {
-      // The following should really be set from Python rather than here. We
-      // should move this once the corresponding methods/settings exist in the
-      // core Python object.
-      this.loadImageCollection('http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys');
-      this.settings.set_showConstellationBoundries(false);
-      this.settings.set_showConstellationFigures(false);
-      this.setForegroundImageByName('Digitized Sky Survey (Color)');
-      this.setBackgroundImageByName('SFD Dust Map (Infrared)');
-      this.setForegroundOpacity(0.5);
-    },
-
     render: function() {
         // We pass all messages via msg:custom rather than look for trait events
         // because we just want to use the same JSON messaging interface for
@@ -49,16 +36,18 @@ var WWTView = widgets.DOMWidgetView.extend({
     },
 
     handle_custom_message: function(msg) {
+
       if (this.wwt_window == null) {
         iframe = this.el.getElementsByTagName('iframe')[0];
         if (iframe != null) {
-          this.wwt_window = iframe.contentWindow
-          this.wwt_window.wwt.add_ready(this.wwtReady);
+          this.wwt_window = iframe.contentWindow;
         } else {
           return  // Not ready yet
         }
       }
+
       this.wwt_window.wwt_apply_json_message(this.wwt_window.wwt, msg);
+
     }
 
 });
