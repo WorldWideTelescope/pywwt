@@ -32,8 +32,11 @@ class Annotation(HasTraits):
         self.parent = parent
         self.observe(self._on_trait_change, type='change')
         self.id = str(uuid.uuid4())
-        self.parent._send_msg(event='annotation_create', id=self.id, shape=self.shape)
-        super(Annotation, self).__init__(**kwargs)
+        if all(key in self.trait_names() for key in kwargs):
+            self.parent._send_msg(event='annotation_create', id=self.id, shape=self.shape)
+            super(Annotation, self).__init__(**kwargs)
+        else:
+            raise KeyError('a key doesn\'t match any annotation trait name')
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
@@ -94,8 +97,8 @@ class Circle(Annotation):
     def _validate_radius(self, proposal):
         if proposal['value'].unit.is_equivalent(u.pixel):
             return proposal['value'].to(u.pixel)
-        elif proposal['value'].unit.is_equivalent(u.arcsec):
-            return proposal['value'].to(u.arcsec)
+        elif proposal['value'].unit.is_equivalent(u.degree):
+            return proposal['value'].to(u.degree)
         else:
             raise TraitError('radius must be in pixel or arcsec equivalent unit')
 
