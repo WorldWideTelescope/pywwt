@@ -172,8 +172,8 @@ def test_full(tmpdir, capsys):
     polyline.add_point(coord[0])
     polyline.add_point(coord[1])
     polyline.add_point(coord[2])
-    polyline.line_color = 'green'
-    polyline.line_width = 3 * u.pixel
+    polyline.color = 'green'
+    polyline.width = 3 * u.pixel
 
     wait(4)
 
