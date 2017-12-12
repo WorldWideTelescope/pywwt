@@ -84,9 +84,8 @@ class WWTQWebEnginePage(QWebEnginePage):
             if 'wwt_ready' not in message:
                 print('{0} (line_number={1}, source_id={2})'.format(message, line_number, source_id))
 
-        def runJavaScript(self, code):
-            result = self._frame.evaluateJavaScript(code)
-            return result
+        def runJavaScript(self, code, async=False):
+            return self._frame.evaluateJavaScript(code)
 
         def _check_ready(self):
             result = self.runJavaScript('wwt_ready;')
