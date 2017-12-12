@@ -1,8 +1,0 @@
-.idea/*
-*.pyc
-*.xml
-*.iml
-build/*
-dist/*
-pywwt.egg-info/*
-doc/build/*
