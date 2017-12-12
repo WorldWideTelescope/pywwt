@@ -100,7 +100,7 @@ class Circle(Annotation):
         elif proposal['value'].unit.is_equivalent(u.degree):
             return proposal['value'].to(u.degree)
         else:
-            raise TraitError('radius must be in pixel or arcsec equivalent unit')
+            raise TraitError('radius must be in pixel or degree equivalent unit')
 
     def set_center(self, coord):
         coord_icrs = coord.icrs
@@ -118,7 +118,7 @@ class Circle(Annotation):
                                       id=self.id,
                                       setting='skyRelative',
                                       value=True)
-            elif changed['new'].unit.is_equivalent(u.arcsec):
+            elif changed['new'].unit.is_equivalent(u.degree):
                 self.parent._send_msg(event='annotation_set',
                                       id=self.id,
                                       setting='skyRelative',
