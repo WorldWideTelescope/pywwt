@@ -224,9 +224,14 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('foreground_opacity should be between 0 and 1')
 
-    def create_circle(self):
+    def create_circle(self, center=None, **kwargs):
         # TODO: could buffer JS call here
-        return Circle(self)
+        circle = Circle(parent=self, **kwargs)
+        if center:
+            circle.set_center(center)
+        # else:
+        #     circle.set_center(self.get_center())
+        return circle
 
     def add_polygon(self, points=None, **kwargs):
         # same TODO as above
