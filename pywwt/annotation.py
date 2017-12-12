@@ -41,7 +41,6 @@ class Annotation(HasTraits):
         # its own, we only want to react to changes in traits that have the wwt
         # metadata attribute (which indicates the name of the corresponding WWT
         # setting).
-        print('_an_otc',changed,sep=' ')
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         if wwt_name is not None:
             self.parent._send_msg(event='annotation_set',
@@ -59,7 +58,7 @@ class Circle(Annotation):
     line_color = Any('white', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor')
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
     radius     = AstropyQuantity(1 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
-    sky_relative = Bool(True, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec) (:class:`~astropy.units.Quantity`)').tag(wwt='skyRelative')
+    #sky_relative = Bool(True, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec) (:class:`~astropy.units.Quantity`)').tag(wwt='skyRelative')
 
     @validate('fill_color')
     def _validate_fillcolor(self, proposal):
@@ -121,7 +120,7 @@ class Circle(Annotation):
                                       id=self.id,
                                       setting='skyRelative',
                                       value=False)
-        if isinstance(changed['new'],u.Quantity):
+        if isinstance(changed['new'], u.Quantity):
             changed['new'] = changed['new'].value
 
         super(Circle, self)._on_trait_change(changed)
@@ -180,7 +179,7 @@ class Polygon(Annotation):
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
-        if isinstance(changed['new'],u.Quantity):
+        if isinstance(changed['new'], u.Quantity):
             changed['new'] = changed['new'].value
 
         super(Polygon, self)._on_trait_change(changed)
@@ -228,7 +227,7 @@ class Line(Annotation):
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
-        if isinstance(changed['new'],u.Quantity):
+        if isinstance(changed['new'], u.Quantity):
             changed['new'] = changed['new'].value
 
         super(Line, self)._on_trait_change(changed)

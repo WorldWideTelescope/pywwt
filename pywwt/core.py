@@ -20,7 +20,7 @@ __all__ = ['BaseWWTWidget']
 class BaseWWTWidget(HasTraits):
 
     def __init__(self, **kwargs):
-        super(BaseWWTWidget, self).__init__(**kwargs)
+        super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
 
@@ -150,7 +150,7 @@ class BaseWWTWidget(HasTraits):
                        hour=dt.hour, minute=dt.minute, second=dt.second,
                        millisecond=int(dt.microsecond / 1000.))
 
-    galactic_mode = Bool(False, help='Whether the galactic plane should be horizontal in the viewer (:class:`bool`)').tag(wwt='galacticMode', sync=True)
+    galactic_mode = Bool(False, help='Whether the galactic plane should be horizontal in the viewer (:class:`bool`)').tag(wwt='galacticMode')
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode')
     location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
     location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location  (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
@@ -229,8 +229,6 @@ class BaseWWTWidget(HasTraits):
         circle = Circle(parent=self, **kwargs)
         if center:
             circle.set_center(center)
-        # else:
-        #     circle.set_center(self.get_center())
         return circle
 
     def add_polygon(self, points=None, **kwargs):
