@@ -45,9 +45,23 @@ Many other visual settings are available...
 Foreground/background layers
 -----------------------------
 
-.. We can have a dedicated section to show how to set the foreground/background
-.. and how to list available layers. Also we can show how to load a new
-.. image collection URL
+Up to two layers can be used (...) typical use is to load a all-sky survey in 
+the background and a study with decreased opacity as the foreground layer. 
+(There is `a list <https://`create annotations <https://link-to-annotations.rst>`_>`_ 
+of default layers with surveys of several wavelengths, (...), and levels of 
+notoriety). If you want to see a (light) version of the (what?) superimposed 
+on the cosmic microwave background, you would follow these steps:
+
+.. code-block:: python
+
+    In [7]: wwt.background = 'Planck CMB'
+    
+    In [8]: wwt.foreground =
+    
+    In [9]: wwt.foreground_opacity = .4
+
+There are different folders of layers that can be accessed through
+``wwt.load_image_collection`` (need code block)
 
 Centering on coordinates
 ------------------------
@@ -62,13 +76,13 @@ star Alpha Centauri, the process looks like this:
 
 .. code-block:: python
 
-    In [7]: from astropy.coordinates import SkyCoord
+    In [10]: from astropy.coordinates import SkyCoord
 
-    In [8]: from astropy import units as u
+    In [11]: from astropy import units as u
 
-    In [9]: coord = SkyCoord.from_name('Alpha Centauri')
+    In [12]: coord = SkyCoord.from_name('Alpha Centauri')
 
-    In [10]: widget.center_on_coordinates(coord)
+    In [13]: widget.center_on_coordinates(coord)
     
 (``center_on_coordinates`` also has a default argument in astropy pixel units 
 that can change the scale of the viewer.)
@@ -81,7 +95,7 @@ the WWT website. Once a tour is loaded:
 
 .. code-block:: python
 
-    In [11]: wwt.load_tour()
+    In [14]: wwt.load_tour()
 
 it plays automatically. It can be stopped and resumed through similar methods. 
 While the tour is stopped, it's still possible to drag the viewer, (maybe?) 

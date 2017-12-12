@@ -28,12 +28,15 @@ pixels, while the color .. takes any type of value allowable through
 
     In [3]: line.line_color = '#C4D600' # hex strings
        ...: # line.line_color = 'g' # matplotlib default colors
-       ...: # line.line_color = 'thistle' # extended html colors
+       ...: # line.line_color = 'azure' # extended html colors
        ...: # line.line_color = (.07, .15, ,.31, .5) # rgb tuples with opacity
 
 An additional adjustment to the line width results in:
 
 [picture generated from commented code at bottom of file]
+
+.. Only circle fills, polygon fills, and lines have opacities; the lines for
+.. circles and polygons do not.
 
 Polygons are made in the same way as lines, though the viewer will automatically 
 connect the last point added to the first in order to form a closed shape. This 
