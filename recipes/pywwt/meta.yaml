@@ -23,6 +23,8 @@ requirements:
     - pyqt
     - widgetsnbextension
     - ipyevents
+    - requests
+    - matplotlib
 
 test:
   imports:
