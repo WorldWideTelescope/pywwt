@@ -28,14 +28,12 @@ class Annotation(HasTraits):
     tag = Unicode(help='Contains a string for use by '
                        'the web client').tag(wwt='tag')
 
-    def __init__(self, parent=None):
-        super(Annotation, self).__init__()
+    def __init__(self, parent=None, **kwargs):
         self.parent = parent
         self.observe(self._on_trait_change, type='change')
         self.id = str(uuid.uuid4())
         self.parent._send_msg(event='annotation_create', id=self.id, shape=self.shape)
-        for name in self.trait_names():
-            self._on_trait_change({'name': name, 'new': getattr(self, name), 'type': 'change'})
+        super(Annotation, self).__init__(**kwargs)
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
@@ -43,6 +41,7 @@ class Annotation(HasTraits):
         # its own, we only want to react to changes in traits that have the wwt
         # metadata attribute (which indicates the name of the corresponding WWT
         # setting).
+        print('_an_otc',changed,sep=' ')
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         if wwt_name is not None:
             self.parent._send_msg(event='annotation_set',
@@ -117,20 +116,14 @@ class Circle(Annotation):
                                       id=self.id,
                                       setting='skyRelative',
                                       value=True)
-                changed['new'] = changed['new'].to(u.pixel).value
             elif changed['new'].unit.is_equivalent(u.arcsec):
                 self.parent._send_msg(event='annotation_set',
                                       id=self.id,
                                       setting='skyRelative',
                                       value=False)
-                changed['new'] = changed['new'].to(u.deg).value
-            else:
-                raise TraitError('radius must be in angle equivalent unit')
-        if changed['name'] == 'line_width':
-            if changed['new'].unit.is_equivalent(u.pixel):
-                changed['new'] = changed['new'].to(u.pixel).value
-            else:
-                raise TraitError('line width must be in pixel equivalent unit')
+        if isinstance(changed['new'],u.Quantity):
+            changed['new'] = changed['new'].value
+
         super(Circle, self)._on_trait_change(changed)
 
 

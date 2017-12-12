@@ -228,16 +228,16 @@ class BaseWWTWidget(HasTraits):
         # TODO: could buffer JS call here
         return Circle(self)
 
-    def add_polygon(self,points=None):
+    def add_polygon(self, points=None, **kwargs):
         # same TODO as above
-        polygon = Polygon(self)
+        polygon = Polygon(parent=self, **kwargs)
         if points:
             polygon.add_point(points)
         return polygon
 
-    def add_line(self,points=None):
+    def add_line(self, points=None, **kwargs):
         # same TODO as above
-        line = Line(self)
+        line = Line(parent=self, **kwargs)
         if points:
             line.add_point(points)
         return line

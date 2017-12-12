@@ -142,7 +142,7 @@ app = None
 
 class WWTQtWidget(BaseWWTWidget):
 
-    def __init__(self, block_until_ready=False, size=None, **kwargs):
+    def __init__(self, block_until_ready=False, **kwargs):
 
         global app
         if app is None:
