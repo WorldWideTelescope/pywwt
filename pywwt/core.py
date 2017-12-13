@@ -96,15 +96,15 @@ class BaseWWTWidget(HasTraits):
         else:
             raise ValueError('url must end in \'.wwt\'')
 
-    def stop_tour(self):
+    def pause_tour(self):
         """
-        Stop a loaded tour.
+        Pause a loaded tour.
         """
-        self._send_msg(event='stop_tour')
+        self._send_msg(event='pause_tour')
 
     def resume_tour(self):
         """
-        Resume a stopped tour.
+        Resume a paused tour.
         """
         self._send_msg(event='resume_tour')
 
@@ -196,7 +196,7 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('foreground_opacity should be between 0 and 1')
 
-    def create_circle(self, center=None, **kwargs):
+    def add_circle(self, center=None, **kwargs):
         # TODO: could buffer JS call here
         circle = Circle(parent=self, **kwargs)
         if center:

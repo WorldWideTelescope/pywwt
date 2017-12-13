@@ -31,7 +31,7 @@ function wwt_apply_json_message(wwt, msg) {
       wwt.playTour();
       break;
 
-    case 'stop_tour':
+    case 'pause_tour':
       wwt.stopTour();
       break;
 
