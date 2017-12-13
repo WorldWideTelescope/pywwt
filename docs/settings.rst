@@ -40,6 +40,7 @@ The preceding results in the following view:
 
 [run code, include gif of viewer?]
 
+.. Mention wwt.render to get screenshots of the current view
 Many other visual settings are available...
 
 Foreground/background layers
