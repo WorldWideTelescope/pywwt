@@ -26,7 +26,7 @@ def test_settings_in_html():
             elif isinstance(value, bool):
                 cmd = 'wwt.settings.set_{0}({1})'.format(wwt_name, str(value).lower())
             else:
-                cmd = 'wwt.settings.set_{0}({1!r})'.format(wwt_name, value)
+                cmd = 'wwt.settings.set_{0}({1!r})'.format(wwt_name, str(value))
             assert cmd in WWT_HTML
 
     # Check traits that are connected to methods
