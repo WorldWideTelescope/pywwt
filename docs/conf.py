@@ -185,10 +185,17 @@ intersphinx_mapping = {
               (None, 'http://data.astropy.org/intersphinx/numpy.inv')),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/',
               (None, 'http://data.astropy.org/intersphinx/scipy.inv')),
+    'traitlets': ('http://traitlets.readthedocs.io/en/latest/',
+                  (None, 'http://traitlets.readthedocs.io/en/latest/objects.inv')),
+    # 'ipywidgets': ('http://ipywidgets.readthedocs.io/en/latest/',
+    #                (None, 'http://ipywidgets.readthedocs.io/en/latest/objects.inv')),
     'matplotlib': ('http://matplotlib.org/',
                    (None, 'http://data.astropy.org/intersphinx/matplotlib.inv')),
     'astropy': ('http://docs.astropy.org/en/stable/', None)}
 
 numpydoc_show_class_members = False
 
-nitpick = True
+nitpicky = True
+nitpick_ignore = [('py:class', 'ipywidgets.widgets.domwidget.DOMWidget')]
+
+default_role = 'obj'
