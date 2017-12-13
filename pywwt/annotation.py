@@ -2,7 +2,7 @@ import uuid
 from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
 
-from .traits import Color, Bool, Float, Unicode, AstropyQuantity
+from .traits import Color, ColorWithOpacity, Bool, Float, Unicode, AstropyQuantity
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -55,7 +55,7 @@ class Circle(Annotation):
     shape = 'circle'
 
     fill = Bool(False, help='Whether or not the circle should be filled (:class:`bool`)').tag(wwt='fill')
-    fill_color = Color('white', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor')
+    fill_color = ColorWithOpacity('white', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor')
     line_color = Color('white', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor')
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
     radius     = AstropyQuantity(1 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
@@ -115,7 +115,7 @@ class Polygon(Annotation):
     shape = 'polygon'
 
     fill = Bool(False, help='Whether or not the polygon should be filled (:class:`bool`)').tag(wwt='fill')
-    fill_color = Color('white', help='Assigns fill color for the polygon (:class:`str` or `tuple`)').tag(wwt='fillColor')
+    fill_color = ColorWithOpacity('white', help='Assigns fill color for the polygon (:class:`str` or `tuple`)').tag(wwt='fillColor')
     line_color = Color('white', help='Assigns line color for the polygon (:class:`str` or `tuple`)').tag(wwt='lineColor')
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
 
@@ -146,7 +146,7 @@ class Line(Annotation):
 
     shape = 'line'
 
-    color = Color('white', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor')
+    color = ColorWithOpacity('white', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor')
     width = AstropyQuantity(1 * u.pixel, help='Assigns width for the line in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
 
     @validate('width')
