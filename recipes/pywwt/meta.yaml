@@ -25,6 +25,9 @@ requirements:
     - ipyevents
     - requests
     - matplotlib
+    - beautifulsoup4
+    - lxml
+    - python-dateutil
 
 test:
   imports:
