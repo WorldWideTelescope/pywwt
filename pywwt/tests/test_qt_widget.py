@@ -67,7 +67,7 @@ class TestWWTWidget:
         wait_and_check_output(1, capsys)
 
     def test_annotations(self, capsys):
-        circle = self.widget.create_circle()
+        circle = self.widget.add_circle()
         circle.opacity = 0.8
         circle.set_center(M42)
         wait_and_check_output(1, capsys)
@@ -136,7 +136,7 @@ def test_full(tmpdir, capsys):
 
     coord = SkyCoord(5, 0.5, unit=('deg', 'deg'), frame='galactic')
 
-    circle1 = wwt.create_circle()
+    circle1 = wwt.add_circle()
     circle1.set_center(coord)
     circle1.radius = 10 * u.deg
     circle1.line_width = 5 * u.pixel
@@ -146,7 +146,7 @@ def test_full(tmpdir, capsys):
 
     coord = SkyCoord(-5, -0.5, unit=('deg', 'deg'), frame='galactic')
 
-    circle2 = wwt.create_circle()
+    circle2 = wwt.add_circle()
     circle2.set_center(coord)
     circle2.radius = 2 * u.pixel
     circle2.line_width = 5 * u.pixel
