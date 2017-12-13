@@ -57,6 +57,11 @@ class AstropyQuantity(TraitType):
 
 class Color(TraitType):
 
+    def __init__(self, *args, **kwargs):
+        super(Color, self).__init__(*args, **kwargs)
+        if self.help:
+            self.__doc__ = self.help
+
     def validate(self, obj, value):
         if isinstance(value, str) or (isinstance(value, tuple) and len(value) == 3):
             return colors.to_hex(value)
