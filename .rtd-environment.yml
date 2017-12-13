@@ -14,6 +14,10 @@ dependencies:
   - ipyevents
   - nomkl
   - nodejs
+  - matplotlib
+  - beautifulsoup4
+  - lxml
+  - python-dateutil
   - pip:
     - sphinx-automodapi
     - numpydoc
