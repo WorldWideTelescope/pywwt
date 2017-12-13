@@ -1,17 +1,22 @@
-import numpy as np
 import csv
+import sys
+import codecs
+import struct
+from datetime import datetime, timedelta
+
+import numpy as np
 import matplotlib.cm as mcm
 from matplotlib.colors import LogNorm, Normalize
-import struct
 from astropy.utils.console import ProgressBar
-from datetime import datetime, timedelta
 from dateutil import tz, parser
-import codecs
-import sys
+
+__all__ = ['map_array_to_colors', 'generate_utc_times',
+           'convert_xyz_to_spherical', 'write_data_to_csv']
+
 
 def map_array_to_colors(arr, cmap, scale="linear",
                         vmin=None, vmax=None):
-    r"""
+    """
     Map a NumPy array to a colormap using Matplotlib.
 
     :param arr: The array to be mapped onto a colormap.
@@ -43,15 +48,16 @@ def map_array_to_colors(arr, cmap, scale="linear",
     colors = my_cmap.to_rgba(arr, bytes=True)
 
     hex_colors = []
-    
+
     for color in colors:
-        hex_color = codecs.getencoder('hex')(struct.pack('BBB',*color[:3]))[0]
-        hex_colors.append("FF"+hex_color.decode().upper())
+        hex_color = codecs.getencoder('hex')(struct.pack('BBB', *color[:3]))[0]
+        hex_colors.append("FF" + hex_color.decode().upper())
 
     return hex_colors
 
+
 def generate_utc_times(num_steps, step_size, start_time=None):
-    r"""
+    """
     Generate a series of equally linearly spaced times in UTC.
 
     :param num_steps: The number of times to generate.
@@ -91,8 +97,9 @@ def generate_utc_times(num_steps, step_size, start_time=None):
 
     return time_arr
 
+
 def convert_xyz_to_spherical(x, y, z, is_astro=True, ra_units="degrees"):
-    r"""
+    """
     Convert rectangular coordinates (x,y,z) to spherical coordinates
     (Lat, Lon, Alt) or (RA, Dec, Alt).
 
@@ -113,7 +120,7 @@ def convert_xyz_to_spherical(x, y, z, is_astro=True, ra_units="degrees"):
     if ra_units == "degrees" or not is_astro:
         ra_scale = 1.
     elif ra_units == "hours":
-        ra_scale = 24./360.
+        ra_scale = 24. / 360.
     if is_astro:
         ra_name = "RA"
         dec_name = "DEC"
@@ -121,13 +128,14 @@ def convert_xyz_to_spherical(x, y, z, is_astro=True, ra_units="degrees"):
         ra_name = "LON"
         dec_name = "LAT"
     coords = {}
-    coords["ALT"] = np.sqrt(x*x+y*y+z*z)
-    coords[ra_name] = (np.rad2deg(np.arctan2(y, x)) + 180.)*ra_scale
-    coords[dec_name] = np.rad2deg(np.arccos(z/coords["ALT"])) - 90.
+    coords["ALT"] = np.sqrt(x * x + y * y + z * z)
+    coords[ra_name] = (np.rad2deg(np.arctan2(y, x)) + 180.) * ra_scale
+    coords[dec_name] = np.rad2deg(np.arccos(z / coords["ALT"])) - 90.
     return coords
 
+
 def write_data_to_csv(data, filename, mode="new"):
-    r"""
+    """
     Write a dataset to a CSV-formatted file with a data header.
 
     :param data: The data to be written.
@@ -142,18 +150,15 @@ def write_data_to_csv(data, filename, mode="new"):
         fmode = "w"
     elif mode == "append":
         fmode = "a+"
-    if sys.version_info >= (3,0,0):
+    if sys.version_info >= (3, 0, 0):
         f = open(filename, fmode, newline='')
     else:
-        f = open(filename, fmode+'b')
+        f = open(filename, fmode + 'b')
     w = csv.DictWriter(f, list(data.keys()))
-    if mode == "new": w.writeheader()
+    if mode == "new":
+        w.writeheader()
     num_points = len(list(data.values())[0])
     for i in ProgressBar(list(range(num_points))):
-        row = dict([(k,v[i]) for k,v in list(data.items())])
+        row = dict([(k, v[i]) for k, v in list(data.items())])
         w.writerow(row)
     f.close()
-
-
-
-

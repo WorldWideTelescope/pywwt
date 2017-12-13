@@ -1,8 +1,12 @@
 import requests
+
 from .misc import WWTException, handle_response, parse_kwargs, get_soup
 
+__all__ = ['WWTLayer']
+
+
 class WWTLayer(object):
-    r"""
+    """
     A ``WWTLayer`` object corresponding to a layer in WWT's Layer Manager.
 
     :param name: The name of the layer.
@@ -27,7 +31,7 @@ class WWTLayer(object):
             raise WWTException("This layer has been deleted!")
 
     def set_property(self, property_name, property_value, **kwargs):
-        r"""
+        """
         Set a single property. For a list of properties see:
 
         http://www.worldwidetelescope.org/Developers/?LayerControlAPI#Table_of_Properties
@@ -51,7 +55,7 @@ class WWTLayer(object):
         handle_response(prop_str)
 
     def set_properties(self, props_dict, **kwargs):
-        r"""
+        """
         Set the properties of the layer. For a list of properties
         see:
 
@@ -76,7 +80,7 @@ class WWTLayer(object):
         handle_response(props_str)
 
     def get_property(self, property_name):
-        r"""
+        """
         Return a property. For a list of properties see:
 
         http://www.worldwidetelescope.org/Developers/?LayerControlAPI#Table_of_Properties
@@ -95,7 +99,7 @@ class WWTLayer(object):
         return soup.Layer.attrs[property_name]
 
     def get_properties(self):
-        r"""
+        """
         Return all the properties of the layer. For a list of properties
         see:
 
@@ -114,7 +118,7 @@ class WWTLayer(object):
     def update(self, data=None, name=None,
                no_purge=False, purge_all=False,
                show=True, **kwargs):
-        r"""
+        """
         Update the layer.
 
         :param data: New data to be added to the layer. Default: None
@@ -147,13 +151,13 @@ class WWTLayer(object):
         if data is not None:
             nevents = len(data[self.fields[0]])
             for i in range(nevents):
-                data_string += "\t".join([str(data[k][i]) for k in self.fields])+"\n"
+                data_string += "\t".join([str(data[k][i]) for k in self.fields]) + "\n"
         u = requests.post(self.wwt.wwt_url, params=params, data=data_string)
         update_str = u.content
         handle_response(update_str)
 
     def activate(self, **kwargs):
-        r"""
+        """
         Highlight this layer in the layer manager.
 
         Also takes the standard keyword arguments.
@@ -168,7 +172,7 @@ class WWTLayer(object):
         handle_response(layer_str)
 
     def delete(self):
-        r"""
+        """
         Delete the layer.
         """
         self._check_exists()

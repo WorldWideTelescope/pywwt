@@ -1,1 +1,1 @@
-from pywwt import *
+from . import *  # noqa

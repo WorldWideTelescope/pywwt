@@ -1,12 +1,17 @@
 from __future__ import print_function
+
 import requests
 from requests import ConnectionError
 from bs4 import BeautifulSoup
+
 from .misc import WWTException, handle_response, parse_kwargs, get_soup
 from .layer import WWTLayer
 
+__all__ = ['WWTClient']
+
+
 class WWTClient(object):
-    r"""
+    """
     Initialize a WWTClient, connecting to a WWT client.
 
     :param host: The hostname or IP address where
@@ -23,7 +28,7 @@ class WWTClient(object):
         self._check_for_server()
 
     def _check_for_server(self):
-        params = {"cmd":"version"}
+        params = {"cmd": "version"}
         try:
             u = requests.get(self.wwt_url, params=params)
         except ConnectionError:
@@ -39,7 +44,7 @@ class WWTClient(object):
             raise WWTException("World Wide Telescope is not the required version (>= 2.8)")
 
     def change_mode(self, mode, **kwargs):
-        r"""
+        """
         Changes the view to one of Earth, Planet, Sky, Panorama, SolarSystem.
 
         :param mode: The mode to change to.
@@ -56,7 +61,7 @@ class WWTClient(object):
         handle_response(mode_str)
 
     def move_view(self, parameter, **kwargs):
-        r"""
+        """
         Changes the view depending on the supplied parameter.
         For a list of parameters see:
 
@@ -67,7 +72,7 @@ class WWTClient(object):
 
         Also accepts the standard keyword arguments.
         """
-        params = {"cmd":"move", "move":parameter}
+        params = {"cmd": "move", "move": parameter}
         parse_kwargs(params, kwargs)
         u = requests.get(self.wwt_url, params=params)
         move_str = u.content
@@ -77,7 +82,7 @@ class WWTClient(object):
                   color=None, start_date=None,
                   end_date=None, fade_type=None,
                   fade_range=None, **kwargs):
-        r"""
+        """
         Initialize a new layer in the layer manager.
 
         :param frame: The reference frame of the layer.
@@ -135,7 +140,7 @@ class WWTClient(object):
     def load(self, filename, frame, name, color=None,
              start_date=None, end_date=None,
              fade_type=None, fade_range=None, **kwargs):
-        r"""
+        """
         Initialize a new layer in the layer manager.
 
         :param filename: The name of the file to read the data from.
@@ -178,7 +183,7 @@ class WWTClient(object):
             f = open(filename, "r")
             line = f.readline()
             f.close()
-            fields = line.replace("\t",",").strip("\n").split(",")
+            fields = line.replace("\t", ", ").strip("\n").split(",")
         else:
             fields = []
         params = {}
@@ -199,7 +204,7 @@ class WWTClient(object):
         return WWTLayer(name, layer_id, fields, self)
 
     def get_existing_layer(self, name):
-        r"""
+        """
         Return an existing layer as a `WWTLayer` object.
 
         :param name: The name of the layer to be highlighted.
@@ -217,7 +222,7 @@ class WWTClient(object):
         return WWTLayer(name, layer_id, fields, self)
 
     def new_layer_group(self, frame, name, **kwargs):
-        r"""
+        """
         Specifies that a layer group should be added.
 
         :param frame: The reference frame of the layer group.
@@ -227,16 +232,16 @@ class WWTClient(object):
 
         Also accepts the standard keyword arguments.
         """
-        params = {"cmd":"group",
-                  "frame":frame,
-                  "name":name}
+        params = {"cmd": "group",
+                  "frame": frame,
+                  "name": name}
         parse_kwargs(params, kwargs)
         u = requests.get(self.wwt_url, params=params)
         group_str = u.content
         handle_response(group_str)
 
     def ui_settings(self, setting_name, setting_value, **kwargs):
-        r"""
+        """
         Change user interface settings, without altering the
         layer data. For the settings list see:
 
@@ -249,34 +254,34 @@ class WWTClient(object):
 
         Also takes the standard keyword arguments.
         """
-        params = {"cmd":"uisettings",
-                  setting_name:setting_value}
+        params = {"cmd": "uisettings",
+                  setting_name: setting_value}
         parse_kwargs(params, kwargs)
         u = requests.get(self.wwt_url, params=params)
         ui_str = u.content
         handle_response(ui_str)
 
     def get_state(self):
-        r"""
+        """
         Requests some details of the current view.
 
         :returns: The state information as a dict of key, value pairs.
         """
-        params = {"cmd":"state"}
+        params = {"cmd": "state"}
         soup, resp = get_soup(self.wwt_url, params)
         handle_response(resp)
         state = soup.LayerApi.ViewState
         return state.attrs
 
     def get_layer_list(self):
-        r"""
+        """
         Returns information about the layers that are
         currently in the layer manager.
 
         :returns: A dictionary of layers.
         """
-        params = {"cmd":"layerlist",
-                  "layersonly":"True"}
+        params = {"cmd": "layerlist",
+                  "layersonly": "True"}
         soup, resp = get_soup(self.wwt_url, params)
         handle_response(resp)
         layer_list = soup.LayerApi.LayerList
@@ -287,14 +292,14 @@ class WWTClient(object):
         return layers
 
     def get_frame_list(self):
-        r"""
+        """
         Returns information about the reference frames that are
         currently in the layer manager.
 
         :returns: A dictionary of reference frames.
         """
-        params = {"cmd":"layerlist",
-                  "layersonly":"False"}
+        params = {"cmd": "layerlist",
+                  "layersonly": "False"}
         soup, resp = get_soup(self.wwt_url, params)
         handle_response(resp)
         layer_list = soup.LayerApi.LayerList
@@ -309,5 +314,3 @@ class WWTClient(object):
 
     def __str__(self):
         return self.host
-
-    

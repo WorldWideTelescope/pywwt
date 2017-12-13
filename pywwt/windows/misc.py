@@ -1,13 +1,18 @@
 from bs4 import BeautifulSoup
 import requests
 
+__all__ = ['WWTException', 'get_soup', 'handle_response', 'parse_kwargs']
+
+
 class WWTException(Exception):
     pass
+
 
 def get_soup(url, params):
     u = requests.get(url, params=params)
     soup = BeautifulSoup(u.content, "xml")
     return soup, u.content
+
 
 def handle_response(resp_str):
     soup = BeautifulSoup(resp_str, "xml")
@@ -19,6 +24,7 @@ def handle_response(resp_str):
         soup2 = BeautifulSoup(resp_str)
         error = soup2.html.body.h2.string
         raise WWTException(error)
+
 
 def parse_kwargs(params, kwargs):
     if "date_time" in kwargs:
