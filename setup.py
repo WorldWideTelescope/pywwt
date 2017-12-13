@@ -145,7 +145,10 @@ setup_args = {
         'traitlets',
         'astropy',
         'requests',
-        'matplotlib'
+        'matplotlib',
+        'beautifulsoup4',
+        'lxml',
+        'python-dateutil'
     ],
     'packages': find_packages(),
     'zip_safe': False,
