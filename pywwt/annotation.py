@@ -1,9 +1,8 @@
 import uuid
 from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
-from matplotlib import colors
 
-from .traits import Any, Bool, Float, Unicode, AstropyQuantity
+from .traits import Color, ColorWithOpacity, Bool, Float, Unicode, AstropyQuantity
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -57,34 +56,11 @@ class Circle(Annotation):
     shape = 'circle'
 
     fill = Bool(False, help='Whether or not the circle should be filled (:class:`bool`)').tag(wwt='fill')
-    fill_color = Any('white', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor')
-    line_color = Any('white', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor')
+    fill_color = ColorWithOpacity('white', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor')
+    line_color = Color('white', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor')
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
     radius     = AstropyQuantity(1 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
     #sky_relative = Bool(True, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec) (:class:`~astropy.units.Quantity`)').tag(wwt='skyRelative')
-
-    @validate('fill_color')
-    def _validate_fillcolor(self, proposal):
-        if isinstance(proposal['value'], str):
-            return colors.to_hex(proposal['value'])
-        if isinstance(proposal['value'], tuple):
-            if len(proposal['value']) == 3:
-                return colors.to_hex(proposal['value'])
-            if len(proposal['value']) == 4:
-                self.opacity = proposal['value'][-1]
-                return colors.to_hex(proposal['value'][:3])
-        raise TraitError('fill color must be a string or a tuple of 3 or 4 floats')
-
-    @validate('line_color')
-    def _validate_linecolor(self, proposal):
-        if isinstance(proposal['value'],str):
-            return colors.to_hex(proposal['value'])
-        if isinstance(proposal['value'],tuple):
-            if len(proposal['value']) == 3:
-                return colors.to_hex(proposal['value'])
-            else:
-                pass
-        raise TraitError('line color must be a string or a tuple of 3 floats')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -134,30 +110,9 @@ class Polygon(Annotation):
     shape = 'polygon'
 
     fill = Bool(False, help='Whether or not the polygon should be filled (:class:`bool`)').tag(wwt='fill')
-    fill_color = Any('white', help='Assigns fill color for the polygon (:class:`str` or `tuple`)').tag(wwt='fillColor')
-    line_color = Any('white', help='Assigns line color for the polygon (:class:`str` or `tuple`)').tag(wwt='lineColor')
+    fill_color = ColorWithOpacity('white', help='Assigns fill color for the polygon (:class:`str` or `tuple`)').tag(wwt='fillColor')
+    line_color = Color('white', help='Assigns line color for the polygon (:class:`str` or `tuple`)').tag(wwt='lineColor')
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
-
-    @validate('fill_color')
-    def _validate_fillcolor(self, proposal):
-        if isinstance(proposal['value'], str):
-            return colors.to_hex(proposal['value'])
-        if isinstance(proposal['value'], tuple):
-            if len(proposal['value']) == 3:
-                return colors.to_hex(proposal['value'])
-            if len(proposal['value']) == 4:
-                self.opacity = proposal['value'][-1]
-                return colors.to_hex(proposal['value'][:3])
-        raise TraitError('fill color must be a string or a tuple of 3 or 4 floats')
-
-    @validate('line_color')
-    def _validate_linecolor(self, proposal):
-        if isinstance(proposal['value'],str):
-            return colors.to_hex(proposal['value'])
-        if isinstance(proposal['value'],tuple):
-            if len(proposal['value']) == 3:
-                return colors.to_hex(proposal['value'])
-        raise TraitError('line color must be a string or a tuple of 3 floats')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -192,20 +147,8 @@ class Line(Annotation):
 
     shape = 'line'
 
-    color = Any('white', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor')
+    color = ColorWithOpacity('white', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor')
     width = AstropyQuantity(1 * u.pixel, help='Assigns width for the line in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
-
-    @validate('color')
-    def _validate_color(self, proposal):
-        if isinstance(proposal['value'], str):
-            return colors.to_hex(proposal['value'])
-        if isinstance(proposal['value'], tuple):
-            if len(proposal['value']) == 3:
-                return colors.to_hex(proposal['value'])
-            if len(proposal['value']) == 4:
-                self.opacity = proposal['value'][-1]
-                return colors.to_hex(proposal['value'][:3])
-        raise TraitError('color must be a string or a tuple of 3 or 4 floats')
 
     @validate('width')
     def _validate_width(self, proposal):

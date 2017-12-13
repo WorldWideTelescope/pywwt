@@ -1,10 +1,10 @@
-from traitlets import (TraitType,
+from traitlets import (TraitType, TraitError,
                        Any as OriginalAny,
                        Bool as OriginalBool,
                        Float as OriginalFloat,
                        Unicode as OriginalUnicode)
 from astropy import units as u
-
+from matplotlib import colors
 
 # We inherit the original trait classes to make sure that the docstrings are set
 
@@ -53,3 +53,24 @@ class AstropyQuantity(TraitType):
         if isinstance(value, u.Quantity):
             return value
         self.error(obj, value)
+
+
+class Color(TraitType):
+
+    def validate(self, obj, value):
+        if isinstance(value, str) or (isinstance(value, tuple) and len(value) == 3):
+            return colors.to_hex(value)
+        else:
+            if hasattr(obj, 'opacity'):
+                raise TraitError('color must be a string or a tuple of 3 or 4 floats')
+            else:
+                raise TraitError('color must be a string or a tuple of 3 floats')
+
+
+class ColorWithOpacity(Color):
+
+    def validate(self, obj, value):
+        if isinstance(value, tuple) and len(value) == 4:
+            obj.opacity = value[-1]
+            value = value[:3]
+        return super(ColorWithOpacity, self).validate(obj, value)
