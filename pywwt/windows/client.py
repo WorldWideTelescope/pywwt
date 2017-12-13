@@ -14,9 +14,11 @@ class WWTClient(object):
     """
     Initialize a WWTClient, connecting to a WWT client.
 
-    :param host: The hostname or IP address where
-        the WWT client is being run. Default: "127.0.0.1"
-    :type host: string, optional
+    Parameters
+    ----------
+    host : `str`, optional
+        The hostname or IP address where the WWT client is being run. Default:
+        "127.0.0.1"
     """
     def __init__(self, host=None):
         if host is None:
@@ -47,10 +49,12 @@ class WWTClient(object):
         """
         Changes the view to one of Earth, Planet, Sky, Panorama, SolarSystem.
 
-        :param mode: The mode to change to.
-        :type mode: string
-
-        Also accepts the standard keyword arguments.
+        Parameters
+        ----------
+        mode : `str`
+            The mode to change to.
+        kwargs
+            Additional standard keyword arguments
         """
         params = {}
         params["cmd"] = "mode"
@@ -65,12 +69,14 @@ class WWTClient(object):
         Changes the view depending on the supplied parameter.
         For a list of parameters see:
 
-        http://www.worldwidetelescope.org/Developers/?LayerControlAPI#move
+        https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#move
 
-        :param parameter: The parameter used to set the view.
-        :type parameter: string
-
-        Also accepts the standard keyword arguments.
+        Parameters
+        ----------
+        parameter : `str`
+            The parameter used to set the view.
+        kwargs
+            Additional standard keyword arguments
         """
         params = {"cmd": "move", "move": parameter}
         parse_kwargs(params, kwargs)
@@ -85,38 +91,41 @@ class WWTClient(object):
         """
         Initialize a new layer in the layer manager.
 
-        :param frame: The reference frame of the layer.
-        :type frame: string
-        :param name: The name of the layer.
-        :type name: string
-        :param fields: The names of the fields to be loaded in the layer.
-        :type fields: list of strings
-        :param color: ARBG hex value of the color to be used when rendering
-            the events of the layer. Default: "FFFFFFFF" (white)
-        :type color: string, optional
-        :param start_date: With time series data, the date and time to start the
-            visualization for this layer. This could for example
-            be slightly earlier than the date of the first event
-            in the actual data. Default: the system minimum date value.
-            Formats (month/day/year):
-            "1/1/2010 11:00:00 PM"
-            "1/1/2010 11:30 AM"
-            "1/1/2010 11 am"
-            "1/1/2000"
-            "1/2000"
-        :type start_date: string, optional
-        :param end_date: With time series data, the date and time to end the
-            visualization for this layer. Default: the system maximum date value.
-        :type end_date: string, optional
-        :param fade_type:  Fades the data visualization. One of: "In", "Out", "Both",
-            or "None". Default: "None"
-        :type fade_type: string, optional
-        :param fade_range: Fade time in days. Default: 0
-        :type fade_range: int, optional
+        Parameters
+        ----------
+        frame : `str`
+            The reference frame of the layer.
+        name : `str`
+            The name of the layer.
+        fields : `list`
+            The names of the fields to be loaded in the layer, as a list of strings.
+        color : `str`, optional
+            ARBG hex value of the color to be used when rendering the events of
+            the layer. Default: "FFFFFFFF" (white)
+        start_date : `str`, optional
+            With time series data, the date and time to start the visualization
+            for this layer. This could for example be slightly earlier than the
+            date of the first event in the actual data. Default: the system
+            minimum date value. Acceptable formats (month/day/year):
+            ``"1/1/2010 11:00:00 PM"``,
+            ``"1/1/2010 11:30 AM"``,
+            ``"1/1/2010 11 am"``,
+            ``"1/1/2000"``,
+            ``"1/2000"``,
+        end_date : `str`, optional
+            With time series data, the date and time to end the visualization
+            for this layer. Default: the system maximum date value.
+        fade_type : {'In', 'Out', 'Both', 'None'}
+            Fades the data visualization
+        fade_range : `int`
+            Fade time in days
+        kwargs
+            Additional standard keyword arguments
 
-        :returns: A `WWTLayer` object corresponding to the layer just created.
-
-        Also accepts the default keyword arguments.
+        Returns
+        -------
+        layer
+            A `WWTLayer` object corresponding to the layer just created.
         """
         params = {}
         params["cmd"] = "new"
@@ -143,38 +152,43 @@ class WWTClient(object):
         """
         Initialize a new layer in the layer manager.
 
-        :param filename: The name of the file to read the data from.
-        :type filename: string
-        :param frame: The reference frame of the layer.
-        :type frame: string
-        :param name: The name of the layer.
-        :type name: string
-        :param color: ARBG hex value of the color to be used when rendering
-            the events of the layer. Default: "FFFFFFFF" (white)
-        :type color: string, optional
-        :param start_date: With time series data, the date and time to start the
-            visualization for this layer. This could for example
-            be slightly earlier than the date of the first event
-            in the actual data. Default: the system minimum date value.
-            Formats (month/day/year):
-            "1/1/2010 11:00:00 PM"
-            "1/1/2010 11:30 AM"
-            "1/1/2010 11 am"
-            "1/1/2000"
-            "1/2000"
-        :type start_date: string, optional
-        :param end_date: With time series data, the date and time to end the
-            visualization for this layer. Default: the system maximum date value.
-        :type end_date: string, optional
-        :param fade_type:  Fades the data visualization. One of: "In", "Out", "Both",
-            or "None". Default: "None"
-        :type fade_type: string, optional
-        :param fade_range: Fade time in days. Default: 0
-        :type fade_range: int, optional
+        Parameters
+        ----------
+        filename : `str`
+            The name of the file to read the data from.
+        frame : `str`
+            The reference frame of the layer.
+        name : `str`
+            The name of the layer.
+        fields : `list`
+            The names of the fields to be loaded in the layer, as a list of strings.
+        color : `str`, optional
+            ARBG hex value of the color to be used when rendering the events of
+            the layer. Default: "FFFFFFFF" (white)
+        start_date : `str`, optional
+            With time series data, the date and time to start the visualization
+            for this layer. This could for example be slightly earlier than the
+            date of the first event in the actual data. Default: the system
+            minimum date value. Acceptable formats (month/day/year):
+            ``"1/1/2010 11:00:00 PM"``,
+            ``"1/1/2010 11:30 AM"``,
+            ``"1/1/2010 11 am"``,
+            ``"1/1/2000"``,
+            ``"1/2000"``,
+        end_date : `str`, optional
+            With time series data, the date and time to end the visualization
+            for this layer. Default: the system maximum date value.
+        fade_type : {'In', 'Out', 'Both', 'None'}
+            Fades the data visualization
+        fade_range : `int`
+            Fade time in days
+        kwargs
+            Additional standard keyword arguments
 
-        :returns: A ``WWTLayer`` object corresponding to the layer just created.
-
-        Also accepts the default keyword arguments.
+        Returns
+        -------
+        layer
+            A `WWTLayer` object corresponding to the layer just created.
         """
         if self.host not in ["127.0.0.1", "localhost", "localhost.localdomain"]:
             raise WWTException("The 'load' method only works if you are on the same machine "
@@ -207,11 +221,17 @@ class WWTClient(object):
         """
         Return an existing layer as a `WWTLayer` object.
 
-        :param name: The name of the layer to be highlighted.
-        :type name: string
-        :returns: A ``WWTLayer`` object corresponding to the named layer.
+        Parameters
+        ----------
+        name : `str`
+            The name of the layer to be highlighted.
+        kwargs
+            Additional standard keyword arguments
 
-        Also takes the standard keyword arguments.
+        Returns
+        -------
+        layer
+            A ``WWTLayer`` object corresponding to the named layer.
         """
         layers = self.get_layer_list()
         if "id" in layers[name]:
@@ -225,12 +245,14 @@ class WWTClient(object):
         """
         Specifies that a layer group should be added.
 
-        :param frame: The reference frame of the layer group.
-        :type frame: string
-        :param name: The name of the layer group.
-        :type name: string
-
-        Also accepts the standard keyword arguments.
+        Parameters
+        ----------
+        frame : `str`
+            The reference frame of the layer group.
+        name : `str`
+            The name of the layer group.
+        kwargs
+            Additional standard keyword arguments
         """
         params = {"cmd": "group",
                   "frame": frame,
@@ -245,14 +267,16 @@ class WWTClient(object):
         Change user interface settings, without altering the
         layer data. For the settings list see:
 
-        http://www.worldwidetelescope.org/Developers/?LayerControlAPI#uisettings
+        https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#uisettings
 
-        :param setting_name: The name of the setting to be changed.
-        :type setting_name: string
-        :param setting_value: The value to set the setting to.
-        :type setting_value: string
-
-        Also takes the standard keyword arguments.
+        Parameters
+        ----------
+        setting_name : `str`
+            The name of the setting to be changed.
+        setting_value : `str`
+            The value to set the setting to.
+        kwargs
+            Additional standard keyword arguments
         """
         params = {"cmd": "uisettings",
                   setting_name: setting_value}
@@ -265,7 +289,10 @@ class WWTClient(object):
         """
         Requests some details of the current view.
 
-        :returns: The state information as a dict of key, value pairs.
+        Returns
+        -------
+        state : `dict`
+            The state information as a dict of key, value pairs.
         """
         params = {"cmd": "state"}
         soup, resp = get_soup(self.wwt_url, params)
@@ -275,10 +302,13 @@ class WWTClient(object):
 
     def get_layer_list(self):
         """
-        Returns information about the layers that are
-        currently in the layer manager.
+        Returns information about the layers that are currently in the layer
+        manager.
 
-        :returns: A dictionary of layers.
+        Returns
+        -------
+        layers : `dict`
+            A dictionary of layers.
         """
         params = {"cmd": "layerlist",
                   "layersonly": "True"}
@@ -296,7 +326,10 @@ class WWTClient(object):
         Returns information about the reference frames that are
         currently in the layer manager.
 
-        :returns: A dictionary of reference frames.
+        Returns
+        -------
+        frames : `dict`
+            A dictionary of reference frames.
         """
         params = {"cmd": "layerlist",
                   "layersonly": "False"}

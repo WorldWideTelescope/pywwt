@@ -9,7 +9,7 @@ WorldWideTelescope from Python/Jupyter
 
 **IMPORTANT NOTE ABOUT THIS PACKAGE:** this package is under heavy development
 and is not ready for general use. It will replace, once released, the existing
-`pywwt <http://github.com/jzuhone/pywwt>`_ package. The new package will include
+`pywwt <https://github.com/jzuhone/pywwt>`_ package. The new package will include
 both a way to drive the web version of WWT, and the Windows version (using, for
 the latter, code from the original pywwt package).
 

@@ -9,15 +9,16 @@ class WWTLayer(object):
     """
     A ``WWTLayer`` object corresponding to a layer in WWT's Layer Manager.
 
-    :param name: The name of the layer.
-    :type name: string
-    :param id: The ID of the layer.
-    :type id: string
-    :param fields: The fields in the layer
-    :type fields: list of strings
-    :param wwt: The WWT client where this layer exists.
-    :type wwt: ``pywwt.client.WWTClient``
-    :returns: A ``WWTLayer`` object.
+    Parameters
+    ----------
+    name : `str`
+        The name of the layer.
+    id : `str`
+        The ID of the layer.
+    field : `list`
+        The fields in the layer as a list of strings.
+    wwt : `~pywwt.windows.WWTClient`
+        The WWT client where this layer exists.
     """
     def __init__(self, name, id, fields, wwt):
         self.name = name
@@ -34,14 +35,16 @@ class WWTLayer(object):
         """
         Set a single property. For a list of properties see:
 
-        http://www.worldwidetelescope.org/Developers/?LayerControlAPI#Table_of_Properties
+        https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#table-of-properties
 
-        :param property_name: Name of the property to be set.
-        :type property_name: string
-        :param property_value: Value the property should take.
-        :type property_value: string
-
-        Also takes the standard keyword arguments.
+        Parameters
+        ----------
+        property_name : `str`
+            Name of the property to be set.
+        property_value : `str`
+            Value the property should take.
+        kwargs
+            Additional standard keyword arguments
         """
         self._check_exists()
         params = {}
@@ -59,12 +62,14 @@ class WWTLayer(object):
         Set the properties of the layer. For a list of properties
         see:
 
-        http://www.worldwidetelescope.org/Developers/?LayerControlAPI#Table_of_Properties
+        https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#table-of-properties
 
-        :param props_dict: Dictionary of {property_name, property_value} pairs.
-        :type props_dict: dict
-
-        Also takes the standard keyword arguments.
+        Parameters
+        ----------
+        props_dict : `dict`
+            Dictionary of property_name: property_value pairs.
+        kwargs
+            Additional standard keyword arguments
         """
         self._check_exists()
         props_string = "<?xml version='1.0' encoding='UTF-8'?><LayerApi><Layer "
@@ -83,11 +88,12 @@ class WWTLayer(object):
         """
         Return a property. For a list of properties see:
 
-        http://www.worldwidetelescope.org/Developers/?LayerControlAPI#Table_of_Properties
+        https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#table-of-properties
 
-        :param property_name: The name of the property to be returned.
-        :type property_name: string
-        :returns: The value of the property specified by *property_name*.
+        Parameters
+        ----------
+        property_name : `str`
+            The name of the property to be returned.
         """
         self._check_exists()
         params = {}
@@ -103,9 +109,12 @@ class WWTLayer(object):
         Return all the properties of the layer. For a list of properties
         see:
 
-        http://www.worldwidetelescope.org/Developers/?LayerControlAPI#Table_of_Properties
+        https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#table-of-properties
 
-        :returns: All of the properties in a dict of key, value pairs.
+        Returns
+        -------
+        properties : `dict`
+            All of the properties in a dict of key: value pairs.
         """
         self._check_exists()
         params = {}
@@ -121,21 +130,23 @@ class WWTLayer(object):
         """
         Update the layer.
 
-        :param data: New data to be added to the layer. Default: None
-        :type data: dict of NumPy arrays, optional
-        :param name: Rename the layer. Default: None
-        :type name: string, optional
-        :param no_purge: The sending of an update command will delete events
-            that occur before the start time of any events in the
-            update and that have already decayed. Set this flag
-            if the event data should not be deleted. Default: False
-        :type no_purge: boolean, optional
-        :param purge_all: Delete all data. Default: False
-        :type purge_all: boolean, optional
-        :param show: Whether to show or hide the layer. Default: True
-        :type show: boolean, optional
-
-        Also takes the standard keyword arguments.
+        Parameters
+        ----------
+        data : `dict`, optional
+            New data to be added to the layer as a dictionary of Numpy arrays
+        name : `str`, optional
+            A new name for the layer, if it needs to be renamed
+        no_purge : `bool`, optional
+            The sending of an update command will delete events that occur
+            before the start time of any events in the update and that have
+            already decayed. Set this flag to `True` if the event data should
+            not be deleted.
+        purge_all : `bool`, optional
+            Delete all data.
+        show : `bool`, optional
+            Whether to show or hide the layer.
+        kwargs
+            Additional standard keyword arguments
         """
         self._check_exists()
         params = {}
@@ -160,7 +171,10 @@ class WWTLayer(object):
         """
         Highlight this layer in the layer manager.
 
-        Also takes the standard keyword arguments.
+        Parameters
+        ----------
+        kwargs
+            Additional standard keyword arguments
         """
         self._check_exists()
         params = {}

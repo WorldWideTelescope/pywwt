@@ -115,7 +115,7 @@ class BaseWWTWidget(HasTraits):
 
         Parameters
         ----------
-        url : str
+        url : `str`
             The URL of the chosen tour (a .wtt file)
         """
         # throw error if url doesn't end in .wtt

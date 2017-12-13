@@ -13,7 +13,7 @@ def get_imagery_layers(url):
 
     Parameters
     ----------
-    url : str
+    url : `str`
         The URL of the image collection.
     """
 
