@@ -9,17 +9,15 @@ Documentation for pywwt
 About
 -----
 
-.. warning:: this package is under heavy development and is not ready for
-             general use. It will replace, once released, the existing `pywwt
-             <https://github.com/jzuhone/pywwt>`_ package. The new package will
-             include both a way to drive the web version of WWT, and the Windows
-             version (using, for the latter, code from the original pywwt
-             package).
-
 The pywwt package aims to make it easy to use WorldWideTelescope from Python,
-including from the Jupyter notebook. Only a very small subset of functionality
-is implemented for now, and we will be adding functionality over the coming
-weeks.
+and includes the following:
+
+* A Jupyter notebook/lab widget
+* A standalone Qt viewer/widget
+* A client for the Windows version of WorldWide Telescope
+
+Only a small subset of functionality is implemented for now, and we will be
+adding functionality over the coming weeks.
 
 User guide
 ----------
