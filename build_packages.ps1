@@ -49,7 +49,7 @@ foreach ($package in $packages) {
       git clone git://github.com/WorldWideTelesope/$package
       checkLastExitCode
     } else {
-      git clone git://github.com/astrofrog/$package
+      git clone git://github.com/mwcraig/$package
       checkLastExitCode
     }
 

@@ -29,7 +29,7 @@ for package in $packages; do
     if [[ $package == pywwt ]]; then
       git clone "git://github.com/WorldWideTelescope/"$package".git";
     else
-      git clone "git://github.com/astrofrog/"$package".git";
+      git clone "git://github.com/mwcraig/"$package".git";
     fi
 
     # The following puts the correct version number in the recipes
