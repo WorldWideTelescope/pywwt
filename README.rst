@@ -1,8 +1,12 @@
 .. image:: https://travis-ci.org/WorldWideTelescope/pywwt.svg?branch=tests
     :target: https://travis-ci.org/WorldWideTelescope/pywwt
 
-.. image:: https://ci.appveyor.com/api/projects/status/hqacnus6g197uo2d/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/WorldWideTelescope/pywwt
+.. image:: https://ci.appveyor.com/api/projects/status/yweuddwyxy97d8go/branch/master?svg=true
+    :target: https://ci.appveyor.com/project/astrofrog/pywwt/branch/master
+
+.. image:: https://readthedocs.org/projects/pywwt/badge/?version=latest
+   :target: http://pywwt.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 WorldWide Telescope from Python/Jupyter
 =======================================
