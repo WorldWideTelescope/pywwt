@@ -29,7 +29,7 @@ conda
 If you normally use conda and
 just want to try out the latest developer version, you can do this with::
 
-    conda install -c conda-forge -c astrofrog/label/dev pywwt
+    conda install -c conda-forge -c wwt/label/dev pywwt
 
 This will install a version built in the last 24 hours so may not strictly be
 the absolute latest version.
