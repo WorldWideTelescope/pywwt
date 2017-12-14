@@ -38,3 +38,9 @@ Getting help
 
 If you run into any issues when using pywwt, please open an issue
 `here <https://github.com/WorldWideTelescope/pywwt/issues>`_.
+
+Acknowledgments
+---------------
+
+This work is funded through the American Astronomical Society WorldWideTelescope
+project.
