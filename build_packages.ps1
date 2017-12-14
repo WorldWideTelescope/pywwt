@@ -46,7 +46,7 @@ foreach ($package in $packages) {
   } else {
 
     if ($package -match "pywwt") {
-      git clone git://github.com/WorldWideTelesope/$package
+      git clone git://github.com/WorldWideTelescope/$package
       checkLastExitCode
     } else {
       git clone git://github.com/mwcraig/$package
