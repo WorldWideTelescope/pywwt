@@ -140,15 +140,17 @@ setup_args = {
         ]),
     ],
     'install_requires': [
+        'numpy>=1.9',
+        'matplotlib>1.5',
+        'astropy>=1.0',
+        'requests',
+        'beautifulsoup4',
+        'python-dateutil',
+        'lxml',
         'ipywidgets>=7.0.0',
         'ipyevents',
         'traitlets',
-        'astropy',
-        'requests',
-        'matplotlib',
-        'beautifulsoup4',
-        'lxml',
-        'python-dateutil'
+        'qtpy'
     ],
     'packages': find_packages(),
     'zip_safe': False,
