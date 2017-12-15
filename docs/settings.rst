@@ -54,7 +54,7 @@ would enter:
 
 All of the preceding code results in the following view:
 
-.. image:: stgo_view.png
+.. image:: images/stgo_view.png
 
 Screenshots like the one above are saved through a widget method that takes
 your desired file name its argument.
@@ -101,7 +101,7 @@ a good amount of aesthetic value for tours or general use.
 The code above superimposes a dust and gas map on an all-sky gamma ray
 intensity survey and allows for pictures like this:
 
-.. image:: dust_on_gamma.png
+.. image:: images/dust_on_gamma.png
 
 You can currently choose from about 20 layers of different wavelengths, scopes,
 and eras; list them using the widget's ``available_layers`` method.
@@ -121,7 +121,7 @@ the WWT website. Once a tour is loaded,
 
 it plays automatically. You can pause and resume it through similar methods.
 While the tour is stopped, it's still possible to drag the viewer, (maybe?)
-:ref:`create annotations <annotations>`, and resume the tour 
+:ref:`create annotations <annotations>`, and resume the tour
 without missing a step.
 
 .. How do you exit a tour and go back to the original view?
