@@ -84,7 +84,7 @@ class Circle(Annotation):
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
 
-    def remove_annotation(self):
+    def remove(self):
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
@@ -133,7 +133,7 @@ class Polygon(Annotation):
                                       ra=point.ra.degree,
                                       dec=point.dec.degree)
 
-    def remove_annotation(self):
+    def remove(self):
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
@@ -169,7 +169,7 @@ class Line(Annotation):
                                       ra=point.ra.degree,
                                       dec=point.dec.degree)
 
-    def remove_annotation(self):
+    def remove(self):
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):

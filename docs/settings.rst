@@ -80,7 +80,7 @@ the star Alpha Centauri, the process looks like this:
 
     In [12]: coord = SkyCoord.from_name('Alpha Centauri')
 
-    In [13]: widget.center_on_coordinates(coord, fov=10 * u.deg)
+    In [13]: wwt.center_on_coordinates(coord, fov=10 * u.deg)
 
 Foreground/background layers
 -----------------------------
@@ -96,7 +96,7 @@ a good amount of aesthetic value for tours or general use.
     
     In [15]: wwt.foreground = 'Planck Dust & Gas'
     
-    In [16]: wwt.foreground_opacity = .7
+    In [16]: wwt.foreground_opacity = .75
     
 The code above superimposes a dust and gas map on an all-sky gamma ray 
 intensity survey and allows for pictures like this:
