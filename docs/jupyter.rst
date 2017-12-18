@@ -10,7 +10,7 @@ The Jupyter widget can be used as follows in the Jupyter notebook::
 
 This will then look like:
 
-.. image:: ../jupyter.png
+.. image:: images/jupyter.jpg
 
 Once the WorldWide Telescope widget is visible, you can start to interact
 with the ``wwt`` object in the next cell of the notebook. You can find out more
