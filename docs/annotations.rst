@@ -39,7 +39,7 @@ returned object afterwards::
 See :class:`~pywwt.Circle` for a full list of available properties.
 
 Note that if you don't provide center coordinates, the circle will automatically
-generate in the center of your view::
+be generated in the center of your view::
 
     >>> wwt.center_on_coordinates(SkyCoord(190, -55, unit=u.deg))
     >>> crc2 = wwt.add_circle(radius=10 * u.pixel, opacity=.4,

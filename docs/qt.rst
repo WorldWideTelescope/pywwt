@@ -19,8 +19,7 @@ the notebook. You can find out more about interacting with this object in
 :doc:`settings` and :doc:`annotations`.
 
 .. note:: The :class:`pywwt.qt.WWTQtClient` class is not the Qt widget itself 
-but
-          an object that opens the widget and allows you to control the WWT
+          but an object that opens the widget and allows you to control the WWT
           settings. If you need access to the underlying widget, see the
           `Embedding`_ section.
 
