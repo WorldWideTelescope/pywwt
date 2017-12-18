@@ -17,7 +17,7 @@ class WWTLayer(object):
         The ID of the layer.
     field : `list`
         The fields in the layer as a list of strings.
-    wwt : `~pywwt.windows.WWTClient`
+    wwt : `~pywwt.windows.WWTWindowsClient`
         The WWT client where this layer exists.
     """
     def __init__(self, name, id, fields, wwt):

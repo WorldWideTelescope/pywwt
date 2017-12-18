@@ -14,7 +14,7 @@ WorldWide Telescope from Python/Jupyter
 About
 -----
 
-The pywwt package aims to make it easy to use WorldWideTelescope from Python,
+The pywwt package aims to make it easy to use WorldWide Telescope from Python,
 and includes the following:
 
 * A Jupyter notebook/lab widget
@@ -33,5 +33,5 @@ If you run into any issues, please open an issue `here
 Acknowledgments
 ---------------
 
-This work is funded through the American Astronomical Society WorldWideTelescope
+This work is funded through the American Astronomical Society WorldWide Telescope
 project.

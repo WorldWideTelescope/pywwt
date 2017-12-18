@@ -7,12 +7,12 @@ from bs4 import BeautifulSoup
 from .misc import WWTException, handle_response, parse_kwargs, get_soup
 from .layer import WWTLayer
 
-__all__ = ['WWTClient']
+__all__ = ['WWTWindowsClient']
 
 
-class WWTClient(object):
+class WWTWindowsClient(object):
     """
-    Initialize a WWTClient, connecting to a WWT client.
+    Initialize a WWTWindowsClient, connecting to a WWT client.
 
     Parameters
     ----------
@@ -34,7 +34,7 @@ class WWTClient(object):
         try:
             u = requests.get(self.wwt_url, params=params)
         except ConnectionError:
-            raise WWTException("World Wide Telescope has not been started " +
+            raise WWTException("WorldWide Telescope has not been started " +
                                "on this host or is otherwise unreachable.")
         version_str = u.content
         soup = BeautifulSoup(version_str, "xml")
@@ -43,7 +43,7 @@ class WWTClient(object):
         tag = soup.LayerApi.Version
         version_numbers = tag.string.split(".")
         if float(".".join(version_numbers[:2])) < 2.8:
-            raise WWTException("World Wide Telescope is not the required version (>= 2.8)")
+            raise WWTException("WorldWide Telescope is not the required version (>= 2.8)")
 
     def change_mode(self, mode, **kwargs):
         """
@@ -343,7 +343,7 @@ class WWTClient(object):
         return frames
 
     def __repr__(self):
-        return "WWTClient(host=\"%s\")" % self.host
+        return "WWTWindowsClient(host=\"%s\")" % self.host
 
     def __str__(self):
         return self.host

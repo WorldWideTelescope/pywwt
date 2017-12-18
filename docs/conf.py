@@ -54,7 +54,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'pywwt'
-author = 'Thomas P. Robitaille, Justin Otor, and John ZuHone'
+author = 'Thomas P. Robitaille, O. Justin Otor, and John ZuHone'
 copyright = '2017, ' + author
 
 # The version info for the project you're documenting, acts as replacement for

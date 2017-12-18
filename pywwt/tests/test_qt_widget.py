@@ -12,7 +12,7 @@ from qtpy.QtWebEngineWidgets import WEBENGINE
 
 from matplotlib.testing.compare import compare_images
 
-from ..qt_widget import WWTQtWidget
+from ..qt import WWTQtClient
 
 M42 = SkyCoord.from_name('M42')
 
@@ -43,14 +43,14 @@ def wait_and_check_output(seconds, capsys):
 
 
 def test_init(capsys):
-    WWTQtWidget(block_until_ready=True)
+    WWTQtClient(block_until_ready=True)
     wait_and_check_output(1, capsys)
 
 
 class TestWWTWidget:
 
     def setup_class(self):
-        self.widget = WWTQtWidget(block_until_ready=True)
+        self.widget = WWTQtClient(block_until_ready=True)
 
     def test_settings(self, capsys):
         self.widget.constellation_figures = True
@@ -86,7 +86,7 @@ def test_full(tmpdir, capsys):
 
     # Test a whole session, with image comparison along the way.
 
-    wwt = WWTQtWidget(block_until_ready=True, size=(400, 400))
+    wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
     wwt.set_current_time(REFERENCE_TIME)
     wwt.foreground_opacity = 1.
 
@@ -138,7 +138,7 @@ def test_full(tmpdir, capsys):
 
     circle1 = wwt.add_circle()
     circle1.set_center(coord)
-    circle1.radius = 10 * u.deg
+    circle1.radius = 10 * u.pixel
     circle1.line_width = 5 * u.pixel
     circle1.line_color = 'green'
     circle1.fill = False
@@ -148,7 +148,7 @@ def test_full(tmpdir, capsys):
 
     circle2 = wwt.add_circle()
     circle2.set_center(coord)
-    circle2.radius = 2 * u.pixel
+    circle2.radius = 2 * u.degree
     circle2.line_width = 5 * u.pixel
     circle2.line_color = 'green'
     circle2.fill = True
