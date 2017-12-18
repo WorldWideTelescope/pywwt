@@ -22,7 +22,7 @@ conda install -n root conda-build anaconda-client
 checkLastExitCode
 
 # Install PyQt and jinja2 for the prepare script to work
-conda install jinja2 pyqt requests git
+conda install jinja2 requests git
 checkLastExitCode
 
 # Install node for building Jupyter widgets
