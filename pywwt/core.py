@@ -61,7 +61,7 @@ class BaseWWTWidget(HasTraits):
     constellation_selection = Bool(False, help='Whether to only show boundaries for the selected constellation (:class:`bool`)').tag(wwt='showConstellationSelection')
 
     crosshairs = Bool(True, help='Whether to show crosshairs at the center of the field (:class:`bool`)').tag(wwt='showCrosshairs')
-    ecliptic = Bool(False, help='Whether to show the path of the ecliptic').tag(wwt='showEcliptic')
+    ecliptic = Bool(False, help='Whether to show the path of the ecliptic (:class:`bool`)').tag(wwt='showEcliptic')
     grid = Bool(False, help='Whether to show the equatorial grid (:class:`bool`)').tag(wwt='showGrid')
 
     # TODO: need to add more methods here.
@@ -124,9 +124,9 @@ class BaseWWTWidget(HasTraits):
 
     galactic_mode = Bool(False, help='Whether the galactic plane should be horizontal in the viewer (:class:`bool`)').tag(wwt='galacticMode')
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode')
-    location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
-    location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location  (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
-    location_longitude = AstropyQuantity(122.133333 * u.deg, help='The longitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationLng')
+    location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location in local horizon mode(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
+    location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location in local horizon mode (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
+    location_longitude = AstropyQuantity(122.133333 * u.deg, help='The longitude of the viewing location in local horizon mode (:class:`~astropy.units.Quantity`)').tag(wwt='locationLng')
 
     @validate('location_altitude')
     def _validate_altitude(self, proposal):
@@ -155,6 +155,9 @@ class BaseWWTWidget(HasTraits):
 
     @property
     def available_layers(self):
+        """
+        A list of currently available layers for the viewer
+        """
         return sorted(self._available_layers)
 
     foreground = Unicode('Digitized Sky Survey (Color)', help='The layer to show in the foreground (:class:`str`)')
@@ -183,7 +186,7 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('background is not one of the available layers')
 
-    foreground_opacity = Float(0.8, help='The opacity of the foreground layer (float)')
+    foreground_opacity = Float(0.8, help='The opacity of the foreground layer ((:class:`float`)')
 
     @observe('foreground_opacity')
     def _on_foreground_opacity_change(self, changed):
