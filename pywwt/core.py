@@ -1,5 +1,6 @@
 from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
+from astropy import time as t
 from astropy.coordinates import SkyCoord
 
 # We import the trait classes from .traits since we do various customizations
@@ -141,13 +142,23 @@ traitlets.HasTraits to its attributes to be set as traits.
 
         Parameters
         ----------
-        dt : `~datetime.datetime`
-            The current time.
+        dt : `~datetime.datetime` or `~astropy.time.core.Time`
+            The current time, either as a `datetime` object or an astropy
+            `Time`.
         """
-        self._send_msg(event='set_datetime',
-                       year=dt.year, month=dt.month, day=dt.day,
-                       hour=dt.hour, minute=dt.minute, second=dt.second,
-                       millisecond=int(dt.microsecond / 1000.))
+        if isinstance(dt, t.core.Time):
+            dt = dt.datetime
+            self._send_msg(event='set_datetime',
+                           year=dt.year, month=dt.month, day=dt.day,
+                           hour=dt.hour, minute=dt.minute, second=dt.second,
+                           millisecond=int(dt.microsecond / 1000.))
+        elif isinstance(dt, datetime.datetime):
+            self._send_msg(event='set_datetime',
+                           year=dt.year, month=dt.month, day=dt.day,
+                           hour=dt.hour, minute=dt.minute, second=dt.second,
+                           millisecond=int(dt.microsecond / 1000.))
+        else:
+            raise TypeError('dt must be datetime object or astropy Quantity')
 
     galactic_mode = Bool(False, help='Whether the galactic plane should be horizontal in the viewer (:class:`bool`)').tag(wwt='galacticMode')
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode')
