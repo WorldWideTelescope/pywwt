@@ -1,7 +1,7 @@
 .. _annotations:
 
-Showing annotations in WorldWide Telescope
-==========================================
+Showing annotations
+===================
 
 Annotations are shapes that can be manually added to the viewer in order to
 highlight specific objects of interest, either for research purposes or when
@@ -9,9 +9,9 @@ making a tour/presentation. It's possible to generate several annotations at
 once, and you can choose from circles, polygons, and lines.
 
 To add an annotation to the viewer, use either
-:meth:`~pywwt.core.BaseWWTWidget.add_circle`,
-:meth:`~pywwt.core.BaseWWTWidget.add_polygon`, or
-:meth:`~pywwt.core.BaseWWTWidget.add_line` depending on the shape you want to
+:meth:`~pywwt.BaseWWTWidget.add_circle`,
+:meth:`~pywwt.BaseWWTWidget.add_polygon`, or
+:meth:`~pywwt.BaseWWTWidget.add_line` depending on the shape you want to
 add. These methods will then return an object that can be used to further set
 the visual properties of the annotation. See the sections below for more
 information about each specific shape. Note that coordinates must be provided as
@@ -31,7 +31,7 @@ preferred::
     ...                       fill=True, fill_color='#008CA8')
 
 Note that the properties of the circle can either be passed to
-:meth:`~pywwt.core.BaseWWTWidget.add_circle` or can be set/changed on the
+:meth:`~pywwt.BaseWWTWidget.add_circle` or can be set/changed on the
 returned object afterwards::
 
     >>> crc1.fill_color = 'red'
@@ -51,7 +51,7 @@ Once an annotation is no longer needed, it can be
 removed via its :meth:`pywwt.Circle.remove` method. The main
 WorldWide Telescope object (``wwt`` in this case) also has a dedicated method
 for erasing every existing annotation from view called
-:meth:`~pywwt.core.BaseWWTWidget.clear_annotations`.
+:meth:`~pywwt.BaseWWTWidget.clear_annotations`.
 
 Lines
 -----
@@ -102,7 +102,7 @@ Polygons
 --------
 
 Polygons are made in the same way as lines, but using the
-:meth:`~pywwt.core.BaseWWTWidget.add_polygon` method::
+:meth:`~pywwt.BaseWWTWidget.add_polygon` method::
 
     >>> polygon = wwt.add_polygon(bd)
 

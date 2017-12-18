@@ -1,5 +1,5 @@
-Modifying WorldWide Telescope settings
-======================================
+Modifying visual settings
+=========================
 
 Once a Jupyter or Qt widget has been created, the way in which you change settings
 and interact with WorldWide Telescope is the same.
@@ -105,10 +105,10 @@ Running tours
 
 Also present are methods that allow you to load, pause, and resume tours from
 the WWT website. To load and play a tour, use the
-:meth:`~pywwt.core.BaseWWTWidget.load_tour` method::
+:meth:`~pywwt.BaseWWTWidget.load_tour` method::
 
     >>> wwt.load_tour('http://www.worldwidetelescope.org/docs/wtml/tourone.wtt')
 
 You can pause and resume it using the
-:meth:`~pywwt.core.BaseWWTWidget.pause_tour` and
-:meth:`~pywwt.core.BaseWWTWidget.resume_tour` methods.
+:meth:`~pywwt.BaseWWTWidget.pause_tour` and
+:meth:`~pywwt.BaseWWTWidget.resume_tour` methods.

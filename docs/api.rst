@@ -5,11 +5,11 @@ API Documentation
    :no-inheritance-diagram:
    :no-inherited-members:
 
-.. automodapi:: pywwt.jupyter_widget
+.. automodapi:: pywwt.jupyter
    :no-inheritance-diagram:
    :no-inherited-members:
 
-.. automodapi:: pywwt.qt_widget
+.. automodapi:: pywwt.qt
    :no-inheritance-diagram:
    :no-inherited-members:
 

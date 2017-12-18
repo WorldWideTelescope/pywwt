@@ -6,19 +6,19 @@ IPython
 
 To use the Qt viewer from an IPython session, do::
 
-    In [1]: from pywwt.qt_widget import WWTQtClient
+    In [1]: from pywwt.qt import WWTQtClient
 
     In [2]: %gui qt
 
     In [3]: wwt = WWTQtClient()
 
-Note that the order is important - for now :class:`pywwt.qt_widget.WWTQtClient` has to be
+Note that the order is important - for now :class:`pywwt.qt.WWTQtClient` has to be
 imported before ``%gui qt`` is run. Once the WorldWide Telescope viewer is
 visible, you can start to interact with the ``wwt`` object in the next cell of
 the notebook. You can find out more about interacting with this object in
 :doc:`settings` and :doc:`annotations`.
 
-.. note:: The :class:`pywwt.qt_widget.WWTQtClient` class is not the Qt widget itself but
+.. note:: The :class:`pywwt.qt.WWTQtClient` class is not the Qt widget itself but
           an object that opens the widget and allows you to control the WWT
           settings. If you need access to the underlying widget, see the
           `Embedding`_ section.
@@ -29,10 +29,10 @@ Script
 You can also start the widget from a script, in which case the ``%gui qt`` is
 not necessary::
 
-    from pywwt.qt_widget import WWTQtClient
+    from pywwt.qt import WWTQtClient
     wwt = WWTQtClient()
 
-The :class:`pywwt.qt_widget.WWTQtClient` class takes a ``block_until_ready`` argument
+The :class:`pywwt.qt.WWTQtClient` class takes a ``block_until_ready`` argument
 which can be used to tell Python to wait for WorldWide Telescope to be open
 before proceeding with the rest of the script::
 
@@ -52,7 +52,7 @@ Embedding
 ---------
 
 If you are developing a Qt Application, you can embed the WorldWide Telescope
-Qt widget by creating an instance of the :class:`pywwt.qt_widget.WWTQtClient` class then
+Qt widget by creating an instance of the :class:`pywwt.qt.WWTQtClient` class then
 accessing the underlying Qt widget using the ``widget`` attribute::
 
     from pywwt.qt import WWTQtClient

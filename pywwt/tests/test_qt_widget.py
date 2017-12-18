@@ -12,7 +12,7 @@ from qtpy.QtWebEngineWidgets import WEBENGINE
 
 from matplotlib.testing.compare import compare_images
 
-from ..qt_widget import WWTQtClient
+from ..qt import WWTQtClient
 
 M42 = SkyCoord.from_name('M42')
 
