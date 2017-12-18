@@ -235,29 +235,29 @@ class Line(Annotation):
 class CircleCollection():
     
     def __init__(self, parent, points, **kwargs): # save args, make first circles
-        self.collection = []
+        if len(points) <= 1e4: # subject to change
+            self.points = points
+        else:
+            raise IndexError('too many points') # correct error?
         self.parent = parent
-        self.points = points
+        self.collection = []
         self.gen_circles(self.points, **kwargs)
-
-    def __getitem__(self, index): # unlock indexing
-        return self.collection[index]
-
-    def gen_circles(self, points, **kwargs): # create circles from SkyCoords and kwargs
+        
+    def __setattr__(self, name, value):
+        if name in [key for key in Circle.__dict__ if not key.startswith('_')]:
+            for point in self.collection:
+                setattr(point, name, value)
+                #print(point.__dict__['_trait_values'][name])
+        else:
+            self.__dict__[name] = value
+        
+    def gen_circles(self, points, **kwargs):
         for point in points:
             circle = Circle(self.parent, **kwargs)
             circle.set_center(point)
             self.collection.append(circle)        
 
-    def add_points(self, points, **kwargs): # add points to an already init'ed instance
+    def add_points(self, points, **kwargs):
         self.gen_circles(points, **kwargs)
-        self.points = concatenate((self.points, points))
-
-    def change_all(self, **kwargs): # change a trait for all circles at once
-        for x,_ in enumerate(self.points,start=0):
-            for arg in kwargs:
-                setattr(self[x],str(arg),kwargs[str(arg)])
-
-    #def remove(self): # better integrate with Circle.remove ?
-            
+        self.points = concatenate((self.points, points))            
         
