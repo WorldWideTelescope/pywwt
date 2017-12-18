@@ -199,3 +199,6 @@ nitpicky = True
 nitpick_ignore = [('py:class', 'ipywidgets.widgets.domwidget.DOMWidget')]
 
 default_role = 'obj'
+
+html_logo = 'images/logo.png'
+
