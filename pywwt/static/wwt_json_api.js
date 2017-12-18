@@ -67,6 +67,7 @@ function wwt_apply_json_message(wwt, msg) {
           // TODO: check if ID already exists
           circle = wwt.createCircle();
           circle.set_id(msg['id']);
+          circle.set_skyRelative(true);
           circle.setCenter(wwt.getRA() * 15, wwt.getDec());
           wwt.addAnnotation(circle);
           wwt.annotations[msg['id']] = circle;

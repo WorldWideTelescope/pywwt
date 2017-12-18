@@ -138,7 +138,7 @@ def test_full(tmpdir, capsys):
 
     circle1 = wwt.add_circle()
     circle1.set_center(coord)
-    circle1.radius = 10 * u.deg
+    circle1.radius = 10 * u.pixel
     circle1.line_width = 5 * u.pixel
     circle1.line_color = 'green'
     circle1.fill = False
@@ -148,7 +148,7 @@ def test_full(tmpdir, capsys):
 
     circle2 = wwt.add_circle()
     circle2.set_center(coord)
-    circle2.radius = 2 * u.pixel
+    circle2.radius = 2 * u.degree
     circle2.line_width = 5 * u.pixel
     circle2.line_color = 'green'
     circle2.fill = True

@@ -60,7 +60,6 @@ class Circle(Annotation):
     line_color = Color('white', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor')
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
     radius     = AstropyQuantity(1 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
-    #sky_relative = Bool(True, help='Whether the size of the circle is relative (in pixels) or absolute (in arcsec) (:class:`~astropy.units.Quantity`)').tag(wwt='skyRelative')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -93,12 +92,12 @@ class Circle(Annotation):
                 self.parent._send_msg(event='annotation_set',
                                       id=self.id,
                                       setting='skyRelative',
-                                      value=True)
-            elif changed['new'].unit.is_equivalent(u.arcsec):
+                                      value=False)
+            elif changed['new'].unit.is_equivalent(u.degree):
                 self.parent._send_msg(event='annotation_set',
                                       id=self.id,
                                       setting='skyRelative',
-                                      value=False)
+                                      value=True)
         if isinstance(changed['new'], u.Quantity):
             changed['new'] = changed['new'].value
 
