@@ -141,18 +141,18 @@ app = None
 
 
 class WWTQtClient(BaseWWTWidget):
-"""
-Defines the Qt widget. Inherits from BaseWWTWidget class.
+    """
+    Defines the Qt widget. Inherits from BaseWWTWidget class.
 
-Parameters
-----------
-block_until_ready : `bool`
-    Tells Python to wait for WorldWide Telescope to open before proceeding
-    with any following script (default: `True`).
+    Parameters
+    ----------
+    block_until_ready : `bool`
+        Tells Python to wait for WorldWide Telescope to open before 
+        proceeding with any following script (default: `True`).
 
-size : `tuple`
-    Sets size of widget in pixels (default: (600, 600)).
-"""
+    size : `tuple`
+        Sets size of widget in pixels (default: (600, 600)).
+    """
 
     def __init__(self, block_until_ready=False, size=None):
 

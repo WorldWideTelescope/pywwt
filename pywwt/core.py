@@ -2,6 +2,7 @@ from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
 from astropy import time as t
 from astropy.coordinates import SkyCoord
+from datetime import datetime
 
 # We import the trait classes from .traits since we do various customizations
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity
@@ -18,11 +19,11 @@ __all__ = ['BaseWWTWidget']
 
 
 class BaseWWTWidget(HasTraits):
-"""
-The core class behind the viewer. Inherited by WWTQtClient and
-WWTJupyterWidget and accepts keyword arguments from them. Inherits from
-traitlets.HasTraits to its attributes to be set as traits.
-"""
+    """
+    The core class behind the viewer. Inherited by WWTQtClient and
+    WWTJupyterWidget and accepts keyword arguments from them. Inherits from
+    traitlets.HasTraits to its attributes to be set as traits.
+    """
     def __init__(self, **kwargs):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
@@ -152,7 +153,7 @@ traitlets.HasTraits to its attributes to be set as traits.
                            year=dt.year, month=dt.month, day=dt.day,
                            hour=dt.hour, minute=dt.minute, second=dt.second,
                            millisecond=int(dt.microsecond / 1000.))
-        elif isinstance(dt, datetime.datetime):
+        elif isinstance(dt, datetime):
             self._send_msg(event='set_datetime',
                            year=dt.year, month=dt.month, day=dt.day,
                            hour=dt.hour, minute=dt.minute, second=dt.second,

@@ -11,12 +11,12 @@ __all__ = ['Annotation', 'Circle', 'Polygon', 'Line']
 
 
 class Annotation(HasTraits):
-"""
-Inherited by Circle, Polygon, and Line classes and is used to create,
-describe, and edit objects of these classes. Inherits from 
-traitlets.HasTraits to allow attributes of this class and its children 
-to be set as traits.
-"""
+    """
+    Inherited by Circle, Polygon, and Line classes and is used to create,
+    describe, and edit objects of these classes. Inherits from 
+    traitlets.HasTraits to allow attributes of this class and its children 
+    to be set as traits.
+    """
 
     shape = None
 
@@ -58,14 +58,16 @@ to be set as traits.
 
 
 class Circle(Annotation):
-"""
-Used to render a circle on screen (via pywwt.BaseWWTWidget.add_circle()) 
-and edit its properties after intialization. Inherits from Annotation class.
-"""
+    """
+    Used to render a circle on screen (via pywwt.BaseWWTWidget.add_circle()) 
+    and edit its properties after intialization. Inherits from Annotation
+    class.
+    """
 
     shape = 'circle'
     """
-    The shape to be sent to the Annotation class for object creation (:class:`str`)
+    The shape to be sent to the Annotation class for object creation 
+    (:class:`str`)
     """
 
     fill = Bool(False, help='Whether or not the circle should be filled (:class:`bool`)').tag(wwt='fill')
@@ -129,14 +131,16 @@ and edit its properties after intialization. Inherits from Annotation class.
 
 
 class Polygon(Annotation):
-"""
-Used to render a polygon on screen (via pywwt.BaseWWTWidget.add_polygon()) 
-and edit its properties after intialization. Inherits from Annotation class.
-"""
+    """
+    Used to render a polygon on screen (via 
+    pywwt.BaseWWTWidget.add_polygon()) and edit its properties after 
+    intialization. Inherits from Annotation class.
+    """
 
     shape = 'polygon'
     """
-    The shape to be sent to the Annotation class for object creation (:class:`str`)
+    The shape to be sent to the Annotation class for object creation 
+    (:class:`str`)
     """
 
     fill = Bool(False, help='Whether or not the polygon should be filled (:class:`bool`)').tag(wwt='fill')
@@ -185,14 +189,16 @@ and edit its properties after intialization. Inherits from Annotation class.
 
 
 class Line(Annotation):
-"""
-Used to render a line on screen (via pywwt.BaseWWTWidget.add_line()) 
-and edit its properties after intialization. Inherits from Annotation class.
-"""
+    """
+    Used to render a line on screen (via pywwt.BaseWWTWidget.add_line()) 
+    and edit its properties after intialization. Inherits from Annotation 
+    class.
+    """
 
     shape = 'line'
     """
-    The shape to be sent to the Annotation class for object creation (:class:`str`)
+    The shape to be sent to the Annotation class for object creation 
+    (:class:`str`)
     """
 
     color = ColorWithOpacity('white', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor')
