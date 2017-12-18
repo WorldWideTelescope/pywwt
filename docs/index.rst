@@ -25,8 +25,15 @@ and includes the following:
 * A client for the Windows version of WorldWide Telescope
 
 This package is still under development and the functionality will be expanded
-over the coming weeks. Please do let us know if you try it out and run into
-any issues (see `Getting help`_).
+over the coming weeks/months. Please do let us know if you try it out and run
+into any issues (see `Getting help`_).
+
+Quick start
+-----------
+
+If you want to try out the WorldWide Telescope Jupyter widget without installing
+anything locally, you can do so by viewing an example Jupyter notebook online
+`at mybinder.org <https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?filepath=pywwt_jupyter.ipynb>`_.
 
 User guide
 ----------
@@ -51,5 +58,5 @@ If you run into any issues when using pywwt, please open an issue
 Acknowledgments
 ---------------
 
-This work is funded through the American Astronomical Society WorldWide 
-Telescope project.
+This work is funded through the American Astronomical Society WorldWide Telescope
+project.
