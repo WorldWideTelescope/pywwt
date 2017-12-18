@@ -1,4 +1,4 @@
-WorldWideTelescope Jupyter widget
+WorldWide Telescope Jupyter widget
 
 Package Install
 ---------------

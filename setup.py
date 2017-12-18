@@ -22,7 +22,7 @@ log.set_verbosity(log.DEBUG)
 log.info('setup.py entered')
 log.info('$PATH=%s' % os.environ['PATH'])
 
-LONG_DESCRIPTION = 'WorldWideTelescope Jupyter widget'
+LONG_DESCRIPTION = 'WorldWide Telescope Jupyter widget'
 
 def js_prerelease(command, strict=False):
     """decorator for building minified js/css prior to another command"""
@@ -127,7 +127,7 @@ with open(os.path.join(here, 'pywwt', '_version.py')) as f:
 setup_args = {
     'name': 'pywwt',
     'version': version_ns['__version__'],
-    'description': 'WorldWideTelescope Jupyter widget',
+    'description': 'WorldWide Telescope from Python',
     'long_description': LONG_DESCRIPTION,
     'include_package_data': True,
     'data_files': [
@@ -161,7 +161,7 @@ setup_args = {
         'jsdeps': NPM,
     },
 
-    'author': 'Thomas P. Robitaille, Justin Otor, and John ZuHone',
+    'author': 'Thomas P. Robitaille, O. Justin Otor, and John ZuHone',
     'author_email': 'thomas.robitaille@gmail.com',
     'url': 'https://github.com/WorldWideTelescope/pywwt',
     'keywords': [

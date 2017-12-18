@@ -1,7 +1,5 @@
 from ._version import version_info, __version__  # noqa
 from .core import *  # noqa
-from .jupyter_widget import *  # noqa
-from .qt_widget import *  # noqa
 from .annotation import *  # noqa
 
 

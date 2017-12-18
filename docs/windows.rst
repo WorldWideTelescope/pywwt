@@ -5,7 +5,7 @@ About
 -----
 
 The **pywwt.windows** sub-package includes a Python interface for the Microsoft
-`World Wide Telescope <http://www.worldwidetelescope.org/home>`_
+`WorldWide Telescope <http://www.worldwidetelescope.org/home>`_
 (WWT) Windows client, using the
 `Layer Control API (LCAPI) <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#load>`_.
 The LCAPI provides an interface to WWT's Layer Manager by sending data and
@@ -14,49 +14,48 @@ interface to make these calls, enabling the control of WWT from scripts or an
 IPython notebook. Most importantly, it enables the passing of data created
 within a Python environment to WWT.
 
-Important note
---------------
+.. note:: The **pywwt** package was originally developed as a client for
+          the Windows WorldWideTelescope application. For now, the API for
+          the Windows is identical to that in previous versions, with the
+          exception that imports of the ``WWTClient`` class should be
+          changed from::
 
-The **pywwt** package was originally developed as a client for the Windows
-WorldWideTelescope application. For now, the API for the Windows is identical to
-that in previous versions, with the exception that imports of the ``WWTClient``
-class should be changed from::
+               from pywwt import WWTClient
 
-    from pywwt import WWTClient
+          to::
 
-to::
+               from pywwt.windows import WWTWindowsClient
 
-    from pywwt.windows import WWTClient
-
-For now, the API remains identical to previous versions, and is different from
-the API for the Jupyter and Qt widgets. In future, we will align the API of
-the Windows client on the Jupyter and Qt widgets.
+          For now, the API remains identical to previous versions, and is
+          different from the API for the Jupyter and Qt widgets. In future,
+          we will align the API of the Windows client on the Jupyter and Qt
+          widgets.
 
 Using the Windows client
 ------------------------
 
 The Windows client is imported using::
 
-    from pywwt.windows import WWTClient
+    from pywwt.windows import WWTWindowsClient
 
 Connecting to the WWT application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Connecting to a running WWT application on the current host is as simple as
-creating a :class:`~pywwt.windows.WWTClient` instance::
+creating a :class:`~pywwt.windows.WWTWindowsClient` instance::
 
-    wwt = WWTClient()
+    wwt = WWTWindowsClient()
 
 If WWT is running on a separate host, and you have enabled access from
 remote hosts, you can connect to it by specifying the hostname or IP address::
 
-    wwt = WWTClient(host="192.168.1.3")
+    wwt = WWTWindowsClient(host="192.168.1.3")
 
 If the WWT client has not been started on the host you are attempting to connect
 to, or if you have not enabled remote access, or if the firewall is blocking
 port ``5050`` on the host, you may get one of the following error messages::
 
-    WWTException: World Wide Telescope has not been started on this host or is
+    WWTException: WorldWide Telescope has not been started on this host or is
     otherwise unreachable.
 
     WWTException: Error - IP Not Authorized by Client
@@ -64,37 +63,37 @@ port ``5050`` on the host, you may get one of the following error messages::
 If the version of WWT is not the required version, you will get this error
 message::
 
-    WWTException: World Wide Telescope is not the required version (>= 2.8)
+    WWTException: WorldWide Telescope is not the required version (>= 2.8)
 
 .. note::
 
     Some tasks require loading files from disk. These will currently only work
-    if the current :class:`~pywwt.windows.WWTClient` instance and the WWT
+    if the current :class:`~pywwt.windows.WWTWindowsClient` instance and the WWT
     client itself are running on the same host.
 
 Creating New Layers
 ~~~~~~~~~~~~~~~~~~~
 
-The heart of :class:`~pywwt.windows.WWTClient` (and the LCAPI) is the
+The heart of :class:`~pywwt.windows.WWTWindowsClient` (and the LCAPI) is the
 interaction with WWT's Layer Manager. Layers contain data in WWT. There are
-three ways to create new layers from a :class:`~pywwt.windows.WWTClient`
+three ways to create new layers from a :class:`~pywwt.windows.WWTWindowsClient`
 instance.
 
 load
 ++++
 
-You can use the :meth:`~pywwt.windows.WWTClient.load` method to generate a new layer with data uploaded from a file::
+You can use the :meth:`~pywwt.windows.WWTWindowsClient.load` method to generate a new layer with data uploaded from a file::
 
     layer = wwt.load("particles.csv", "Sun", "Vulcan")
 
 where the file in this case is a CSV file with values separated by commas or
 tabs. The second two arguments are the ``frame`` to load the data into, and the
 ``name`` for the new layer. In addition to CSV files, the
-:meth:`~pywwt.windows.WWTClient.load` command shape files (.shp), 3D
+:meth:`~pywwt.windows.WWTWindowsClient.load` command shape files (.shp), 3D
 model files (.3ds), and `WTML files containing ImageSet references
 <http://www.worldwidetelescope.org/Docs/WorldWideTelescopeDataFilesReference.html>`_.
 
-:meth:`~pywwt.windows.WWTClient.load` takes a number of keyword
+:meth:`~pywwt.windows.WWTWindowsClient.load` takes a number of keyword
 arguments, which may be used to customize the data in the layer. These include
 options to control the color, the start and end date of the events, and options
 to control the fading in and out of data::
@@ -103,7 +102,7 @@ to control the fading in and out of data::
                            start_date="1/11/2009 12:00 AM", end_date="12/31/2010 5:00 PM",
                            fade_type="In", fade_range=2)
 
-:meth:`~pywwt.windows.WWTClient.load` returns a
+:meth:`~pywwt.windows.WWTWindowsClient.load` returns a
 :class:`~pywwt.windows.WWTLayer` instance.
 
 `LCAPI Reference: Load <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#load>`_
@@ -112,7 +111,7 @@ new_layer
 +++++++++
 
 To create a new layer without loading data from a file, use the
-:meth:`~pywwt.windows.WWTClient.new_layer` method::
+:meth:`~pywwt.windows.WWTWindowsClient.new_layer` method::
 
     new_layer = wwt.new_layer("Sky", "My Star", ["RA","DEC","ALT","color"])
 
@@ -121,20 +120,20 @@ where the first two arguments are the ``frame`` to create the layer and the
 the names of the data arrays that will be loaded into the
 :class:`~pywwt.windows.WWTLayer` instance using an
 :meth:`~pywwt.windows.WWTLayer.update` call.
-:meth:`~pywwt.windows.WWTClient.new_layer` also takes the same keyword
-arguments as :meth:`~pywwt.windows.WWTClient.load`.
+:meth:`~pywwt.windows.WWTWindowsClient.new_layer` also takes the same keyword
+arguments as :meth:`~pywwt.windows.WWTWindowsClient.load`.
 
 `LCAPI Reference: New <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#new>`_
 
 new_layer_group
 +++++++++++++++
 
-:meth:`~pywwt.windows.WWTClient.new_layer_group` creates a new layer
+:meth:`~pywwt.windows.WWTWindowsClient.new_layer_group` creates a new layer
 group, which is an organizational aid when using the layer manager. The user
 will be able to collapse and expand groups in the Layer Manager, and have groups
 that are sub-sets of other groups::
 
-    wwt.:meth:`~pywwt.windows.WWTClient.new_layer_group`("Sun", "my asteroids")
+    wwt.new_layer_group("Sun", "my asteroids")
 
 The first argument is the reference ``frame`` for the group and the second is
 the ``name`` of the group.
@@ -146,7 +145,7 @@ get_existing_layer
 
 Finally, to retrieve an already existing layer as a
 :class:`~pywwt.windows.WWTLayer` object, call
-:meth:`~pywwt.windows.WWTClient.get_existing_layer`::
+:meth:`~pywwt.windows.WWTWindowsClient.get_existing_layer`::
 
     minihalo_layer = wwt.get_existing_layer("minihalo")
 
@@ -172,7 +171,7 @@ arrays or lists::
     layer.update(data=data, purge_all=True, no_purge=False, show=True)
 
 Where the keys of the dict must correspond to the names of the ``fields``
-specified in the :meth:`~pywwt.windows.WWTClient.new_layer` call that
+specified in the :meth:`~pywwt.windows.WWTWindowsClient.new_layer` call that
 created this layer. ``purge_all`` controls whether or not all existing data will
 be cleared from the layer. Setting ``no_purge`` to `True` will prevent data
 that has already occurred from being deleted from the layer, which would happen
@@ -266,13 +265,13 @@ message::
 Other Commands
 ~~~~~~~~~~~~~~
 
-There are several remaining methods for :class:`~pywwt.windows.WWTClient`
+There are several remaining methods for :class:`~pywwt.windows.WWTWindowsClient`
 that may be used to control the appearance of the WWT client and the layers.
 
 change_mode
 +++++++++++
 
-:meth:`~pywwt.windows.WWTClient.change_mode` changes the view to one of:
+:meth:`~pywwt.windows.WWTWindowsClient.change_mode` changes the view to one of:
 Earth, Planet, Sky, Panorama, SolarSystem::
 
     wwt.change_mode("SolarSystem")
@@ -282,7 +281,7 @@ Earth, Planet, Sky, Panorama, SolarSystem::
 get_frame_list
 ++++++++++++++
 
-:meth:`~pywwt.windows.WWTClient.get_frame_list` returns a dictionary of
+:meth:`~pywwt.windows.WWTWindowsClient.get_frame_list` returns a dictionary of
 the WWT client's reference frames::
 
     frame_list = wwt.get_frame_list()
@@ -304,7 +303,7 @@ returns something like::
 get_layer_list
 ++++++++++++++
 
-:meth:`~pywwt.windows.WWTClient.get_layer_list` returns a dictionary of
+:meth:`~pywwt.windows.WWTWindowsClient.get_layer_list` returns a dictionary of
 the WWT client's layers::
 
     layer_list = wwt.get_layer_list()
@@ -333,7 +332,7 @@ returns something like::
 get_state
 +++++++++
 
-:meth:`~pywwt.windows.WWTClient.get_state` returns a dict of some of the
+:meth:`~pywwt.windows.WWTWindowsClient.get_state` returns a dict of some of the
 details of the current view::
 
     wwt.get_state()
@@ -357,7 +356,7 @@ returns something along the lines of::
 move_view
 +++++++++
 
-:meth:`~pywwt.windows.WWTClient.move_view` changes the view depending on
+:meth:`~pywwt.windows.WWTWindowsClient.move_view` changes the view depending on
 the supplied parameter::
 
     wwt.move_view("ZoomIn")
@@ -383,7 +382,7 @@ ui_settings
 
 .. note:: At the moment this does not work properly due to issues on the WWT side
 
-:meth:`~pywwt.windows.WWTClient.ui_settings` changes user interface
+:meth:`~pywwt.windows.WWTWindowsClient.ui_settings` changes user interface
 settings without altering the layer data::
 
     wwt.ui_settings("ShowConstellationBoundries", "True")
@@ -418,7 +417,7 @@ be applied along with that method's particular arguments.
   camera should smoothly pan and zoom to the location. Default
 - ``autoloop`` (boolean): True sets the layer manager to auto loop.
 
-The API documentation for :class:`~pywwt.windows.WWTClient` and
+The API documentation for :class:`~pywwt.windows.WWTWindowsClient` and
 :class:`~pywwt.windows.WWTLayer` lists for each method all the possible keyword
 arguments.
 
@@ -492,7 +491,7 @@ write_data_to_csv
 
 :func:`~pywwt.windows.write_data_to_csv` takes a dict of NumPy arrays or lists
 of data and writes them to a file in CSV format, which may be read in by
-:meth:`~pywwt.windows.WWTClient.load`::
+:meth:`~pywwt.windows.WWTWindowsClient.load`::
 
     particles = {}
     particles["x"] = x

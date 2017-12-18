@@ -1,4 +1,4 @@
-Copyright (c) 2017, Thomas P. Robitaille, Justin Otor, and John ZuHone
+Copyright (c) 2017, Thomas P. Robitaille, O. Justin Otor, and John ZuHone
 
 All rights reserved.
 

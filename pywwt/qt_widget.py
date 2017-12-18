@@ -14,7 +14,7 @@ from qtpy import QtWidgets, QtGui, QtCore
 from .core import BaseWWTWidget
 from .logger import logger
 
-__all__ = ['WWTQtWidget']
+__all__ = ['WWTQtClient']
 
 WWT_JSON_FILE = os.path.join(os.path.dirname(__file__), 'static', 'wwt_json_api.js')
 
@@ -94,11 +94,11 @@ class WWTQWebEnginePage(QWebEnginePage):
                 self.wwt_ready.emit()
 
 
-class CoreWWTQtWidget(QtWidgets.QWidget):
+class WWTQtWidget(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
 
-        super(CoreWWTQtWidget, self).__init__(parent=parent)
+        super(WWTQtWidget, self).__init__(parent=parent)
 
         self.web = QWebEngineView()
         self.page = WWTQWebEnginePage()
@@ -140,7 +140,7 @@ class CoreWWTQtWidget(QtWidgets.QWidget):
 app = None
 
 
-class WWTQtWidget(BaseWWTWidget):
+class WWTQtClient(BaseWWTWidget):
 
     def __init__(self, block_until_ready=False, size=None):
 
@@ -150,18 +150,21 @@ class WWTQtWidget(BaseWWTWidget):
             if app is None:
                 app = QtWidgets.QApplication([''])
 
-        self.widget = CoreWWTQtWidget()
+        self.widget = WWTQtWidget()
         if size is not None:
             self.widget.resize(*size)
         self.widget.show()
 
-        super(WWTQtWidget, self).__init__()
+        super(WWTQtClient, self).__init__()
 
         if block_until_ready:
             while True:
                 app.processEvents()
                 if self.widget._wwt_ready:
                     break
+
+    def wait(self):
+        app.exec_()
 
     def _send_msg(self, async=True, **kwargs):
         msg = json.dumps(kwargs)

@@ -1,11 +1,8 @@
 Installation
 ============
 
-Installing pywwt with conda
----------------------------
-
-.. warning:: This does not work yet as there has not been a stable release
-             of pywwt on conda.
+Installing pywwt with conda (recommended)
+-----------------------------------------
 
 If you use the `Anaconda Distribution <https://www.anaconda.com/download/#macos>`_
 (or `Miniconda <https://conda.io/miniconda.html>`_), you can install the latest
@@ -13,8 +10,8 @@ release of pywwt using::
 
     conda install -c wwt pywwt
 
-This will automatically install pywwt, its dependencies, and will enable the
-Jupyter extension.
+This will automatically install pywwt, its `dependencies <Dependencies>`_, and
+will enable the Jupyter extension.
 
 Installing pywwt with pip
 -------------------------
@@ -36,9 +33,9 @@ If you want to use the Qt widget, you will need to install
 Dependencies
 ------------
 
-If you install pywwt using pip or conda, any required dependencies will get
-installed automatically (with the exception of PyQt/PySide if using pip). These
-dependencies are as follows:
+If you install pywwt using pip or conda as described above, any required
+dependencies will get installed automatically (with the exception of PyQt/PySide
+if using pip). For the record, these dependencies are as follows:
 
 * `Python <http://www.python.org>`_ 2.7, or 3.5 or later
 * `NumPy <http://www.numpy.org>`_ 1.9 or later

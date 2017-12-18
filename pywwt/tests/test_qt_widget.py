@@ -12,7 +12,7 @@ from qtpy.QtWebEngineWidgets import WEBENGINE
 
 from matplotlib.testing.compare import compare_images
 
-from ..qt_widget import WWTQtWidget
+from ..qt_widget import WWTQtClient
 
 M42 = SkyCoord.from_name('M42')
 
@@ -43,14 +43,14 @@ def wait_and_check_output(seconds, capsys):
 
 
 def test_init(capsys):
-    WWTQtWidget(block_until_ready=True)
+    WWTQtClient(block_until_ready=True)
     wait_and_check_output(1, capsys)
 
 
 class TestWWTWidget:
 
     def setup_class(self):
-        self.widget = WWTQtWidget(block_until_ready=True)
+        self.widget = WWTQtClient(block_until_ready=True)
 
     def test_settings(self, capsys):
         self.widget.constellation_figures = True
@@ -86,7 +86,7 @@ def test_full(tmpdir, capsys):
 
     # Test a whole session, with image comparison along the way.
 
-    wwt = WWTQtWidget(block_until_ready=True, size=(400, 400))
+    wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
     wwt.set_current_time(REFERENCE_TIME)
     wwt.foreground_opacity = 1.
 

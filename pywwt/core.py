@@ -155,7 +155,7 @@ class BaseWWTWidget(HasTraits):
 
     @property
     def available_layers(self):
-        return self._available_layers
+        return sorted(self._available_layers)
 
     foreground = Unicode('Digitized Sky Survey (Color)', help='The layer to show in the foreground (:class:`str`)')
 

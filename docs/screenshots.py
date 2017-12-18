@@ -1,7 +1,7 @@
 from astropy.coordinates import concatenate, SkyCoord
 
 # open widget, render at end of each section
-wwt = WWTQtWidget(size=(600,400))
+wwt = WWTQtClient(size=(600,400))
 
 # big_dipper.png
 bd = concatenate((SkyCoord.from_name('Alkaid'), SkyCoord.from_name('Mizar'),
