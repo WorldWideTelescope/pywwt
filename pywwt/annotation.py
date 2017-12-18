@@ -11,6 +11,12 @@ __all__ = ['Annotation', 'Circle', 'Polygon', 'Line']
 
 
 class Annotation(HasTraits):
+"""
+Inherited by Circle, Polygon, and Line classes and is used to create,
+describe, and edit objects of these classes. Inherits from 
+traitlets.HasTraits to allow attributes of this class and its children 
+to be set as traits.
+"""
 
     shape = None
 
@@ -52,8 +58,15 @@ class Annotation(HasTraits):
 
 
 class Circle(Annotation):
+"""
+Used to render a circle on screen (via pywwt.BaseWWTWidget.add_circle()) 
+and edit its properties after intialization. Inherits from Annotation class.
+"""
 
     shape = 'circle'
+    """
+    The shape to be sent to the Annotation class for object creation (:class:`str`)
+    """
 
     fill = Bool(False, help='Whether or not the circle should be filled (:class:`bool`)').tag(wwt='fill')
     fill_color = ColorWithOpacity('white', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor')
@@ -78,12 +91,23 @@ class Circle(Annotation):
             raise TraitError('radius must be in pixel or arcsec equivalent unit')
 
     def set_center(self, coord):
+        """
+        Set the center coordinates of a circle object.
+
+        Parameters
+        ----------
+        coord : `~astropy.units.Quantity`
+            The coordinates of the desired center of the circle.
+        """
         coord_icrs = coord.icrs
         self.parent._send_msg(event='circle_set_center', id=self.id,
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
 
     def remove(self):
+        """
+        Removes the specified annotation from the current view.
+        """
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
@@ -105,8 +129,15 @@ class Circle(Annotation):
 
 
 class Polygon(Annotation):
+"""
+Used to render a polygon on screen (via pywwt.BaseWWTWidget.add_polygon()) 
+and edit its properties after intialization. Inherits from Annotation class.
+"""
 
     shape = 'polygon'
+    """
+    The shape to be sent to the Annotation class for object creation (:class:`str`)
+    """
 
     fill = Bool(False, help='Whether or not the polygon should be filled (:class:`bool`)').tag(wwt='fill')
     fill_color = ColorWithOpacity('white', help='Assigns fill color for the polygon (:class:`str` or `tuple`)').tag(wwt='fillColor')
@@ -121,6 +152,14 @@ class Polygon(Annotation):
             raise TraitError('line width must be in pixel equivalent unit')
 
     def add_point(self, coord):
+        """
+        Add one or more points to a polygon object.
+
+        Parameters
+        ----------
+        coord : `~astropy.units.Quantity`
+            The coordinates of the desired point(s).
+        """
         coord_icrs = coord.icrs
         if coord_icrs.isscalar: # if coord only has one point
             self.parent._send_msg(event='polygon_add_point', id=self.id,
@@ -133,6 +172,9 @@ class Polygon(Annotation):
                                       dec=point.dec.degree)
 
     def remove(self):
+        """
+        Removes the specified annotation from the current view.
+        """        
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
@@ -143,8 +185,15 @@ class Polygon(Annotation):
 
 
 class Line(Annotation):
+"""
+Used to render a line on screen (via pywwt.BaseWWTWidget.add_line()) 
+and edit its properties after intialization. Inherits from Annotation class.
+"""
 
     shape = 'line'
+    """
+    The shape to be sent to the Annotation class for object creation (:class:`str`)
+    """
 
     color = ColorWithOpacity('white', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor')
     width = AstropyQuantity(1 * u.pixel, help='Assigns width for the line in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
@@ -157,6 +206,14 @@ class Line(Annotation):
             raise TraitError('width must be in pixel equivalent unit')
 
     def add_point(self, coord):
+        """
+        Add one or more points to a line object.
+
+        Parameters
+        ----------
+        coord : `~astropy.units.Quantity`
+            The coordinates of the desired point(s).
+        """
         coord_icrs = coord.icrs
         if coord_icrs.isscalar: # if coord only has one point
             self.parent._send_msg(event='line_add_point', id=self.id,
@@ -169,6 +226,9 @@ class Line(Annotation):
                                       dec=point.dec.degree)
 
     def remove(self):
+        """
+        Removes the specified annotation from the current view.
+        """        
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):

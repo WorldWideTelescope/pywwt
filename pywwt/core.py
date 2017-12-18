@@ -121,7 +121,8 @@ class BaseWWTWidget(HasTraits):
             The zoom level of the view (default: 60 degrees).
 
         instant : `bool`
-            Whether the view changes instantly or scrolls to the desired location (default: `True`).
+            Whether the view changes instantly or scrolls to the desired 
+            location (default: `True`).
         """
         coord_icrs = coord.icrs
         self._send_msg(event='center_on_coordinates',
@@ -132,12 +133,12 @@ class BaseWWTWidget(HasTraits):
 
     def set_current_time(self, dt):
         """
-        Set time for the viewer (...)?
+        Set the viewer time to match the real-world time.
 
         Parameters
         ----------
-        dt : `~astropy.units.Quantity`
-            The (...).
+        dt : `~datetime.datetime`
+            The current time.
         """
         self._send_msg(event='set_datetime',
                        year=dt.year, month=dt.month, day=dt.day,
@@ -237,10 +238,12 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         center : `~astropy.units.Quantity`
-            The desired center of the circle. If blank, defaults to the center of the current view.
+            The coordinates of desired center of the circle. If blank, 
+            defaults to the center of the current view.
 
         **kwargs :
-            Optional arguments that allow corresponding Circle or Annotation attributes to be set upon shape initialization.
+            Optional arguments that allow corresponding Circle or Annotation 
+            attributes to be set upon shape initialization.
         """
         circle = Circle(parent=self, **kwargs)
         if center:
@@ -255,10 +258,13 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         points : `~astropy.units.Quantity`
-            The desired points that make up the polygon. If blank or just one point, the annotation will be initialized but will not be visible until more points are added.
+            The desired points that make up the polygon. If blank or just 
+            one point, the annotation will be initialized but will not be 
+            visible until more points are added.
 
         **kwargs :
-            Optional arguments that allow corresponding Polygon or Annotation attributes to be set upon shape initialization.
+            Optional arguments that allow corresponding Polygon or 
+            Annotation attributes to be set upon shape initialization.
         """        
         polygon = Polygon(parent=self, **kwargs)
         if points:
@@ -273,10 +279,13 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         points : `~astropy.units.Quantity`
-            The desired points that make up the line. If blank or just one point, the annotation will be initialized but will not be visible until more points are added.
+            The desired points that make up the line. If blank or just one 
+            point, the annotation will be initialized but will not be 
+            visible until more points are added.
 
         **kwargs :
-            Optional arguments that allow corresponding Line or Annotation attributes to be set upon shape initialization.
+            Optional arguments that allow corresponding Line or Annotation 
+            attributes to be set upon shape initialization.
         """        
         line = Line(parent=self, **kwargs)
         if points:
