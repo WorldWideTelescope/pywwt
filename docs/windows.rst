@@ -399,7 +399,7 @@ be applied along with that method's particular arguments.
 - ``date_time`` (string): Sets the viewing clock to the given date and time, in
   UTC format, for example: "1/1/2000 12:02:46 AM"
 
-- ``time_rate`` (float):	The accelerated time to render the visualization, as
+- ``time_rate`` (float): The accelerated time to render the visualization, as
   a multiple of 10.
 
 - ``fly_to`` (list of floats): Sets the position of the view camera. Requires
