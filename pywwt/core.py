@@ -17,7 +17,11 @@ __all__ = ['BaseWWTWidget']
 
 
 class BaseWWTWidget(HasTraits):
-
+"""
+The core class behind the viewer. Inherited by WWTQtClient and
+WWTJupyterWidget and accepts keyword arguments from them. Inherits from
+traitlets.HasTraits to its attributes to be set as traits.
+"""
     def __init__(self, **kwargs):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
