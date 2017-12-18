@@ -28,18 +28,18 @@ preferred::
     >>> from astropy.coordinates import SkyCoord
     >>> crc1 = wwt.add_circle(SkyCoord(188, -57, unit=u.deg),
     ...                       radius=10 * u.degree,
-    ...                       fill=True, fill_color='#008CA8')
+    ...                       fill=True, fill_color='red')
 
 Note that the properties of the circle can either be passed to
 :meth:`~pywwt.BaseWWTWidget.add_circle` or can be set/changed on the
 returned object afterwards::
 
-    >>> crc1.fill_color = 'red'
+    >>> crc1.fill_color = '#008CA8'
 
 See :class:`~pywwt.Circle` for a full list of available properties.
 
 Note that if you don't provide center coordinates, the circle will automatically
-generated in the center of your view::
+generate in the center of your view::
 
     >>> wwt.center_on_coordinates(SkyCoord(190, -55, unit=u.deg))
     >>> crc2 = wwt.add_circle(radius=10 * u.pixel, opacity=.4,
@@ -58,7 +58,7 @@ Lines
 
 Lines are added, modified, and removed in a similar way to circles, except that
 they are defined by a set of positions on the sky rather than a center and a
-radius. The following example shows how to crreat a line of custom width that
+radius. The following example shows how to create a line of custom width that
 traces the Big Dipper, fetching stellar coordinates through a
 :class:`~astropy.coordinates.SkyCoord` method and joining them with the
 :func:`~astropy.coordinates.concatenate` function from Astropy::
@@ -89,7 +89,7 @@ also be added after the line has been initialized using :meth:`~pywwt.Line.add_p
 The line color can also be changed using either a color name, color hex string,
 or a tuple of (red, green, blue) values (each in the range [0:1]), e.g.::
 
-    >>> line.color = 'salmon'            # html colors
+    >>> line.color = 'salmon'          # html colors
     >>> line.color = 'g'               # matplotlib default colors
     >>> line.color = '#C4D600'         # hex strings
     >>> line.color = (.7, .1, ,.3, .5) # tuples with (or without) opacity

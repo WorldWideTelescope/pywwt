@@ -1,8 +1,8 @@
 Modifying visual settings
 =========================
 
-Once a Jupyter or Qt widget has been created, the way in which you change settings
-and interact with WorldWide Telescope is the same.
+Once a Jupyter or Qt widget has been created, the way in which you change 
+settings and interact with WorldWide Telescope is the same.
 
 Visual settings
 ---------------

@@ -12,13 +12,14 @@ To use the Qt viewer from an IPython session, do::
 
     In [3]: wwt = WWTQtClient()
 
-Note that the order is important - for now :class:`pywwt.qt.WWTQtClient` has to be
-imported before ``%gui qt`` is run. Once the WorldWide Telescope viewer is
+Note that the order is important - for now :class:`pywwt.qt.WWTQtClient` has to 
+be imported before ``%gui qt`` is run. Once the WorldWide Telescope viewer is
 visible, you can start to interact with the ``wwt`` object in the next cell of
 the notebook. You can find out more about interacting with this object in
 :doc:`settings` and :doc:`annotations`.
 
-.. note:: The :class:`pywwt.qt.WWTQtClient` class is not the Qt widget itself but
+.. note:: The :class:`pywwt.qt.WWTQtClient` class is not the Qt widget itself 
+but
           an object that opens the widget and allows you to control the WWT
           settings. If you need access to the underlying widget, see the
           `Embedding`_ section.
@@ -52,8 +53,8 @@ Embedding
 ---------
 
 If you are developing a Qt Application, you can embed the WorldWide Telescope
-Qt widget by creating an instance of the :class:`pywwt.qt.WWTQtClient` class then
-accessing the underlying Qt widget using the ``widget`` attribute::
+Qt widget by creating an instance of the :class:`pywwt.qt.WWTQtClient` class, 
+then accessing the underlying Qt widget using the ``widget`` attribute::
 
     from pywwt.qt import WWTQtClient
     wwt_client = WWTQtClient()

@@ -51,5 +51,5 @@ If you run into any issues when using pywwt, please open an issue
 Acknowledgments
 ---------------
 
-This work is funded through the American Astronomical Society WorldWide Telescope
-project.
+This work is funded through the American Astronomical Society WorldWide 
+Telescope project.
