@@ -4,9 +4,16 @@ from traitlets import (TraitType, TraitError,
                        Float as OriginalFloat,
                        Unicode as OriginalUnicode)
 from astropy import units as u
-from matplotlib import colors
+
+try:
+    from matplotlib.colors import to_hex
+except ImportError:
+    from matplotlib.colors import colorConverter, rgb2hex
+    def to_hex(input):  # noqa
+        return rgb2hex(colorConverter.to_rgb(input))
 
 # We inherit the original trait classes to make sure that the docstrings are set
+
 
 class Any(OriginalAny):
 
@@ -14,6 +21,7 @@ class Any(OriginalAny):
         super(Any, self).__init__(*args, **kwargs)
         if self.help:
             self.__doc__ = self.help
+
 
 class Bool(OriginalBool):
 
@@ -64,7 +72,7 @@ class Color(TraitType):
 
     def validate(self, obj, value):
         if isinstance(value, str) or (isinstance(value, tuple) and len(value) == 3):
-            return colors.to_hex(value)
+            return to_hex(value)
         else:
             if hasattr(obj, 'opacity'):
                 raise TraitError('color must be a string or a tuple of 3 or 4 floats')
