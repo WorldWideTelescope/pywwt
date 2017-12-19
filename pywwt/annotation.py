@@ -59,15 +59,14 @@ class Annotation(HasTraits):
 
 class Circle(Annotation):
     """
-    Used to render a circle on screen (via pywwt.BaseWWTWidget.add_circle()) 
-    and edit its properties after intialization. Inherits from Annotation
-    class.
+    Used to render a circle on screen
+    (via :meth:`pywwt.BaseWWTWidget.add_circle`) and edit its properties
+    after intialization.
     """
 
     shape = 'circle'
     """
-    The shape to be sent to the Annotation class for object creation 
-    (:class:`str`)
+    The name of the shape (:class:`str`)
     """
 
     fill = Bool(False, help='Whether or not the circle should be filled (:class:`bool`)').tag(wwt='fill')
@@ -94,7 +93,7 @@ class Circle(Annotation):
 
     def set_center(self, coord):
         """
-        Set the center coordinates of a circle object.
+        Set the center coordinates of the circle object.
 
         Parameters
         ----------
@@ -133,14 +132,13 @@ class Circle(Annotation):
 class Polygon(Annotation):
     """
     Used to render a polygon on screen (via 
-    pywwt.BaseWWTWidget.add_polygon()) and edit its properties after 
-    intialization. Inherits from Annotation class.
+    meth:`pywwt.BaseWWTWidget.add_polygon`) and edit its properties after
+    intialization.
     """
 
     shape = 'polygon'
     """
-    The shape to be sent to the Annotation class for object creation 
-    (:class:`str`)
+    The name of the shape (:class:`str`)
     """
 
     fill = Bool(False, help='Whether or not the polygon should be filled (:class:`bool`)').tag(wwt='fill')
@@ -190,15 +188,14 @@ class Polygon(Annotation):
 
 class Line(Annotation):
     """
-    Used to render a line on screen (via pywwt.BaseWWTWidget.add_line()) 
-    and edit its properties after intialization. Inherits from Annotation 
-    class.
+    Used to render a line on screen (via 
+    :meth:`pywwt.BaseWWTWidget.add_line`)) and edit its properties after 
+    intialization.
     """
 
     shape = 'line'
     """
-    The shape to be sent to the Annotation class for object creation 
-    (:class:`str`)
+    The name of the shape (:class:`str`)
     """
 
     color = ColorWithOpacity('white', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor')

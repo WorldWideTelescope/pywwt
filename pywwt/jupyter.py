@@ -23,8 +23,7 @@ if not PY2:
 @widgets.register
 class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     """
-    Defines the Python part of the WWT Jupyter widget. Inherits from
-    BaseWWTWidget class.
+    Defines the Python part of the WWT Jupyter widget.
     """
 
     _view_name = Unicode('WWTView').tag(sync=True)
