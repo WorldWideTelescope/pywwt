@@ -141,6 +141,18 @@ app = None
 
 
 class WWTQtClient(BaseWWTWidget):
+    """
+    Defines the Qt widget. Inherits from BaseWWTWidget class.
+
+    Parameters
+    ----------
+    block_until_ready : `bool`
+        Tells Python to wait for WorldWide Telescope to open before 
+        proceeding with any following script (default: `True`).
+
+    size : `tuple`
+        Sets size of widget in pixels (default: (600, 600)).
+    """
 
     def __init__(self, block_until_ready=False, size=None):
 
@@ -164,6 +176,10 @@ class WWTQtClient(BaseWWTWidget):
                     break
 
     def wait(self):
+        """
+        Prevents WorldWide Telescope from closing once Python reaches the
+        end of a given script.
+        """
         app.exec_()
 
     def _send_msg(self, async=True, **kwargs):
@@ -171,6 +187,14 @@ class WWTQtClient(BaseWWTWidget):
         return self.widget._run_js("wwt_apply_json_message(wwt, {0});".format(msg), async=async)
 
     def render(self, filename):
+        """
+        Saves a screenshot of the viewer's current state.
+
+        Parameters
+        ----------
+        filename : `str`
+            The desired name of the image file to be saved.
+        """
         image = QtGui.QImage(self.widget.size(), QtGui.QImage.Format_RGB32)
         painter = QtGui.QPainter(image)
         self.widget.render(painter)

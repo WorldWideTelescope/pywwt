@@ -1,6 +1,8 @@
 from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
+from astropy import time as t
 from astropy.coordinates import SkyCoord
+from datetime import datetime
 
 # We import the trait classes from .traits since we do various customizations
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity
@@ -17,7 +19,11 @@ __all__ = ['BaseWWTWidget']
 
 
 class BaseWWTWidget(HasTraits):
-
+    """
+    The core class behind the viewer. Inherited by WWTQtClient and
+    WWTJupyterWidget and accepts keyword arguments from them. Inherits from
+    traitlets.HasTraits to its attributes to be set as traits.
+    """
     def __init__(self, **kwargs):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
@@ -61,7 +67,7 @@ class BaseWWTWidget(HasTraits):
     constellation_selection = Bool(False, help='Whether to only show boundaries for the selected constellation (:class:`bool`)').tag(wwt='showConstellationSelection')
 
     crosshairs = Bool(True, help='Whether to show crosshairs at the center of the field (:class:`bool`)').tag(wwt='showCrosshairs')
-    ecliptic = Bool(False, help='Whether to show the path of the ecliptic').tag(wwt='showEcliptic')
+    ecliptic = Bool(False, help='Whether to show the path of the ecliptic (:class:`bool`)').tag(wwt='showEcliptic')
     grid = Bool(False, help='Whether to show the equatorial grid (:class:`bool`)').tag(wwt='showGrid')
 
     # TODO: need to add more methods here.
@@ -88,7 +94,7 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         url : `str`
-            The URL of the chosen tour (a .wtt file)
+            The URL of the chosen tour -- must be a .wtt file.
         """
         # throw error if url doesn't end in .wtt
         if url[-4:] == '.wtt':
@@ -109,6 +115,21 @@ class BaseWWTWidget(HasTraits):
         self._send_msg(event='resume_tour')
 
     def center_on_coordinates(self, coord, fov=60*u.deg, instant=True):
+        """
+        Center the view on a particular object or point in the sky.
+
+        Parameters
+        ----------
+        coord : `~astropy.units.Quantity`
+            The set of coordinates the view should center on.
+
+        fov : `~astropy.units.Quantity`
+            The zoom level of the view (default: 60 degrees).
+
+        instant : `bool`
+            Whether the view changes instantly or scrolls to the desired 
+            location (default: `True`).
+        """
         coord_icrs = coord.icrs
         self._send_msg(event='center_on_coordinates',
                        ra=coord_icrs.ra.deg,
@@ -117,6 +138,17 @@ class BaseWWTWidget(HasTraits):
                        instant=instant)
 
     def set_current_time(self, dt):
+        """
+        Set the viewer time to match the real-world time.
+
+        Parameters
+        ----------
+        dt : `~datetime.datetime` or `~astropy.time.core.Time`
+            The current time, either as a `datetime` object or an astropy
+            `Time`.
+        """
+        if isinstance(dt, t.core.Time):
+            dt = dt.datetime
         self._send_msg(event='set_datetime',
                        year=dt.year, month=dt.month, day=dt.day,
                        hour=dt.hour, minute=dt.minute, second=dt.second,
@@ -124,9 +156,9 @@ class BaseWWTWidget(HasTraits):
 
     galactic_mode = Bool(False, help='Whether the galactic plane should be horizontal in the viewer (:class:`bool`)').tag(wwt='galacticMode')
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode')
-    location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
-    location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location  (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
-    location_longitude = AstropyQuantity(122.133333 * u.deg, help='The longitude of the viewing location (:class:`~astropy.units.Quantity`)').tag(wwt='locationLng')
+    location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location in local horizon mode(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
+    location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location in local horizon mode (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
+    location_longitude = AstropyQuantity(122.133333 * u.deg, help='The longitude of the viewing location in local horizon mode (:class:`~astropy.units.Quantity`)').tag(wwt='locationLng')
 
     @validate('location_altitude')
     def _validate_altitude(self, proposal):
@@ -150,11 +182,22 @@ class BaseWWTWidget(HasTraits):
             raise TraitError('location_longitude not in angle units')
 
     def load_image_collection(self, url):
+        """
+        Load a collection of layers for possible use in the viewer.
+
+        Parameters
+        ----------
+        url : `str`
+            The URL of the desired image collection (default: 'http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys').
+        """        
         self._available_layers += get_imagery_layers(url)
         self._send_msg(event='load_image_collection', url=url)
 
     @property
     def available_layers(self):
+        """
+        A list of currently available layers for the viewer
+        """
         return sorted(self._available_layers)
 
     foreground = Unicode('Digitized Sky Survey (Color)', help='The layer to show in the foreground (:class:`str`)')
@@ -183,7 +226,7 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('background is not one of the available layers')
 
-    foreground_opacity = Float(0.8, help='The opacity of the foreground layer (float)')
+    foreground_opacity = Float(0.8, help='The opacity of the foreground layer ((:class:`float`)')
 
     @observe('foreground_opacity')
     def _on_foreground_opacity_change(self, changed):
@@ -198,6 +241,19 @@ class BaseWWTWidget(HasTraits):
 
     def add_circle(self, center=None, **kwargs):
         # TODO: could buffer JS call here
+        """
+        Add a circle annotation to the current view.
+
+        Parameters
+        ----------
+        center : `~astropy.units.Quantity`
+            The coordinates of desired center of the circle. If blank, 
+            defaults to the center of the current view.
+
+        **kwargs :
+            Optional arguments that allow corresponding Circle or Annotation 
+            attributes to be set upon shape initialization.
+        """
         circle = Circle(parent=self, **kwargs)
         if center:
             circle.set_center(center)
@@ -205,6 +261,20 @@ class BaseWWTWidget(HasTraits):
 
     def add_polygon(self, points=None, **kwargs):
         # same TODO as above
+        """
+        Add a polygon annotation to the current view.
+
+        Parameters
+        ----------
+        points : `~astropy.units.Quantity`
+            The desired points that make up the polygon. If blank or just 
+            one point, the annotation will be initialized but will not be 
+            visible until more points are added.
+
+        **kwargs :
+            Optional arguments that allow corresponding Polygon or 
+            Annotation attributes to be set upon shape initialization.
+        """        
         polygon = Polygon(parent=self, **kwargs)
         if points:
             polygon.add_point(points)
@@ -212,6 +282,20 @@ class BaseWWTWidget(HasTraits):
 
     def add_line(self, points=None, **kwargs):
         # same TODO as above
+        """
+        Add a line annotation to the current view.
+
+        Parameters
+        ----------
+        points : `~astropy.units.Quantity`
+            The desired points that make up the line. If blank or just one 
+            point, the annotation will be initialized but will not be 
+            visible until more points are added.
+
+        **kwargs :
+            Optional arguments that allow corresponding Line or Annotation 
+            attributes to be set upon shape initialization.
+        """        
         line = Line(parent=self, **kwargs)
         if points:
             line.add_point(points)
