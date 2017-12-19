@@ -23,7 +23,7 @@ if not PY2:
 @widgets.register
 class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     """
-    Defines the Python part of the WWT Jupyter widget.
+    A WorldWide Telescope Jupyter widget.
     """
 
     _view_name = Unicode('WWTView').tag(sync=True)

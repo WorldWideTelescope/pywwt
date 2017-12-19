@@ -20,9 +20,10 @@ __all__ = ['BaseWWTWidget']
 
 class BaseWWTWidget(HasTraits):
     """
-    The core class behind the viewer. Inherited by WWTQtClient and
-    WWTJupyterWidget and accepts keyword arguments from them. Inherits from
-    traitlets.HasTraits to its attributes to be set as traits.
+    The core class in common to the Qt and Jupyter widgets.
+
+    This class provides a common interface to modify settings and interact with
+    WorldWide Telescope.
     """
     def __init__(self, **kwargs):
         super(BaseWWTWidget, self).__init__()
@@ -114,7 +115,7 @@ class BaseWWTWidget(HasTraits):
         """
         self._send_msg(event='resume_tour')
 
-    def center_on_coordinates(self, coord, fov=60*u.deg, instant=True):
+    def center_on_coordinates(self, coord, fov=60 * u.deg, instant=True):
         """
         Center the view on a particular object or point in the sky.
 
@@ -123,12 +124,12 @@ class BaseWWTWidget(HasTraits):
         coord : `~astropy.units.Quantity`
             The set of coordinates the view should center on.
 
-        fov : `~astropy.units.Quantity`
-            The zoom level of the view (default: 60 degrees).
+        fov : `~astropy.units.Quantity`, optional
+            The desired field of view.
 
-        instant : `bool`
-            Whether the view changes instantly or scrolls to the desired 
-            location (default: `True`).
+        instant : `bool`, optional
+            Whether the view changes instantly or scrolls to the desired
+            location.
         """
         coord_icrs = coord.icrs
         self._send_msg(event='center_on_coordinates',
@@ -189,7 +190,7 @@ class BaseWWTWidget(HasTraits):
         ----------
         url : `str`
             The URL of the desired image collection (default: 'http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys').
-        """        
+        """
         self._available_layers += get_imagery_layers(url)
         self._send_msg(event='load_image_collection', url=url)
 
@@ -240,62 +241,59 @@ class BaseWWTWidget(HasTraits):
             raise TraitError('foreground_opacity should be between 0 and 1')
 
     def add_circle(self, center=None, **kwargs):
-        # TODO: could buffer JS call here
         """
         Add a circle annotation to the current view.
 
         Parameters
         ----------
         center : `~astropy.units.Quantity`
-            The coordinates of desired center of the circle. If blank, 
+            The coordinates of desired center of the circle. If blank,
             defaults to the center of the current view.
-
-        **kwargs :
-            Optional arguments that allow corresponding Circle or Annotation 
+        kwargs
+            Optional arguments that allow corresponding Circle or Annotation
             attributes to be set upon shape initialization.
         """
+        # TODO: could buffer JS call here
         circle = Circle(parent=self, **kwargs)
         if center:
             circle.set_center(center)
         return circle
 
     def add_polygon(self, points=None, **kwargs):
-        # same TODO as above
         """
         Add a polygon annotation to the current view.
 
         Parameters
         ----------
         points : `~astropy.units.Quantity`
-            The desired points that make up the polygon. If blank or just 
-            one point, the annotation will be initialized but will not be 
+            The desired points that make up the polygon. If blank or just
+            one point, the annotation will be initialized but will not be
             visible until more points are added.
-
-        **kwargs :
-            Optional arguments that allow corresponding Polygon or 
+        kwargs
+            Optional arguments that allow corresponding Polygon or
             Annotation attributes to be set upon shape initialization.
-        """        
+        """
+        # same TODO as above
         polygon = Polygon(parent=self, **kwargs)
         if points:
             polygon.add_point(points)
         return polygon
 
     def add_line(self, points=None, **kwargs):
-        # same TODO as above
         """
         Add a line annotation to the current view.
 
         Parameters
         ----------
         points : `~astropy.units.Quantity`
-            The desired points that make up the line. If blank or just one 
-            point, the annotation will be initialized but will not be 
+            The desired points that make up the line. If blank or just one
+            point, the annotation will be initialized but will not be
             visible until more points are added.
-
-        **kwargs :
-            Optional arguments that allow corresponding Line or Annotation 
+        kwargs
+            Optional arguments that allow corresponding Line or Annotation
             attributes to be set upon shape initialization.
-        """        
+        """
+        # same TODO as above
         line = Line(parent=self, **kwargs)
         if points:
             line.add_point(points)

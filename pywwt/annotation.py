@@ -12,10 +12,7 @@ __all__ = ['Annotation', 'Circle', 'Polygon', 'Line']
 
 class Annotation(HasTraits):
     """
-    Inherited by Circle, Polygon, and Line classes and is used to create,
-    describe, and edit objects of these classes. Inherits from 
-    traitlets.HasTraits to allow attributes of this class and its children 
-    to be set as traits.
+    Base class for annotations which provides some settings common to all shapes.
     """
 
     shape = None
@@ -59,9 +56,7 @@ class Annotation(HasTraits):
 
 class Circle(Annotation):
     """
-    Used to render a circle on screen
-    (via :meth:`pywwt.BaseWWTWidget.add_circle`) and edit its properties
-    after intialization.
+    A circular annotation.
     """
 
     shape = 'circle'
@@ -131,9 +126,7 @@ class Circle(Annotation):
 
 class Polygon(Annotation):
     """
-    Used to render a polygon on screen (via 
-    meth:`pywwt.BaseWWTWidget.add_polygon`) and edit its properties after
-    intialization.
+    A polygon annotation.
     """
 
     shape = 'polygon'
@@ -176,7 +169,7 @@ class Polygon(Annotation):
     def remove(self):
         """
         Removes the specified annotation from the current view.
-        """        
+        """
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
@@ -188,9 +181,7 @@ class Polygon(Annotation):
 
 class Line(Annotation):
     """
-    Used to render a line on screen (via 
-    :meth:`pywwt.BaseWWTWidget.add_line`)) and edit its properties after 
-    intialization.
+    A line annotation.
     """
 
     shape = 'line'
@@ -231,7 +222,7 @@ class Line(Annotation):
     def remove(self):
         """
         Removes the specified annotation from the current view.
-        """        
+        """
         self.parent._send_msg(event='remove_annotation', id=self.id)
 
     def _on_trait_change(self, changed):
