@@ -1,6 +1,6 @@
 from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
-from astropy import time as t
+from astropy.time import Time
 from astropy.coordinates import SkyCoord
 from datetime import datetime
 
@@ -143,11 +143,11 @@ class BaseWWTWidget(HasTraits):
 
         Parameters
         ----------
-        dt : `~datetime.datetime` or `~astropy.time.core.Time`
-            The current time, either as a `datetime` object or an astropy
-            `Time`.
+        dt : `~datetime.datetime` or `~astropy.time.Time`
+            The current time, either as a `datetime.datetime` object or an astropy
+            :class:`astropy.time.Time` object.
         """
-        if isinstance(dt, t.core.Time):
+        if isinstance(dt, Time):
             dt = dt.datetime
         self._send_msg(event='set_datetime',
                        year=dt.year, month=dt.month, day=dt.day,
