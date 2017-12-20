@@ -1,8 +1,9 @@
 {
   "name": "pywwt",
-  "version": "0.3.0a0",
+  "version": "0.3.0",
   "description": "WorldWide Telescope Jupyter widget",
   "author": "Thomas P. Robitaille, O. Justin Otor, and John ZuHone",
+  "license" : "BSD-3-Clause",
   "main": "lib/index.js",
   "repository": {
     "type": "git",
