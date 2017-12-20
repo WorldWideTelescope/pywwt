@@ -54,6 +54,13 @@ def prepare_recipe_dev(package):
         f.write(recipe)
 
 
+def flexible_int(s):
+    try:
+        return int(s)
+    except:
+        return -1
+
+
 def prepare_recipe_stable(package):
 
     with open('recipes/{0}/meta.yaml'.format(package)) as f:
@@ -61,7 +68,7 @@ def prepare_recipe_stable(package):
 
     # Find latest stable version from PyPI
     package_json = requests.get('https://pypi.python.org/pypi/{package}/json'.format(package=package)).json()
-    version = sorted(package_json['releases'], key=lambda s: tuple(map(int, s.split('.'))))[-1]
+    version = sorted(package_json['releases'], key=lambda s: tuple(map(flexible_int, s.split('.'))))[-1]
     releases = package_json['releases'][version]
     for release in releases:
         if release['python_version'] == 'source':
