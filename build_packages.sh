@@ -59,9 +59,9 @@ for package in $packages; do
 
   if [[ $TRAVIS_EVENT_TYPE != pull_request && $TRAVIS_BRANCH == conda-dev ]]; then
     if [[ $STABLE == true ]]; then
-      anaconda -t $ANACONDA_TOKEN upload $output;
+      anaconda -t $ANACONDA_TOKEN upload $output || true;
     else
-      anaconda -t $ANACONDA_TOKEN upload -l dev --force $output;
+      anaconda -t $ANACONDA_TOKEN upload -l dev $output || true;
     fi
   fi
 
