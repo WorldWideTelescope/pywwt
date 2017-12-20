@@ -24,6 +24,8 @@ and includes the following:
 * A standalone Qt viewer/widget
 * A client for the Windows version of WorldWide Telescope
 
+.. image:: images/stgo_view.png
+
 This package is still under development and the functionality will be expanded
 over the coming weeks/months. Please do let us know if you try it out and run
 into any issues (see `Getting help`_).
