@@ -2,7 +2,6 @@ from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
 from astropy.time import Time
 from astropy.coordinates import SkyCoord
-from datetime import datetime
 
 # We import the trait classes from .traits since we do various customizations
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity
@@ -191,7 +190,7 @@ class BaseWWTWidget(HasTraits):
         url : `str`
             The URL of the desired image collection (default: 'http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys').
         """
-        self._available_layers += get_imagery_layers(url)
+        self._available_layers.update(get_imagery_layers(url))
         self._send_msg(event='load_image_collection', url=url)
 
     @property
