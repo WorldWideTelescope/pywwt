@@ -12,7 +12,7 @@ from .imagery import get_imagery_layers
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
 
-DEFAULT_SURVEYS_URL = 'http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys'
+DEFAULT_SURVEYS_URL = 'https://WorldWideTelescope.github.io/pywwt/surveys.xml'
 
 __all__ = ['BaseWWTWidget']
 
@@ -188,7 +188,7 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         url : `str`
-            The URL of the desired image collection (default: 'http://www.worldwidetelescope.org/wwtweb/catalog.aspx?W=surveys').
+            The URL of the desired image collection).
         """
         self._available_layers.update(get_imagery_layers(url))
         self._send_msg(event='load_image_collection', url=url)
