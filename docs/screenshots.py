@@ -38,13 +38,14 @@ blt = concatenate((SkyCoord.from_name('zeta orionis'),
 string = concatenate((SkyCoord.from_name('omicron2 orionis'),
                       SkyCoord.from_name('pi5 orionis')))
 
-orb = wwt.add_polygon(body, fill=True, fill_color='lightslategray',
+orb = wwt.add_polygon(body, fill=True, fill_color='lightslategray', opacity=.4,
                       line_color='lightslategray', line_width=3*u.pixel)
-orc = wwt.add_polygon(club, fill=True, fill_color='saddlebrown',
-                      line_color ='saddlebrown', line_width=3 * u.pixel)
-orh = wwt.add_polygon(head, fill=True, fill_color='rosybrown',
+orc = wwt.add_polygon(club, fill=True, fill_color='saddlebrown', opacity=.4,
+                      line_color ='saddlebrown', line_width=3*u.pixel)
+orh = wwt.add_polygon(head, fill=True, fill_color='rosybrown', opacity=.4,
                       line_color='lightslategray', line_width=2*u.pixel)
-orw = wwt.add_polygon(bow, line_width=2*u.pixel, line_color='saddlebrown')
+orw = wwt.add_polygon(bow, opacity=.4,
+                      line_color='saddlebrown', line_width=2*u.pixel)
 
 ora1 = wwt.add_line(a1, color='lightslategray')
 ora2 = wwt.add_line(a2, color='lightslategray')

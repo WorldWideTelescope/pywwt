@@ -15,3 +15,7 @@ This will then look like:
 Once the WorldWide Telescope widget is visible, you can start to interact
 with the ``wwt`` object in the next cell of the notebook. You can find out more
 about interacting with this object in :doc:`settings` and :doc:`annotations`.
+
+.. note:: If the widget appears with a vertical scrollbar, you can remove it
+          and show the whole viewer at once by clicking on the left side of the
+          cell that holds the widget.
