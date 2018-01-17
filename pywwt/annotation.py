@@ -69,7 +69,7 @@ class Circle(Annotation):
     fill_color = ColorWithOpacity('white', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor')
     line_color = Color('white', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor')
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
-    radius     = AstropyQuantity(1 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
+    radius     = AstropyQuantity(80 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -245,16 +245,27 @@ class CircleCollection():
         
     def __setattr__(self, name, value):
         if name in [key for key in Circle.__dict__ if not key.startswith('_')]:
-            for point in self.collection:
-                setattr(point, name, value)
-                #print(point.__dict__['_trait_values'][name])
+            for elem in self.collection:
+                setattr(elem, name, value)
+                #print(elem.__dict__['_trait_values'][name])
         else:
             self.__dict__[name] = value
+
+    def __getattr__(self, name):
+        if name in [key for key in Circle.__dict__ if not key.startswith('_')]:
+            values = []
+            for elem in self.collection:
+                attr = getattr(elem, name)
+                if attr not in values:
+                    values.append(attr)
+            return values
+        else:
+            raise AttributeError('CircleCollection object has no attribute '+repr(name))
         
     def gen_circles(self, points, **kwargs):
-        for point in points:
+        for elem in points:
             circle = Circle(self.parent, **kwargs)
-            circle.set_center(point)
+            circle.set_center(elem)
             self.collection.append(circle)        
 
     def add_points(self, points, **kwargs):
