@@ -1,6 +1,7 @@
 import uuid
 from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
+from astropy.coordinates import concatenate
 
 from .traits import Color, ColorWithOpacity, Bool, Float, Unicode, AstropyQuantity
 
@@ -68,7 +69,7 @@ class Circle(Annotation):
     fill_color = ColorWithOpacity('white', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor')
     line_color = Color('white', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor')
     line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
-    radius     = AstropyQuantity(1 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
+    radius     = AstropyQuantity(80 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -84,7 +85,7 @@ class Circle(Annotation):
         elif proposal['value'].unit.is_equivalent(u.degree):
             return proposal['value'].to(u.degree)
         else:
-            raise TraitError('radius must be in pixel or arcsec equivalent unit')
+            raise TraitError('radius must be in pixel or degree equivalent unit')
 
     def set_center(self, coord):
         """
@@ -230,3 +231,160 @@ class Line(Annotation):
             changed['new'] = changed['new'].value
 
         super(Line, self)._on_trait_change(changed)
+
+class CircleCollection():
+    """
+    A collection of circle annotations. Takes a set of several points (e.g. a column of SkyCoords from an astropy Table) to make generating several circles at once easier.
+    """
+    
+    def __init__(self, parent, points, **kwargs):
+        if len(points) <= 1e4:
+            self.points = points
+        else:
+            raise IndexError('For performance reasons, only 10,000 annotations can be added at once for the time being.')
+        self.parent = parent
+        self.collection = []
+        self._gen_circles(self.points, **kwargs)
+        
+    def _set_all_attributes(self, name, value):
+        for elem in self.collection:
+            setattr(elem, name, value)
+
+    def _get_all_attributes(self, name):
+        values = []
+        for elem in self.collection:
+            attr = getattr(elem, name)
+            if attr not in values:
+                values.append(attr)
+        if len(values) == 1:
+            return values[0]
+        else:
+            return values
+        
+    def _gen_circles(self, points, **kwargs):
+        for elem in points:
+            circle = Circle(self.parent, **kwargs)
+            circle.set_center(elem)
+            self.collection.append(circle)        
+
+    def add_points(self, points, **kwargs):
+        """
+        Adds multiple points to the CircleCollection.
+        """                
+        self._gen_circles(points, **kwargs)
+        self.points = concatenate((self.points, points))
+
+    def remove(self):
+        """
+        Removes all circles in the CircleCollection from view.
+        """        
+        for elem in self.collection:
+            elem.remove()
+
+    # Circle.__dict__ attributes
+    @property
+    def fill(self):
+        """
+        Whether or not the circles in the CircleCollection have a fill.
+        """        
+        return self._get_all_attributes('fill')
+
+    @fill.setter
+    def fill(self, value):
+        return self._set_all_attributes('fill', value)
+
+    @property
+    def fill_color(self):
+        """
+        The fill color of the circles in the CircleCollection.
+        """
+        return self._get_all_attributes('fill_color')
+
+    @fill_color.setter
+    def fill_color(self, value):
+        return self._set_all_attributes('fill_color', value)
+
+    @property
+    def line_color(self):
+        """
+        The line color of the circles in the CircleCollection.
+        """
+        return self._get_all_attributes('line_color')
+
+    @line_color.setter
+    def line_color(self, value):
+        return self._set_all_attributes('line_color', value)
+
+    @property
+    def line_width(self):
+        """
+        The line width of the circles in the CircleCollection.
+        """        
+        return self._get_all_attributes('line_width')
+
+    @line_width.setter
+    def line_width(self, value):
+        return self._set_all_attributes('line_width', value)
+
+    @property
+    def radius(self):
+        """
+        The radii of the circles in the CircleCollection.
+        """        
+        return self._get_all_attributes('radius')
+
+    @radius.setter
+    def radius(self, value):
+        return self._set_all_attributes('radius', value)
+    
+    @property
+    def shape(self):
+        """
+        The shapes comprising the CircleCollection (always 'circle').
+        """        
+        return self._get_all_attributes('shape')
+
+    # Annotation.__dict__ attributes
+    @property
+    def label(self):
+        """
+        Descriptive text for the CircleCollection.
+        """        
+        return self._get_all_attributes('label')
+
+    @label.setter
+    def label(self, value):        
+        return self._set_all_attributes('label', value)
+
+    @property
+    def hover_label(self):
+        """
+        Whether to show a label when the mouse hovers over the CircleCollection.
+        """        
+        return self._get_all_attributes('hover_label')
+
+    @hover_label.setter
+    def hover_label(self, value):
+        return self._set_all_attributes('hover_label', value)
+
+    @property
+    def opacity(self):
+        """
+        The opacity of the circles in the CircleCollection.
+        """        
+        return self._get_all_attributes('opacity')
+
+    @opacity.setter
+    def opacity(self, value):
+        return self._set_all_attributes('opacity', value)
+
+    @property
+    def tag(self):
+        """
+        A string that can be used by the web client.
+        """        
+        return self._get_all_attributes('tag')
+
+    @tag.setter
+    def tag(self, value):
+        return self._set_all_attributes('tag', value)

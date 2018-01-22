@@ -6,7 +6,7 @@ from astropy.coordinates import SkyCoord
 # We import the trait classes from .traits since we do various customizations
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity
 
-from .annotation import Circle, Polygon, Line
+from .annotation import Circle, Polygon, Line, CircleCollection
 from .imagery import get_imagery_layers
 
 # The WWT web control API is described here:
@@ -297,3 +297,20 @@ class BaseWWTWidget(HasTraits):
         if points:
             line.add_point(points)
         return line
+
+    def add_collection(self, points, **kwargs):
+        """
+        Add a CircleCollection to the current view.
+
+        Parameters
+        ----------
+        points : `~astropy.units.Quantity`
+            The desired points that will serve as the centers of the circles
+            that make up the collection. Requires at least two sets of
+            coordinates for initialization.
+        kwargs
+            Optional arguments that allow corresponding Circle or Annotation
+            attributes to be set upon shape initialization.
+        """
+        collection = CircleCollection(self, points, **kwargs)
+        return collection
