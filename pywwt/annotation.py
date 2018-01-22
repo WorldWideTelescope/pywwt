@@ -233,8 +233,11 @@ class Line(Annotation):
         super(Line, self)._on_trait_change(changed)
 
 class CircleCollection():
+    """
+    A collection of circle annotations. Takes a set of several points (e.g. a column of SkyCoords from an astropy Table) to make generating several circles at once easier.
+    """
     
-    def __init__(self, parent, points, **kwargs): # save args, make first circles
+    def __init__(self, parent, points, **kwargs):
         if len(points) <= 1e4:
             self.points = points
         else:
@@ -244,16 +247,10 @@ class CircleCollection():
         self._gen_circles(self.points, **kwargs)
         
     def _set_all_attributes(self, name, value):
-        # if (name in [key for key in Circle.__dict__ if not key.startswith('_')]
-        #     or name in [key for key in Annotation.__dict__ if not key.startswith('_')]):
         for elem in self.collection:
             setattr(elem, name, value)
-        # else:
-        #     self.__dict__[name] = value
 
     def _get_all_attributes(self, name):
-        # if (name in [key for key in Circle.__dict__ if not key.startswith('_')]
-        #     or name in [key for key in Annotation.__dict__ if not key.startswith('_')]):
         values = []
         for elem in self.collection:
             attr = getattr(elem, name)
@@ -263,8 +260,6 @@ class CircleCollection():
             return values[0]
         else:
             return values
-        # else:
-        #     raise AttributeError('CircleCollection object has no attribute ' + repr(name) + '.')
         
     def _gen_circles(self, points, **kwargs):
         for elem in points:
@@ -283,7 +278,6 @@ class CircleCollection():
         """
         Removes all circles in the CircleCollection from view.
         """        
-
         for elem in self.collection:
             elem.remove()
 
