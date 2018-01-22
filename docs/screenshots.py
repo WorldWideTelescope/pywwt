@@ -1,4 +1,5 @@
-from pywwt.qt import WWTQtClient()
+from pywwt.qt import WWTQtClient
+from astropy import units as u
 from astropy.coordinates import concatenate, SkyCoord
 
 # open widget, render at end of each section
@@ -12,15 +13,18 @@ bd = concatenate((SkyCoord.from_name('Alkaid'), SkyCoord.from_name('Mizar'),
 wwt.center_on_coordinates(SkyCoord.from_name('Megrez'))
        
 line = wwt.add_line(bd, width=3 * u.pixel)
+wwt.wait()
 wwt.render('images/big_dipper.png')
 
 # big_dipper2.png
 line.add_point(SkyCoord.from_name('Megrez'))
 line.color = 'salmon'
+wwt.wait()
 wwt.render('images/big_dipper2.png')
 
 # polygon.png
 wwt.center_on_coordinates(SkyCoord.from_name('eta orion'))
+wwt.crosshairs = False
 
 body = concatenate((SkyCoord.from_name('zeta orion'),SkyCoord.from_name('betelgeuse'),SkyCoord.from_name('bellatrix'),SkyCoord.from_name('delta orion')))
 club = concatenate((SkyCoord.from_name('xi orionis'),SkyCoord.from_name('chi2 orionis'),SkyCoord.from_name('chi1 orionis'),SkyCoord.from_name('67 orionis')))
@@ -55,7 +59,8 @@ orl2 = wwt.add_line(l2, color='lightslategray', width=2*u.pixel)
 orblt = wwt.add_line(blt, color='azure', width=8*u.pixel)
 orstr = wwt.add_line(string, color='azure')
 
-wwt.render('images/polygon.png')
+wwt.wait()
+wwt.render('images/polygons.png')
 
 # circles.png
 wwt.center_on_coordinates(SkyCoord(190, -55, unit=u.deg))
@@ -63,6 +68,7 @@ crc1 = wwt.add_circle(SkyCoord(188, -57, unit=u.deg), radius=10 * u.degree,
                       fill=True, fill_color='#008CA8')
 crc2 = wwt.add_circle(radius=10 * u.pixel, opacity=.4,
                       fill=True, fill_color='#C4D600')
+wwt.wait()
 wwt.render('images/circles.png')
 
 # stgo_view.png
@@ -75,6 +81,7 @@ wwt.local_horizon_mode = True
 wwt.location_latitude = -33.4172 * u.deg
 wwt.location_longitude = -70.604 * u.deg
 wwt.location_altitude = 300 * u.meter
+wwt.wait()
 wwt.render('images/stgo_view.png')
 
 # dust_on_gamma.png
@@ -82,10 +89,10 @@ wwt.clear_annotations()
 wwt.constellation_boundaries = False
 wwt.constellation_figures = False
 wwt.local_horizon_mode = False
-wwt.crosshairs = False
 
 wwt.center_on_coordinates(SkyCoord(144.545, -68.5, unit=u.deg))
 wwt.background = 'Fermi LAT 8-year (gamma)'
 wwt.foreground = 'Planck Dust & Gas'
 wwt.foreground_opacity = .75
+wwt.wait()
 wwt.render('images/dust_on_gamma.png')
