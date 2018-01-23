@@ -3,12 +3,15 @@ var _ = require("underscore");
 
 var WWTModel = widgets.DOMWidgetModel.extend({
     defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
+
         _model_name : 'WWTModel',
-        _view_name : 'WWTView',
         _model_module : 'pywwt',
+        _model_module_version : '0.4.0',
+
+        _view_name : 'WWTView',
         _view_module : 'pywwt',
-        _model_module_version : '0.1.0',
-        _view_module_version : '0.1.0',
+        _view_module_version : '0.4.0',
+
     })
 });
 
