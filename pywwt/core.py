@@ -205,6 +205,8 @@ class BaseWWTWidget(HasTraits):
     @observe('foreground')
     def _on_foreground_change(self, changed):
         self._send_msg(event='set_foreground_by_name', name=changed['new'])
+        # Changing a layer resets the opacity, so we re-trigger the opacity setting
+        self._send_msg(event='set_foreground_opacity', value=self.foreground_opacity * 100)
 
     @validate('foreground')
     def _validate_foreground(self, proposal):
@@ -218,6 +220,8 @@ class BaseWWTWidget(HasTraits):
     @observe('background')
     def _on_background_change(self, changed):
         self._send_msg(event='set_background_by_name', name=changed['new'])
+        # Changing a layer resets the opacity, so we re-trigger the opacity setting
+        self._send_msg(event='set_foreground_opacity', value=self.foreground_opacity * 100)
 
     @validate('background')
     def _validate_background(self, proposal):
