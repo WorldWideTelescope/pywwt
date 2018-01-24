@@ -7,7 +7,7 @@ import sys
 PY2 = sys.version_info[0] == 2
 
 import ipywidgets as widgets
-from traitlets import Unicode, default
+from traitlets import Unicode, default, link
 
 if not PY2:
     from ipyevents import Event as DOMListener
@@ -40,6 +40,7 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
             dom_listener.source = self
             dom_listener.prevent_default_action = True
             dom_listener.watched_events = ['wheel']
+        self._controls = None
 
     @default('layout')
     def _default_layout(self):
@@ -47,3 +48,18 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
 
     def _send_msg(self, **kwargs):
         self.send(kwargs)
+
+    @property
+    def layer_controls(self):
+        if self._controls is None:
+            opacity_slider = widgets.FloatSlider(value=self.foreground_opacity,
+                                                 min=0, max=1, readout=False)
+            foreground_menu = widgets.Dropdown(options=self.available_layers,
+                                               value=self.foreground)
+            background_menu = widgets.Dropdown(options=self.available_layers,
+                                               value=self.background)
+            link((opacity_slider, 'value'), (self, 'foreground_opacity'))
+            link((foreground_menu, 'value'), (self, 'foreground'))
+            link((background_menu, 'value'), (self, 'background'))
+            self._controls = widgets.HBox([background_menu, opacity_slider, foreground_menu])
+        return self._controls
