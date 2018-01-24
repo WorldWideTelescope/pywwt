@@ -1,7 +1,7 @@
 0.4.0 (unreleased)
 ------------------
 
-- No changes yet.
+- Fix compatibility with Jupyter Lab. [#63]
 
 0.3.0 (2017-12-20)
 ------------------

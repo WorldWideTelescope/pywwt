@@ -3,12 +3,15 @@ var _ = require("underscore");
 
 var WWTModel = widgets.DOMWidgetModel.extend({
     defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
+
         _model_name : 'WWTModel',
-        _view_name : 'WWTView',
         _model_module : 'pywwt',
+        _model_module_version : '0.4.0',
+
+        _view_name : 'WWTView',
         _view_module : 'pywwt',
-        _model_module_version : '0.1.0',
-        _view_module_version : '0.1.0',
+        _view_module_version : '0.4.0',
+
     })
 });
 
@@ -20,8 +23,21 @@ var WWTView = widgets.DOMWidgetView.extend({
         // otherwise support having multiple instances running on the same
         // page. We use the same HTML file as for the Qt client.
         var div = document.createElement("div");
-        nbextensions = requirejs.s.contexts._.config.paths.nbextensions;
-        div.innerHTML = "<iframe width='100%' height='480' style='border: none;' src='" + nbextensions + "/pywwt/wwt.html'></iframe>"
+
+        try {
+          // This should work for Jupyter notebook
+          nbextensions = requirejs.s.contexts._.config.paths.nbextensions;
+        } catch(e) {
+          // We should get here in Jupyter lab
+          nbextensions = null;
+        }
+
+        if (nbextensions == null) {
+          div.innerHTML = "<iframe width='100%' height='480' style='border: none;' src='wwt.html'></iframe>"
+        } else {
+          div.innerHTML = "<iframe width='100%' height='480' style='border: none;' src='" + nbextensions + "/pywwt/wwt.html'></iframe>"
+        }
+
         this.el.appendChild(div);
 
         WWTView.__super__.initialize.apply(this, arguments);
