@@ -23,7 +23,21 @@ var WWTView = widgets.DOMWidgetView.extend({
         // otherwise support having multiple instances running on the same
         // page. We use the same HTML file as for the Qt client.
         var div = document.createElement("div");
-        div.innerHTML = "<iframe width='100%' height='480' style='border: none;' src='wwt.html'></iframe>"
+
+        try {
+          // This should work for Jupyter notebook
+          nbextensions = requirejs.s.contexts._.config.paths.nbextensions;
+        } catch(e) {
+          // We should get here in Jupyter lab
+          nbextensions = null;
+        }
+
+        if (nbextensions == null) {
+          div.innerHTML = "<iframe width='100%' height='480' style='border: none;' src='wwt.html'></iframe>"
+        } else {
+          div.innerHTML = "<iframe width='100%' height='480' style='border: none;' src='" + nbextensions + "/pywwt/wwt.html'></iframe>"
+        }
+
         this.el.appendChild(div);
 
         WWTView.__super__.initialize.apply(this, arguments);
