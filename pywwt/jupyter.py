@@ -44,7 +44,7 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
 
     @default('layout')
     def _default_layout(self):
-        return widgets.Layout(height='480px', align_self='stretch')
+        return widgets.Layout(height='400px', align_self='stretch')
 
     def _send_msg(self, **kwargs):
         self.send(kwargs)

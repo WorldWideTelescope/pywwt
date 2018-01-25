@@ -1,7 +1,7 @@
 0.4.0 (unreleased)
 ------------------
 
-- Fix compatibility with Jupyter Lab. [#63]
+- Fix compatibility with Jupyter Lab. [#63, #65]
 
 - Added GUI controls for imagery layers. [#64]
 
