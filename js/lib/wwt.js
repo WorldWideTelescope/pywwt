@@ -33,9 +33,9 @@ var WWTView = widgets.DOMWidgetView.extend({
         }
 
         if (nbextensions == null) {
-          div.innerHTML = "<iframe width='100%' height='480' style='border: none;' src='wwt.html'></iframe>"
+          div.innerHTML = "<iframe width='100%' height='400' style='border: none;' src='wwt.html'></iframe>"
         } else {
-          div.innerHTML = "<iframe width='100%' height='480' style='border: none;' src='" + nbextensions + "/pywwt/wwt.html'></iframe>"
+          div.innerHTML = "<iframe width='100%' height='400' style='border: none;' src='" + nbextensions + "/pywwt/wwt.html'></iframe>"
         }
 
         this.el.appendChild(div);
@@ -49,6 +49,66 @@ var WWTView = widgets.DOMWidgetView.extend({
         // because we just want to use the same JSON messaging interface for
         // the Qt widget and the Jupyter widget.
         this.model.on('msg:custom', this.handle_custom_message, this);
+    },
+
+    processPhosphorMessage: function(msg) {
+        // We listen for phosphor resize events so that when Jupyter Lab is
+        // used, we adjust the canvas size to the tab/panel in Jupyter Lab.
+        // See relayout for more details.
+        WWTView.__super__.processPhosphorMessage.apply(this, arguments);
+        switch (msg.type) {
+        case 'resize':
+        case 'after-show':
+            this.relayout();
+            break;
+        }
+    },
+
+    relayout: function() {
+
+      // Only do resizing if we are not in the notebook context but in a split
+      // panel context. We find this out by checking that the fourth parent
+      // of the current element has the jp-MainAreaWidget class.
+      parent = this.el.parentNode.parentNode.parentNode.parentNode
+
+      if (parent.classList.contains("jp-MainAreaWidget")) {
+
+        // Note that the approach below assumes that the WWT widget is the only
+        // output in the split panel, but if not, then we might end up with a
+        // size that is too large, so this should be fixed in future.
+
+        // We now check whether the iframe is actually present inside this element
+        iframe = this.el.getElementsByTagName('iframe')[0];
+
+        if (iframe != null) {
+
+          // The height of the widget element defaults to 400 pixels, but here
+          // we change it to simply be 100% of the available vertical space.
+          // However, we also need to do this for the element two levels up
+          // otherwise it defaults to a tighter layout. Note that this is
+          // essentially a hack since there is no guarantee the DOM will remain
+          // constant in future inside Jupyter, so this should be fixed at the
+          // Jupyter level ideally.
+          this.el.style.setProperty('height', '100%', '');
+          this.el.parentNode.parentNode.style.setProperty('height', '100%')
+
+          // Once we do this, the current element will expand to the full size
+          // of the panel. We then use offsetWidth and offsetHeight to get the
+          // real size of the current element.
+          width = this.el.offsetWidth;
+          height = this.el.offsetHeight;
+
+          // Finally we set the size of the iframe - however we subtract a
+          // little to account for the fact that there is a margin in the
+          // Jupyter panel. Again this is not ideal to have hard-coded so we
+          // need to find a better solution in the long term.
+          iframe.width = width - 10;
+          iframe.height = height - 10;
+
+        }
+
+      }
+
     },
 
     handle_custom_message: function(msg) {
