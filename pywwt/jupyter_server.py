@@ -5,16 +5,19 @@ from notebook.base.handlers import IPythonHandler
 __all__ = ['load_jupyter_server_extension']
 
 
+STATIC_DIR = os.path.join(os.path.dirname(__file__), 'nbextension', 'static'))
+
+
 class WWTHTMLHandler(IPythonHandler):
     def get(self):
-        with open(os.path.join(os.path.dirname(__file__), 'static', 'wwt.html')) as f:
+        with open(os.path.join(STATIC_DIR, 'wwt.html')) as f:
             content = f.read()
         self.finish(content)
 
 
 class WWTJSHandler(IPythonHandler):
     def get(self):
-        with open(os.path.join(os.path.dirname(__file__), 'static', 'wwt_json_api.js')) as f:
+        with open(os.path.join(STATIC_DIR, 'wwt_json_api.js')) as f:
             content = f.read()
         self.finish(content)
 
