@@ -5,7 +5,7 @@ from notebook.base.handlers import IPythonHandler
 __all__ = ['load_jupyter_server_extension']
 
 
-STATIC_DIR = os.path.join(os.path.dirname(__file__), 'nbextension', 'static'))
+STATIC_DIR = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
 
 
 class WWTHTMLHandler(IPythonHandler):
