@@ -100,6 +100,12 @@ and eras; you can list them using the widget's ``available_layers`` method::
      'VLSS: VLA Low-frequency Sky Survey (Radio)', 'WISE All Sky (Infrared)',
      'WMAP ILC 5-Year Cosmic Microwave Background']
 
+In the Jupyter version, it is possible to add GUI controls that allow the 
+layers to be chosen from drop down menus. The controls also include a slider 
+that interactively changes the opacity of the foreground layer.
+
+.. image:: images/layer_controls.png
+
 Running tours
 -------------
 
