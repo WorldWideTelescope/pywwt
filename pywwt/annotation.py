@@ -17,19 +17,14 @@ class Annotation(HasTraits):
     """
 
     shape = None
+    """
+    To be specified in the individual shape classes
+    """
 
-    label = Unicode('', help='Contains descriptive text '
-                             'for the annotation').tag(wwt='label')
-
-    opacity = Float(1, help='Specifies the opacity to be applied to the '
-                            'complete annotation').tag(wwt='opacity')
-
-    hover_label = Bool(False, help='Specifies whether to render the label '
-                                   'if the mouse is hovering over the '
-                                   'annotation').tag(wwt='showHoverLabel')
-
-    tag = Unicode(help='Contains a string for use by '
-                       'the web client').tag(wwt='tag')
+    label = Unicode('', help='Contains descriptive text for the annotation (:class:`str`)').tag(wwt='label')
+    opacity = Float(1, help='Specifies the opacity to be applied to the complete annotation (:class:`float`)').tag(wwt='opacity')
+    hover_label = Bool(False, help='Specifies whether to render the label if the mouse is hovering over the annotation (:class:`bool`)').tag(wwt='showHoverLabel')
+    tag = Unicode(help='Contains a string for use by the web client (:class:`str`)').tag(wwt='tag')
 
     def __init__(self, parent=None, **kwargs):
         self.parent = parent

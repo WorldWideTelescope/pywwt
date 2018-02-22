@@ -104,7 +104,7 @@ In the Jupyter version, it is possible to add GUI controls that allow the
 layers to be chosen from drop down menus. The controls also include a slider 
 that interactively changes the opacity of the foreground layer.
 
-.. image:: images/layer_controls.png
+.. image:: images/layercontrols.png
 
 Running tours
 -------------
