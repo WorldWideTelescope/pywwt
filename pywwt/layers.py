@@ -1,6 +1,10 @@
 import re
 
 class ImageryLayers():
+    """
+    A supplemental class that standardizes layer names, sorts them by 
+    bandpass, and makes it possible to tab complete them.
+    """
 
     def __init__(self, layer_list):
         self._layers = {}
@@ -11,72 +15,78 @@ class ImageryLayers():
         self._list2dict(layer_list)
 
     def _list2dict(self, og_list):
+        # Helps turn the list of layer names used to initialize the class
+        # (og_list) into a dict.
         for layer in og_list:
             ind = 0
 
-            if(re.search(r'(?i)gamma',layer) != None):
-                self._add2dict(self._layers, layer, ind)
+            if re.search(r'(?i)gamma',layer) is not None:
+                self._add2dict(self._layers, layer, self._spectrum[ind])
                 continue # automatically advance to next iteration
 
             ind += 1
-            if(re.search(r'(?i)x(-|\s)?ray',layer) != None):
-                self._add2dict(self._layers, layer, ind)
+            if re.search(r'(?i)x(-|\s)?ray',layer) is not None:
+                self._add2dict(self._layers, layer, self._spectrum[ind])
                 continue
 
             ind += 1
-            if(re.search(r'(?i)ultra(-|\s)?violet',layer) != None or 
-                 re.search(r'(?i)[^\d\w]+uv|uv[^\d\w]+',layer) != None):
-                self._add2dict(self._layers, layer, ind)
+            if (re.search(r'(?i)ultra(-|\s)?violet',layer) is not None or
+                re.search(r'(?i)[^\d\w]+uv|uv[^\d\w]+',layer) is not None):
+                self._add2dict(self._layers, layer, self._spectrum[ind])
                 continue
 
             ind += 1
-            if(re.search(r'(?i)optical',layer) != None or 
-                 re.search(r'(?i)visible',layer) != None):
-                self._add2dict(self._layers, layer, ind)
+            if (re.search(r'(?i)optical',layer) is not None or
+                re.search(r'(?i)visible',layer) is not None):
+                self._add2dict(self._layers, layer, self._spectrum[ind])
                 continue
 
             ind += 1    
-            if(re.search(r'(?i)infrared',layer) != None or 
-                 re.search(r'(?i)[^\d\w]+ir|ir[^\d\w]+',layer) != None):
-                self._add2dict(self._layers, layer, ind)
+            if (re.search(r'(?i)infrared',layer) is not None or
+                re.search(r'(?i)[^\d\w]+ir|ir[^\d\w]+',layer) is not None):
+                self._add2dict(self._layers, layer, self._spectrum[ind])
                 continue
 
             ind += 1
-            if(re.search(r'(?i)microwave',layer) != None or 
-                 re.search(r'(?i)[^\d\w]+cmb|cmb[^\d\w]+',layer) != None):
-                self._add2dict(self._layers, layer, ind)
+            if (re.search(r'(?i)microwave',layer) is not None or
+                re.search(r'(?i)[^\d\w]+cmb|cmb[^\d\w]+',layer) is not None):
+                self._add2dict(self._layers, layer, self._spectrum[ind])
                 continue
 
             ind += 1
-            if(re.search(r'(?i)radio',layer) != None):
-                self._add2dict(self._layers, layer, ind)
+            if re.search(r'(?i)radio',layer) is not None:
+                self._add2dict(self._layers, layer, self._spectrum[ind])
                 continue
 
             ind += 1
-            self._add2dict(self._layers, layer, ind)
+            self._add2dict(self._layers, layer, self._spectrum[ind])
 
-    def _add2dict(self, diction, full_layer, ind):
-        abbr = self._shorten(full_layer)
+    def _add2dict(self, diction, full_layer, bandpass):
+        # Handles a layer's (full_layer) actual addition to the master
+        # dict of layers (diction) according to its bandpass.
+        suffix = ''
+        short = self._shorten(full_layer) + suffix
+        
+        while short in diction[bandpass]:
+            if suffix:
+                suffix += 1
+                short += str(suffix)
+            else:
+                suffix = 1
+                short += str(suffix)
 
-        # check if abbr already exists in diction
-        j = 2
-        while(abbr in diction[self._spectrum[ind]]):
-            if(str(j-1) in abbr):
-                abbr = abbr[:-1]
-
-            abbr += str(j)
-            j += 1
-
-        diction[self._spectrum[ind]][abbr] = {}
-        diction[self._spectrum[ind]][abbr]['full_name'] = full_layer
-        diction[self._spectrum[ind]][abbr]['thumbnail'] = None
+        diction[bandpass][short] = {}
+        diction[bandpass][short]['full_name'] = full_layer
+        diction[bandpass][short]['thumbnail'] = None
 
     def _shorten(self, string):
+        # Unlocks tab completion by shortening a full layer's name
+        # (string) to a valid Python name based on its first word.
         first = string[:re.search(r'[\W]', string).start()].lower()
 
         # just for 2MASS; use num2words to standardize process?
         check = re.search(r'2', first)
-        if(check != None):
+        if check is not None:
             first = first[:check.start()] + 'two' + first[check.start()+1:]
 
         return first
@@ -89,6 +99,10 @@ class ImageryLayers():
 
 
 class Bandpass():
+    """
+    Allows the __getattr__() method from ImageryLayers to reach into the
+    inner dict corresponding to layers of a particular bandpass.
+    """
 
     def __init__(self, band):
         self._band = band

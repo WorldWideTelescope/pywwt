@@ -311,12 +311,12 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         points : `~astropy.units.Quantity`
-            The desired points that will serve as the centers of the circles
-            that make up the collection. Requires at least two sets of
-            coordinates for initialization.
+            The desired points that will serve as the centers of the
+            circles that make up the collection. Requires at least two
+            sets of coordinates for initialization.
         kwargs
-            Optional arguments that allow corresponding Circle or Annotation
-            attributes to be set upon shape initialization.
+            Optional arguments that allow corresponding Circle or
+            Annotation attributes to be set upon shape initialization.
         """
         collection = CircleCollection(self, points, **kwargs)
         return collection
