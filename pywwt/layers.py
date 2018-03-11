@@ -8,7 +8,10 @@ class ImageryLayers():
 
     def __init__(self, layer_list):
         self._layers = {}
-        self._spectrum = ['gamma', 'x', 'uv', 'visible', 'ir', 'micro', 'radio', 'other']
+        self._spectrum = ['gamma', 'x', 'uv', 'visible',
+                          'ir', 'micro', 'radio', 'other']
+        self.integers = ['zero', 'one', 'two', 'three', 'four',
+                         'five', 'six', 'seven', 'eight', 'nine']
         for band in self._spectrum:
             self._layers[band] = {}
         
@@ -70,10 +73,10 @@ class ImageryLayers():
         while short in diction[bandpass]:
             if suffix:
                 suffix += 1
-                short += str(suffix)
             else:
                 suffix = 1
-                short += str(suffix)
+                
+            short += str(suffix)
 
         diction[bandpass][short] = {}
         diction[bandpass][short]['full_name'] = full_layer
@@ -81,15 +84,23 @@ class ImageryLayers():
 
     def _shorten(self, string):
         # Unlocks tab completion by shortening a full layer's name
-        # (string) to a valid Python name based on its first word.
-        first = string[:re.search(r'[\W]', string).start()].lower()
+        # (string) to a valid Python name based on its first word.        
+        cut_left = re.search(r'^[_\W]+', string)
+        if cut_left is not None:
+            string = string[cut_left.end():]
 
-        # just for 2MASS; use num2words to standardize process?
-        check = re.search(r'2', first)
-        if check is not None:
-            first = first[:check.start()] + 'two' + first[check.start()+1:]
+        cut_right = re.search(r'[_\W]', string)
+        if cut_right is not None:
+            string = string[:cut_right.start()].lower()
+        
+        digit = re.search(r'^\d', string)
+        if digit is not None:
+            for i, num in enumerate(self.integers, 0):
+                if str(i) == digit.group(0):
+                    string = string[:digit.start()] + num + string[digit.end():]
+                    break
 
-        return first
+        return string
 
     def __dir__(self):
         return sorted(self._layers.keys())
