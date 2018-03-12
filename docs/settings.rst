@@ -101,8 +101,12 @@ and eras; you can list them using the widget's ``available_layers`` method::
      'WMAP ILC 5-Year Cosmic Microwave Background']
 
 In the Jupyter version, it is possible to add GUI controls that allow the 
-layers to be chosen from drop down menus. The controls also include a slider 
-that interactively changes the opacity of the foreground layer.
+layers to be chosen from drop down menus. To get these, type::
+
+    >>> wwt.layer_controls
+    
+The controls also include a slider that interactively changes the opacity of the 
+foreground layer, as shown in the following image.
 
 .. image:: images/layercontrols.png
 
