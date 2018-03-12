@@ -13,25 +13,34 @@ __all__ = ['Annotation', 'Circle', 'Polygon', 'Line']
 
 class Annotation(HasTraits):
     """
-    Base class for annotations which provides some settings common to all shapes.
+    Base class for annotations which provides settings common to all shapes.
     """
 
     shape = None
     """
-    To be specified in the individual shape classes
+    To be specified in the individual shape classes.
     """
 
-    label = Unicode('', help='Contains descriptive text for the annotation (:class:`str`)').tag(wwt='label')
-    opacity = Float(1, help='Specifies the opacity to be applied to the complete annotation (:class:`float`)').tag(wwt='opacity')
-    hover_label = Bool(False, help='Specifies whether to render the label if the mouse is hovering over the annotation (:class:`bool`)').tag(wwt='showHoverLabel')
-    tag = Unicode(help='Contains a string for use by the web client (:class:`str`)').tag(wwt='tag')
+    label = Unicode('', help='Contains descriptive text '
+                    'for the annotation (:class:`str`)').tag(wwt='label')
 
+    opacity = Float(1, help='Specifies the opacity to be applied to the '
+                    'complete annotation (:class:`int`)').tag(wwt='opacity')
+
+    hover_label = Bool(False, help='Specifies whether to render the label '
+                       'if the mouse is hovering over the '
+                       'annotation (:class:`bool`)').tag(wwt='showHoverLabel')
+
+    tag = Unicode(help='Contains a string for use by '
+                       'the web client (:class:`str`)').tag(wwt='tag')
+    
     def __init__(self, parent=None, **kwargs):
         self.parent = parent
         self.observe(self._on_trait_change, type='change')
         self.id = str(uuid.uuid4())
         if all(key in self.trait_names() for key in kwargs):
-            self.parent._send_msg(event='annotation_create', id=self.id, shape=self.shape)
+            self.parent._send_msg(event='annotation_create',
+                                  id=self.id, shape=self.shape)
             super(Annotation, self).__init__(**kwargs)
         else:
             raise KeyError('a key doesn\'t match any annotation trait name')
@@ -57,14 +66,19 @@ class Circle(Annotation):
 
     shape = 'circle'
     """
-    The name of the shape (:class:`str`)
+    The name of the shape (:class:`str`).
     """
 
-    fill = Bool(False, help='Whether or not the circle should be filled (:class:`bool`)').tag(wwt='fill')
-    fill_color = ColorWithOpacity('white', help='Assigns fill color for the circle (:class:`str` or `tuple`)').tag(wwt='fillColor')
-    line_color = Color('white', help='Assigns line color for the circle (:class:`str` or `tuple`)').tag(wwt='lineColor')
-    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
-    radius     = AstropyQuantity(80 * u.pixel, help='Sets the radius for the circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
+    fill = Bool(False, help='Whether or not the circle should be filled '
+                '(:class:`bool`)').tag(wwt='fill')
+    fill_color = ColorWithOpacity('white', help='Assigns fill color for the '
+                        'circle (:class:`str` or `tuple`)').tag(wwt='fillColor')
+    line_color = Color('white', help='Assigns line color for the circle '
+                       '(:class:`str` or `tuple`)').tag(wwt='lineColor')
+    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in '
+            'pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
+    radius = AstropyQuantity(80 * u.pixel, help='Sets the radius for the '
+                'circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -105,15 +119,11 @@ class Circle(Annotation):
     def _on_trait_change(self, changed):
         if changed['name'] == 'radius':
             if changed['new'].unit.is_equivalent(u.pixel):
-                self.parent._send_msg(event='annotation_set',
-                                      id=self.id,
-                                      setting='skyRelative',
-                                      value=False)
+                self.parent._send_msg(event='annotation_set', id=self.id,
+                                      setting='skyRelative', value=False)
             elif changed['new'].unit.is_equivalent(u.degree):
-                self.parent._send_msg(event='annotation_set',
-                                      id=self.id,
-                                      setting='skyRelative',
-                                      value=True)
+                self.parent._send_msg(event='annotation_set', id=self.id,
+                                      setting='skyRelative', value=True)
         if isinstance(changed['new'], u.Quantity):
             changed['new'] = changed['new'].value
 
@@ -127,13 +137,17 @@ class Polygon(Annotation):
 
     shape = 'polygon'
     """
-    The name of the shape (:class:`str`)
+    The name of the shape (:class:`str`).
     """
 
-    fill = Bool(False, help='Whether or not the polygon should be filled (:class:`bool`)').tag(wwt='fill')
-    fill_color = ColorWithOpacity('white', help='Assigns fill color for the polygon (:class:`str` or `tuple`)').tag(wwt='fillColor')
-    line_color = Color('white', help='Assigns line color for the polygon (:class:`str` or `tuple`)').tag(wwt='lineColor')
-    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
+    fill = Bool(False, help='Whether or not the polygon should be filled '
+                '(:class:`bool`)').tag(wwt='fill')
+    fill_color = ColorWithOpacity('white', help='Assigns fill color for the '
+                    'polygon (:class:`str` or `tuple`)').tag(wwt='fillColor')
+    line_color = Color('white', help='Assigns line color for the polygon '
+                       '(:class:`str` or `tuple`)').tag(wwt='lineColor')
+    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in '
+            'pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -182,11 +196,13 @@ class Line(Annotation):
 
     shape = 'line'
     """
-    The name of the shape (:class:`str`)
+    The name of the shape (:class:`str`).
     """
 
-    color = ColorWithOpacity('white', help='Assigns color for the line (:class:`str` or `tuple`)').tag(wwt='lineColor')
-    width = AstropyQuantity(1 * u.pixel, help='Assigns width for the line in pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
+    color = ColorWithOpacity('white', help='Assigns color for the line '
+                             '(:class:`str` or `tuple`)').tag(wwt='lineColor')
+    width = AstropyQuantity(1 * u.pixel, help='Assigns width for the line in '
+            'pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
 
     @validate('width')
     def _validate_width(self, proposal):
@@ -229,14 +245,17 @@ class Line(Annotation):
 
 class CircleCollection():
     """
-    A collection of circle annotations. Takes a set of several points (e.g. a column of SkyCoords from an astropy Table) to make generating several circles at once easier.
+    A collection of circle annotations. Takes a set of several points 
+    (e.g. a column of SkyCoords from an astropy Table) to make generating 
+    several circles at once easier.
     """
     
     def __init__(self, parent, points, **kwargs):
         if len(points) <= 1e4:
             self.points = points
         else:
-            raise IndexError('For performance reasons, only 10,000 annotations can be added at once for the time being.')
+            raise IndexError('For performance reasons, only 10,000 '
+                        'annotations can be added at once for the time being.')
         self.parent = parent
         self.collection = []
         self._gen_circles(self.points, **kwargs)

@@ -155,8 +155,8 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         dt : `~datetime.datetime` or `~astropy.time.Time`
-            The current time, either as a `datetime.datetime` object or an astropy
-            :class:`astropy.time.Time` object.
+            The current time, either as a `datetime.datetime` object or an
+            astropy :class:`astropy.time.Time` object.
         """
         if isinstance(dt, Time):
             dt = dt.datetime
@@ -324,7 +324,8 @@ class BaseWWTWidget(HasTraits):
     def _on_foreground_change(self, changed):
         self._send_msg(event='set_foreground_by_name', name=changed['new'])
         # Changing a layer resets the opacity, so we re-trigger the opacity setting
-        self._send_msg(event='set_foreground_opacity', value=self.foreground_opacity * 100)
+        self._send_msg(event='set_foreground_opacity',
+                       value=self.foreground_opacity * 100)
 
     @validate('foreground')
     def _validate_foreground(self, proposal):
@@ -339,7 +340,8 @@ class BaseWWTWidget(HasTraits):
     def _on_background_change(self, changed):
         self._send_msg(event='set_background_by_name', name=changed['new'])
         # Changing a layer resets the opacity, so we re-trigger the opacity setting
-        self._send_msg(event='set_foreground_opacity', value=self.foreground_opacity * 100)
+        self._send_msg(event='set_foreground_opacity',
+                       value=self.foreground_opacity * 100)
 
     @validate('background')
     def _validate_background(self, proposal):
@@ -352,7 +354,8 @@ class BaseWWTWidget(HasTraits):
 
     @observe('foreground_opacity')
     def _on_foreground_opacity_change(self, changed):
-        self._send_msg(event='set_foreground_opacity', value=changed['new'] * 100)
+        self._send_msg(event='set_foreground_opacity',
+                       value=changed['new'] * 100)
 
     @validate('foreground_opacity')
     def _validate_foreground_opacity(self, proposal):
