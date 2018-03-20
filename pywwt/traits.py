@@ -2,6 +2,7 @@ from traitlets import (TraitType, TraitError,
                        Any as OriginalAny,
                        Bool as OriginalBool,
                        Float as OriginalFloat,
+                       Int as OriginalInt,
                        Unicode as OriginalUnicode)
 from astropy import units as u
 
@@ -37,6 +38,13 @@ class Float(OriginalFloat):
         super(Float, self).__init__(*args, **kwargs)
         if self.help:
             self.__doc__ = self.help
+
+class Int(OriginalInt):
+
+    def __init__(self, *args, **kwargs):
+        super(Int, self).__init__(*args, **kwargs)
+        if self.help:
+            self.__doc__ = self.help            
 
 
 class Unicode(OriginalUnicode):

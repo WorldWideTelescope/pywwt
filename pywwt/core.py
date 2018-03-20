@@ -4,7 +4,8 @@ from astropy.time import Time
 from astropy.coordinates import SkyCoord
 
 # We import the trait classes from .traits since we do various customizations
-from .traits import Color, Bool, Float, Unicode, AstropyQuantity
+from .traits import (Color, ColorWithOpacity, Bool,
+                     Float, Int, Unicode, AstropyQuantity)
 
 from .annotation import Circle, Polygon, Line, CircleCollection
 from .imagery import get_imagery_layers
@@ -158,7 +159,7 @@ class BaseWWTWidget(HasTraits):
 
     galactic_mode = Bool(False, help='Whether the galactic plane should be horizontal in the viewer (:class:`bool`)').tag(wwt='galacticMode')
     local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (:class:`bool`)').tag(wwt='localHorizonMode')
-    location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location in local horizon mode(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
+    location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location in local horizon mode (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
     location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location in local horizon mode (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
     location_longitude = AstropyQuantity(122.133333 * u.deg, help='The longitude of the viewing location in local horizon mode (:class:`~astropy.units.Quantity`)').tag(wwt='locationLng')
 
@@ -182,6 +183,17 @@ class BaseWWTWidget(HasTraits):
             return proposal['value'].to(u.degree)
         else:
             raise TraitError('location_longitude not in angle units')
+
+    solar_system_mode = Bool(False, help='Whether to show the 3D solar system view (:class: `bool`)').tag(wwt='showSolarSystem')
+    ss_cosmos = Bool(False, help='Whether to show the solar system cosmos (:class: `bool`)').tag(wwt='solarSystemCosmos') # what does this mean?
+    ss_lighting = Bool(False, help='Whether to show the lighting effect of the Sun on the solar system (:class: `bool`)').tag(wwt='solarSystemLighting')
+    ss_milky_way = Bool(False, help='Whether to show the galactic bulge as the background to the solar system (:class: `bool`)').tag(wwt='solarSystemMilkyWay')
+    ss_multi_res = Bool(False, help='Whether to show the multi-resolution textures for planets where available (:class: `bool`)').tag(wwt='solarSystemMultiRes')
+    ss_orbits = Bool(False, help='Whether to show orbit paths when the solar system is displayed (:class: `bool`)').tag(wwt='solarSystemOrbits')
+    ss_orbit_color = ColorWithOpacity('darkgray', help='The color of the solar system orbit paths (:class:`str` or `tuple`)').tag(wwt='solarSystemOrbitColor')
+    ss_overlays = Bool(False, help='Whether to show solar system overlays (:class: `bool`)').tag(wwt='solarSystemOverlays') # what does this mean?
+    ss_scale = Int(1, help='Specifies how to scale the size of the Sun and its planets, with 1 as actual size (:class: `int`)').tag(wwt='solarSystemScale')
+    ss_stars = Bool(False, help='Whether to show solar system overlays (:class: `bool`)').tag(wwt='solarSystemOverlays')
 
     def load_image_collection(self, url):
         """
