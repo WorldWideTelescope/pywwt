@@ -71,21 +71,11 @@ Foreground/background layers
 
 Up to two image layers can be shown in the viewer. The viewer's ability to
 display multiple layers allows users to visually compare large all-sky surveys
-and smaller studies. As the example below shows, they also add a good amount of
-aesthetic value for tours or general use. The foreground and background layers
-can be set using the ``foreground`` and ``background`` attributes::
+and smaller studies. They can also add a good amount of aesthetic value for 
+tours or general use, and there are several methods of selecting them.
 
-    >>> wwt.background = 'Fermi LAT 8-year (gamma)'
-    >>> wwt.foreground = 'Planck Dust & Gas'
-    >>> wwt.foreground_opacity = .75
-
-The code above superimposes a dust and gas map on an all-sky gamma ray
-intensity survey and produces the following output:
-
-.. image:: images/dust_on_gamma.png
-
-You can currently choose from about 20 layers of different wavelengths, scopes,
-and eras; you can list them using the widget's ``available_layers`` method::
+About 20 layers of different wavelengths, scopes, and eras are currently 
+available. You can list them using the widget's ``available_layers`` method::
 
     >>> wwt.available_layers
     ['2MASS: Catalog (Synthetic, Near Infrared)', '2Mass: Imagery (Infrared)',
@@ -99,14 +89,37 @@ and eras; you can list them using the widget's ``available_layers`` method::
      'USNOB: US Naval Observatory B 1.0 (Synthetic, Optical)',
      'VLSS: VLA Low-frequency Sky Survey (Radio)', 'WISE All Sky (Infrared)',
      'WMAP ILC 5-Year Cosmic Microwave Background']
+     
+Using the ``foreground`` and ``background`` attributes, it is possible to 
+directly set layers using these full names. The opacity of the foreground layer 
+is also modifiable::
+
+    >>> wwt.background = 'Fermi LAT 8-year (gamma)'
+    >>> wwt.foreground = 'Planck Dust & Gas'
+    >>> wwt.foreground_opacity = .75
+
+For easier layer assignment, especially when you don't yet know which layer you 
+want, use the ``imagery`` attribute. It automatically sorts layers by 
+wavelength ('radio', 'uv', etc.), shortens their names, and allows for their 
+selection through tab completion. The resulting objects point back to the 
+original layer names, so they can be used in the same manner as above::
+
+    >>> wwt.background = wwt.imagery.gamma.fermi
+    >>> wwt.foreground = wwt.imagery.other.planck
+    >>> wwt.foreground_opacity = .75
+
+The preceding code superimposes a dust and gas map on an all-sky gamma ray
+intensity survey and produces the following output:
+
+.. image:: images/dust_on_gamma.png
 
 In the Jupyter version, it is possible to add GUI controls that allow the 
 layers to be chosen from drop down menus. To get these, type::
 
     >>> wwt.layer_controls
     
-The controls also include a slider that interactively changes the opacity of the 
-foreground layer, as shown in the following image.
+The controls also include a slider that interactively changes the opacity of 
+the foreground layer, as shown in the following image:
 
 .. image:: images/layercontrols.png
 
