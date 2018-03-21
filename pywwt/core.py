@@ -184,7 +184,7 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('location_longitude not in angle units')
 
-    solar_system_mode = Bool(False, help='Whether to show the 3D solar system view (:class: `bool`)').tag(wwt='showSolarSystem')
+    '''solar_system_mode = Bool(False, help='Whether to show the 3D solar system view (:class: `bool`)').tag(wwt='showSolarSystem')
     ss_cosmos = Bool(False, help='Whether to show the solar system cosmos (:class: `bool`)').tag(wwt='solarSystemCosmos') # what does this mean?
     ss_lighting = Bool(False, help='Whether to show the lighting effect of the Sun on the solar system (:class: `bool`)').tag(wwt='solarSystemLighting')
     ss_milky_way = Bool(False, help='Whether to show the galactic bulge as the background to the solar system (:class: `bool`)').tag(wwt='solarSystemMilkyWay')
@@ -193,8 +193,28 @@ class BaseWWTWidget(HasTraits):
     ss_orbit_color = ColorWithOpacity('darkgray', help='The color of the solar system orbit paths (:class:`str` or `tuple`)').tag(wwt='solarSystemOrbitColor')
     ss_overlays = Bool(False, help='Whether to show solar system overlays (:class: `bool`)').tag(wwt='solarSystemOverlays') # what does this mean?
     ss_scale = Int(1, help='Specifies how to scale the size of the Sun and its planets, with 1 as actual size (:class: `int`)').tag(wwt='solarSystemScale')
-    ss_stars = Bool(False, help='Whether to show solar system overlays (:class: `bool`)').tag(wwt='solarSystemOverlays')
+    ss_stars = Bool(False, help='Whether to show solar system overlays (:class: `bool`)').tag(wwt='solarSystemOverlays')'''
 
+    def set_view(self, mode):
+        """
+        Change the view mode. (...)
+
+        Parameters
+        ----------
+        mode : `str`
+            The desired mode. (default: 'sky')
+        """
+        available = ['sky', 'sun', 'mercury', 'venus', 'earth', 'moon', 'mars',
+                     'jupiter', 'saturn', 'uranus', 'neptune', 'pluto']
+        ss_mode = '3D Solar System View'
+        
+        if mode in available:
+            self._send_msg(event='set_viewer_mode', mode=mode)
+        elif mode == 'solar_system':
+            self._send_msg(event='set_viewer_mode', mode=ss_mode)
+        else:
+            raise ValueError('the given mode does not exist')
+        
     def load_image_collection(self, url):
         """
         Load a collection of layers for possible use in the viewer.
@@ -202,7 +222,7 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         url : `str`
-            The URL of the desired image collection).
+            The URL of the desired image collection.
         """
         self._available_layers.update(get_imagery_layers(url))
         self._send_msg(event='load_image_collection', url=url)
