@@ -8,6 +8,7 @@ from .traits import Color, Bool, Float, Unicode, AstropyQuantity
 
 from .annotation import Circle, Polygon, Line, CircleCollection
 from .imagery import get_imagery_layers
+from .layers import ImageryLayers
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -28,6 +29,7 @@ class BaseWWTWidget(HasTraits):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
+        self.imagery = ImageryLayers(self._available_layers)
 
         # NOTE: we deliberately don't force _on_trait_change to be called here
         # for the WWT settings, as the default values are hard-coded in wwt.html
@@ -309,12 +311,12 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         points : `~astropy.units.Quantity`
-            The desired points that will serve as the centers of the circles
-            that make up the collection. Requires at least two sets of
-            coordinates for initialization.
+            The desired points that will serve as the centers of the
+            circles that make up the collection. Requires at least two
+            sets of coordinates for initialization.
         kwargs
-            Optional arguments that allow corresponding Circle or Annotation
-            attributes to be set upon shape initialization.
+            Optional arguments that allow corresponding Circle or
+            Annotation attributes to be set upon shape initialization.
         """
         collection = CircleCollection(self, points, **kwargs)
         return collection
