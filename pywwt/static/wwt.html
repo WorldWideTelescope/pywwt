@@ -49,29 +49,41 @@
         wwt.setForegroundOpacity(80.0)
 
         wwt.settings.set_showConstellationBoundries(false)
-        wwt.settings.set_constellationBoundryColor('#0000ff')
-        wwt.settings.set_constellationFigureColor('#ff0000')
         wwt.settings.set_showConstellationFigures(false)
         wwt.settings.set_showConstellationSelection(false)
+        //wwt.settings.set_showConstellationPictures(false)//libpng gamma out of range
+        //wwt.settings.set_showConstellationLabels(false) // can't make xml request
+        wwt.settings.set_constellationBoundryColor('#0000ff')
+        wwt.settings.set_constellationFigureColor('#ff0000')
         wwt.settings.set_constellationSelectionColor('#ffff00')
         wwt.settings.set_showCrosshairs(true)
+        wwt.settings.set_crosshairsColor('white')
         wwt.settings.set_showEcliptic(false)
         wwt.settings.set_showGrid(false)
         wwt.settings.set_galacticMode(false)
+        //wwt.settings.set_showGalacticGrid(false)
+        //wwt.settings.set_showGalacticGridText(false) // can't make xml request
+        //wwt.settings.set_showEclipticGrid(false)
+        //wwt.settings.set_showEclipticGridText(false) // can't make xml request
+        //wwt.settings.set_showAltAzGrid(false)
+        //wwt.settings.set_showAltAzGridText(false) // can't make xml request
         wwt.settings.set_localHorizonMode(false)
         wwt.settings.set_locationAltitude(0.0)
         wwt.settings.set_locationLat(47.633)
         wwt.settings.set_locationLng(122.133333)
-        //wwt.settings.set_showSolarSystem(false)
-        //wwt.settings.set_solarSystemCosmos(false)
-        //wwt.settings.set_solarSystemLighting(false)
-        //wwt.settings.set_solarSystemMilkyWay(false)
-        //wwt.settings.set_solarSystemMultiRes(false)
-        //wwt.settings.set_solarSystemOrbits(true)
-        //wwt.settings.set_solarSystemOrbitColor('#a9a9a9')
-        //wwt.settings.set_solarSystemOverlays(false)
-        //wwt.settings.set_solarSystemScale(1)
-        //wwt.settings.set_solarSystemStars(false)
+        //wwt.settings.set_solarSystemCosmos(false) // in source, not sure if works
+        //wwt.settings.set_solarSystemLighting(false) // in source, doesn't work
+        wwt.settings.set_solarSystemMilkyWay(true) // in source, works
+        //wwt.settings.set_solarSystemMultiRes(false) // in source, not sure if works
+        wwt.settings.set_solarSystemOrbits(true) // in source, works
+        //wwt.settings.set_solarSystemOverlays(false) // in source, doesn't work
+        wwt.settings.set_solarSystemScale(1) // in source, works
+        //wwt.settings.set_solarSystemStars(false) // in source, doesn't work
+        //set_solarSystemTrack? // in source, not sure how to call
+        //wwt.settings.set_solarSystemCMB(true); // in source, doesn't work
+        //wwt.settings.set_solarSystemMinorPlanets(false) // in source, doesn't work
+        //wwt.settings.set_solarSystemMinorOrbits(false) // in source, doesn't work
+        wwt.settings.set_solarSystemPlanets(true) // in source, works
 
         wwt_ready = 1;
 
