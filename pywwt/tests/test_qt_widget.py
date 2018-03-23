@@ -73,12 +73,51 @@ class TestWWTWidget:
         wait_and_check_output(1, capsys)
 
 
+# The following is a template for a script that will allow developers who see
+# a failure in CI to re-create the files that were generated in the
+# continuous integration easily.
+REPRODUCABILITY_SCRIPT = """
+################################################################################
+# Export the images that were generated in the continuous integration for pywwt.
+# Just copy and paste all the code between here and '# End of script' into a
+# local file and run it with Python. You can then check if the differences
+# make sense, and if so, update the expected images.
+
+import base64
+
+expected = base64.b64decode('{expected}')
+
+with open('expected.png', 'wb') as f:
+    f.write(expected)
+
+actual = base64.b64decode('{actual}')
+
+with open('actual.png', 'wb') as f:
+    f.write(actual)
+
+# End of script
+################################################################################
+"""
+
+
 def assert_widget_image(tmpdir, widget, filename):
-    tmp_image = tmpdir.join(filename).strpath
-    widget.render(tmp_image)
+    actual = tmpdir.join(filename).strpath
+    widget.render(actual)
     framework = 'webengine' if WEBENGINE else 'webkit'
-    msg = compare_images(os.path.join(DATA, framework, filename), tmp_image, tol=1.5)
+    expected = os.path.join(DATA, framework, filename)
+    msg = compare_images(expected, actual, tol=1.5)
     if msg is not None:
+
+        from base64 import b64encode
+
+        with open(expected, 'rb') as f:
+            expected = b64encode(f.read()).decode()
+
+        with open(actual, 'rb') as f:
+            actual = b64encode(f.read()).decode()
+
+        print(REPRODUCABILITY_SCRIPT.format(actual=actual, expected=expected))
+
         pytest.fail(msg, pytrace=False)
 
 
