@@ -31,6 +31,9 @@ class BaseWWTWidget(HasTraits):
         self.observe(self._on_trait_change, type='change')
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
         self.imagery = ImageryLayers(self._available_layers)
+        self.current_mode = 'sky'
+        # self.current_mode can be 'sky', 'planet', 'solar_system',
+        # 'milky_way', 'universe', or 'panorama'
 
         # NOTE: we deliberately don't force _on_trait_change to be called here
         # for the WWT settings, as the default values are hard-coded in wwt.html
@@ -60,6 +63,7 @@ class BaseWWTWidget(HasTraits):
         raise NotImplementedError()
 
     # TODO: need to add all settings as traits
+    # check wwt.html for comments on settings that are disabled below
 
     constellation_boundary_color = Color('blue', help='The color of the constellation boundaries (`str` or `tuple`)').tag(wwt='constellationBoundryColor')
     constellation_figure_color = Color('red', help='The color of the constellation figure (`str` or `tuple`)').tag(wwt='constellationFigureColor')
@@ -69,9 +73,7 @@ class BaseWWTWidget(HasTraits):
     constellation_figures = Bool(False, help='Whether to show the constellations (`bool`)').tag(wwt='showConstellationFigures')
     constellation_selection = Bool(False, help='Whether to only show boundaries for the selected constellation (`bool`)').tag(wwt='showConstellationSelection')
     #constellation_pictures = Bool(False, help='Whether to show pictures of the constellations' mythological representations (`bool`)').tag(wwt='showConstellationPictures')
-    # ^ causes many errors to print while scrolling ^
     #constellation_labels = Bool(False, help='Whether to show labelss for constellations (`bool`)').tag(wwt='showConstellationLabels')
-    # ^ can't be loaded ^
 
     crosshairs = Bool(True, help='Whether to show crosshairs at the center of the field (`bool`)').tag(wwt='showCrosshairs')
     crosshairs_color = Color('white', help='The color of the crosshairs (`str` or `tuple`)').tag(wwt='crosshairsColor')
@@ -136,8 +138,8 @@ class BaseWWTWidget(HasTraits):
             The desired field of view.
 
         instant : `bool`, optional
-            Whether the view changes instantly or scrolls to the desired
-            location.
+            Whether the view changes instantly or smoothly scrolls to the
+            desired location.
         """
         coord_icrs = coord.icrs
         self._send_msg(event='center_on_coordinates',
@@ -195,19 +197,25 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('location_longitude not in angle units')
 
-    # alternate name for solar system mode?
-    ss_cmb = Bool(False, help='Whether to show the cosmic microwave background in solar system mode (`bool`)').tag(wwt='solarSystemCMB')
-    ss_cosmos = Bool(False, help='Whether to show the solar system cosmos (`bool`)').tag(wwt='solarSystemCosmos') # what does this mean?
-    ss_display = Bool(False, help='Whether to show the solar system while in solar system mode (`bool`)').tag(wwt='solarSystemOverlays')
-    ss_lighting = Bool(False, help='Whether to show the lighting effect of the Sun on the solar system (`bool`)').tag(wwt='solarSystemLighting')
+    ss_cmb = Bool(False, help='Whether to show the cosmic microwave background in solar system mode (`bool`)').tag(wwt='solarSystemCMB') ###
+    ss_cosmos = Bool(False, help='Whether to show data from the SDSS Cosmos data set (`bool`)').tag(wwt='solarSystemCosmos') ###
+    ss_display = Bool(False, help='Whether to show the solar system while in solar system mode (`bool`)').tag(wwt='solarSystemOverlays') ###
+    ss_lighting = Bool(False, help='Whether to show the lighting effect of the Sun on the solar system (`bool`)').tag(wwt='solarSystemLighting') ###
     ss_milky_way = Bool(False, help='Whether to show the galactic bulge in the background in solar system mode (`bool`)').tag(wwt='solarSystemMilkyWay')
-    ss_multi_res = Bool(False, help='Whether to show the multi-resolution textures for planets where available (`bool`)').tag(wwt='solarSystemMultiRes')
-    ss_minor_orbits = Bool(False, help='Whether to show the orbits of minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorOrbits')
-    ss_minor_planets = Bool(False, help='Whether to show minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorPlanets')
+    ss_multi_res = Bool(False, help='Whether to show the multi-resolution textures for planets where available (`bool`)').tag(wwt='solarSystemMultiRes') ###
+    ss_minor_orbits = Bool(False, help='Whether to show the orbits of minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorOrbits') ###
+    ss_minor_planets = Bool(False, help='Whether to show minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorPlanets') ###
     ss_orbits = Bool(False, help='Whether to show orbit paths when the solar system is displayed (`bool`)').tag(wwt='solarSystemOrbits')
     ss_objects = Bool(False, help='Whether to the objects of the solar system in solar system mode (`bool`)').tag(wwt='solarSystemPlanets')
-    ss_scale = Int(1, help='Specifies how to scale the size of the objects in solar system mode, with 1 as actual size (`int`)').tag(wwt='solarSystemScale')
-    ss_stars = Bool(False, help='Whether to show background stars in solar system mode (`bool`)').tag(wwt='solarSystemStars')
+    ss_scale = Int(1, help='Specifies how to scale objects\' size in solar system mode, with 1 as actual size and 100 as the maximum (`int`)').tag(wwt='solarSystemScale')
+    ss_stars = Bool(False, help='Whether to show background stars in solar system mode (`bool`)').tag(wwt='solarSystemStars') ###
+
+    @validate('ss_scale')
+    def _validate_scale(self, proposal):
+        if 1 <= proposal <= 100:
+            return proposal['value']
+        else:
+            raise ValueError('ss_scale takes integers from 1-100')
 
     def track_object(self, obj):
         """
@@ -230,13 +238,16 @@ class BaseWWTWidget(HasTraits):
 
         if obj in mappings:
             self._send_msg(event='track_object', code=mappings[obj])
+        else:
+            raise ValueError('the given object cannot be tracked')
 
     def set_view(self, mode):
         """
-        Change the view mode. Options include the default sky mode, a 3D 
-        universe mode that includes the solar system, individual views of
-        major solar system objects, and panoramas from lunar missions and 
-        NASA's Mars rovers.
+        Change the view mode. Options include the default sky mode, a 3D
+        universe mode with different viewing levels (the solar system, the
+        Milky Way, and the observed universe), individual views of major
+        solar system objects, and panoramas from lunar missions and NASA's
+        Mars rovers.
 
         Parameters
         ----------
@@ -248,14 +259,45 @@ class BaseWWTWidget(HasTraits):
                      'jupiter', 'callisto', 'europa', 'ganymede', 'io',
                      'saturn', 'uranus', 'neptune', 'pluto',
                      'panorama']
+        ss_levels = ['solar_system', 'milky_way', 'universe']
         ss_mode = '3D Solar System View'
         
         if mode in available:
             self._send_msg(event='set_viewer_mode', mode=mode)
-        elif mode == 'solar_system':
+            if mode == 'sky' or mode == 'panorama':
+                self.current_mode = mode
+            else:
+                self.current_mode = 'planet'
+        elif mode in ss_levels:
             self._send_msg(event='set_viewer_mode', mode=ss_mode)
+            self.current_mode = mode
         else:
             raise ValueError('the given mode does not exist')
+        
+        self.reset_view()
+
+    def reset_view(self):
+        """
+        Reset the current view mode's coordinates and field of view to 
+        their original states.
+        """
+        if self.current_mode == 'sky':
+            self.center_on_coordinates(SkyCoord(0., 0., unit=u.deg),
+                                      fov=60*u.deg, instant=False)
+        if self.current_mode == 'planet':
+            self.center_on_coordinates(SkyCoord(35.55, 11.43, unit=u.deg),
+                                      fov=40*u.deg, instant=False)
+        if self.current_mode == 'solar_system':
+            self.center_on_coordinates(SkyCoord(0., 0., unit=u.deg),
+                                      fov=50*u.deg, instant=False)
+        if self.current_mode == 'milky_way':
+            self.center_on_coordinates(SkyCoord(114.85, -29.52, unit=u.deg),
+                                      fov=6e9*u.deg, instant=False)
+        if self.current_mode == 'universe':
+            self.center_on_coordinates(SkyCoord(16.67, 37.72, unit=u.deg),
+                                      fov=1e14*u.deg, instant=False)
+        if self.current_mode == 'panorama':
+            pass
         
     def load_image_collection(self, url):
         """
