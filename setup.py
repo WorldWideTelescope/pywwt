@@ -102,7 +102,9 @@ setup_args = dict(
         'ipywidgets>=7.0.0',
         'ipyevents',
         'traitlets',
-        'qtpy'
+        'qtpy',
+        'flask',
+        'flask-cors'
     ],
     extras_require = {
         'test': [
