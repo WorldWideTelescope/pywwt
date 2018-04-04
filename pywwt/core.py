@@ -79,7 +79,7 @@ class BaseWWTWidget(HasTraits):
     crosshairs_color = Color('white', help='The color of the crosshairs (`str` or `tuple`)').tag(wwt='crosshairsColor')
     grid = Bool(False, help='Whether to show the equatorial grid (`bool`)').tag(wwt='showGrid')
     ecliptic = Bool(False, help='Whether to show the path of the ecliptic (`bool`)').tag(wwt='showEcliptic')
-    ecliptic_grid = Bool(False, help='Whether to show a grid relative to the ecliptic plane (`bool`)').tag(wwt='showEclipticGrid')  
+    ecliptic_grid = Bool(False, help='Whether to show a grid relative to the ecliptic plane (`bool`)').tag(wwt='showEclipticGrid')
 
     # TODO: need to add more methods here.
 
@@ -197,23 +197,23 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('location_longitude not in angle units')
 
-    ss_cmb = Bool(False, help='Whether to show the cosmic microwave background in solar system mode (`bool`)').tag(wwt='solarSystemCMB') ###
-    ss_cosmos = Bool(False, help='Whether to show data from the SDSS Cosmos data set (`bool`)').tag(wwt='solarSystemCosmos') ###
-    ss_display = Bool(False, help='Whether to show the solar system while in solar system mode (`bool`)').tag(wwt='solarSystemOverlays') ###
-    ss_lighting = Bool(False, help='Whether to show the lighting effect of the Sun on the solar system (`bool`)').tag(wwt='solarSystemLighting') ###
-    ss_milky_way = Bool(False, help='Whether to show the galactic bulge in the background in solar system mode (`bool`)').tag(wwt='solarSystemMilkyWay')
-    ss_multi_res = Bool(False, help='Whether to show the multi-resolution textures for planets where available (`bool`)').tag(wwt='solarSystemMultiRes') ###
-    ss_minor_orbits = Bool(False, help='Whether to show the orbits of minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorOrbits') ###
-    ss_minor_planets = Bool(False, help='Whether to show minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorPlanets') ###
-    ss_orbits = Bool(False, help='Whether to show orbit paths when the solar system is displayed (`bool`)').tag(wwt='solarSystemOrbits')
-    ss_objects = Bool(False, help='Whether to the objects of the solar system in solar system mode (`bool`)').tag(wwt='solarSystemPlanets')
+    #ss_cmb = Bool(False, help='Whether to show the cosmic microwave background in solar system mode (`bool`)').tag(wwt='solarSystemCMB') ###
+    #ss_cosmos = Bool(False, help='Whether to show data from the SDSS Cosmos data set (`bool`)').tag(wwt='solarSystemCosmos') ###
+    #ss_display = Bool(False, help='Whether to show the solar system while in solar system mode (`bool`)').tag(wwt='solarSystemOverlays') ###
+    #ss_lighting = Bool(False, help='Whether to show the lighting effect of the Sun on the solar system (`bool`)').tag(wwt='solarSystemLighting') ###
+    ss_milky_way = Bool(True, help='Whether to show the galactic bulge in the background in solar system mode (`bool`)').tag(wwt='solarSystemMilkyWay')
+    #ss_multi_res = Bool(False, help='Whether to show the multi-resolution textures for planets where available (`bool`)').tag(wwt='solarSystemMultiRes') ###
+    #ss_minor_orbits = Bool(False, help='Whether to show the orbits of minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorOrbits') ###
+    #ss_minor_planets = Bool(False, help='Whether to show minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorPlanets') ###
+    ss_orbits = Bool(True, help='Whether to show orbit paths when the solar system is displayed (`bool`)').tag(wwt='solarSystemOrbits')
+    ss_objects = Bool(True, help='Whether to the objects of the solar system in solar system mode (`bool`)').tag(wwt='solarSystemPlanets')
     ss_scale = Int(1, help='Specifies how to scale objects\' size in solar system mode, with 1 as actual size and 100 as the maximum (`int`)').tag(wwt='solarSystemScale')
-    ss_stars = Bool(False, help='Whether to show background stars in solar system mode (`bool`)').tag(wwt='solarSystemStars') ###
+    #ss_stars = Bool(False, help='Whether to show background stars in solar system mode (`bool`)').tag(wwt='solarSystemStars') ###
 
     @validate('ss_scale')
     def _validate_scale(self, proposal):
         if 1 <= proposal <= 100:
-            return proposal['value']
+            return str(proposal['value'])
         else:
             raise ValueError('ss_scale takes integers from 1-100')
 
