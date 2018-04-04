@@ -141,6 +141,14 @@ function wwt_apply_json_message(wwt, msg) {
       stc.set_now(date);
       break;
 
+    case 'set_viewer_mode':
+      wwt.setBackgroundImageByName(msg['mode']);
+      break;
+
+    case 'track_object':
+      wwtlib.WWTControl.singleton.renderContext.set_solarSystemTrack(msg['code']);
+      break;
+
   }
 
 }
