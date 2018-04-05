@@ -23,7 +23,7 @@ from setuptools import setup
 name = 'pywwt'
 
 # Ensure a valid python version
-ensure_python('>=3.3')
+ensure_python('>=2.7')
 
 # Get our version
 version = get_version(pjoin(name, '_version.py'))
