@@ -65,21 +65,44 @@ class BaseWWTWidget(HasTraits):
     # TODO: need to add all settings as traits
     # check wwt.html for comments on settings that are disabled below
 
-    constellation_boundary_color = Color('blue', help='The color of the constellation boundaries (`str` or `tuple`)').tag(wwt='constellationBoundryColor')
-    constellation_figure_color = Color('red', help='The color of the constellation figure (`str` or `tuple`)').tag(wwt='constellationFigureColor')
-    constellation_selection_color = Color('yellow', help='The color of the constellation selection (`str` or `tuple`)').tag(wwt='constellationSelectionColor')
+    constellation_boundary_color = Color('blue',
+                                         help='The color of the constellation '
+                                         'boundaries (`str` or '
+                                         '`tuple`)').tag(wwt='constellationBoundryColor')
+    constellation_figure_color = Color('red',
+                                       help='The color of the constellation '
+                                            'figure (`str` or '
+                                            '`tuple`)').tag(wwt='constellationFigureColor')
+    constellation_selection_color = Color('yellow',
+                                          help='The color of the constellation '
+                                               'selection (`str` or '
+                                               '`tuple`)').tag(wwt='constellationSelectionColor')
 
-    constellation_boundaries = Bool(False, help='Whether to show boundaries for the selected constellations (`bool`)').tag(wwt='showConstellationBoundries')
-    constellation_figures = Bool(False, help='Whether to show the constellations (`bool`)').tag(wwt='showConstellationFigures')
-    constellation_selection = Bool(False, help='Whether to only show boundaries for the selected constellation (`bool`)').tag(wwt='showConstellationSelection')
-    #constellation_pictures = Bool(False, help='Whether to show pictures of the constellations' mythological representations (`bool`)').tag(wwt='showConstellationPictures')
+    constellation_boundaries = Bool(False,
+                                    help='Whether to show boundaries for the '
+                                         'selected constellations '
+                                         '(`bool`)').tag(wwt='showConstellationBoundries')
+    constellation_figures = Bool(False,
+                                 help='Whether to show the constellations '
+                                      '(`bool`)').tag(wwt='showConstellationFigures')
+    constellation_selection = Bool(False,
+                                   help='Whether to only show boundaries for '
+                                        'the selected constellation '
+                                        '(`bool`)').tag(wwt='showConstellationSelection')
+    #constellation_pictures = Bool(False, help='Whether to show pictures of the constellations\' mythological representations (`bool`)').tag(wwt='showConstellationPictures')
     #constellation_labels = Bool(False, help='Whether to show labelss for constellations (`bool`)').tag(wwt='showConstellationLabels')
 
-    crosshairs = Bool(True, help='Whether to show crosshairs at the center of the field (`bool`)').tag(wwt='showCrosshairs')
-    crosshairs_color = Color('white', help='The color of the crosshairs (`str` or `tuple`)').tag(wwt='crosshairsColor')
-    grid = Bool(False, help='Whether to show the equatorial grid (`bool`)').tag(wwt='showGrid')
-    ecliptic = Bool(False, help='Whether to show the path of the ecliptic (`bool`)').tag(wwt='showEcliptic')
-    ecliptic_grid = Bool(False, help='Whether to show a grid relative to the ecliptic plane (`bool`)').tag(wwt='showEclipticGrid')
+    crosshairs = Bool(True, help='Whether to show crosshairs at the center of '
+                                 'the field (`bool`)').tag(wwt='showCrosshairs')
+    crosshairs_color = Color('white',
+                             help='The color of the crosshairs '
+                                  '(`str` or `tuple`)').tag(wwt='crosshairsColor')
+    grid = Bool(False, help='Whether to show the equatorial grid '
+                            '(`bool`)').tag(wwt='showGrid')
+    ecliptic = Bool(False, help='Whether to show the path of the ecliptic '
+                                '(`bool`)').tag(wwt='showEcliptic')
+    ecliptic_grid = Bool(False, help='Whether to show a grid relative to the '
+                                     'ecliptic plane (`bool`)').tag(wwt='showEclipticGrid')
 
     # TODO: need to add more methods here.
 
@@ -155,8 +178,8 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         dt : `~datetime.datetime` or `~astropy.time.Time`
-            The current time, either as a `datetime.datetime` object or an astropy
-            :class:`astropy.time.Time` object.
+            The current time, either as a `datetime.datetime` object or an
+            astropy :class:`astropy.time.Time` object.
         """
         if isinstance(dt, Time):
             dt = dt.datetime
@@ -165,16 +188,31 @@ class BaseWWTWidget(HasTraits):
                        hour=dt.hour, minute=dt.minute, second=dt.second,
                        millisecond=int(dt.microsecond / 1000.))
 
-    galactic_mode = Bool(False, help='Whether the galactic plane should be horizontal in the viewer (`bool`)').tag(wwt='galacticMode')
-    galactic_grid = Bool(False, help='Whether to show a grid relative to the galactic plane (`bool`)').tag(wwt='showGalacticGrid')
+    galactic_mode = Bool(False,
+                         help='Whether the galactic plane should be horizontal '
+                              'in the viewer (`bool`)').tag(wwt='galacticMode')
+    galactic_grid = Bool(False, help='Whether to show a grid relative to the '
+                                     'galactic plane (`bool`)').tag(wwt='showGalacticGrid')
     #galactic_text = Bool(False, help='Whether to show labels for the galactic grid\'s text (`bool`)').tag(wwt='showGalacticGridText')
-    alt_az_grid = Bool(False, help='Whether to show an altitude-azimuth grid (`bool`)').tag(wwt='showAltAzGrid')
+    alt_az_grid = Bool(False, help='Whether to show an altitude-azimuth grid '
+                                   '(`bool`)').tag(wwt='showAltAzGrid')
     #alt_az_text = Bool(False, help='Whether to show labels for the altitude-azimuth grid\'s text (`bool`)').tag(wwt='showAltAzGridText')
 
-    local_horizon_mode = Bool(False, help='Whether the view should be that of a local latitude, longitude, and altitude (`bool`)').tag(wwt='localHorizonMode')
-    location_altitude = AstropyQuantity(0 * u.m, help='The altitude of the viewing location in local horizon mode (:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
-    location_latitude = AstropyQuantity(47.633 * u.deg, help='The latitude of the viewing location in local horizon mode (:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
-    location_longitude = AstropyQuantity(122.133333 * u.deg, help='The longitude of the viewing location in local horizon mode (:class:`~astropy.units.Quantity`)').tag(wwt='locationLng')
+    local_horizon_mode = Bool(False, help='Whether the view should be that of '
+                                          'a local latitude, longitude, and '
+                                          'altitude (`bool`)').tag(wwt='localHorizonMode')
+    location_altitude = AstropyQuantity(0 * u.m,
+                                        help='The altitude of the viewing '
+                                             'location in local horizon mode '
+                                             '(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
+    location_latitude = AstropyQuantity(47.633 * u.deg,
+                                        help='The latitude of the viewing '
+                                              'location in local horizon mode '
+                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
+    location_longitude = AstropyQuantity(122.133333 * u.deg,
+                                         help='The longitude of the viewing '
+                                              'location in local horizon mode '
+                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLng')
 
     @validate('location_altitude')
     def _validate_altitude(self, proposal):
@@ -201,13 +239,22 @@ class BaseWWTWidget(HasTraits):
     #ss_cosmos = Bool(False, help='Whether to show data from the SDSS Cosmos data set (`bool`)').tag(wwt='solarSystemCosmos') ###
     #ss_display = Bool(False, help='Whether to show the solar system while in solar system mode (`bool`)').tag(wwt='solarSystemOverlays') ###
     #ss_lighting = Bool(False, help='Whether to show the lighting effect of the Sun on the solar system (`bool`)').tag(wwt='solarSystemLighting') ###
-    ss_milky_way = Bool(True, help='Whether to show the galactic bulge in the background in solar system mode (`bool`)').tag(wwt='solarSystemMilkyWay')
+    ss_milky_way = Bool(True,
+                        help='Whether to show the galactic bulge in the '
+                             'background in solar system mode '
+                             '(`bool`)').tag(wwt='solarSystemMilkyWay')
     #ss_multi_res = Bool(False, help='Whether to show the multi-resolution textures for planets where available (`bool`)').tag(wwt='solarSystemMultiRes') ###
     #ss_minor_orbits = Bool(False, help='Whether to show the orbits of minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorOrbits') ###
     #ss_minor_planets = Bool(False, help='Whether to show minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorPlanets') ###
-    ss_orbits = Bool(True, help='Whether to show orbit paths when the solar system is displayed (`bool`)').tag(wwt='solarSystemOrbits')
-    ss_objects = Bool(True, help='Whether to the objects of the solar system in solar system mode (`bool`)').tag(wwt='solarSystemPlanets')
-    ss_scale = Int(1, help='Specifies how to scale objects\' size in solar system mode, with 1 as actual size and 100 as the maximum (`int`)').tag(wwt='solarSystemScale')
+    ss_orbits = Bool(True,
+                     help='Whether to show orbit paths when the solar system '
+                          'is displayed (`bool`)').tag(wwt='solarSystemOrbits')
+    ss_objects = Bool(True,
+                      help='Whether to show the objects of the solar system in '
+                           'solar system mode (`bool`)').tag(wwt='solarSystemPlanets')
+    ss_scale = Int(1, help='Specifies how to scale objects\' size in solar '
+                           'system mode, with 1 as actual size and 100 as the '
+                           'maximum (`int`)').tag(wwt='solarSystemScale')
     #ss_stars = Bool(False, help='Whether to show background stars in solar system mode (`bool`)').tag(wwt='solarSystemStars') ###
 
     @validate('ss_scale')
@@ -318,13 +365,15 @@ class BaseWWTWidget(HasTraits):
         """
         return sorted(self._available_layers)
 
-    foreground = Unicode('Digitized Sky Survey (Color)', help='The layer to show in the foreground (`str`)')
+    foreground = Unicode('Digitized Sky Survey (Color)',
+                         help='The layer to show in the foreground (`str`)')
 
     @observe('foreground')
     def _on_foreground_change(self, changed):
         self._send_msg(event='set_foreground_by_name', name=changed['new'])
         # Changing a layer resets the opacity, so we re-trigger the opacity setting
-        self._send_msg(event='set_foreground_opacity', value=self.foreground_opacity * 100)
+        self._send_msg(event='set_foreground_opacity',
+                       value=self.foreground_opacity * 100)
 
     @validate('foreground')
     def _validate_foreground(self, proposal):
@@ -333,13 +382,15 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('foreground is not one of the available layers')
 
-    background = Unicode('Hydrogen Alpha Full Sky Map', help='The layer to show in the background (`str`)')
+    background = Unicode('Hydrogen Alpha Full Sky Map',
+                         help='The layer to show in the background (`str`)')
 
     @observe('background')
     def _on_background_change(self, changed):
         self._send_msg(event='set_background_by_name', name=changed['new'])
         # Changing a layer resets the opacity, so we re-trigger the opacity setting
-        self._send_msg(event='set_foreground_opacity', value=self.foreground_opacity * 100)
+        self._send_msg(event='set_foreground_opacity',
+                       value=self.foreground_opacity * 100)
 
     @validate('background')
     def _validate_background(self, proposal):
@@ -348,11 +399,13 @@ class BaseWWTWidget(HasTraits):
         else:
             raise TraitError('background is not one of the available layers')
 
-    foreground_opacity = Float(0.8, help='The opacity of the foreground layer ((`float`)')
+    foreground_opacity = Float(0.8, help='The opacity of the foreground layer '
+                                         '(`float`)')
 
     @observe('foreground_opacity')
     def _on_foreground_opacity_change(self, changed):
-        self._send_msg(event='set_foreground_opacity', value=changed['new'] * 100)
+        self._send_msg(event='set_foreground_opacity',
+                       value=changed['new'] * 100)
 
     @validate('foreground_opacity')
     def _validate_foreground_opacity(self, proposal):
