@@ -29,6 +29,8 @@ requirements:
     - beautifulsoup4
     - lxml
     - python-dateutil
+    - jupyterlab
+    - notebook
 
 test:
   imports:
