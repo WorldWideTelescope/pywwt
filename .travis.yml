@@ -2,9 +2,7 @@ language: c
 
 os:
   - linux
-  # For now the image tests don't work well on MacOS X, which requires WebEngine. The
-  # tests only pass if the Qt window is always in the foreground.
-  # - osx
+  - osx
 
 sudo: false
 
@@ -33,5 +31,8 @@ script:
   - jupyter labextension list
   - jupyter serverextension list
   - python .check_enabled.py
-  - py.test pywwt
+
+  # For now the image tests don't work well on MacOS X, which requires WebEngine. The
+  # tests only pass if the Qt window is always in the foreground.
+  - if [[ $TRAVIS_OS_NAME == linux ]]; then py.test pywwt; fi
   - cd docs ; make html linkcheck
