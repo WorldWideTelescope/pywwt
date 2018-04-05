@@ -22,17 +22,17 @@ class Annotation(HasTraits):
     """
 
     label = Unicode('', help='Contains descriptive text '
-                    'for the annotation (:class:`str`)').tag(wwt='label')
+                             'for the annotation (`str`)').tag(wwt='label')
 
     opacity = Float(1, help='Specifies the opacity to be applied to the '
-                    'complete annotation (:class:`int`)').tag(wwt='opacity')
+                            'complete annotation (`int`)').tag(wwt='opacity')
 
     hover_label = Bool(False, help='Specifies whether to render the label '
-                       'if the mouse is hovering over the '
-                       'annotation (:class:`bool`)').tag(wwt='showHoverLabel')
+                                   'if the mouse is hovering over the '
+                                   'annotation (`bool`)').tag(wwt='showHoverLabel')
 
-    tag = Unicode(help='Contains a string for use by '
-                       'the web client (:class:`str`)').tag(wwt='tag')
+    tag = Unicode(help='Contains a string for use by the web client '
+                       '(`str`)').tag(wwt='tag')
     
     def __init__(self, parent=None, **kwargs):
         self.parent = parent
@@ -70,15 +70,18 @@ class Circle(Annotation):
     """
 
     fill = Bool(False, help='Whether or not the circle should be filled '
-                '(:class:`bool`)').tag(wwt='fill')
-    fill_color = ColorWithOpacity('white', help='Assigns fill color for the '
-                        'circle (:class:`str` or `tuple`)').tag(wwt='fillColor')
+                            '(`bool`)').tag(wwt='fill')
+    fill_color = ColorWithOpacity(
+        'white', help='Assigns fill color for the circle '
+                      '(`str` or `tuple`)').tag(wwt='fillColor')
     line_color = Color('white', help='Assigns line color for the circle '
-                       '(:class:`str` or `tuple`)').tag(wwt='lineColor')
-    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in '
-            'pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
-    radius = AstropyQuantity(80 * u.pixel, help='Sets the radius for the '
-                'circle (:class:`~astropy.units.Quantity`)').tag(wwt='radius')
+                                     '(`str` or `tuple`)').tag(wwt='lineColor')
+    line_width = AstropyQuantity(
+        1*u.pixel, help='Assigns line width in pixels '
+                        '(:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
+    radius = AstropyQuantity(
+        80*u.pixel, help='Sets the radius for the circle '
+                         '(:class:`~astropy.units.Quantity`)').tag(wwt='radius')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -141,13 +144,15 @@ class Polygon(Annotation):
     """
 
     fill = Bool(False, help='Whether or not the polygon should be filled '
-                '(:class:`bool`)').tag(wwt='fill')
-    fill_color = ColorWithOpacity('white', help='Assigns fill color for the '
-                    'polygon (:class:`str` or `tuple`)').tag(wwt='fillColor')
+                            '(`bool`)').tag(wwt='fill')
+    fill_color = ColorWithOpacity(
+        'white', help='Assigns fill color for the polygon '
+                      '(`str` or `tuple`)').tag(wwt='fillColor')
     line_color = Color('white', help='Assigns line color for the polygon '
-                       '(:class:`str` or `tuple`)').tag(wwt='lineColor')
-    line_width = AstropyQuantity(1 * u.pixel, help='Assigns line width in '
-            'pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
+                                     '(`str` or `tuple`)').tag(wwt='lineColor')
+    line_width = AstropyQuantity(
+        1*u.pixel, help='Assigns line width in pixels '
+                        '(:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -199,10 +204,12 @@ class Line(Annotation):
     The name of the shape (:class:`str`).
     """
 
-    color = ColorWithOpacity('white', help='Assigns color for the line '
-                             '(:class:`str` or `tuple`)').tag(wwt='lineColor')
-    width = AstropyQuantity(1 * u.pixel, help='Assigns width for the line in '
-            'pixels (:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
+    color = ColorWithOpacity(
+        'white', help='Assigns color for the line '
+                      '(`str` or `tuple`)').tag(wwt='lineColor')
+    width = AstropyQuantity(
+        1*u.pixel, help='Assigns width for the line in pixels '
+                        '(:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
 
     @validate('width')
     def _validate_width(self, proposal):
