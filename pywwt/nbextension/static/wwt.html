@@ -6,7 +6,7 @@
     <meta charset="utf-8" http-equiv="X-UA-Compatible" content="chrome=1, IE=edge"/>
 
     <title>Simple WWT Web Client</title>
-    <script src="https://WorldWideTelescope.github.io/pywwt/wwtsdk.js"></script>
+    <script src="https://worldwidetelescope.github.io/pywwt/wwtsdk.js"></script>
     <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
     <script src="wwt_json_api.js"></script>
 
@@ -35,6 +35,7 @@
         // The true enables WebGL
         wwt = wwtlib.WWTControl.initControlParam("WWTCanvas", true);
         wwt.add_ready(wwtReady);
+        wwt.add_ready(keyScroll);
       }
 
       function wwtReady() {
@@ -89,8 +90,46 @@
 
       }
 
-    </script>
+      function keyScroll() {
+        i = 0;
+        var canvas = document.body.getElementsByTagName("canvas")[0];
+        var wheelUp = new WheelEvent("wheel", {deltaY: 53, delta: 53});
+        var wheelDown = new WheelEvent("wheel", {deltaY: -53, delta: -53});
 
+        window.addEventListener("keydown", function(event) {
+          if (event.code == "KeyZ") {
+            canvas.dispatchEvent(wheelUp);
+          }
+          else if (event.code == "KeyX")
+            canvas.dispatchEvent(wheelDown);
+        });
+
+        canvas.addEventListener("wheel", function(event) {
+          // wwtlib.WWTControl.singleton.renderContext.targetCamera.zoom
+          // gives you the current zoom level
+          // console.log(event);
+          var div = document.createElement("div");
+          div.style.height = "250px";
+          div.style.width = "250px";    
+          i += 1;
+          div.style.zIndex = i;
+          div.style.position = "absolute";
+          div.style.top = 0;
+          div.style.left = 0;
+          if (event.deltaY > 0) {
+            wwtlib.WWTControl.singleton.zoom(0.7);
+            div.style.background = "#ff0000";
+            document.body.appendChild(div);
+          }
+          else {
+            wwtlib.WWTControl.singleton.zoom(1.43);
+            div.style.background = "#0000ff";
+            document.body.appendChild(div);
+          }            
+        });
+      }
+
+    </script>
   </head>
 
   <body onload="initialize()" style="margin: 0; padding: 0">
