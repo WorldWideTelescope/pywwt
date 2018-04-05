@@ -5,7 +5,7 @@ from traitlets import TraitError
 
 from ..core import BaseWWTWidget, DEFAULT_SURVEYS_URL
 
-WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), '..', 'static', 'wwt.html')
+WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), '..', 'nbextension', 'static', 'wwt.html')
 
 with open(WWT_HTML_FILE) as f:
     WWT_HTML = f.read()

@@ -5,6 +5,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 from __future__ import print_function
+import os
 from glob import glob
 from os.path import join as pjoin
 
@@ -47,8 +48,10 @@ data_files_spec = [
     ('share/jupyter/nbextensions/pywwt',
         nb_path, '*.js*'),
     ('share/jupyter/lab/extensions', lab_path, '*.tgz'),
-    ('etc/jupyter/nbconfig/notebook.d' , HERE, 'pywwt.json')
-]
+    ('etc/jupyter/nbconfig/notebook.d' ,
+     os.path.join(HERE, 'jupyter.d', 'notebook.d'), 'pywwt.json'),
+    ('etc/jupyter/jupyter_notebook_config.d' ,
+     os.path.join(HERE, 'jupyter.d', 'jupyter_notebook_config.d'), 'pywwt.json')]
 
 
 cmdclass = create_cmdclass('jsdeps', package_data_spec=package_data_spec,

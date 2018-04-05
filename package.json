@@ -21,7 +21,7 @@
   },
   "scripts": {
     "build": "npm run build:nbextension",
-    "build:labextension": "cd pywwt && rimraf labextension && mkdirp labextension && cd labextension && npm pack ../..",
+    "build:labextension": "cd pywwt && rimraf labextension && mkdir labextension && cd labextension && npm pack ../..",
     "build:nbextension": "webpack",
     "build:all": "npm run build:labextension && npm run build:nbextension",
     "clean": "npm run clean:nbextension",

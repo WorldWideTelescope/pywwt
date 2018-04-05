@@ -25,8 +25,13 @@ env:
 install:
   - git clone git://github.com/astropy/ci-helpers.git
   - source ci-helpers/travis/setup_conda.sh
-  - pip install .
 
 script:
+  - python setup.py sdist
+  - cd dist; pip install *.tar.gz --verbose; cd ..
+  - jupyter nbextension list
+  - jupyter labextension list
+  - jupyter serverextension list
+  - python .check_enabled.py
   - py.test pywwt
   - cd docs ; make html linkcheck

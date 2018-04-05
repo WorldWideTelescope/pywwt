@@ -60,3 +60,4 @@ distribute-*.tar.gz
 .DS_Store
 
 js/node_modules
+node_modules
