@@ -35,6 +35,8 @@ requirements:
 test:
   imports:
     - pywwt
+  commands:
+    - python check_enabled.py
 
 about:
   home: http://github.com/WorldWideTelescope/pywwt
