@@ -13,6 +13,7 @@ if not PY2:
     from ipyevents import Event as DOMListener
 
 from .core import BaseWWTWidget
+from .jupyter_server import serve_file
 
 __all__ = ['WWTJupyterWidget']
 
@@ -48,6 +49,19 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
 
     def _send_msg(self, **kwargs):
         self.send(kwargs)
+
+    def load_fits_data(self, filename):
+        """
+        Load a FITS file.
+
+        Paramters
+        ---------
+        filename : str
+            The filename of the FITS file to display.
+        """
+        url = serve_file(filename, extension='.fits')
+        print("GET", url)
+        self._send_msg(event='load_fits', url=url)
 
     @property
     def layer_controls(self):
