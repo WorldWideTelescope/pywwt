@@ -16,9 +16,6 @@ class WWTFileHandler(IPythonHandler):
 
     def get(self, filename):
 
-        with open('/tmp/test.log', 'w') as f:
-            f.write(filename)
-
         filename = os.path.basename(filename)
 
         # First we check if this is a standard file in the static directory
@@ -31,8 +28,6 @@ class WWTFileHandler(IPythonHandler):
                 raise web.HTTPError(404)
             with open(CONFIG) as f:
                 config = json.load(f)
-            with open('/tmp/test2.log', 'w') as f:
-                f.write(str(repr(config['paths'])) + " " + str(filename in config['paths']))
             if filename in config['paths']:
                 path = config['paths'][filename]
             else:
@@ -45,9 +40,6 @@ class WWTFileHandler(IPythonHandler):
 
 
 def serve_file(path, extension=''):
-
-    with open('/tmp/in2.log', 'w') as f:
-        f.write(str(os.getppid()))
 
     if not os.path.exists(path):
         raise ValueError("Path {0} does not exist".format(path))
@@ -64,7 +56,7 @@ def serve_file(path, extension=''):
         with open(CONFIG, 'w') as f:
             json.dump(config, f)
 
-    return url_path_join(config['base_url'], hash)
+    return '/wwt/' + hash
 
 
 def load_jupyter_server_extension(nb_server_app):
@@ -72,14 +64,10 @@ def load_jupyter_server_extension(nb_server_app):
     web_app = nb_server_app.web_app
     host_pattern = '.*$'
 
-    # FIXME: the current solution relies on a single file, and won't support
-    # concurrent connections.
-
-    config = {}
-    config['paths'] = {}
-    config['base_url'] = url_path_join(web_app.settings['base_url'], '/wwt')
-    with open(CONFIG, 'w') as f:
-        json.dump(config, f)
+    if not os.path.exists(CONFIG):
+        config = {'paths': {}}
+        with open(CONFIG, 'w') as f:
+            json.dump(config, f)
 
     route_pattern = url_path_join(web_app.settings['base_url'], '/wwt/(.*)')
     web_app.add_handlers(host_pattern, [(route_pattern, WWTFileHandler)])
