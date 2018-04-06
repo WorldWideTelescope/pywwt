@@ -91,19 +91,40 @@
       }
 
       function keyScroll() {
+
+        // It seems that QWebEngine(Page) hasn't updated all of its JS standards,
+        // so we include deprecated methods to accomodate the Qt version in the
+        // try/catch clause and the first event listener.
+
         i = 0;
         var canvas = document.body.getElementsByTagName("canvas")[0];
-        var wheelUp = new WheelEvent("wheel", {deltaY: 53, delta: 53});
-        var wheelDown = new WheelEvent("wheel", {deltaY: -53, delta: -53});
+        
+        try {
+          var wheelUp = new WheelEvent("wheel", {deltaY: 53, delta: 53});
+          var wheelDn = new WheelEvent("wheel", {deltaY: -53, delta: -53});          
+        } catch (e) {
+          if (e instanceof TypeError) { // for Qt; initEvent is deprecated
+            var wheelUp = document.createEvent("CustomEvent");
+            wheelUp.initEvent("wheel", false, false, {deltaY: 53, delta: 53});
 
-        window.addEventListener("keydown", function(event) {
-          if (event.code == "KeyZ") {
-            canvas.dispatchEvent(wheelUp);
+            var wheelDn = document.createEvent("CustomEvent");
+            wheelDn.initEvent("wheel", false, false, {deltaY: -53, delta: -53});
+            
+            wheelUp.deltaY = 53;
+            wheelDn.deltaY = -53;
           }
-          else if (event.code == "KeyX")
-            canvas.dispatchEvent(wheelDown);
+          else
+            throw e;
+        }
+        
+        window.addEventListener("keydown", function(event) {
+          // must check keyCode for Qt; keyCode is deprecated
+          if (event.code == "KeyZ" || event.keyCode == 90)
+            canvas.dispatchEvent(wheelUp);
+          else if (event.code == "KeyX" || event.keyCode == 88)
+            canvas.dispatchEvent(wheelDn);
         });
-
+        
         canvas.addEventListener("wheel", function(event) {
           // wwtlib.WWTControl.singleton.renderContext.targetCamera.zoom
           // gives you the current zoom level
@@ -116,6 +137,7 @@
           div.style.position = "absolute";
           div.style.top = 0;
           div.style.left = 0;
+          div.innerHTML = event.deltaY;
           if (event.deltaY > 0) {
             wwtlib.WWTControl.singleton.zoom(0.7);
             div.style.background = "#ff0000";
