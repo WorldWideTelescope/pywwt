@@ -13,6 +13,7 @@ from qtpy import QtWidgets, QtGui, QtCore
 
 from .core import BaseWWTWidget
 from .logger import logger
+from .data_server import get_data_server
 
 __all__ = ['WWTQtClient']
 
@@ -96,7 +97,7 @@ class WWTQWebEnginePage(QWebEnginePage):
 
 class WWTQtWidget(QtWidgets.QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, url=None, parent=None):
 
         super(WWTQtWidget, self).__init__(parent=parent)
 
@@ -104,7 +105,7 @@ class WWTQtWidget(QtWidgets.QWidget):
         self.page = WWTQWebEnginePage()
         self.page.setView(self.web)
         self.web.setPage(self.page)
-        self.web.setHtml(WWT_HTML)
+        self.web.setUrl(QtCore.QUrl(url))
 
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -162,7 +163,11 @@ class WWTQtClient(BaseWWTWidget):
             if app is None:
                 app = QtWidgets.QApplication([''])
 
-        self.widget = WWTQtWidget()
+        self._data_server = get_data_server()
+        self._data_server.serve_file(WWT_JSON_FILE, real_name=True)
+        wwt_url = self._data_server.serve_file(WWT_HTML_FILE, real_name=True)
+
+        self.widget = WWTQtWidget(url=wwt_url)
         if size is not None:
             self.widget.resize(*size)
         self.widget.show()
@@ -185,6 +190,19 @@ class WWTQtClient(BaseWWTWidget):
     def _send_msg(self, async=True, **kwargs):
         msg = json.dumps(kwargs)
         return self.widget._run_js("wwt_apply_json_message(wwt, {0});".format(msg), async=async)
+
+    def load_fits_data(self, filename):
+        """
+        Load a FITS file.
+
+        Paramters
+        ---------
+        filename : str
+            The filename of the FITS file to display.
+        """
+        self._validate_fits_data(filename)
+        url = self._data_server.serve_file(filename, extension='.fits')
+        self._send_msg(event='load_fits', url=url)
 
     def render(self, filename):
         """

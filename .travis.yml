@@ -13,7 +13,7 @@ env:
   global:
     - SETUP_XVFB=True
     - CONDA_CHANNELS="astrofrog/label/dev"
-    - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest requests nomkl matplotlib beautifulsoup4 lxml jupyterlab"
+    - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest requests nomkl matplotlib beautifulsoup4 lxml jupyterlab flask flask-cors"
     - PIP_DEPENDENCIES="sphinx-automodapi numpydoc sphinx_rtd_theme pytest-faulthandler"
   matrix:
     - PYTHON_VERSION=2.7
