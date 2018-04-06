@@ -200,7 +200,8 @@ class WWTQtClient(BaseWWTWidget):
         filename : str
             The filename of the FITS file to display.
         """
-        url = self._data_server.serve_file(filename)
+        self._validate_fits_data(filename)
+        url = self._data_server.serve_file(filename, extension='.fits')
         self._send_msg(event='load_fits', url=url)
 
     def render(self, filename):

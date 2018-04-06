@@ -65,13 +65,13 @@ def get_data_server(verbose=True):
                     pass
             raise Exception("Could not start up data server")
 
-        def serve_file(self, filename, real_name=True):
+        def serve_file(self, filename, real_name=True, extension=''):
             with open(filename, 'rb') as f:
                 content = f.read()
             if real_name:
                 hash = os.path.basename(filename)
             else:
-                hash = md5(content).hexdigest() + '.fits'
+                hash = md5(content).hexdigest() + extension
             self._files[hash] = os.path.abspath(filename)
             return 'http://' + self.host + ':' + str(self.port) + '/data/' + hash
 

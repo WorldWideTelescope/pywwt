@@ -1,3 +1,4 @@
+import os
 from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
 from astropy.time import Time
@@ -266,8 +267,8 @@ class BaseWWTWidget(HasTraits):
 
     def track_object(self, obj):
         """
-        Focus the viewer on a particular object while in solar system mode. 
-        Available objects include the Sun, the planets, the Moon, Jupiter's 
+        Focus the viewer on a particular object while in solar system mode.
+        Available objects include the Sun, the planets, the Moon, Jupiter's
         Galilean moons, and Pluto.
 
         Parameters
@@ -308,7 +309,7 @@ class BaseWWTWidget(HasTraits):
                      'panorama']
         ss_levels = ['solar_system', 'milky_way', 'universe']
         ss_mode = '3D Solar System View'
-        
+
         if mode in available:
             self._send_msg(event='set_viewer_mode', mode=mode)
             if mode == 'sky' or mode == 'panorama':
@@ -320,12 +321,12 @@ class BaseWWTWidget(HasTraits):
             self.current_mode = mode
         else:
             raise ValueError('the given mode does not exist')
-        
+
         self.reset_view()
 
     def reset_view(self):
         """
-        Reset the current view mode's coordinates and field of view to 
+        Reset the current view mode's coordinates and field of view to
         their original states.
         """
         if self.current_mode == 'sky':
@@ -345,7 +346,7 @@ class BaseWWTWidget(HasTraits):
                                       fov=1e14*u.deg, instant=False)
         if self.current_mode == 'panorama':
             pass
-        
+
     def load_image_collection(self, url):
         """
         Load a collection of layers for possible use in the viewer.
@@ -489,3 +490,12 @@ class BaseWWTWidget(HasTraits):
         """
         collection = CircleCollection(self, points, **kwargs)
         return collection
+
+    def _validate_fits_data(self, filename):
+        if not os.path.exists(filename):
+            raise Exception("File {0} does not exist".format(filename))
+        from astropy.wcs import WCS
+        wcs = WCS(filename)
+        projection = wcs.celestial.wcs.ctype[0][4:]
+        if projection != '-TAN':
+            raise ValueError("Only -TAN FITS files are supported at the moment")

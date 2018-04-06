@@ -59,8 +59,8 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         filename : str
             The filename of the FITS file to display.
         """
+        self._validate_fits_data(filename)
         url = serve_file(filename, extension='.fits')
-        print("GET", url)
         self._send_msg(event='load_fits', url=url)
 
     @property
