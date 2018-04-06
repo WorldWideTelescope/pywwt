@@ -46,8 +46,8 @@ package_data_spec = {
 }
 
 data_files_spec = [
-    ('share/jupyter/nbextensions/pywwt',
-        nb_path, '*.js*'),
+    ('share/jupyter/nbextensions/pywwt', nb_path, '*.js*'),
+    ('share/jupyter/nbextensions/pywwt', nb_path, '*.html'),
     ('share/jupyter/lab/extensions', lab_path, '*.tgz'),
     ('etc/jupyter/nbconfig/notebook.d' ,
      os.path.join(HERE, 'jupyter.d', 'notebook.d'), 'pywwt.json'),
