@@ -119,36 +119,49 @@
         
         window.addEventListener("keydown", function(event) {
           // must check keyCode for Qt; keyCode is deprecated
-          if (event.code == "KeyZ" || event.keyCode == 90)
+          if (event.code == "KeyZ" || event.keyCode == 90) {
+            if (event.shiftKey) { wheelUp.shiftKey = 1; }
+            else                { wheelUp.shiftKey = 0; }
             canvas.dispatchEvent(wheelUp);
-          else if (event.code == "KeyX" || event.keyCode == 88)
+          }
+          else if (event.code == "KeyX" || event.keyCode == 88) {
+            if (event.shiftKey) { wheelDn.shiftKey = 1; }
+            else                { wheelDn.shiftKey = 0; }
             canvas.dispatchEvent(wheelDn);
+          }
         });
         
-        canvas.addEventListener("wheel", function(event) {
-          // wwtlib.WWTControl.singleton.renderContext.targetCamera.zoom
-          // gives you the current zoom level
-          // console.log(event);
-          var div = document.createElement("div");
-          div.style.height = "250px";
-          div.style.width = "250px";    
-          i += 1;
-          div.style.zIndex = i;
-          div.style.position = "absolute";
-          div.style.top = 0;
-          div.style.left = 0;
-          div.innerHTML = event.deltaY;
-          if (event.deltaY > 0) {
-            wwtlib.WWTControl.singleton.zoom(0.7);
-            div.style.background = "#ff0000";
-            document.body.appendChild(div);
+        // use self-executing anon. function to make zoom smooth
+        canvas.addEventListener("wheel", (function(proceed) {
+          return function(event) {
+            if (!proceed) { return false; }
+            proceed = false;
+            
+            if (event.shiftKey) { delay = 500; } // milliseconds
+            else                { delay = 100; }
+            setTimeout(function() {proceed = true}, delay);
+
+            var div = document.createElement("div");
+            div.style.height = "100px";
+            div.style.width = "100px";    
+            i += 1;
+            div.style.zIndex = i;
+            div.style.position = "absolute";
+            div.style.top = 0;
+            div.style.left = 0;
+            div.innerHTML = event.shiftKey;
+            if (event.deltaY > 0) {
+              wwtlib.WWTControl.singleton.zoom(0.7);
+              div.style.background = "#ff0000";
+              document.body.appendChild(div);
+            }
+            else {
+              wwtlib.WWTControl.singleton.zoom(1.43);
+              div.style.background = "#0000ff";
+              document.body.appendChild(div);
+            }
           }
-          else {
-            wwtlib.WWTControl.singleton.zoom(1.43);
-            div.style.background = "#0000ff";
-            document.body.appendChild(div);
-          }            
-        });
+        })(true));
       }
 
     </script>
