@@ -32,10 +32,10 @@ class BaseWWTWidget(HasTraits):
         self.observe(self._on_trait_change, type='change')
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
         self.imagery = ImageryLayers(self._available_layers)
+        self._available_modes = ['sky', 'planet', 'solar_system',
+                                 'milky_way', 'universe', 'panorama']
         self.current_mode = 'sky'
-        # self.current_mode can be 'sky', 'planet', 'solar_system',
-        # 'milky_way', 'universe', or 'panorama'
-
+        
         # NOTE: we deliberately don't force _on_trait_change to be called here
         # for the WWT settings, as the default values are hard-coded in wwt.html
         # This is done because there is otherwise no reliable way of making sure
@@ -347,6 +347,13 @@ class BaseWWTWidget(HasTraits):
         if self.current_mode == 'panorama':
             pass
 
+    @property
+    def available_modes(self):
+        """
+        A list of the modes that are currently available in the viewer.
+        """
+        return sorted(self._available_modes)        
+
     def load_image_collection(self, url):
         """
         Load a collection of layers for possible use in the viewer.
@@ -362,7 +369,7 @@ class BaseWWTWidget(HasTraits):
     @property
     def available_layers(self):
         """
-        A list of currently available layers for the viewer
+        A list of the layers that are currently available in the viewer.
         """
         return sorted(self._available_layers)
 
