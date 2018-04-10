@@ -101,17 +101,49 @@
         
         try {
           var wheelUp = new WheelEvent("wheel", {deltaY: 53, delta: 53});
-          var wheelDn = new WheelEvent("wheel", {deltaY: -53, delta: -53});          
+          var wheelDn = new WheelEvent("wheel", {deltaY: -53, delta: -53});
+
+          // using custom instead of mousemove so event fires more selectively
+          var mouseUp = new CustomEvent("move");
+          mouseRg.movementX = 0; mouseRg.movementY = 53;
+
+          var mouseLf = new CustomEvent("move");
+          mouseRg.movementX = 53; mouseRg.movementY = 0;
+
+          var mouseDn = new CustomEvent("move");
+          mouseRg.movementX = -53; mouseRg.movementY = -53;
+
+          var mouseRg = new CustomEvent("move");
+          mouseRg.movementX = -53; mouseRg.movementY = 0;
+
+          //var mouseRg = new MouseEvent("mousemove", {movementX: -53, movementY: 0});
         } catch (e) {
           if (e instanceof TypeError) { // for Qt; initEvent is deprecated
             var wheelUp = document.createEvent("CustomEvent");
-            wheelUp.initEvent("wheel", false, false, {deltaY: 53, delta: 53});
+            wheelUp.initEvent("wheel", false, false);
 
             var wheelDn = document.createEvent("CustomEvent");
-            wheelDn.initEvent("wheel", false, false, {deltaY: -53, delta: -53});
+            wheelDn.initEvent("wheel", false, false);
             
             wheelUp.deltaY = 53;
             wheelDn.deltaY = -53;
+
+            var mouseUp = document.createEvent("CustomEvent");
+            mouseUp.initCustomEvent("move", false, false);
+
+            var mouseLf = document.createEvent("CustomEvent");
+            mouseLf.initCustomEvent("move", false, false);
+
+            var mouseDn = document.createEvent("CustomEvent");
+            mouseDn.initCustomEvent("move", false, false);
+
+            var mouseRg = document.createEvent("CustomEvent");
+            mouseRg.initCustomEvent("move", false, false);
+
+            mouseUp.movementX = 0; mouseUp.movementY = 53;
+            mouseLf.movementX = 53; mouseLf.movementY = 0;
+            mouseDn.movementX = 0; mouseDn.movementY = -53;
+            mouseRg.movementX = -53; mouseRg.movementY = 0;
           }
           else
             throw e;
@@ -129,9 +161,47 @@
             else                { wheelDn.shiftKey = 0; }
             canvas.dispatchEvent(wheelDn);
           }
+// MIGHT WANT TO USE ARROW KEYS INSTEAD (ctrl+k, l etc. are browser shortcuts)
+          else if (event.code == "KeyI" || event.keyCode == 73) {
+            if (event.ctrlKey) { mouseUp.ctrlKey = 1; }
+            else               { mouseUp.ctrlKey = 0; }
+            canvas.dispatchEvent(mouseUp);
+          }
+          else if (event.code == "KeyJ" || event.keyCode == 74) {
+            if (event.ctrlKey) { mouseLf.ctrlKey = 1; }
+            else               { mouseLf.ctrlKey = 0; }
+            canvas.dispatchEvent(mouseLf);
+          }
+          else if (event.code == "KeyK" || event.keyCode == 75) {
+            if (event.ctrlKey) { mouseDn.ctrlKey = 1; }
+            else               { mouseDn.ctrlKey = 0; }
+            canvas.dispatchEvent(mouseDn);
+          }
+          else if (event.code == "KeyL" || event.keyCode == 76) {
+            if (event.ctrlKey) { mouseRg.ctrlKey = 1; }
+            else               { mouseRg.ctrlKey = 0; }
+            canvas.dispatchEvent(mouseRg);
+          }
         });
         
-        // use self-executing anon. function to make zoom smooth
+        canvas.addEventListener("move", (function(proceed) {
+          return function(event) {
+            //console.log(event);
+            if (!proceed) { return false; }
+            proceed = false;
+            
+            // need ctrl option as well
+            if (event.shiftKey) { delay = 500; }
+            else                { delay = 100; }
+            setTimeout(function() {proceed = true}, delay);
+            if (event.ctrlKey)
+              wwtlib.WWTControl.singleton._tilt(event.movementX, event.movementY);
+            else
+              wwtlib.WWTControl.singleton.move(event.movementX, event.movementY);
+          }
+        })(true));
+        
+        // use self-executing anonymous function to make zoom smooth
         canvas.addEventListener("wheel", (function(proceed) {
           return function(event) {
             if (!proceed) { return false; }
@@ -141,25 +211,8 @@
             else                { delay = 100; }
             setTimeout(function() {proceed = true}, delay);
 
-            var div = document.createElement("div");
-            div.style.height = "100px";
-            div.style.width = "100px";    
-            i += 1;
-            div.style.zIndex = i;
-            div.style.position = "absolute";
-            div.style.top = 0;
-            div.style.left = 0;
-            div.innerHTML = event.shiftKey;
-            if (event.deltaY > 0) {
-              wwtlib.WWTControl.singleton.zoom(0.7);
-              div.style.background = "#ff0000";
-              document.body.appendChild(div);
-            }
-            else {
-              wwtlib.WWTControl.singleton.zoom(1.43);
-              div.style.background = "#0000ff";
-              document.body.appendChild(div);
-            }
+            if (event.deltaY < 0) { wwtlib.WWTControl.singleton.zoom(1.43); }
+            else                  { wwtlib.WWTControl.singleton.zoom(0.7); }
           }
         })(true));
       }
