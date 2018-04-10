@@ -1693,7 +1693,9 @@ window.wwtlib = function(){
     gaussian: 0, 
     point: 1, 
     circle: 2, 
-    pushPin: 3
+    square: 3, 
+    pushPin: 4, 
+    custom: 5
   };
 
 
@@ -2681,9 +2683,6 @@ window.wwtlib = function(){
   };
   CT.dmS2Dp = function(Degrees, Minutes, Seconds, bPositive) {
     if (!bPositive) {
-      console.assert(Degrees >= 0);
-      console.assert(Minutes >= 0);
-      console.assert(Seconds >= 0);
     }
     if (bPositive) {
       return Degrees + Minutes / 60 + Seconds / 3600;
@@ -2780,7 +2779,6 @@ window.wwtlib = function(){
     return JD - DT.dateToJD(Year, 1, 1, bGregorianCalendar) + 1;
   };
   DT.daysInMonthForMonth = function(Month, bLeap) {
-    console.assert(Month >= 1 && Month <= 12);
     var MonthLength = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0 ];
     if (bLeap) {
       MonthLength[1]++;
@@ -2945,7 +2943,6 @@ window.wwtlib = function(){
     }
     else if (y < 1998) {
       var Index = ss.truncate(((y - 1620) / 2));
-      console.assert(Index < GFX.deltaTTable.length);
       y = y / 2 - Index - 810;
       Delta = (GFX.deltaTTable[Index] + (GFX.deltaTTable[Index + 1] - GFX.deltaTTable[Index]) * y);
     }
@@ -3902,7 +3899,6 @@ window.wwtlib = function(){
           R = CAAPluto.radiusVector(JD0);
           break;
         default:
-          console.assert(false);
           break;
       }
       if (!bFirstRecalc) {
@@ -5359,7 +5355,6 @@ window.wwtlib = function(){
     var A3 = CT.m360(313.45 + 481266.484 * T);
     A3 = CT.d2R(A3);
     var nLCoefficients = GFX.g_MoonCoefficients1.length;
-    console.assert(GFX.g_MoonCoefficients2.length === nLCoefficients);
     var SigmaL = 0;
     for (var i = 0; i < nLCoefficients; i++) {
       var ThisSigma = GFX.g_MoonCoefficients2[i].a * Math.sin(GFX.g_MoonCoefficients1[i].d * D + GFX.g_MoonCoefficients1[i].m * M + GFX.g_MoonCoefficients1[i].mdash * Mdash + GFX.g_MoonCoefficients1[i].f * F);
@@ -5394,7 +5389,6 @@ window.wwtlib = function(){
     var A3 = CT.m360(313.45 + 481266.484 * T);
     A3 = CT.d2R(A3);
     var nBCoefficients = GFX.g_MoonCoefficients3.length;
-    console.assert(GFX.g_MoonCoefficients4.length === nBCoefficients);
     var SigmaB = 0;
     for (var i = 0; i < nBCoefficients; i++) {
       var ThisSigma = GFX.g_MoonCoefficients4[i] * Math.sin(GFX.g_MoonCoefficients3[i].d * D + GFX.g_MoonCoefficients3[i].m * M + GFX.g_MoonCoefficients3[i].mdash * Mdash + GFX.g_MoonCoefficients3[i].f * F);
@@ -5431,7 +5425,6 @@ window.wwtlib = function(){
     var A3 = CT.m360(313.45 + 481266.484 * T);
     A3 = CT.d2R(A3);
     var nRCoefficients = GFX.g_MoonCoefficients1.length;
-    console.assert(GFX.g_MoonCoefficients2.length === nRCoefficients);
     var SigmaR = 0;
     for (var i = 0; i < nRCoefficients; i++) {
       var ThisSigma = GFX.g_MoonCoefficients2[i].b * Math.cos(GFX.g_MoonCoefficients1[i].d * D + GFX.g_MoonCoefficients1[i].m * M + GFX.g_MoonCoefficients1[i].mdash * Mdash + GFX.g_MoonCoefficients1[i].f * F);
@@ -5748,7 +5741,6 @@ window.wwtlib = function(){
       JD += DeltaJD;
     }
     else {
-      console.assert(false);
     }
     var DeltaJD2 = 0.000325 * Math.sin(A1) + 0.000165 * Math.sin(A2) + 0.000164 * Math.sin(A3) + 0.000126 * Math.sin(A4) + 0.00011 * Math.sin(A5) + 6.2E-05 * Math.sin(A6) + 6E-05 * Math.sin(A7) + 5.6E-05 * Math.sin(A8) + 4.7E-05 * Math.sin(A9) + 4.2E-05 * Math.sin(A10) + 4E-05 * Math.sin(A11) + 3.7E-05 * Math.sin(A12) + 3.5E-05 * Math.sin(A13) + 2.3E-05 * Math.sin(A14);
     JD += DeltaJD2;
@@ -8267,7 +8259,7 @@ window.wwtlib = function(){
           this._starProfile.addEventListener('load', function(e) {
             $this._imageReady = true;
           }, false);
-          this._starProfile.src = '/images/starProfile.png';
+          this._starProfile.src = '/webclient/images/StarProfileAlpha.png';
           this._worldList = new Array(this._points.length);
           this._transformedList = new Array(this._points.length);
           var index = 0;
@@ -8288,7 +8280,7 @@ window.wwtlib = function(){
         else {
           if (!this._pointBuffers.length) {
             if (PointList.starTexture == null) {
-              PointList.starTexture = Planets.loadPlanetTexture('/images/starProfile.png');
+              PointList.starTexture = Planets.loadPlanetTexture('/webclient/images/StarProfileAlpha.png');
             }
             var count = this._points.length;
             var pointBuffer = null;
@@ -8361,20 +8353,28 @@ window.wwtlib = function(){
         renderContext.device.restore();
       }
       else {
+        var zero = new Vector3d();
+        var matInv = Matrix3d.multiplyMatrix(renderContext.get_world(), renderContext.get_view());
+        matInv.invert();
+        var cam = Vector3d._transformCoordinate(zero, matInv);
         var $enum2 = ss.enumerate(this._pointBuffers);
         while ($enum2.moveNext()) {
           var pointBuffer = $enum2.current;
-          TimeSeriesPointSpriteShader.use(renderContext, pointBuffer.vertexBuffer, PointList.starTexture.texture2d, Color.fromArgb(255 * opacity, 255, 255, 255), this.depthBuffered, this.jNow, this.decay, renderContext.cameraPosition, (this.scale * (renderContext.height / 960)), this.minSize);
+          TimeSeriesPointSpriteShader.use(renderContext, pointBuffer.vertexBuffer, PointList.starTexture.texture2d, Color.fromArgb(255 * opacity, 255, 255, 255), this.depthBuffered, this.jNow, (this.timeSeries) ? this.decay : 0, cam, (this.scale * (renderContext.height / 960)), this.minSize, this.showFarSide, this.sky);
           renderContext.gl.drawArrays(0, 0, pointBuffer.count);
         }
       }
     },
-    _drawTextured: function(renderContext, texture, opacity) {
+    drawTextured: function(renderContext, texture, opacity) {
       this._initBuffer(renderContext);
+      var zero = new Vector3d();
+      var matInv = Matrix3d.multiplyMatrix(renderContext.get_world(), renderContext.get_view());
+      matInv.invert();
+      var cam = Vector3d._transformCoordinate(zero, matInv);
       var $enum1 = ss.enumerate(this._pointBuffers);
       while ($enum1.moveNext()) {
         var pointBuffer = $enum1.current;
-        TimeSeriesPointSpriteShader.use(renderContext, pointBuffer.vertexBuffer, texture.texture2d, Color.fromArgb(255 * opacity, 255, 255, 255), this.depthBuffered, this.jNow, this.decay, renderContext.cameraPosition, (this.scale * (renderContext.height / 960)), this.minSize);
+        TimeSeriesPointSpriteShader.use(renderContext, pointBuffer.vertexBuffer, texture, Color.fromArgb(255 * opacity, 255, 255, 255), this.depthBuffered, this.jNow, this.decay, cam, (this.scale * (renderContext.height / 960)), this.minSize, this.showFarSide, this.sky);
         renderContext.gl.drawArrays(0, 0, pointBuffer.count);
       }
     }
@@ -8442,7 +8442,7 @@ window.wwtlib = function(){
   }
   SimpleLineShader.init = function(renderContext) {
     var gl = renderContext.gl;
-    var fragShaderText = ' precision highp float;                                                              \n' + ' uniform vec4 lineColor;                                                               \n' + '                                                                                       \n' + '   void main(void) {                                                                   \n' + '   gl_FragColor = lineColor;         \n' + '   }                                                                                   \n';
+    var fragShaderText = '   precision highp float;                                                          \n' + '   uniform vec4 lineColor;                                                         \n' + '                                                                                   \n' + '   void main(void) {                                                               \n' + '       gl_FragColor = lineColor;                                                   \n' + '   }                                                                               \n';
     var vertexShaderText = '     attribute vec3 aVertexPosition;                                              \n' + '                                                                                  \n' + '     uniform mat4 uMVMatrix;                                                      \n' + '     uniform mat4 uPMatrix;                                                       \n' + '                                                                                  \n' + '                                                                                  \n' + '                                                                                  \n' + '     void main(void) {                                                            \n' + '         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);         \n' + '     }                                                                            \n' + '                                                                                  \n';
     SimpleLineShader._frag = gl.createShader(35632);
     gl.shaderSource(SimpleLineShader._frag, fragShaderText);
@@ -8507,8 +8507,8 @@ window.wwtlib = function(){
   }
   OrbitLineShader.init = function(renderContext) {
     var gl = renderContext.gl;
-    var fragShaderText = ' precision highp float;                                                              \n' + ' uniform vec4 lineColor;                                                               \n' + '    varying lowp vec4 vColor;                                                           \n' + '                                                                                       \n' + '   void main(void) {                                                                   \n' + '   gl_FragColor = lineColor * vColor;                                                   \n' + '   }                                                                                   \n';
-    var vertexShaderText = '     attribute vec3 aVertexPosition;                                              \n' + '     attribute vec4 aVertexColor;                                                 \n' + '                                                                                  \n' + '     uniform mat4 uMVMatrix;                                                      \n' + '     uniform mat4 uPMatrix;                                                       \n' + '     varying lowp vec4 vColor;                                                    \n' + '                                                                                  \n' + '                                                                                  \n' + '                                                                                  \n' + '     void main(void) {                                                            \n' + '         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);         \n' + '         vColor = aVertexColor;                                                    \n' + '     }                                                                            \n' + '                                                                                  \n';
+    var fragShaderText = '    precision highp float;                                                        \n' + '    uniform vec4 lineColor;                                                       \n' + '    varying lowp vec4 vColor;                                                     \n' + '                                                                                  \n' + '    void main(void) {                                                             \n' + '        gl_FragColor = lineColor * vColor;                                        \n' + '    }                                                                             \n';
+    var vertexShaderText = '     attribute vec3 aVertexPosition;                                              \n' + '     attribute vec4 aVertexColor;                                                 \n' + '                                                                                  \n' + '     uniform mat4 uMVMatrix;                                                      \n' + '     uniform mat4 uPMatrix;                                                       \n' + '     varying lowp vec4 vColor;                                                    \n' + '                                                                                  \n' + '                                                                                  \n' + '                                                                                  \n' + '     void main(void) {                                                            \n' + '         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);         \n' + '         vColor = aVertexColor;                                                   \n' + '     }                                                                            \n' + '                                                                                  \n';
     OrbitLineShader._frag = gl.createShader(35632);
     gl.shaderSource(OrbitLineShader._frag, fragShaderText);
     gl.compileShader(OrbitLineShader._frag);
@@ -8576,7 +8576,7 @@ window.wwtlib = function(){
   LineShaderNormalDates.init = function(renderContext) {
     var gl = renderContext.gl;
     var fragShaderText = '    precision highp float;                                                              \n' + '    uniform vec4 lineColor;                                                             \n' + '    varying lowp vec4 vColor;                                                           \n' + '    void main(void)                                                                     \n' + '    {                                                                                   \n' + '        gl_FragColor = lineColor * vColor;                                              \n' + '    }                                                                                   \n';
-    var vertexShaderText = '    attribute vec3 aVertexPosition;                                                     \n' + '    attribute vec4 aVertexColor;                                                        \n' + '    attribute vec2 aTime;                                                               \n' + '    uniform mat4 uMVMatrix;                                                             \n' + '    uniform mat4 uPMatrix;                                                              \n' + '    uniform float jNow;                                                                 \n' + '    uniform float decay;                                                                \n' + '                                                                                        \n' + '    varying lowp vec4 vColor;                                                           \n' + '                                                                                        \n' + '    void main(void)                                                                     \n' + '    {                                                                                   \n' + '        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);                \n' + '        float dAlpha = 1.0;                                                             \n' + '        if ( decay > 0.0)                                                               \n' + '        {                                                                               \n' + '             dAlpha = 1.0 - ((jNow - aTime.y) / decay);                                 \n ' + '             if (dAlpha > 1.0 )                                                         \n' + '             {                                                                          \n' + '                  dAlpha = 1.0;                                                         \n' + '             }                                                                          \n' + '        }                                                                               \n' + '     if (jNow < aTime.x && decay > 0.0)                                                 \n' + '     {                                                                                  \n' + '         vColor = vec4(1, 1, 1, 1);                                                    \n' + '     }                                                                                  \n' + '     else                                                                               \n' + '     {                                                                                  \n' + '        vColor = vec4(aVertexColor.r, aVertexColor.g, aVertexColor.b, dAlpha * aVertexColor.a);          \n' + '     }                                                                                  \n' + '    }                                                                                   \n' + '                                                                                        \n';
+    var vertexShaderText = '    attribute vec3 aVertexPosition;                                                     \n' + '    attribute vec4 aVertexColor;                                                        \n' + '    attribute vec2 aTime;                                                               \n' + '    uniform mat4 uMVMatrix;                                                             \n' + '    uniform mat4 uPMatrix;                                                              \n' + '    uniform float jNow;                                                                 \n' + '    uniform float decay;                                                                \n' + '                                                                                        \n' + '    varying lowp vec4 vColor;                                                           \n' + '                                                                                        \n' + '    void main(void)                                                                     \n' + '    {                                                                                   \n' + '        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);                \n' + '        float dAlpha = 1.0;                                                             \n' + '        if ( decay > 0.0)                                                               \n' + '        {                                                                               \n' + '             dAlpha = 1.0 - ((jNow - aTime.y) / decay);                                 \n ' + '             if (dAlpha > 1.0 )                                                         \n' + '             {                                                                          \n' + '                  dAlpha = 1.0;                                                         \n' + '             }                                                                          \n' + '        }                                                                               \n' + '        if (jNow < aTime.x && decay > 0.0)                                              \n' + '        {                                                                               \n' + '            vColor = vec4(1, 1, 1, 1);                                                  \n' + '        }                                                                               \n' + '        else                                                                            \n' + '        {                                                                               \n' + '           vColor = vec4(aVertexColor.r, aVertexColor.g, aVertexColor.b, dAlpha * aVertexColor.a);          \n' + '        }                                                                                \n' + '    }                                                                                    \n' + '                                                                                         \n';
     LineShaderNormalDates._frag = gl.createShader(35632);
     gl.shaderSource(LineShaderNormalDates._frag, fragShaderText);
     gl.compileShader(LineShaderNormalDates._frag);
@@ -8650,7 +8650,7 @@ window.wwtlib = function(){
   TimeSeriesPointSpriteShader.init = function(renderContext) {
     var gl = renderContext.gl;
     var fragShaderText = '    precision mediump float;                                                            \n' + '    uniform vec4 lineColor;                                                             \n' + '    varying lowp vec4 vColor;                                                           \n' + '    uniform sampler2D uSampler;                                                         \n' + '    void main(void)                                                                     \n' + '    {                                                                                   \n' + '        vec4 texColor;                                                                  \n' + '        texColor = texture2D(uSampler, gl_PointCoord);                                  \n' + '                                                                                        \n' + '                                                                                        \n' + '        gl_FragColor = lineColor * vColor * texColor;                                   \n' + '    }                                                                                   \n';
-    var vertexShaderText = '    attribute vec3 aVertexPosition;                                                     \n' + '    attribute vec4 aVertexColor;                                                        \n' + '    attribute vec2 aTime;                                                               \n' + '    attribute float aPointSize;                                                         \n' + '    uniform mat4 uMVMatrix;                                                             \n' + '    uniform mat4 uPMatrix;                                                              \n' + '    uniform float jNow;                                                                 \n' + '    uniform vec3 cameraPosition;                                                        \n' + '    uniform float decay;                                                                \n' + '    uniform float scale;                                                                \n' + '    uniform float minSize;                                                                \n' + '                                                                                        \n' + '    varying lowp vec4 vColor;                                                           \n' + '                                                                                        \n' + '    void main(void)                                                                     \n' + '    {                                                                                   \n' + '        float dist = distance(aVertexPosition, cameraPosition);                                \n' + '        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);                \n' + '        float dAlpha = 1.0;                                                             \n' + '        if ( decay > 0.0)                                                               \n' + '        {                                                                               \n' + '             dAlpha = 1.0 - ((jNow - aTime.y) / decay);                                 \n ' + '             if (dAlpha > 1.0 )                                                         \n' + '             {                                                                          \n' + '                  dAlpha = 1.0;                                                         \n' + '             }                                                                          \n' + '        }                                                                               \n' + '        if (jNow < aTime.x && decay > 0.0)                                              \n' + '        {                                                                               \n' + '            vColor = vec4(0.0, 0.0, 0.0, 0.0);                                          \n' + '        }                                                                               \n' + '        else                                                                            \n' + '        {                                                                               \n' + '           vColor = vec4(aVertexColor.r, aVertexColor.g, aVertexColor.b, dAlpha);       \n' + '        }                                                                               \n' + '        float lSize = scale;                                                              \n' + '        if (scale < 0.0)                                                                  \n' + '        {                                                                               \n' + '           lSize = -scale;                                                              \n' + '           dist = 1.0;                                                                   \n' + '        }                                                                               \n' + '           gl_PointSize = max(minSize, (lSize * ( aPointSize ) / dist));                       \n' + '    }                                                                                   \n' + '                                                                                        \n';
+    var vertexShaderText = '    attribute vec3 aVertexPosition;                                                     \n' + '    attribute vec4 aVertexColor;                                                        \n' + '    attribute vec2 aTime;                                                               \n' + '    attribute float aPointSize;                                                         \n' + '    uniform mat4 uMVMatrix;                                                             \n' + '    uniform mat4 uPMatrix;                                                              \n' + '    uniform float jNow;                                                                 \n' + '    uniform vec3 cameraPosition;                                                        \n' + '    uniform float decay;                                                                \n' + '    uniform float scale;                                                                \n' + '    uniform float minSize;                                                              \n' + '    uniform float sky;                                                                  \n' + '    uniform float showFarSide;                                                          \n' + '                                                                                        \n' + '    varying lowp vec4 vColor;                                                           \n' + '                                                                                        \n' + '    void main(void)                                                                     \n' + '    {                                                                                   \n' + '        float dotCam = dot( normalize(cameraPosition-aVertexPosition), normalize(aVertexPosition));                                  \n' + '        float dist = distance(aVertexPosition, cameraPosition);                         \n' + '        gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);                \n' + '        float dAlpha = 1.0;                                                             \n' + '        if ( decay > 0.0)                                                               \n' + '        {                                                                               \n' + '             dAlpha = 1.0 - ((jNow - aTime.y) / decay);                                 \n ' + '             if (dAlpha > 1.0 )                                                         \n' + '             {                                                                          \n' + '                  dAlpha = 1.0;                                                         \n' + '             }                                                                          \n' + '        }                                                                               \n' + '        if ( showFarSide == 0.0 && (dotCam * sky) < 0.0 || (jNow < aTime.x && decay > 0.0))                                              \n' + '        {                                                                               \n' + '            vColor = vec4(0.0, 0.0, 0.0, 0.0);                                          \n' + '        }                                                                               \n' + '        else                                                                            \n' + '        {                                                                               \n' + '           vColor = vec4(aVertexColor.r, aVertexColor.g, aVertexColor.b, dAlpha);       \n' + '        }                                                                               \n' + '        float lSize = scale;                                                            \n' + '        if (scale < 0.0)                                                                \n' + '        {                                                                               \n' + '           lSize = -scale;                                                              \n' + '           dist = 1.0;                                                                  \n' + '        }                                                                               \n' + '        gl_PointSize = max(minSize, (lSize * ( aPointSize ) / dist));                   \n' + '    }                                                                                   \n' + '                                                                                        \n';
     TimeSeriesPointSpriteShader._frag = gl.createShader(35632);
     gl.shaderSource(TimeSeriesPointSpriteShader._frag, fragShaderText);
     gl.compileShader(TimeSeriesPointSpriteShader._frag);
@@ -8678,11 +8678,13 @@ window.wwtlib = function(){
     TimeSeriesPointSpriteShader.lineColorLoc = gl.getUniformLocation(TimeSeriesPointSpriteShader._prog, 'lineColor');
     TimeSeriesPointSpriteShader.cameraPosLoc = gl.getUniformLocation(TimeSeriesPointSpriteShader._prog, 'cameraPosition');
     TimeSeriesPointSpriteShader.scaleLoc = gl.getUniformLocation(TimeSeriesPointSpriteShader._prog, 'scale');
+    TimeSeriesPointSpriteShader.skyLoc = gl.getUniformLocation(TimeSeriesPointSpriteShader._prog, 'sky');
+    TimeSeriesPointSpriteShader.showFarSideLoc = gl.getUniformLocation(TimeSeriesPointSpriteShader._prog, 'showFarSide');
     TimeSeriesPointSpriteShader.minSizeLoc = gl.getUniformLocation(TimeSeriesPointSpriteShader._prog, 'minSize');
     gl.enable(3042);
     TimeSeriesPointSpriteShader.initialized = true;
   };
-  TimeSeriesPointSpriteShader.use = function(renderContext, vertex, texture, lineColor, zBuffer, jNow, decay, camera, scale, minSize) {
+  TimeSeriesPointSpriteShader.use = function(renderContext, vertex, texture, lineColor, zBuffer, jNow, decay, camera, scale, minSize, showFarSide, sky) {
     var gl = renderContext.gl;
     if (gl != null) {
       if (!TimeSeriesPointSpriteShader.initialized) {
@@ -8699,6 +8701,8 @@ window.wwtlib = function(){
       gl.uniform3f(TimeSeriesPointSpriteShader.cameraPosLoc, camera.x, camera.y, camera.z);
       gl.uniform1f(TimeSeriesPointSpriteShader.scaleLoc, scale);
       gl.uniform1f(TimeSeriesPointSpriteShader.minSizeLoc, minSize);
+      gl.uniform1f(TimeSeriesPointSpriteShader.showFarSideLoc, (showFarSide) ? 1 : 0);
+      gl.uniform1f(TimeSeriesPointSpriteShader.skyLoc, (sky) ? -1 : 1);
       if (zBuffer) {
         gl.enable(2929);
       }
@@ -8738,7 +8742,7 @@ window.wwtlib = function(){
   KeplerPointSpriteShader.init = function(renderContext) {
     var gl = renderContext.gl;
     var fragShaderText = '    precision mediump float;                                                            \n' + '    uniform vec4 lineColor;                                                             \n' + '    varying lowp vec4 vColor;                                                           \n' + '    uniform sampler2D uSampler;                                                         \n' + '    void main(void)                                                                     \n' + '    {                                                                                   \n' + '        vec4 texColor;                                                                  \n' + '        texColor = texture2D(uSampler, gl_PointCoord);                                  \n' + '                                                                                        \n' + '                                                                                        \n' + '        gl_FragColor = lineColor * vColor * texColor;                                   \n' + '    }                                                                                   \n';
-    var vertexShaderText = '    attribute vec3 ABC;                                                     \n' + '    attribute vec3 abc;                                                     \n' + '    attribute float PointSize;                                                         \n' + '    attribute vec4 Color;                                                        \n' + '    attribute vec2 we;                                                         \n' + '    attribute vec2 nT;                                                         \n' + '    attribute vec2 az;                                                         \n' + '    attribute vec2 orbit;                                                         \n' + '    uniform mat4 uMVMatrix;                                                             \n' + '    uniform mat4 uPMatrix;                                                              \n' + '    uniform float jNow;                                                                 \n' + '    uniform vec3 cameraPosition;                                                        \n' + '    uniform float MM;                                                                \n' + '    uniform float scaling;                                                                \n' + '    uniform float minSize;                                                                \n' + '    uniform float opacity;                                                                                    \n' + '    varying lowp vec4 vColor;                                                           \n' + '                                                                                        \n' + '    void main(void)                                                                     \n' + '    {                                                                                   \n' + '     float M = nT.x * (jNow - nT.y) * 0.01745329251994;                              \n' + '     float e = we.y;                                                                    \n' + '     float a = az.x;                                                                    \n' + '     float PI = 3.1415926535897932384;                                                     \n' + '     float w = we.x* 0.01745329251994;                                                  \n' + '     float F = 1.0;                                                                          \n' + '     if (M < 0.0)                                                                            \n' + '       F = -1.0;                                                                             \n' + '     M = abs(M) / (2.0 * PI);                                                                \n' + '     M = (M - float(int(M)))*2.0 *PI *F;                                                         \n' + '     if (MM != 0.0)                                                                          \n' + '     {                                                                                     \n' + '       M = MM + (1.0- orbit.x) *2.0 *PI;                                                    \n' + '       if (M > (2.0*PI))                                                                     \n' + '           M = M - (2.0*PI);                                                                 \n' + '     }                                                                                     \n' + '                                                                                                           \n' + '     if (M < 0.0)                                                                   \n' + '       M += 2.0 *PI;                                                                \n' + '     F = 1.0;                                                                       \n' + '     if (M > PI)                                                                  \n' + '        F = -1.0;                                                                   \n' + '     if (M > PI)                                                                  \n' + '       M = 2.0 *PI - M;                                                             \n' + '                                                                                  \n' + '     float E = PI / 2.0;                                                            \n' + '     float scale = PI / 4.0;                                                        \n' + '     for (int i =0; i<23; i++)                                                    \n' + '     {                                                                            \n' + '       float R = E - e *sin(E);                                                   \n' + '       if (M > R)                                                                 \n' + '      \tE += scale;                                                                \n' + '       else                                                                       \n' + '     \tE -= scale;                                                                \n' + '       scale /= 2.0;                                                                \n' + '     }                                                                            \n' + '      E = E * F;                                                                  \n' + '                                                                                  \n' + '     float v = 2.0 * atan(sqrt((1.0 + e) / (1.0 -e )) * tan(E/2.0));                      \n' + '     float r = a * (1.0-e * cos(E));                                                \n' + '                                                                                  \n' + '     vec4 pnt;                                                                    \n' + '     pnt.x = r * abc.x * sin(ABC.x + w + v);                                \n' + '     pnt.z = r * abc.y * sin(ABC.y + w + v);                                \n' + '     pnt.y = r * abc.z * sin(ABC.z + w + v);                                \n' + '     pnt.w = 1.0;                                                                   \n' + '                                                                                  \n' + '     float dist = distance(pnt.xyz, cameraPosition.xyz);                              \n' + '     gl_Position = uPMatrix * uMVMatrix * pnt;                                    \n' + '     vColor.a = opacity * (1.0-(orbit.x));                                       \n' + '     vColor.r = Color.r;                                                       \n' + '     vColor.g = Color.g;                                                       \n' + '     vColor.b = Color.b;                                                       \n' + '     gl_PointSize = max(minSize, scaling * (PointSize / dist));   \n' + ' }                                                                \n';
+    var vertexShaderText = '    attribute vec3 ABC;                                                                 \n' + '    attribute vec3 abc;                                                                 \n' + '    attribute float PointSize;                                                          \n' + '    attribute vec4 Color;                                                               \n' + '    attribute vec2 we;                                                                  \n' + '    attribute vec2 nT;                                                                  \n' + '    attribute vec2 az;                                                                  \n' + '    attribute vec2 orbit;                                                               \n' + '    uniform mat4 uMVMatrix;                                                             \n' + '    uniform mat4 uPMatrix;                                                              \n' + '    uniform float jNow;                                                                 \n' + '    uniform vec3 cameraPosition;                                                        \n' + '    uniform float MM;                                                                   \n' + '    uniform float scaling;                                                              \n' + '    uniform float minSize;                                                              \n' + '    uniform float opacity;                                                              \n' + '    varying lowp vec4 vColor;                                                           \n' + '                                                                                        \n' + '    void main(void)                                                                     \n' + '    {                                                                                   \n' + '     float M = nT.x * (jNow - nT.y) * 0.01745329251994;                                 \n' + '     float e = we.y;                                                                    \n' + '     float a = az.x;                                                                    \n' + '     float PI = 3.1415926535897932384;                                                  \n' + '     float w = we.x* 0.01745329251994;                                                  \n' + '     float F = 1.0;                                                                     \n' + '     if (M < 0.0)                                                                       \n' + '       F = -1.0;                                                                        \n' + '     M = abs(M) / (2.0 * PI);                                                           \n' + '     M = (M - float(int(M)))*2.0 *PI *F;                                                \n' + '     if (MM != 0.0)                                                                     \n' + '     {                                                                                  \n' + '       M = MM + (1.0- orbit.x) *2.0 *PI;                                                \n' + '       if (M > (2.0*PI))                                                                \n' + '           M = M - (2.0*PI);                                                            \n' + '     }                                                                                  \n' + '                                                                                        \n' + '     if (M < 0.0)                                                                       \n' + '       M += 2.0 *PI;                                                                    \n' + '     F = 1.0;                                                                           \n' + '     if (M > PI)                                                                        \n' + '        F = -1.0;                                                                       \n' + '     if (M > PI)                                                                        \n' + '       M = 2.0 *PI - M;                                                                 \n' + '                                                                                        \n' + '     float E = PI / 2.0;                                                                \n' + '     float scale = PI / 4.0;                                                            \n' + '     for (int i =0; i<23; i++)                                                          \n' + '     {                                                                                  \n' + '       float R = E - e *sin(E);                                                         \n' + '       if (M > R)                                                                       \n' + '      \tE += scale;                                                                      \n' + '       else                                                                             \n' + '     \tE -= scale;                                                                      \n' + '       scale /= 2.0;                                                                    \n' + '     }                                                                                  \n' + '      E = E * F;                                                                        \n' + '                                                                                        \n' + '     float v = 2.0 * atan(sqrt((1.0 + e) / (1.0 -e )) * tan(E/2.0));                    \n' + '     float r = a * (1.0-e * cos(E));                                                    \n' + '                                                                                        \n' + '     vec4 pnt;                                                                          \n' + '     pnt.x = r * abc.x * sin(ABC.x + w + v);                                            \n' + '     pnt.z = r * abc.y * sin(ABC.y + w + v);                                            \n' + '     pnt.y = r * abc.z * sin(ABC.z + w + v);                                            \n' + '     pnt.w = 1.0;                                                                       \n' + '                                                                                        \n' + '     float dist = distance(pnt.xyz, cameraPosition.xyz);                                \n' + '     gl_Position = uPMatrix * uMVMatrix * pnt;                                          \n' + '     vColor.a = opacity * (1.0-(orbit.x));                                              \n' + '     vColor.r = Color.r;                                                                \n' + '     vColor.g = Color.g;                                                                \n' + '     vColor.b = Color.b;                                                                \n' + '     gl_PointSize = max(minSize, scaling * (PointSize / dist));                         \n' + ' }                                                                                      \n';
     KeplerPointSpriteShader._frag = gl.createShader(35632);
     gl.shaderSource(KeplerPointSpriteShader._frag, fragShaderText);
     gl.compileShader(KeplerPointSpriteShader._frag);
@@ -8839,16 +8843,22 @@ window.wwtlib = function(){
   }
   TileShader.init = function(renderContext) {
     var gl = renderContext.gl;
-    var fragShaderText = ' precision mediump float;                                                              \n' + '                                                                                       \n' + '   varying vec2 vTextureCoord;                                                         \n' + '                                                                                       \n' + '   uniform sampler2D uSampler;                                                         \n' + '   uniform float opacity;                                                              \n' + '                                                                                       \n' + '   void main(void) {                                                                   \n' + '   vec4 col = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));             \n' + '   gl_FragColor = col * opacity;                                                       \n' + '   }                                                                                   \n';
-    var vertexShaderText = '     attribute vec3 aVertexPosition;                                              \n' + '     attribute vec2 aTextureCoord;                                                \n' + '                                                                                  \n' + '     uniform mat4 uMVMatrix;                                                      \n' + '     uniform mat4 uPMatrix;                                                       \n' + '                                                                                  \n' + '     varying vec2 vTextureCoord;                                                  \n' + '                                                                                  \n' + '                                                                                  \n' + '     void main(void) {                                                            \n' + '         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);         \n' + '         vTextureCoord = aTextureCoord;                                           \n' + '     }                                                                            \n' + '                                                                                  \n';
+    var fragShaderText = ' precision mediump float;                                                              \n' + '                                                                                       \n' + '   varying vec2 vTextureCoord;                                                         \n' + '   varying vec3 vNormal;                                                               \n' + '   varying vec3 vCamVector;                                                               \n' + '                                                                                       \n' + '   uniform sampler2D uSampler;                                                         \n' + '   uniform float opacity;                                                              \n' + '   uniform vec3 uSunPosition;                                                          \n' + '   uniform float uMinBrightness;                                                       \n' + '   uniform vec3 uAtmosphereColor;                                                       \n' + '                                                                                       \n' + '   void main(void) {                                                                   \n' + '     vec3 normal = normalize(vNormal);                                                 \n' + '     vec3 camVN = normalize(vCamVector);                                               \n' + '     vec3 cam = normalize(vec3(0.0,0.0,-1.0));                                                    \n' + '     float dt = uMinBrightness + pow(max(0.0,- dot(normal,uSunPosition)),0.5);                  \n' + '     float atm = max(0.0, 1.0 - 2.5 * dot(cam,camVN)) + 0.3 * dt;                             \n' + '     atm = (dt > uMinBrightness) ? atm : 0.0;                                          \n' + '     if ( uMinBrightness == 1.0 ) { dt = 1.0; atm= 0.0; }                                        \n' + '     vec4 col = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));           \n' + '     gl_FragColor = col * opacity;                                                     \n' + '     gl_FragColor.rgb *= dt;                                                           \n' + '     gl_FragColor.rgb += atm * uAtmosphereColor;                                  \n' + '   }                                                                                   \n';
+    var vertexShaderText = '     attribute vec3 aVertexPosition;                                              \n' + '     attribute vec2 aTextureCoord;                                                \n' + '                                                                                  \n' + '     uniform mat4 uMVMatrix;                                                      \n' + '     uniform mat4 uPMatrix;                                                       \n' + '                                                                                  \n' + '     varying vec2 vTextureCoord;                                                  \n' + '     varying vec3 vNormal;                                                        \n' + '     varying vec3 vCamVector;                                                     \n' + '                                                                                  \n' + '                                                                                  \n' + '     void main(void) {                                                            \n' + '         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);         \n' + '         vCamVector = normalize((mat3(uMVMatrix) * aVertexPosition).xyz);              \n' + '         vec3 normal = normalize(aVertexPosition);                                \n' + '         vec3 normalT = normalize(mat3(uMVMatrix) * normal);                      \n' + '         vTextureCoord = aTextureCoord;                                           \n' + '         vNormal = normalT;                                                       \n' + '     }                                                                            \n' + '                                                                                  \n';
     TileShader._frag = gl.createShader(35632);
     gl.shaderSource(TileShader._frag, fragShaderText);
     gl.compileShader(TileShader._frag);
     var stat = gl.getShaderParameter(TileShader._frag, 35713);
+    if (!stat) {
+      var errorF = gl.getShaderInfoLog(TileShader._frag);
+    }
     TileShader._vert = gl.createShader(35633);
     gl.shaderSource(TileShader._vert, vertexShaderText);
     gl.compileShader(TileShader._vert);
     var stat1 = gl.getShaderParameter(TileShader._vert, 35713);
+    if (!stat1) {
+      var errorV = gl.getShaderInfoLog(TileShader._vert);
+    }
     TileShader._prog = gl.createProgram();
     gl.attachShader(TileShader._prog, TileShader._vert);
     gl.attachShader(TileShader._prog, TileShader._frag);
@@ -8860,7 +8870,10 @@ window.wwtlib = function(){
     TileShader.projMatLoc = gl.getUniformLocation(TileShader._prog, 'uPMatrix');
     TileShader.mvMatLoc = gl.getUniformLocation(TileShader._prog, 'uMVMatrix');
     TileShader.sampLoc = gl.getUniformLocation(TileShader._prog, 'uSampler');
+    TileShader.sunLoc = gl.getUniformLocation(TileShader._prog, 'uSunPosition');
+    TileShader.minBrightnessLoc = gl.getUniformLocation(TileShader._prog, 'uMinBrightness');
     TileShader.opacityLoc = gl.getUniformLocation(TileShader._prog, 'opacity');
+    TileShader.atmosphereColorLoc = gl.getUniformLocation(TileShader._prog, 'uAtmosphereColor');
     Tile.uvMultiple = 1;
     Tile.demEnabled = true;
     gl.enable(3042);
@@ -8876,8 +8889,24 @@ window.wwtlib = function(){
       gl.useProgram(TileShader._prog);
       var mvMat = Matrix3d.multiplyMatrix(renderContext.get_world(), renderContext.get_view());
       gl.uniform1f(TileShader.opacityLoc, opacity);
+      gl.uniform1f(TileShader.minBrightnessLoc, (renderContext.lighting) ? TileShader.minLightingBrightness : 1);
+      if (renderContext.lighting) {
+        gl.uniform3f(TileShader.atmosphereColorLoc, TileShader.atmosphereColor.r / 255, TileShader.atmosphereColor.g / 255, TileShader.atmosphereColor.b / 255);
+      }
+      else {
+        gl.uniform3f(TileShader.atmosphereColorLoc, 0, 0, 0);
+      }
       gl.uniformMatrix4fv(TileShader.mvMatLoc, false, mvMat.floatArray());
       gl.uniformMatrix4fv(TileShader.projMatLoc, false, renderContext.get_projection().floatArray());
+      TileShader.sunPosition.normalize();
+      var mvInv = renderContext.get_view().clone();
+      mvInv.set_m41(0);
+      mvInv.set_m42(0);
+      mvInv.set_m43(0);
+      mvInv.set_m44(1);
+      var sp = Vector3d._transformCoordinate(TileShader.sunPosition, mvInv);
+      sp.normalize();
+      gl.uniform3f(TileShader.sunLoc, -sp.x, -sp.y, -sp.z);
       gl.uniform1i(TileShader.sampLoc, 0);
       if (renderContext.space || noDepth) {
         gl.disable(2929);
@@ -8918,7 +8947,7 @@ window.wwtlib = function(){
   SpriteShader.init = function(renderContext) {
     var gl = renderContext.gl;
     var fragShaderText = ' precision mediump float;                                                                \n' + '                                                                                         \n' + '   varying vec2 vTextureCoord;                                                           \n' + '   varying lowp vec4 vColor;                                                             \n' + '   uniform sampler2D uSampler;                                                           \n' + '                                                                                         \n' + '   void main(void) {                                                                     \n' + '   gl_FragColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t)) * vColor;  \n' + '   }                                                                                     \n';
-    var vertexShaderText = '     attribute vec3 aVertexPosition;                                              \n' + '     attribute vec2 aTextureCoord;                                                \n' + '     attribute lowp vec4 aColor;                                                \n' + '                                                                                  \n' + '     uniform mat4 uMVMatrix;                                                      \n' + '     uniform mat4 uPMatrix;                                                       \n' + '                                                                                  \n' + '     varying vec2 vTextureCoord;                                                  \n' + '     varying vec4 vColor;                                                         \n' + '                                                                                  \n' + '                                                                                  \n' + '     void main(void) {                                                            \n' + '         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);         \n' + '         vTextureCoord = aTextureCoord;                                           \n' + '         vColor = aColor;                                                         \n' + '     }                                                                            \n' + '                                                                                  \n';
+    var vertexShaderText = '     attribute vec3 aVertexPosition;                                              \n' + '     attribute vec2 aTextureCoord;                                                \n' + '     attribute lowp vec4 aColor;                                                  \n' + '                                                                                  \n' + '     uniform mat4 uMVMatrix;                                                      \n' + '     uniform mat4 uPMatrix;                                                       \n' + '                                                                                  \n' + '     varying vec2 vTextureCoord;                                                  \n' + '     varying vec4 vColor;                                                         \n' + '                                                                                  \n' + '                                                                                  \n' + '     void main(void) {                                                            \n' + '         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);         \n' + '         vTextureCoord = aTextureCoord;                                           \n' + '         vColor = aColor;                                                         \n' + '     }                                                                            \n' + '                                                                                  \n';
     SpriteShader._frag = gl.createShader(35632);
     gl.shaderSource(SpriteShader._frag, fragShaderText);
     gl.compileShader(SpriteShader._frag);
@@ -8986,8 +9015,8 @@ window.wwtlib = function(){
   }
   ShapeSpriteShader.init = function(renderContext) {
     var gl = renderContext.gl;
-    var fragShaderText = ' precision mediump float;                                                                \n' + '                                                                                         \n' + '   varying lowp vec4 vColor;                                                             \n' + '                                                                                         \n' + '   void main(void) {                                                                     \n' + '   gl_FragColor =  vColor;  \n' + '   }                                                                                     \n';
-    var vertexShaderText = '     attribute vec3 aVertexPosition;                                              \n' + '     attribute lowp vec4 aColor;                                                \n' + '                                                                                  \n' + '     uniform mat4 uMVMatrix;                                                      \n' + '     uniform mat4 uPMatrix;                                                       \n' + '                                                                                  \n' + '     varying vec2 vTextureCoord;                                                  \n' + '     varying vec4 vColor;                                                         \n' + '                                                                                  \n' + '                                                                                  \n' + '     void main(void) {                                                            \n' + '         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);         \n' + '         vColor = aColor;                                                         \n' + '     }                                                                            \n' + '                                                                                  \n';
+    var fragShaderText = ' precision mediump float;                                                                \n' + '                                                                                         \n' + '   varying lowp vec4 vColor;                                                             \n' + '                                                                                         \n' + '   void main(void) {                                                                     \n' + '   gl_FragColor =  vColor;                                                               \n' + '   }                                                                                     \n';
+    var vertexShaderText = '     attribute vec3 aVertexPosition;                                              \n' + '     attribute lowp vec4 aColor;                                                  \n' + '                                                                                  \n' + '     uniform mat4 uMVMatrix;                                                      \n' + '     uniform mat4 uPMatrix;                                                       \n' + '                                                                                  \n' + '     varying vec2 vTextureCoord;                                                  \n' + '     varying vec4 vColor;                                                         \n' + '                                                                                  \n' + '                                                                                  \n' + '     void main(void) {                                                            \n' + '         gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);         \n' + '         vColor = aColor;                                                         \n' + '     }                                                                            \n' + '                                                                                  \n';
     ShapeSpriteShader._frag = gl.createShader(35632);
     gl.shaderSource(ShapeSpriteShader._frag, fragShaderText);
     gl.compileShader(ShapeSpriteShader._frag);
@@ -9478,6 +9507,7 @@ window.wwtlib = function(){
       Grids._starCount = count;
       Grids._starSprites = new PointList(renderContext);
       Grids._starSprites.depthBuffered = false;
+      Grids._starSprites.showFarSide = true;
       var $enum1 = ss.enumerate(Grids._stars);
       while ($enum1.moveNext()) {
         var star = $enum1.current;
@@ -9567,7 +9597,7 @@ window.wwtlib = function(){
     if (Grids._cosmosReady) {
       var count = 256;
       for (var i = 0; i < count; i++) {
-        Grids._cosmosSprites[i]._drawTextured(renderContext, Grids._galaxyTextures[i], (alpha * opacity) / 255);
+        Grids._cosmosSprites[i].drawTextured(renderContext, Grids._galaxyTextures[i].texture2d, (alpha * opacity) / 255);
       }
     }
   };
@@ -11133,6 +11163,9 @@ window.wwtlib = function(){
       while ($enum3.moveNext()) {
         var key = $enum3.current;
         var map = LayerManager.get_allMaps()[referenceFrame].childMaps[key];
+        if (!(ss.canCast(map, LayerMap))) {
+          continue;
+        }
         if (map.frame.showOrbitPath && Settings.get_active().get_solarSystemOrbits()) {
           if (map.frame.referenceFrameType === 1) {
             if (map.frame.get_orbit() == null) {
@@ -12441,6 +12474,43 @@ window.wwtlib = function(){
   };
 
 
+  // wwtlib.PushPin
+
+  function PushPin() {
+  }
+  PushPin.getPushPinTexture = function(pinId) {
+    var texture = null;
+    if (ss.keyExists(PushPin._pinTextureCache, pinId)) {
+      return PushPin._pinTextureCache[pinId];
+    }
+    try {
+      texture = Tile.prepDevice.createTexture();
+      Tile.prepDevice.bindTexture(3553, texture);
+      var row = Math.floor(pinId / 16);
+      var col = pinId % 16;
+      var temp = document.createElement('canvas');
+      temp.height = 32;
+      temp.width = 32;
+      var ctx = temp.getContext('2d');
+      ctx.drawImage(PushPin._pins.imageElement, (col * 32), (row * 32), 32, 32, 0, 0, 32, 32);
+      var image = temp;
+      Tile.prepDevice.texParameteri(3553, 10242, 33071);
+      Tile.prepDevice.texParameteri(3553, 10243, 33071);
+      Tile.prepDevice.texImage2D(3553, 0, 6408, 6408, 5121, image);
+      Tile.prepDevice.texParameteri(3553, 10241, 9985);
+      Tile.prepDevice.generateMipmap(3553);
+      Tile.prepDevice.bindTexture(3553, null);
+      PushPin._pinTextureCache[pinId] = texture;
+    }
+    catch ($e1) {
+    }
+    return texture;
+  };
+  var PushPin$ = {
+
+  };
+
+
   // wwtlib.Table
 
   function Table() {
@@ -13097,7 +13167,7 @@ window.wwtlib = function(){
     }
     if (MinorPlanets._mpcVertexBuffer == null) {
       if (MinorPlanets.starTexture == null) {
-        MinorPlanets.starTexture = Planets.loadPlanetTexture('/images/starProfile.png');
+        MinorPlanets.starTexture = Planets.loadPlanetTexture('/webclient/images/starProfileAlpha.png');
       }
       for (var i = 0; i < 7; i++) {
         MinorPlanets._mpcBlendStates[i] = BlendState.create(false, 1000);
@@ -13322,7 +13392,7 @@ window.wwtlib = function(){
         return -1;
     }
   };
-  Planets.getNameFrom3dId = function(id) {
+  Planets.getImageSetNameNameFrom3dId = function(id) {
     switch (id) {
       case 0:
         return 'Sun';
@@ -13354,6 +13424,42 @@ window.wwtlib = function(){
         return 'Callisto (Jupiter)';
       case 19:
         return 'Bing Maps Aerial';
+      default:
+        return '';
+    }
+  };
+  Planets.getNameFrom3dId = function(id) {
+    switch (id) {
+      case 0:
+        return 'Sun';
+      case 1:
+        return 'Mercury';
+      case 2:
+        return 'Venus';
+      case 3:
+        return 'Mars';
+      case 4:
+        return 'Jupiter';
+      case 5:
+        return 'Saturn';
+      case 6:
+        return 'Uranus';
+      case 7:
+        return 'Neptune';
+      case 8:
+        return 'Pluto';
+      case 9:
+        return 'Moon';
+      case 10:
+        return 'Io';
+      case 11:
+        return 'Europa';
+      case 12:
+        return 'Ganymede';
+      case 13:
+        return 'Callisto';
+      case 19:
+        return 'Earth';
       default:
         return '';
     }
@@ -13830,13 +13936,21 @@ window.wwtlib = function(){
   };
   Planets._drawPlanet3d = function(renderContext, planetID, centerPoint) {
     if (planetID === 0) {
+      TileShader.minLightingBrightness = 1;
     }
     else {
+      TileShader.minLightingBrightness = 0.025;
+      if (planetID === 19) {
+        TileShader.atmosphereColor = Color.fromArgb(255, 65, 157, 217);
+      }
+      else {
+        TileShader.atmosphereColor = Color.fromArgb(0, 0, 0, 0);
+      }
     }
     var radius = Planets.getAdjustedPlanetRadius(planetID);
     var rotationCurrent = 0;
     if (planetID === 19) {
-      rotationCurrent = Coordinates.mstFromUTC2(SpaceTimeController.get_now(), 0) / 180 * Math.PI;
+      rotationCurrent = Math.PI + Coordinates.mstFromUTC2(SpaceTimeController.get_now(), 0) / 180 * Math.PI;
     }
     else {
       rotationCurrent = (((Planets._jNow - 2451545) / Planets.planetRotationPeriod[planetID]) * Math.PI * 2) % (Math.PI * 2);
@@ -13870,6 +13984,7 @@ window.wwtlib = function(){
       var sunPosition = Vector3d.subtractVectors(sun, planet);
       sunPosition.normalize();
       renderContext.set_sunPosition(sunPosition);
+      TileShader.sunPosition = Vector3d.subtractVectors(Planets._planet3dLocations[0], planet);
       var loc = Vector3d.subtractVectors(Planets._planet3dLocations[planetID], centerPoint);
       loc.subtract(renderContext.cameraPosition);
       var dist = loc.length();
@@ -13912,7 +14027,9 @@ window.wwtlib = function(){
             Planets.drawSaturnsRings(renderContext, true, dist);
           }
           else {
+            renderContext.lighting = false;
             Planets._drawRings(renderContext);
+            renderContext.lighting = oldLighting;
           }
         }
         renderContext.lighting = oldLighting;
@@ -14067,7 +14184,7 @@ window.wwtlib = function(){
     if (renderContext.gl != null) {
       var ppList = new PointList(renderContext);
       ppList.minSize = 20;
-      ppList.addPoint(location.copy(), color._clone(), new Dates(0, 1), size);
+      ppList.addPoint(location.copy(), color._clone(), new Dates(0, 1), size / 100);
       ppList.depthBuffered = true;
       ppList.draw(renderContext, 1, false);
     }
@@ -14213,7 +14330,7 @@ window.wwtlib = function(){
     return Coordinates.mapTo0To360Range(Coordinates.radiansToDegrees(Math.atan2(Math.cos(Delta0) * Math.sin(Alpha0 - Alpha), Math.sin(Delta0) * Math.cos(Delta) - Math.cos(Delta0) * Math.sin(Delta) * Math.cos(Alpha0 - Alpha))));
   };
   Planets._drawSphere = function(renderContext, planetID) {
-    var planetName = Planets.getNameFrom3dId(planetID);
+    var planetName = Planets.getImageSetNameNameFrom3dId(planetID);
     var planet = WWTControl.singleton.getImagesetByName(planetName);
     if (planet == null) {
       planet = WWTControl.singleton.getImagesetByName('Bing Maps Aerial');
@@ -25441,7 +25558,7 @@ window.wwtlib = function(){
       this._starProfile.addEventListener('load', function(e) {
         $this._imageReady = true;
       }, false);
-      this._starProfile.src = 'images/starProfile.png';
+      this._starProfile.src = 'images/StarProfileAlpha.png';
       var gotHeader = false;
       var $enum1 = ss.enumerate(lines);
       while ($enum1.moveNext()) {
@@ -29716,7 +29833,7 @@ window.wwtlib = function(){
     return Matrix3d.create(2 * znearPlane / (right - left), 0, 0, 0, 0, 2 * znearPlane / (top - bottom), 0, 0, (left + right) / (left - right), (top + bottom) / (bottom - top), zfarPlane / (zfarPlane - znearPlane), 1, 0, 0, znearPlane * zfarPlane / (znearPlane - zfarPlane), 0);
   };
   Matrix3d.invertMatrix = function(matrix3d) {
-    var mat = matrix3d;
+    var mat = matrix3d.clone();
     mat.invert();
     return mat;
   };
@@ -34478,7 +34595,7 @@ window.wwtlib = function(){
               }
             }
             else {
-              pointSize = 1;
+              pointSize = 0.2;
             }
             if (this.get_plotType() === 1) {
               pointSize = 1;
@@ -35258,7 +35375,7 @@ window.wwtlib = function(){
         this.prepVertexBuffer(device, opacity);
       }
       var jNow = SpaceTimeController.get_jNow() - SpaceTimeController.utcToJulian(this.baseDate);
-      var adjustedScale = this.scaleFactor;
+      var adjustedScale = this.scaleFactor * 3;
       if (flat && this.astronomical && (this._markerScale$1 === 1)) {
         adjustedScale = (this.scaleFactor / (renderContext.viewCamera.zoom / 360));
       }
@@ -35278,11 +35395,30 @@ window.wwtlib = function(){
       }
       if (this.pointList != null) {
         this.pointList.depthBuffered = false;
-        this.pointList.decay = this.decay;
+        this.pointList.showFarSide = this.get_showFarSide();
+        this.pointList.decay = (this.timeSeries) ? this.decay : 0;
         this.pointList.sky = this.get_astronomical();
         this.pointList.timeSeries = this.timeSeries;
         this.pointList.jNow = jNow;
         this.pointList.scale = (this._markerScale$1 === 1) ? adjustedScale : -adjustedScale;
+        switch (this._plotType$1) {
+          case 0:
+            this.pointList.draw(renderContext, opacity * this.get_opacity(), false);
+            break;
+          case 2:
+          case 1:
+            this.pointList.drawTextured(renderContext, PushPin.getPushPinTexture(35), opacity * this.get_opacity());
+            break;
+          case 3:
+            this.pointList.drawTextured(renderContext, PushPin.getPushPinTexture(67), opacity * this.get_opacity());
+            break;
+          case 5:
+          case 4:
+            this.pointList.drawTextured(renderContext, PushPin.getPushPinTexture(this._markerIndex$1), opacity * this.get_opacity());
+            break;
+          default:
+            break;
+        }
         this.pointList.draw(renderContext, opacity * this.get_opacity(), false);
       }
       if (this.lineList != null) {
@@ -35494,7 +35630,7 @@ window.wwtlib = function(){
           this.set_plotType(2);
           break;
         case 'PushPin':
-          this.set_plotType(3);
+          this.set_plotType(4);
           break;
         default:
           break;
@@ -36235,7 +36371,7 @@ window.wwtlib = function(){
           this.set_plotType(2);
           break;
         case 'PushPin':
-          this.set_plotType(3);
+          this.set_plotType(4);
           break;
         default:
           break;
@@ -40457,6 +40593,7 @@ window.wwtlib = function(){
       ReferenceFrame: [ ReferenceFrame, ReferenceFrame$, null ],
       KmlCoordinate: [ KmlCoordinate, KmlCoordinate$, null ],
       KmlLineList: [ KmlLineList, KmlLineList$, null ],
+      PushPin: [ PushPin, PushPin$, null ],
       VoTable: [ VoTable, VoTable$, null ],
       VoRow: [ VoRow, VoRow$, null ],
       VoColumn: [ VoColumn, VoColumn$, null ],
@@ -40774,6 +40911,9 @@ window.wwtlib = function(){
   TileShader.textureLoc = 0;
   TileShader.initialized = false;
   TileShader._prog = null;
+  TileShader.sunPosition = Vector3d.create(-1, -1, -1);
+  TileShader.minLightingBrightness = 1;
+  TileShader.atmosphereColor = Color.fromArgb(0, 0, 0, 0);
   SpriteShader.vertLoc = 0;
   SpriteShader.textureLoc = 0;
   SpriteShader.colorLoc = 0;
@@ -40827,6 +40967,8 @@ window.wwtlib = function(){
   LayerManager.getMoonFile('http://www.worldwidetelescope.org/wwtweb/catalog.aspx?Q=moons');
   LayerUI._type = null;
   Orbit._initBegun = false;
+  PushPin._pinTextureCache = {};
+  PushPin._pins = Planets.loadPlanetTexture('/webclient/images/pins.png');
   MinorPlanets.mpcList = [];
   MinorPlanets._initBegun = false;
   MinorPlanets._mpcBlendStates = new Array(7);
