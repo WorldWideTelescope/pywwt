@@ -260,7 +260,7 @@ class BaseWWTWidget(HasTraits):
 
     @validate('ss_scale')
     def _validate_scale(self, proposal):
-        if 1 <= proposal <= 100:
+        if 1 <= proposal['value'] <= 100:
             return str(proposal['value'])
         else:
             raise ValueError('ss_scale takes integers from 1-100')
