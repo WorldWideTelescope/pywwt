@@ -2,17 +2,18 @@ Switching views
 ===============
 
 New in release 0.4.0 is the ability to toggle between modes in the same manner 
-as in the WorldWide Telescope Web Client by using the ``set_view`` method. 
-Available modes include sky, planet, solar system, Milky Way, universe, and 
-panorama. The rest of the documentation is based on the default sky mode, so 
-here we discuss what makes the others different.
+as in the WorldWide Telescope Web Client by using the 
+:meth:`~pywwt.BaseWWTWidget.set_view` method. Available modes include sky, 
+planet, solar system, Milky Way, universe, and panorama. The rest of the 
+documentation is based on the default sky mode, so here we discuss what makes 
+the others different.
 
 Planet view
 -----------
 Use this mode to get individual views of most of the major objects in the solar 
 system -- the Sun, the planets, Pluto, Earth's Moon, and Jupiter's Galilean 
 satellites. To use this mode, enter the name of your desired object as the 
-argument for ``set_view``::
+argument for :meth:`~pywwt.BaseWWTWidget.set_view`::
 
     >>> wwt.set_view('Moon')
     
@@ -33,8 +34,7 @@ This mode displays all objects that orbit the Sun. To access it, enter::
 All attributes and methods of solar system mode are housed within the widget's 
 ``solar_system`` object so they're easier to find. Like the sky view, it's 
 possible to edit this view to your liking. For example, orbit paths are shown 
-by default, but if you would like to turn them off, use the ``orbits`` 
-attribute::
+by default, but if you would like to turn them off, use the :meth:`~pywwt.BaseWWTWidget.orbits` attribute::
 
     >> wwt.solar_system.orbits = False
     
@@ -43,9 +43,7 @@ useful attribute, ``scale``, enables you to change the size of the major
 objects on a scale from 1 (actual size) to 100. We plan to reveal more options
 soon to match those currently present in the Web Client.
 
-This mode also comes with its own method, ``track_object``, that centers the 
-viewer on a major solar system object of your choice as it both rotates and 
-follows its orbital path::
+This mode also comes with its own method, :meth:`~pywwt.BaseWWTWidget.track_object`, that centers the viewer on a major solar system object of your choice as it both rotates and follows its orbital path::
     
     >> wwt.solar_system.track_object('Jupiter')
 
@@ -72,9 +70,8 @@ The Universe view zooms all the way out to the extent of the observed universe:
 
 .. image:: images/universe.png
 
-.. note:: If you're ever lost inside a mode, the ``reset_view`` method 
-          backtracks to the mode's initial state and allows you to start your
-          exploration over again.
+.. note:: If you're ever lost inside a mode, backtrack to its initial state by
+          using the :meth:`~pywwt.BaseWWTWidget.reset_view` method.
 
 Panorama view
 -------------
