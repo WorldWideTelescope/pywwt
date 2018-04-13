@@ -3,8 +3,8 @@ Switching views
 
 New in release 0.4.0 is the ability to toggle between modes in the same manner 
 as in the WorldWide Telescope Web Client by using the ``set_view`` method. 
-Available modes include sky, planet, solar system, Milky Way, universe(, and 
-panorama). The rest of the documentation is based on the default sky mode, so 
+Available modes include sky, planet, solar system, Milky Way, universe, and 
+panorama. The rest of the documentation is based on the default sky mode, so 
 here we discuss what makes the others different.
 
 Planet view
@@ -23,32 +23,31 @@ Once you've done that, your view should resemble the following:
 Solar system, Milky Way, and Universe views
 -------------------------------------------
 
-These three views actually come from the same mode at different fields-of-view.
+These three views come from the same mode at different field-of-view levels.
 
 **Solar system**
 This mode displays all objects that orbit the Sun. To access it, enter::
 
     >>> wwt.set_view('solar_system')
 
-Like the sky view, it offers functionality to edit the view to your liking. For 
-example, orbit paths are shown by default, but if you would like to turn them 
-off, use the ``ss_orbits`` attribute::
+All attributes and methods of solar system mode are housed within the widget's 
+``solar_system`` object so they're easier to find. Like the sky view, it's 
+possible to edit this view to your liking. For example, orbit paths are shown 
+by default, but if you would like to turn them off, use the ``orbits`` 
+attribute::
 
-    >> wwt.ss_orbits = False
+    >> wwt.solar_system.orbits = False
     
 The objects themselves can also be hidden using a similar technique. Another 
-useful attribute, ``ss_scale``, allows you to change the size of the major 
-objects on a scale from 1 (actual size) to 100.
+useful attribute, ``scale``, enables you to change the size of the major 
+objects on a scale from 1 (actual size) to 100. We plan to reveal more options
+soon to match those currently present in the Web Client.
 
-All attributes that modify settings in solar system mode are prefixed with 
-"ss_" so they're easier to find, and we plan to reveal more of them soon to 
-match those currently present in the Web Client.
-
-This mode also comes with its own method, ``track_object``, which centers the 
+This mode also comes with its own method, ``track_object``, that centers the 
 viewer on a major solar system object of your choice as it both rotates and 
 follows its orbital path::
     
-    >> wwt.track_object('Jupiter')
+    >> wwt.solar_system.track_object('Jupiter')
 
 .. note::   ``track_object`` is similar in spirit and syntax to planet view, 
             but they are not the same. The former exists within the context of 
@@ -79,5 +78,6 @@ The Universe view zooms all the way out to the extent of the observed universe:
 
 Panorama view
 -------------
+**Keep or no?**
 Finally, this view provides 360-degree panoramas taken during various NASA 
 missions to Mars and the Moon. (...)

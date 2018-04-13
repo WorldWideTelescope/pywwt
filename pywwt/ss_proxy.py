@@ -29,7 +29,9 @@ class SolarSystem(HasTraits):
     #cmb = Bool(False, help='Whether to show the cosmic microwave background in solar system mode (`bool`)').tag(wwt='solarSystemCMB') ###
     #cosmos = Bool(False, help='Whether to show data from the SDSS Cosmos data set (`bool`)').tag(wwt='solarSystemCosmos') ###
     #display = Bool(False, help='Whether to show the solar system while in solar system mode (`bool`)').tag(wwt='solarSystemOverlays') ###
-    #lighting = Bool(False, help='Whether to show the lighting effect of the Sun on the solar system (`bool`)').tag(wwt='solarSystemLighting') ###
+    lighting = Bool(True,
+                    help='Whether to show the lighting effect of the Sun on the'
+                         ' solar system (`bool`)').tag(wwt='solarSystemLighting')
     milky_way = Bool(True, help='Whether to show the galactic bulge in the '
                                 'background in solar system mode '
                                 '(`bool`)').tag(wwt='solarSystemMilkyWay')
