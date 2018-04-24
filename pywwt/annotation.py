@@ -1,9 +1,12 @@
 import uuid
 from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
-from astropy.coordinates import concatenate
+from astropy.coordinates import concatenate, SkyCoord
+#import json # OR
+import requests
 
-from .traits import Color, ColorWithOpacity, Bool, Float, Unicode, AstropyQuantity
+from .traits import (Color, ColorWithOpacity, Bool,
+                     Float, Unicode, AstropyQuantity)
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -251,6 +254,54 @@ class Line(Annotation):
 
         super(Line, self)._on_trait_change(changed)
 
+
+
+class FieldOfView():
+    """
+    A collection of polygon annotations. Takes the name of a pre-loaded 
+    telescope and displays its field of view.
+    """
+    # links for kepler. guide: https://keplerscience.arc.nasa.gov/k2-fields.html
+    # footprint: https://raw.githubusercontent.com/KeplerGO/K2FootprintFiles/master/json/k2-footprint.json
+
+    # should you be able to delete? change trait values?
+    # should there be a list of polygons like in CircleCollection?
+    # should self.available be an object so tab-completion is possible?
+    def __init__(self, parent, telescope, **kwargs):
+        self.parent = parent
+        self.available = ['k2']
+        self._gen_fov(telescope, **kwargs)
+
+    def _gen_fov(self, telescope, **kwargs):
+        telescope = telescope.lower()
+        if telescope in self.available:
+            if telescope == 'k2':
+                # could also use requests.get if we don't want to store files:
+                json_file = requests.get('https://github.com/KeplerGO/K2FootprintFiles/raw/master/json/k2-footprint.json')
+                diction = json_file.json()
+                #with open('fov_files/k2-footprint.json') as json_file:
+                #    diction = json.load(json_file)
+                # check python version. sys.version_info.major > 3, OR:
+                try:
+                    iter_diction = diction.items()
+                except AttributeError:
+                    iter_diction = diction.iteritems()
+                for key, value in iter_diction:
+                    channels = value['channels']
+                    for index in channels:
+                        #if index == '1':
+                        ras = channels[str(index)]['corners_ra']
+                        decs = channels[str(index)]['corners_dec']
+                        corners = SkyCoord(ras, decs, unit=u.deg)
+
+                        if self.parent.galactic_mode:
+                            corners = corners.galctic
+                        poly = Polygon(self.parent, **kwargs)
+                        for coord in corners:
+                            poly.add_point(coord)
+        else:
+            raise ValueError('the given telescope\'s field of view is unavailable at this time')
+        
 
 class CircleCollection():
     """

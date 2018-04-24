@@ -8,7 +8,7 @@ from astropy.coordinates import SkyCoord
 from .traits import (Color, ColorWithOpacity, Bool,
                      Float, Int, Unicode, AstropyQuantity)
 
-from .annotation import Circle, Polygon, Line, CircleCollection
+from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
 from .ss_proxy import SolarSystem
 from .layers import LayerManager
@@ -435,6 +435,22 @@ class BaseWWTWidget(HasTraits):
         if points:
             line.add_point(points)
         return line
+
+    def add_fov(self, telescope, **kwargs):
+        """
+        Add a telescope's field of view to the current view.
+
+        Parameters
+        ----------
+        telescope : `str`
+            The telescope, selected from a list of presets, whose field of
+            view will be displayed.
+        kwargs
+            Optional arguments that allow corresponding Polygon or
+            Annotation attributes to be set upon shape initialization.
+        """
+        fov = FieldOfView(self, telescope, **kwargs)
+        return fov
 
     def add_collection(self, points, **kwargs):
         """
