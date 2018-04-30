@@ -34,7 +34,8 @@ This mode displays all objects that orbit the Sun. To access it, enter::
 All attributes and methods of solar system mode are housed within the widget's 
 ``solar_system`` object so they're easier to find. Like the sky view, it's 
 possible to edit this view to your liking. For example, orbit paths are shown 
-by default, but if you would like to turn them off, use the :meth:`~pywwt.BaseWWTWidget.orbits` attribute::
+by default, but if you would like to turn them off, use the 
+:meth:`~pywwt.BaseWWTWidget.orbits` attribute::
 
     >> wwt.solar_system.orbits = False
     
@@ -43,7 +44,10 @@ useful attribute, ``scale``, enables you to change the size of the major
 objects on a scale from 1 (actual size) to 100. We plan to reveal more options
 soon to match those currently present in the Web Client.
 
-This mode also comes with its own method, :meth:`~pywwt.BaseWWTWidget.track_object`, that centers the viewer on a major solar system object of your choice as it both rotates and follows its orbital path::
+This mode also comes with its own method, 
+:meth:`~pywwt.BaseWWTWidget.track_object`, that centers the viewer on a major 
+solar system object of your choice as it both rotates and follows its orbital 
+path::
     
     >> wwt.solar_system.track_object('Jupiter')
 
@@ -75,6 +79,9 @@ The Universe view zooms all the way out to the extent of the observed universe:
 
 Panorama view
 -------------
-**Keep or no?**
-Finally, this view provides 360-degree panoramas taken during various NASA 
-missions to Mars and the Moon. (...)
+
+This view provides 360-degree panoramas taken during various NASA missions to 
+Mars and the Moon. It's currently only possible to explore a single image from 
+NASA's Pathfinder rover on Mars. The rest of the panoramas and their 
+view-specific functionalities will be imported from the Web Client in a future 
+release.

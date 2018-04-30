@@ -5,9 +5,9 @@ from .traits import Bool, Int
 
 class SolarSystem(HasTraits):
 
-    def __init__(self, BaseWWTWidget):
+    def __init__(self, base_wwt_widget):
         super(SolarSystem, self).__init__()
-        self.base_widget = BaseWWTWidget
+        self.base_widget = base_wwt_widget
         self.observe(self._on_trait_change, type='change')
 
     def _on_trait_change(self, changed):
