@@ -53,6 +53,17 @@ WorldWide Telescope object (``wwt`` in this case) also has a dedicated method
 for erasing every existing annotation from view called
 :meth:`~pywwt.BaseWWTWidget.clear_annotations`.
 
+**CircleCollection**
+
+To add several identical circles at once, as you might while plotting a survey, 
+use :meth:`~pywwt.BaseWWTWidget.add_collection()`. This method is built to be 
+compatible with Astropy workflows, so it can take a column of 
+:class:`~astropy.coordinates.SkyCoord` style coordinates from an Astropy table 
+as its argument. (A regular list of coordinates works, too.) Besides its 
+ability to take several coordinates at once, this method functions exactly like 
+:meth:`~pywwt.BaseWWTWidget.add_circle`, so optional keyword arguments that set 
+Circle properties are also available.
+
 Lines
 -----
 
@@ -82,7 +93,8 @@ This code block results in the following picture.
 See :class:`~pywwt.Line` for a full list of available properties.
 
 The constellation is not completely connected, but as shown below, points can
-also be added after the line has been initialized using :meth:`~pywwt.Line.add_point`::
+also be added after the line has been initialized using 
+:meth:`~pywwt.Line.add_point`::
 
     >>> line.add_point(SkyCoord.from_name('Megrez'))
 
