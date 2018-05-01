@@ -75,7 +75,7 @@ and smaller studies. They can also add a good amount of aesthetic value for
 tours or general use, and there are several methods of selecting them.
 
 About 20 layers of different wavelengths, scopes, and eras are currently 
-available. You can list them using the widget's ``available_layers`` method::
+available. You can list them using the widget's :meth:`~pywwt.BaseWWTWidget.available_layers` method::
 
     >>> wwt.available_layers
     ['2MASS: Catalog (Synthetic, Near Infrared)', '2Mass: Imagery (Infrared)',

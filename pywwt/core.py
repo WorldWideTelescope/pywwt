@@ -11,6 +11,7 @@ from .traits import (Color, ColorWithOpacity, Bool,
 from .annotation import Circle, Polygon, Line, CircleCollection
 from .imagery import get_imagery_layers
 from .layers import ImageryLayers
+from .ss_proxy import SolarSystem
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -32,6 +33,7 @@ class BaseWWTWidget(HasTraits):
         self.observe(self._on_trait_change, type='change')
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
         self.imagery = ImageryLayers(self._available_layers)
+        self.solar_system = SolarSystem(self)
         self._available_modes = ['sky', 'planet', 'solar_system',
                                  'milky_way', 'universe', 'panorama']
         self.current_mode = 'sky'
@@ -235,59 +237,6 @@ class BaseWWTWidget(HasTraits):
             return proposal['value'].to(u.degree)
         else:
             raise TraitError('location_longitude not in angle units')
-
-    #ss_cmb = Bool(False, help='Whether to show the cosmic microwave background in solar system mode (`bool`)').tag(wwt='solarSystemCMB') ###
-    #ss_cosmos = Bool(False, help='Whether to show data from the SDSS Cosmos data set (`bool`)').tag(wwt='solarSystemCosmos') ###
-    #ss_display = Bool(False, help='Whether to show the solar system while in solar system mode (`bool`)').tag(wwt='solarSystemOverlays') ###
-    #ss_lighting = Bool(False, help='Whether to show the lighting effect of the Sun on the solar system (`bool`)').tag(wwt='solarSystemLighting') ###
-    ss_milky_way = Bool(True,
-                        help='Whether to show the galactic bulge in the '
-                             'background in solar system mode '
-                             '(`bool`)').tag(wwt='solarSystemMilkyWay')
-    #ss_multi_res = Bool(False, help='Whether to show the multi-resolution textures for planets where available (`bool`)').tag(wwt='solarSystemMultiRes') ###
-    #ss_minor_orbits = Bool(False, help='Whether to show the orbits of minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorOrbits') ###
-    #ss_minor_planets = Bool(False, help='Whether to show minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorPlanets') ###
-    ss_orbits = Bool(True,
-                     help='Whether to show orbit paths when the solar system '
-                          'is displayed (`bool`)').tag(wwt='solarSystemOrbits')
-    ss_objects = Bool(True,
-                      help='Whether to show the objects of the solar system in '
-                           'solar system mode (`bool`)').tag(wwt='solarSystemPlanets')
-    ss_scale = Int(1, help='Specifies how to scale objects\' size in solar '
-                           'system mode, with 1 as actual size and 100 as the '
-                           'maximum (`int`)').tag(wwt='solarSystemScale')
-    #ss_stars = Bool(False, help='Whether to show background stars in solar system mode (`bool`)').tag(wwt='solarSystemStars') ###
-
-    @validate('ss_scale')
-    def _validate_scale(self, proposal):
-        if 1 <= proposal['value'] <= 100:
-            return str(proposal['value'])
-        else:
-            raise ValueError('ss_scale takes integers from 1-100')
-
-    def track_object(self, obj):
-        """
-        Focus the viewer on a particular object while in solar system mode.
-        Available objects include the Sun, the planets, the Moon, Jupiter's
-        Galilean moons, and Pluto.
-
-        Parameters
-        ----------
-        obj : `str`
-            The desired solar system object.
-        """
-        obj = obj.lower()
-        mappings = {'sun': 0, 'mercury': 1, 'venus': 2, 'mars': 3, 'jupiter': 4,
-                    'saturn': 5, 'uranus': 6, 'neptune': 7, 'pluto': 8,
-                    'moon': 9, 'io': 10, 'europa': 11, 'ganymede': 12,
-                    'callisto': 13, 'ioshadow': 14, 'europashadow': 15,
-                    'ganymedeshadow': 16, 'callistoshadow': 17,
-                    'suneclipsed': 18, 'earth': 19}
-
-        if obj in mappings:
-            self._send_msg(event='track_object', code=mappings[obj])
-        else:
-            raise ValueError('the given object cannot be tracked')
 
     def set_view(self, mode):
         """
