@@ -195,7 +195,7 @@ def test_full(tmpdir, capsys):
     circle2.fill_color = 'orange'
     circle2.opacity = 1
 
-    coord = SkyCoord([0, 4, 1], [-5, 0, 0], unit=('deg', 'deg'), frame='galactic')
+    coord = SkyCoord([1, 4, 0], [0, 0, -5], unit=('deg', 'deg'), frame='galactic')
 
     poly = wwt.add_polygon()
     poly.add_point(coord[0])
