@@ -104,7 +104,8 @@ setup_args = dict(
         'traitlets',
         'qtpy',
         'flask',
-        'flask-cors'
+        'flask-cors',
+        'six'
     ],
     extras_require = {
         'test': [

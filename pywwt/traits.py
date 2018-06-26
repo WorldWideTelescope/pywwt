@@ -5,6 +5,7 @@ from traitlets import (TraitType, TraitError,
                        Int as OriginalInt,
                        Unicode as OriginalUnicode)
 from astropy import units as u
+import six
 
 try:
     from matplotlib.colors import to_hex
