@@ -116,7 +116,8 @@ def assert_widget_image(tmpdir, widget, filename):
         with open(actual, 'rb') as f:
             actual = b64encode(f.read()).decode()
 
-        print(REPRODUCABILITY_SCRIPT.format(actual=actual, expected=expected))
+        if os.environ.get('CI', 'false').lower() == 'true':
+            print(REPRODUCABILITY_SCRIPT.format(actual=actual, expected=expected))
 
         pytest.fail(msg, pytrace=False)
 
