@@ -37,7 +37,7 @@ class BaseWWTWidget(HasTraits):
         self._available_modes = ['sky', 'planet', 'solar_system',
                                  'milky_way', 'universe', 'panorama']
         self.current_mode = 'sky'
-        
+
         # NOTE: we deliberately don't force _on_trait_change to be called here
         # for the WWT settings, as the default values are hard-coded in wwt.html
         # This is done because there is otherwise no reliable way of making sure
@@ -64,6 +64,11 @@ class BaseWWTWidget(HasTraits):
     def _send_msg(self, **kwargs):
         # This method should be overridden and should send the message to WWT
         raise NotImplementedError()
+
+    actual_planet_scale = Bool(False,
+                               help='Whether to show planets to scale or as '
+                                    'points with a fixed size '
+                                    '(`bool`)').tag(wwt='actualPlanetScale')
 
     # TODO: need to add all settings as traits
     # check wwt.html for comments on settings that are disabled below
@@ -301,7 +306,7 @@ class BaseWWTWidget(HasTraits):
         """
         A list of the modes that are currently available in the viewer.
         """
-        return sorted(self._available_modes)        
+        return sorted(self._available_modes)
 
     def load_image_collection(self, url):
         """
