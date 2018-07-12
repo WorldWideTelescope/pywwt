@@ -5,6 +5,7 @@ from traitlets import (TraitType, TraitError,
                        Int as OriginalInt,
                        Unicode as OriginalUnicode)
 from astropy import units as u
+import six
 
 try:
     from matplotlib.colors import to_hex
@@ -79,7 +80,7 @@ class Color(TraitType):
             self.__doc__ = self.help
 
     def validate(self, obj, value):
-        if isinstance(value, str) or (isinstance(value, tuple) and len(value) == 3):
+        if isinstance(value, six.string_types) or (isinstance(value, tuple) and len(value) == 3):
             return to_hex(value)
         else:
             if hasattr(obj, 'opacity'):
