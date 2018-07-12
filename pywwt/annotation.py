@@ -132,6 +132,8 @@ class Circle(Annotation):
             changed['new'] = changed['new'].value
 
         super(Circle, self)._on_trait_change(changed)
+        dummy = Circle(self.parent)
+        dummy.remove()
 
 
 class Polygon(Annotation):
@@ -193,6 +195,8 @@ class Polygon(Annotation):
             changed['new'] = changed['new'].value
 
         super(Polygon, self)._on_trait_change(changed)
+        dummy = Circle(self.parent)
+        dummy.remove()
 
 
 class Line(Annotation):
@@ -250,6 +254,8 @@ class Line(Annotation):
             changed['new'] = changed['new'].value
 
         super(Line, self)._on_trait_change(changed)
+        dummy = Circle(self.parent)
+        dummy.remove()
 
 class CircleCollection():
     """
