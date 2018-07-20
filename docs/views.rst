@@ -19,7 +19,7 @@ argument for :meth:`~pywwt.BaseWWTWidget.set_view`::
     
 Once you've done that, your view should resemble the following:
 
-.. image:: images/moon_view.png
+.. image:: images/moon.png
 
 Solar system, Milky Way, and Universe views
 -------------------------------------------
@@ -67,7 +67,7 @@ visible:
 It can be used as a base point for exploration of galaxies. Access it by 
 entering::
 
-    >>> wwt.set_view('Moon')
+    >>> wwt.set_view('Milky_Way')
 
 **Universe**
 The Universe view zooms all the way out to the extent of the observed universe:
