@@ -34,7 +34,7 @@ class Annotation(HasTraits):
 
     tag = Unicode(help='Contains a string for use by the web client '
                        '(`str`)').tag(wwt='tag')
-    
+
     def __init__(self, parent=None, **kwargs):
         self.parent = parent
         self.observe(self._on_trait_change, type='change')
@@ -132,8 +132,6 @@ class Circle(Annotation):
             changed['new'] = changed['new'].value
 
         super(Circle, self)._on_trait_change(changed)
-        dummy = Circle(self.parent)
-        dummy.remove()
 
 
 class Polygon(Annotation):
@@ -195,8 +193,6 @@ class Polygon(Annotation):
             changed['new'] = changed['new'].value
 
         super(Polygon, self)._on_trait_change(changed)
-        dummy = Circle(self.parent)
-        dummy.remove()
 
 
 class Line(Annotation):
@@ -254,16 +250,15 @@ class Line(Annotation):
             changed['new'] = changed['new'].value
 
         super(Line, self)._on_trait_change(changed)
-        dummy = Circle(self.parent)
-        dummy.remove()
+
 
 class CircleCollection():
     """
-    A collection of circle annotations. Takes a set of several points 
-    (e.g. a column of SkyCoords from an astropy Table) to make generating 
+    A collection of circle annotations. Takes a set of several points
+    (e.g. a column of SkyCoords from an astropy Table) to make generating
     several circles at once easier.
     """
-    
+
     def __init__(self, parent, points, **kwargs):
         if len(points) <= 1e4:
             self.points = points
@@ -273,7 +268,7 @@ class CircleCollection():
         self.parent = parent
         self.collection = []
         self._gen_circles(self.points, **kwargs)
-        
+
     def _set_all_attributes(self, name, value):
         for elem in self.collection:
             setattr(elem, name, value)
@@ -288,24 +283,24 @@ class CircleCollection():
             return values[0]
         else:
             return values
-        
+
     def _gen_circles(self, points, **kwargs):
         for elem in points:
             circle = Circle(self.parent, **kwargs)
             circle.set_center(elem)
-            self.collection.append(circle)        
+            self.collection.append(circle)
 
     def add_points(self, points, **kwargs):
         """
         Adds multiple points to the CircleCollection.
-        """                
+        """
         self._gen_circles(points, **kwargs)
         self.points = concatenate((self.points, points))
 
     def remove(self):
         """
         Removes all circles in the CircleCollection from view.
-        """        
+        """
         for elem in self.collection:
             elem.remove()
 
@@ -314,7 +309,7 @@ class CircleCollection():
     def fill(self):
         """
         Whether or not the circles in the CircleCollection have a fill.
-        """        
+        """
         return self._get_all_attributes('fill')
 
     @fill.setter
@@ -347,7 +342,7 @@ class CircleCollection():
     def line_width(self):
         """
         The line width of the circles in the CircleCollection.
-        """        
+        """
         return self._get_all_attributes('line_width')
 
     @line_width.setter
@@ -358,18 +353,18 @@ class CircleCollection():
     def radius(self):
         """
         The radii of the circles in the CircleCollection.
-        """        
+        """
         return self._get_all_attributes('radius')
 
     @radius.setter
     def radius(self, value):
         return self._set_all_attributes('radius', value)
-    
+
     @property
     def shape(self):
         """
         The shapes comprising the CircleCollection (always 'circle').
-        """        
+        """
         return self._get_all_attributes('shape')
 
     # Annotation.__dict__ attributes
@@ -377,18 +372,18 @@ class CircleCollection():
     def label(self):
         """
         Descriptive text for the CircleCollection.
-        """        
+        """
         return self._get_all_attributes('label')
 
     @label.setter
-    def label(self, value):        
+    def label(self, value):
         return self._set_all_attributes('label', value)
 
     @property
     def hover_label(self):
         """
         Whether to show a label when the mouse hovers over the CircleCollection.
-        """        
+        """
         return self._get_all_attributes('hover_label')
 
     @hover_label.setter
@@ -399,7 +394,7 @@ class CircleCollection():
     def opacity(self):
         """
         The opacity of the circles in the CircleCollection.
-        """        
+        """
         return self._get_all_attributes('opacity')
 
     @opacity.setter
@@ -410,7 +405,7 @@ class CircleCollection():
     def tag(self):
         """
         A string that can be used by the web client.
-        """        
+        """
         return self._get_all_attributes('tag')
 
     @tag.setter
