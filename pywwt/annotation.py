@@ -2,7 +2,6 @@ import uuid
 from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
 from astropy.coordinates import concatenate, SkyCoord
-#import json # OR
 import requests
 
 from .traits import (Color, ColorWithOpacity, Bool,
@@ -276,11 +275,8 @@ class FieldOfView():
         telescope = telescope.lower()
         if telescope in self.available:
             if telescope == 'k2':
-                # could also use requests.get if we don't want to store files:
-                json_file = requests.get('https://github.com/KeplerGO/K2FootprintFiles/raw/master/json/k2-footprint.json')
+                json_file = requests.get('https://worldwidetelescope.github.io/pywwt/fov_files/k2-trimmed.json')
                 diction = json_file.json()
-                #with open('fov_files/k2-footprint.json') as json_file:
-                #    diction = json.load(json_file)
                 # check python version. sys.version_info.major > 3, OR:
                 try:
                     iter_diction = diction.items()
