@@ -1638,7 +1638,8 @@ window.wwtlib = function(){
     ganymede: 16, 
     callisto: 17, 
     custom: 18, 
-    identity: 19
+    identity: 19, 
+    sandbox: 20
   };
 
 
@@ -1647,7 +1648,8 @@ window.wwtlib = function(){
   var ReferenceFrameTypes = {
     fixedSherical: 0, 
     orbital: 1, 
-    trajectory: 2
+    trajectory: 2, 
+    synodic: 3
   };
 
 
@@ -2683,6 +2685,9 @@ window.wwtlib = function(){
   };
   CT.dmS2Dp = function(Degrees, Minutes, Seconds, bPositive) {
     if (!bPositive) {
+      console.assert(Degrees >= 0);
+      console.assert(Minutes >= 0);
+      console.assert(Seconds >= 0);
     }
     if (bPositive) {
       return Degrees + Minutes / 60 + Seconds / 3600;
@@ -2779,6 +2784,7 @@ window.wwtlib = function(){
     return JD - DT.dateToJD(Year, 1, 1, bGregorianCalendar) + 1;
   };
   DT.daysInMonthForMonth = function(Month, bLeap) {
+    console.assert(Month >= 1 && Month <= 12);
     var MonthLength = [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 0 ];
     if (bLeap) {
       MonthLength[1]++;
@@ -2943,6 +2949,7 @@ window.wwtlib = function(){
     }
     else if (y < 1998) {
       var Index = ss.truncate(((y - 1620) / 2));
+      console.assert(Index < GFX.deltaTTable.length);
       y = y / 2 - Index - 810;
       Delta = (GFX.deltaTTable[Index] + (GFX.deltaTTable[Index + 1] - GFX.deltaTTable[Index]) * y);
     }
@@ -3899,6 +3906,7 @@ window.wwtlib = function(){
           R = CAAPluto.radiusVector(JD0);
           break;
         default:
+          console.assert(false);
           break;
       }
       if (!bFirstRecalc) {
@@ -3993,7 +4001,7 @@ window.wwtlib = function(){
     var x = r * a * Math.sin(A + w + v);
     var y = r * b * Math.sin(B + w + v);
     var z = r * c * Math.sin(C + w + v);
-    return Vector3d.create(x, y, z);
+    return Vector3d.create(x, z, y);
   };
   ELL.calculateRectangular = function(elements, meanAnomoly) {
     var omega = CT.d2R(elements.omega);
@@ -4026,7 +4034,7 @@ window.wwtlib = function(){
     var x = r * a * Math.sin(A + w + v);
     var y = r * b * Math.sin(B + w + v);
     var z = r * c * Math.sin(C + w + v);
-    return Vector3d.create(x, y, z);
+    return Vector3d.create(x, z, y);
   };
   ELL.calculateElements = function(JD, elements) {
     var Epsilon = CAANutation.meanObliquityOfEcliptic(elements.jdEquinox);
@@ -5355,6 +5363,7 @@ window.wwtlib = function(){
     var A3 = CT.m360(313.45 + 481266.484 * T);
     A3 = CT.d2R(A3);
     var nLCoefficients = GFX.g_MoonCoefficients1.length;
+    console.assert(GFX.g_MoonCoefficients2.length === nLCoefficients);
     var SigmaL = 0;
     for (var i = 0; i < nLCoefficients; i++) {
       var ThisSigma = GFX.g_MoonCoefficients2[i].a * Math.sin(GFX.g_MoonCoefficients1[i].d * D + GFX.g_MoonCoefficients1[i].m * M + GFX.g_MoonCoefficients1[i].mdash * Mdash + GFX.g_MoonCoefficients1[i].f * F);
@@ -5389,6 +5398,7 @@ window.wwtlib = function(){
     var A3 = CT.m360(313.45 + 481266.484 * T);
     A3 = CT.d2R(A3);
     var nBCoefficients = GFX.g_MoonCoefficients3.length;
+    console.assert(GFX.g_MoonCoefficients4.length === nBCoefficients);
     var SigmaB = 0;
     for (var i = 0; i < nBCoefficients; i++) {
       var ThisSigma = GFX.g_MoonCoefficients4[i] * Math.sin(GFX.g_MoonCoefficients3[i].d * D + GFX.g_MoonCoefficients3[i].m * M + GFX.g_MoonCoefficients3[i].mdash * Mdash + GFX.g_MoonCoefficients3[i].f * F);
@@ -5425,6 +5435,7 @@ window.wwtlib = function(){
     var A3 = CT.m360(313.45 + 481266.484 * T);
     A3 = CT.d2R(A3);
     var nRCoefficients = GFX.g_MoonCoefficients1.length;
+    console.assert(GFX.g_MoonCoefficients2.length === nRCoefficients);
     var SigmaR = 0;
     for (var i = 0; i < nRCoefficients; i++) {
       var ThisSigma = GFX.g_MoonCoefficients2[i].b * Math.cos(GFX.g_MoonCoefficients1[i].d * D + GFX.g_MoonCoefficients1[i].m * M + GFX.g_MoonCoefficients1[i].mdash * Mdash + GFX.g_MoonCoefficients1[i].f * F);
@@ -5741,6 +5752,7 @@ window.wwtlib = function(){
       JD += DeltaJD;
     }
     else {
+      console.assert(false);
     }
     var DeltaJD2 = 0.000325 * Math.sin(A1) + 0.000165 * Math.sin(A2) + 0.000164 * Math.sin(A3) + 0.000126 * Math.sin(A4) + 0.00011 * Math.sin(A5) + 6.2E-05 * Math.sin(A6) + 6E-05 * Math.sin(A7) + 5.6E-05 * Math.sin(A8) + 4.7E-05 * Math.sin(A9) + 4.2E-05 * Math.sin(A10) + 4E-05 * Math.sin(A11) + 3.7E-05 * Math.sin(A12) + 3.5E-05 * Math.sin(A13) + 2.3E-05 * Math.sin(A14);
     JD += DeltaJD2;
@@ -8752,7 +8764,7 @@ window.wwtlib = function(){
       mvInv.set_m44(1);
       var sp = Vector3d._transformCoordinate(ModelShader.sunPosition, mvInv);
       sp.normalize();
-      gl.uniform3f(ModelShader.sunLoc, -sp.x, -sp.y, -sp.z);
+      gl.uniform3f(ModelShader.sunLoc, sp.x, sp.y, sp.z);
       gl.uniform1i(ModelShader.sampLoc, 0);
       if (renderContext.space || noDepth) {
         gl.disable(2929);
@@ -10647,6 +10659,9 @@ window.wwtlib = function(){
       case 'Object3dLayer':
         newLayer = new Object3dLayer();
         break;
+      case 'OrbitLayer':
+        newLayer = new OrbitLayer();
+        break;
       default:
         return null;
     }
@@ -11008,11 +11023,47 @@ window.wwtlib = function(){
   };
   LayerManager.initLayers = function() {
     LayerManager._clearLayers();
+    var iss = null;
+    if (!LayerManager.get_tourLayers()) {
+      iss = new LayerMap('ISS', 18);
+      iss.frame.epoch = SpaceTimeController._twoLineDateToJulian('10184.51609218');
+      iss.frame.semiMajorAxis = 6728829.41;
+      iss.frame.referenceFrameType = 1;
+      iss.frame.inclination = 51.6442;
+      iss.frame.longitudeOfAscendingNode = 147.0262;
+      iss.frame.eccentricity = 0.0009909;
+      iss.frame.meanAnomolyAtEpoch = 325.5563;
+      iss.frame.meanDailyMotion = 360 * 15.72172655;
+      iss.frame.argumentOfPeriapsis = 286.4623;
+      iss.frame.scale = 1;
+      iss.frame.semiMajorAxisUnits = 1;
+      iss.frame.meanRadius = 130;
+      iss.frame.oblateness = 0;
+      iss.frame.showOrbitPath = true;
+      var isstle = new Array(0);
+      var url = 'http://worldwidetelescope.org/wwtweb/isstle.aspx';
+      var webFile;
+      webFile = new WebFile(url);
+      webFile.onStateChange = function() {
+        if (webFile.get_state() === 1) {
+          var data = webFile.getText();
+          isstle = data.split('\n');
+          if (isstle.length > 1) {
+            iss.frame.fromTLE(isstle[0], isstle[1], 398600441800000);
+          }
+        }
+      };
+      webFile.send();
+      iss.enabled = true;
+    }
     LayerManager.get_layerMaps()['Sun'] = new LayerMap('Sun', 3);
     LayerManager.get_layerMaps()['Sun'].addChild(new LayerMap('Mercury', 4));
     LayerManager.get_layerMaps()['Sun'].addChild(new LayerMap('Venus', 5));
     LayerManager.get_layerMaps()['Sun'].addChild(new LayerMap('Earth', 6));
     LayerManager.get_layerMaps()['Sun'].childMaps['Earth'].addChild(new LayerMap('Moon', 13));
+    if (!LayerManager.get_tourLayers()) {
+      LayerManager.get_layerMaps()['Sun'].childMaps['Earth'].addChild(iss);
+    }
     LayerManager.get_layerMaps()['Sun'].addChild(new LayerMap('Mars', 7));
     LayerManager.get_layerMaps()['Sun'].addChild(new LayerMap('Jupiter', 8));
     LayerManager.get_layerMaps()['Sun'].childMaps['Jupiter'].addChild(new LayerMap('Io', 14));
@@ -11028,8 +11079,20 @@ window.wwtlib = function(){
     LayerManager.get_layerMaps()['Sun'].open = true;
     LayerManager._allMaps = {};
     LayerManager._addAllMaps(LayerManager.get_layerMaps(), null);
+    if (!LayerManager.get_tourLayers()) {
+      LayerManager._addIss();
+    }
     LayerManager._version++;
     LayerManager.loadTree();
+  };
+  LayerManager._addIss = function() {
+    var layer = new ISSLayer();
+    layer.set_name(Language.getLocalizedText(1314, 'ISS Model  (Toshiyuki Takahei)'));
+    layer.enabled = Settings.get_active().get_showISSModel();
+    LayerManager.get_layerList()[layer.id] = layer;
+    layer.set_referenceFrame('ISS');
+    LayerManager.get_allMaps()['ISS'].layers.push(layer);
+    LayerManager.get_allMaps()['ISS'].open = true;
   };
   LayerManager._addAllMaps = function(maps, parent) {
     var $enum1 = ss.enumerate(ss.keys(maps));
@@ -11278,6 +11341,7 @@ window.wwtlib = function(){
       else if (!ss.emptyString(map.frame.parent) && ss.keyExists(LayerManager.get_allMaps(), map.frame.parent)) {
         if (!ss.keyExists(LayerManager.get_allMaps()[map.frame.parent].childMaps, map.frame.name)) {
           LayerManager.get_allMaps()[map.frame.parent].childMaps[map.frame.name] = map;
+          map.parent = LayerManager.get_allMaps()[map.frame.parent];
         }
       }
     }
@@ -11299,6 +11363,57 @@ window.wwtlib = function(){
     else {
       return false;
     }
+  };
+  LayerManager._getFrameTarget = function(renderContext, TrackingFrame) {
+    var target = new FrameTarget();
+    var targetPoint = Vector3d.get_empty();
+    target.target = Vector3d.get_empty();
+    target.matrix = Matrix3d.get_identity();
+    if (!ss.keyExists(LayerManager.get_allMaps(), TrackingFrame)) {
+      return target;
+    }
+    var mapList = [];
+    var current = LayerManager.get_allMaps()[TrackingFrame];
+    mapList.push(current);
+    while (current.frame.reference === 18) {
+      current = current.parent;
+      mapList.splice(0, 0, current);
+    }
+    var matOld = renderContext.get_world().clone();
+    var matOldNonRotating = renderContext.get_worldBaseNonRotating();
+    var matOldBase = renderContext.get_worldBase();
+    var oldNominalRadius = renderContext.get_nominalRadius();
+    var $enum1 = ss.enumerate(mapList);
+    while ($enum1.moveNext()) {
+      var map = $enum1.current;
+      if (map.frame.reference !== 18 && map.frame.reference !== 20) {
+        Planets.setupPlanetMatrix(renderContext, Enums.parse('SolarSystemObjects', map.frame.name), Vector3d.get_empty(), false);
+      }
+      else {
+        map.computeFrame(renderContext);
+        if (map.frame.useRotatingParentFrame()) {
+          renderContext.set_world(Matrix3d.multiplyMatrix(map.frame.worldMatrix, renderContext.get_world()));
+        }
+        else {
+          renderContext.set_world(Matrix3d.multiplyMatrix(map.frame.worldMatrix, renderContext.get_worldBaseNonRotating()));
+        }
+        if (map.frame.referenceFrameType === 3) {
+          renderContext.set_worldBaseNonRotating(renderContext.get_world().clone());
+        }
+        renderContext.set_nominalRadius(map.frame.meanRadius);
+      }
+    }
+    targetPoint = renderContext.get_world().transform(targetPoint);
+    var lookAt = renderContext.get_world().transform(Vector3d.create(0, 0, 1));
+    var lookUp = Vector3d.subtractVectors(renderContext.get_world().transform(Vector3d.create(0, 1, 0)), targetPoint);
+    lookUp.normalize();
+    target.matrix = Matrix3d.lookAtLH(new Vector3d(), Vector3d.subtractVectors(lookAt, targetPoint), lookUp);
+    renderContext.set_nominalRadius(oldNominalRadius);
+    renderContext.set_world(matOld);
+    renderContext.set_worldBaseNonRotating(matOldNonRotating);
+    renderContext.set_worldBase(matOldBase);
+    target.target = targetPoint;
+    return target;
   };
   LayerManager._prepTourLayers = function() {
     if (TourPlayer.get_playing()) {
@@ -11353,7 +11468,7 @@ window.wwtlib = function(){
     var matOld = renderContext.get_world();
     var matOldNonRotating = renderContext.get_worldBaseNonRotating();
     var oldNominalRadius = renderContext.get_nominalRadius();
-    if (thisMap.frame.reference === 18) {
+    if ((thisMap.frame.reference === 18 | thisMap.frame.reference === 18) === 1) {
       thisMap.computeFrame(renderContext);
       if (thisMap.frame.referenceFrameType !== 1 && thisMap.frame.referenceFrameType !== 2) {
         renderContext.set_world(Matrix3d.multiplyMatrix(thisMap.frame.worldMatrix, renderContext.get_world()));
@@ -11370,7 +11485,11 @@ window.wwtlib = function(){
       while ($enum2.moveNext()) {
         var layer = $enum2.current;
         if ((!pass && ss.canCast(layer, ImageSetLayer)) || (pass === 1 && !(ss.canCast(layer, ImageSetLayer)))) {
-          if (layer.enabled) {
+          var skipLayer = false;
+          if (!pass) {
+            skipLayer = !astronomical && (layer).get_overrideDefaultLayer();
+          }
+          if (layer.enabled && !skipLayer) {
             var layerStart = SpaceTimeController.utcToJulian(layer.get_startTime());
             var layerEnd = SpaceTimeController.utcToJulian(layer.get_endTime());
             var fadeIn = SpaceTimeController.utcToJulian(layer.get_startTime()) - ((layer.get_fadeType() === 1 || layer.get_fadeType() === 3) ? (layer.get_fadeSpan() / 864000000) : 0);
@@ -11404,7 +11523,7 @@ window.wwtlib = function(){
         if (!(ss.canCast(map, LayerMap))) {
           continue;
         }
-        if (map.frame.showOrbitPath && Settings.get_active().get_solarSystemOrbits() && Settings.get_active().get_solarSystemMinorOrbits()) {
+        if (map.enabled && map.frame.showOrbitPath && Settings.get_active().get_solarSystemOrbits() && Settings.get_active().get_solarSystemMinorOrbits()) {
           if (map.frame.referenceFrameType === 1) {
             if (map.frame.get_orbit() == null) {
               map.frame.set_orbit(new Orbit(map.frame.get_elements(), 360, map.frame.get_representativeColor(), 1, map.parent.frame.meanRadius));
@@ -11957,6 +12076,19 @@ window.wwtlib = function(){
   };
   LayerManager._addGreatCircleLayer = function() {
   };
+  LayerManager._loadOrbitsFile = function(path, currentMap) {
+    var layer = new OrbitLayer();
+    layer.loadData(null, path);
+    layer.enabled = true;
+    layer.set_name(path.substring(path.lastIndexOf('\\') + 1));
+    LayerManager.get_layerList()[layer.id] = layer;
+    layer.set_referenceFrame(currentMap);
+    LayerManager.get_allMaps()[currentMap].layers.push(layer);
+    LayerManager.get_allMaps()[currentMap].open = true;
+    LayerManager._version++;
+    LayerManager.loadTree();
+    return layer;
+  };
   var LayerManager$ = {
 
   };
@@ -12077,11 +12209,11 @@ window.wwtlib = function(){
   };
 
 
-  // wwtlib.OrbitLayer
+  // wwtlib.FrameTarget
 
-  function OrbitLayer() {
+  function FrameTarget() {
   }
-  var OrbitLayer$ = {
+  var FrameTarget$ = {
 
   };
 
@@ -12338,7 +12470,7 @@ window.wwtlib = function(){
     for (var i = 0; i < vertices.length; ++i) {
       points[i] = vertices[i].get_position();
     }
-    mesh.boundingSphere = ConvexHull.findEnclosingSphere(points);
+    mesh.boundingSphere = ConvexHull.findEnclosingSphereFast(points);
     return mesh;
   };
   Mesh.createTangent = function(vertices, indices) {
@@ -12349,7 +12481,7 @@ window.wwtlib = function(){
     for (var i = 0; i < mesh.tangentVertices.length; ++i) {
       points[i] = mesh.tangentVertices[i].get_position();
     }
-    mesh.boundingSphere = ConvexHull.findEnclosingSphere(points);
+    mesh.boundingSphere = ConvexHull.findEnclosingSphereFast(points);
     return mesh;
   };
   var Mesh$ = {
@@ -13685,7 +13817,7 @@ window.wwtlib = function(){
       if (this._mesh.boundingSphere.radius > 0) {
         unitScale = 1 / this._mesh.boundingSphere.radius;
       }
-      renderContext.set_world(Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(Matrix3d._rotationY(Math.PI), Matrix3d.translation(Vector3d.create(-offset.x, -offset.y, -offset.z))), Matrix3d._scaling(unitScale, unitScale, unitScale)), oldWorld));
+      renderContext.set_world(Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(Matrix3d.translation(Vector3d.create(-offset.x, -offset.y, -offset.z)), Matrix3d._scaling(unitScale, unitScale, unitScale)), oldWorld));
       var worldView = Matrix3d.multiplyMatrix(renderContext.get_world(), renderContext.get_view());
       var v = worldView.transform(Vector3d.get_empty());
       var scaleFactor = Math.sqrt(worldView.get_m11() * worldView.get_m11() + worldView.get_m22() * worldView.get_m22() + worldView.get_m33() * worldView.get_m33()) / unitScale;
@@ -13699,6 +13831,7 @@ window.wwtlib = function(){
       var pixelsPerUnit = (p11 / w) * viewportHeight;
       var radiusInPixels = (radius * pixelsPerUnit);
       if (radiusInPixels < 0.5) {
+        return;
       }
       var savedSunlightColor = renderContext.get_sunlightColor();
       var savedReflectedColor = renderContext.get_reflectedLightColor();
@@ -13913,6 +14046,7 @@ window.wwtlib = function(){
     this._systemGenerated = false;
     this.meanAnomoly = 0;
     this.orbitalYears = 0;
+    this.observingLocation = false;
     this.reference = 18;
     this.parentsRoationalBase = false;
     this.referenceFrameType = 0;
@@ -13923,6 +14057,7 @@ window.wwtlib = function(){
     this.roll = 0;
     this.scale = 1;
     this.tilt = 0;
+    this.translation = new Vector3d();
     this.lat = 0;
     this.lng = 0;
     this.altitude = 0;
@@ -14136,9 +14271,37 @@ window.wwtlib = function(){
           break;
       }
     },
+    useRotatingParentFrame: function() {
+      switch (this.referenceFrameType) {
+        case 1:
+        case 2:
+        case 3:
+          return false;
+        default:
+          return true;
+      }
+    },
     _computeFixedRectangular: function(renderContext) {
     },
     _computeFixedSherical: function(renderContext) {
+      if (this.observingLocation) {
+        this.lat = SpaceTimeController.get_location().get_lat();
+        this.lng = SpaceTimeController.get_location().get_lng();
+        this.altitude = SpaceTimeController.get_altitude();
+      }
+      this.worldMatrix = Matrix3d.get_identity();
+      this.worldMatrix.translate(this.translation);
+      var localScale = (1 / renderContext.get_nominalRadius()) * this.scale * this.meanRadius;
+      this.worldMatrix.scale(Vector3d.create(localScale, localScale, localScale));
+      this.worldMatrix._multiply(Matrix3d.rotationYawPitchRoll((this.heading / 180 * Math.PI), (this.pitch / 180 * Math.PI), (this.roll / 180 * Math.PI)));
+      this.worldMatrix._multiply(Matrix3d._rotationZ(-90 / 180 * Math.PI));
+      if (!!this.rotationalPeriod) {
+        var rotationCurrent = (((SpaceTimeController.get_jNow() - this.zeroRotationDate) / this.rotationalPeriod) * Math.PI * 2) % (Math.PI * 2);
+        this.worldMatrix._multiply(Matrix3d._rotationX(-rotationCurrent));
+      }
+      this.worldMatrix.translate(Vector3d.create(1 + (this.altitude / renderContext.get_nominalRadius()), 0, 0));
+      this.worldMatrix._multiply(Matrix3d._rotationZ(this.lat / 180 * Math.PI));
+      this.worldMatrix._multiply(Matrix3d._rotationY(-(this.lng + 180) / 180 * Math.PI));
     },
     _computeFrameTrajectory: function(renderContext) {
     },
@@ -14148,8 +14311,7 @@ window.wwtlib = function(){
       this.meanAnomoly = ee.meanAnnomolyOut;
       var pointInstantLater = ELL.calculateRectangular(ee, this.meanAnomoly + 0.001);
       var direction = Vector3d.subtractVectors(point, pointInstantLater);
-      direction.normalize();
-      var up = point;
+      var up = point.copy();
       up.normalize();
       direction.normalize();
       var dist = point.length();
@@ -14189,13 +14351,13 @@ window.wwtlib = function(){
           break;
       }
       scaleFactor *= 1 / renderContext.get_nominalRadius();
-      this.worldMatrix = Matrix3d.get_identity();
       var look = Matrix3d.lookAtLH(Vector3d.create(0, 0, 0), direction, up);
       look.invert();
       this.worldMatrix = Matrix3d.get_identity();
+      this.worldMatrix.translate(this.translation);
       var localScale = (1 / renderContext.get_nominalRadius()) * this.scale * this.meanRadius;
       this.worldMatrix.scale(Vector3d.create(localScale, localScale, localScale));
-      var mat = Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(Matrix3d._rotationY(this.heading / 180 * Math.PI), Matrix3d._rotationX(this.pitch / 180 * Math.PI)), Matrix3d._rotationZ(this.roll / 180 * Math.PI));
+      this.worldMatrix._multiply(Matrix3d.rotationYawPitchRoll((this.heading / 180 * Math.PI), (this.pitch / 180 * Math.PI), (this.roll / 180 * Math.PI)));
       if (!!this.rotationalPeriod) {
         var rotationCurrent = (((SpaceTimeController.get_jNow() - this.zeroRotationDate) / this.rotationalPeriod) * Math.PI * 2) % (Math.PI * 2);
         this.worldMatrix._multiply(Matrix3d._rotationX(-rotationCurrent));
@@ -15060,6 +15222,23 @@ window.wwtlib = function(){
   };
 
 
+  // wwtlib.BodyAngles
+
+  function BodyAngles(poleRa, poleDec, primeMeridian, rotationRate) {
+    this.poleDec = 0;
+    this.poleRa = 0;
+    this.primeMeridian = 0;
+    this.rotationRate = 0;
+    this.poleDec = poleDec;
+    this.poleRa = poleRa;
+    this.primeMeridian = primeMeridian;
+    this.rotationRate = rotationRate;
+  }
+  var BodyAngles$ = {
+
+  };
+
+
   // wwtlib.Planets
 
   function Planets() {
@@ -15646,6 +15825,72 @@ window.wwtlib = function(){
     }
     return true;
   };
+  Planets.getPlanetOrientationAtEpoch = function(planetID) {
+    var m = Matrix3d.get_identity();
+    var obliquityOfEcliptic = 23.4392794;
+    if (planetID === 19) {
+      m._multiply(Matrix3d._rotationX(obliquityOfEcliptic * Planets.RC));
+    }
+    else {
+      m._multiply(Matrix3d._rotationX(-90 * Planets.RC));
+      m._multiply(Matrix3d._rotationZ((180 + Planets._planetAngles[planetID].primeMeridian) * Planets.RC));
+      m._multiply(Matrix3d._rotationX((90 - Planets._planetAngles[planetID].poleDec) * Planets.RC));
+      m._multiply(Matrix3d._rotationZ((Planets._planetAngles[planetID].poleRa - 90) * Planets.RC));
+      m._multiply(Matrix3d._rotationX(obliquityOfEcliptic * Planets.RC));
+      m._multiply(Matrix3d._rotationX(90 * Planets.RC));
+    }
+    return m;
+  };
+  Planets.setupPlanetMatrix = function(renderContext, planetID, centerPoint, makeFrustum) {
+    var matNonRotating = renderContext.get_world().clone();
+    Planets._setupMatrixForPlanetGeometry(renderContext, planetID, centerPoint, makeFrustum);
+    if (planetID === 0) {
+      var radius = Planets.getAdjustedPlanetRadius(planetID);
+      matNonRotating.scale(Vector3d.create(radius, radius, radius));
+      var translation = Vector3d.subtractVectors(Planets._planet3dLocations[planetID], centerPoint);
+      matNonRotating._multiply(Matrix3d.translation(translation));
+      renderContext.set_worldBaseNonRotating(matNonRotating);
+    }
+  };
+  Planets._setupMatrixForPlanetGeometry = function(renderContext, planetID, centerPoint, makeFrustum) {
+    var radius = Planets.getAdjustedPlanetRadius(planetID);
+    var rotationCurrent = 0;
+    if (planetID === 19) {
+      rotationCurrent = Math.PI + Coordinates.mstFromUTC2(SpaceTimeController.get_now(), 0) / 180 * Math.PI;
+    }
+    else {
+      rotationCurrent = Math.PI + (((Planets._jNow - 2451545) / Planets.planetRotationPeriod[planetID]) * Math.PI * 2) % (Math.PI * 2);
+    }
+    if (planetID === 9) {
+      rotationCurrent -= Math.PI / 2;
+    }
+    var matLocal = renderContext.get_world().clone();
+    var matNonRotating = renderContext.get_world().clone();
+    var translation = Vector3d.subtractVectors(Planets._planet3dLocations[planetID], centerPoint);
+    var orientationAtEpoch = Planets.getPlanetOrientationAtEpoch(planetID);
+    matLocal.scale(Vector3d.create(radius, radius, radius));
+    matLocal._multiply(Matrix3d._rotationY(-rotationCurrent));
+    matLocal._multiply(orientationAtEpoch);
+    if (planetID === renderContext.viewCamera.target) {
+      Planets.earthMatrix = Matrix3d.get_identity();
+      Planets.earthMatrix._multiply(Matrix3d._rotationY(-rotationCurrent));
+      Planets.earthMatrix._multiply(orientationAtEpoch);
+      Planets.earthMatrixInv = Planets.earthMatrix.clone();
+      Planets.earthMatrixInv.invert();
+    }
+    matLocal._multiply(Matrix3d.translation(translation));
+    renderContext.set_world(matLocal);
+    renderContext.set_worldBase(renderContext.get_world().clone());
+    renderContext.set_nominalRadius(Planets.getPlanetRadiusInMeters(planetID));
+    if (makeFrustum) {
+      renderContext.makeFrustum();
+    }
+    matNonRotating.scale(Vector3d.create(radius, radius, radius));
+    matNonRotating._multiply(orientationAtEpoch);
+    matNonRotating._multiply(Matrix3d.translation(translation));
+    renderContext.set_worldBaseNonRotating(matNonRotating);
+    return rotationCurrent;
+  };
   Planets.initPlanetResources = function(renderContext) {
   };
   Planets._drawSingleOrbit = function(renderContext, eclipticColor, id, centerPoint, startAngle, planetNow, opacity) {
@@ -15920,40 +16165,27 @@ window.wwtlib = function(){
         TileShader.atmosphereColor = Color.fromArgb(0, 0, 0, 0);
       }
     }
-    var radius = Planets.getAdjustedPlanetRadius(planetID);
-    var rotationCurrent = 0;
-    if (planetID === 19) {
-      rotationCurrent = Math.PI + Coordinates.mstFromUTC2(SpaceTimeController.get_now(), 0) / 180 * Math.PI;
-    }
-    else {
-      rotationCurrent = (((Planets._jNow - 2451545) / Planets.planetRotationPeriod[planetID]) * Math.PI * 2) % (Math.PI * 2);
-    }
     var matOld = renderContext.get_world();
     var matOldBase = renderContext.get_worldBase();
     var matOldNonRotating = renderContext.get_worldBaseNonRotating();
-    var matLocal = renderContext.get_world().clone();
-    var matLocalNR = renderContext.get_world().clone();
-    var translation = Vector3d.subtractVectors(Planets._planet3dLocations[planetID], centerPoint);
-    matLocal.scale(Vector3d.create(radius, radius, radius));
-    matLocal._multiply(Matrix3d._rotationY(-rotationCurrent));
-    matLocal._multiply(Matrix3d._rotationX((Planets._planetTilts[planetID] * Planets.RC)));
-    matLocal._multiply(Matrix3d.translation(translation));
-    matLocalNR.scale(Vector3d.create(radius, radius, radius));
-    matLocalNR._multiply(Matrix3d._rotationX((Planets._planetTilts[planetID] * Planets.RC)));
-    matLocalNR._multiply(Matrix3d.translation(translation));
-    renderContext.set_world(matLocal);
-    renderContext.set_worldBase(matLocal.clone());
-    renderContext.set_worldBaseNonRotating(matLocalNR);
-    renderContext.makeFrustum();
+    var radius = Planets.getAdjustedPlanetRadius(planetID);
+    Planets.setupPlanetMatrix(renderContext, planetID, centerPoint, true);
     var planetWidth = 1;
     if (planetID === 5) {
       planetWidth = 3;
     }
     if (Planets.isPlanetInFrustum(renderContext, planetWidth)) {
+      var matOld2 = renderContext.get_world();
+      var matOldBase2 = renderContext.get_worldBase();
+      var matOldNonRotating2 = renderContext.get_worldBaseNonRotating();
       var sun = Planets._planet3dLocations[0].copy();
       var planet = Planets._planet3dLocations[planetID].copy();
       sun = matOld.transform(sun);
       planet = matOld.transform(planet);
+      renderContext.set_world(matOld);
+      renderContext.set_worldBase(matOldBase);
+      renderContext.set_worldBaseNonRotating(matOldNonRotating);
+      Planets._setupMatrixForPlanetGeometry(renderContext, planetID, centerPoint, true);
       var sunPosition = Vector3d.subtractVectors(sun, planet);
       sunPosition.normalize();
       renderContext.set_sunPosition(sunPosition);
@@ -16199,6 +16431,13 @@ window.wwtlib = function(){
       radius = radius * (1 + (0.3 * (Settings.get_active().get_solarSystemScale() - 1)));
     }
     return radius;
+  };
+  Planets.getPlanetRadiusInMeters = function(planetID) {
+    if (planetID > Planets._planetDiameters.length - 1) {
+      planetID = 19;
+    }
+    var diameter = Planets._planetDiameters[planetID];
+    return (diameter / 2) * 149598000 * 1000;
   };
   Planets._drawPlanet = function(renderContext, planetID, opacity) {
     var planetPosition = Planets._planetLocations[planetID];
@@ -16780,7 +17019,15 @@ window.wwtlib = function(){
       var trackingMatrix = Matrix3d.get_identity();
       cameraDistance -= 1E-06;
       var activeTrackingFrame = false;
-      this.set_trackingFrame('');
+      if (this.get_solarSystemTrack() === 20 && !ss.emptyString(this.get_trackingFrame())) {
+        activeTrackingFrame = true;
+        var target = LayerManager._getFrameTarget(this, this.get_trackingFrame());
+        this.viewCamera.viewTarget = target.target;
+        trackingMatrix = target.matrix;
+      }
+      else if (!ss.emptyString(this.get_trackingFrame())) {
+        this.set_trackingFrame('');
+      }
       var center = this.viewCamera.viewTarget;
       var localZoom = this.viewCamera.zoom * 20;
       var lookAt = new Vector3d();
@@ -16813,7 +17060,8 @@ window.wwtlib = function(){
       this._cameraOffset = Vector3d._transformCoordinate(this._cameraOffset, tmp);
       lookUp = viewAdjust.transform(lookUp);
       this.set_world(Matrix3d.get_identity());
-      this.set_worldBase(this.get_world().clone());
+      this.set_worldBase(Matrix3d.get_identity());
+      this.set_worldBaseNonRotating(Matrix3d.get_identity());
       this.set_view(Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(trackingMatrix, Matrix3d.lookAtLH(this.cameraPosition, lookAt, lookUp)), lookAtAdjust));
       this.set_viewBase(this.get_view().clone());
       var temp = Vector3d.subtractVectors(lookAt, this.cameraPosition);
@@ -20914,6 +21162,13 @@ window.wwtlib = function(){
     temp.url = url;
     temp._callMe = callMe;
     temp._cabinet = FileCabinet.fromUrl(url, ss.bind('_loadXmlDocument', temp));
+    return temp;
+  };
+  TourDocument.fromUrlRaw = function(url, callMe) {
+    var temp = new TourDocument();
+    temp.url = url;
+    temp._callMe = callMe;
+    temp._cabinet = FileCabinet.fromUrl(url, callMe);
     return temp;
   };
   var TourDocument$ = {
@@ -29702,7 +29957,7 @@ window.wwtlib = function(){
     return temp;
   };
   Color.fromName = function(name) {
-    var temp = Color._fromWindowsNamedColor(name);
+    var temp = Color.load(name);
     return temp;
   };
   Color.load = function(color) {
@@ -31969,6 +32224,12 @@ window.wwtlib = function(){
     mat3d._isNotKnownToBeIdentity = true;
     return mat3d;
   };
+  Matrix3d.rotationYawPitchRoll = function(heading, pitch, roll) {
+    var matX = Matrix3d._rotationX(pitch);
+    var matY = Matrix3d._rotationY(heading);
+    var matZ = Matrix3d._rotationZ(roll);
+    return Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(matY, matX), matZ);
+  };
   Matrix3d._rotationY = function(p) {
     var v = p;
     var matNew = Matrix3d.get_identity();
@@ -33095,6 +33356,26 @@ window.wwtlib = function(){
 
   function ConvexHull() {
   }
+  ConvexHull.findEnclosingSphereFast = function(points) {
+    var result = new SphereHull();
+    var count = points.length;
+    var center = Vector3d.zero;
+    for (var i = 0; i < count; ++i) {
+      center.add(points[i]);
+    }
+    center.multiply(1 / count);
+    var radius = 0;
+    for (var i = 0; i < count; ++i) {
+      var distance = Vector3d.getLengthSq(Vector3d.subtractVectors(points[i], center));
+      if (distance > radius) {
+        radius = distance;
+      }
+    }
+    radius = Math.sqrt(radius);
+    result.center = center;
+    result.radius = radius;
+    return result;
+  };
   ConvexHull.findEnclosingSphere = function(list) {
     var Center = new Vector3d();
     var Radius = 0;
@@ -34971,6 +35252,9 @@ window.wwtlib = function(){
     }
     if (place.attributes.getNamedItem('ViewTarget') != null) {
       newPlace._camParams.viewTarget = Vector3d.parse(place.attributes.getNamedItem('ViewTarget').nodeValue);
+    }
+    if (place.attributes.getNamedItem('TargetReferenceFrame') != null) {
+      newPlace._camParams.targetReferenceFrame = place.attributes.getNamedItem('TargetReferenceFrame').nodeValue;
     }
     var descriptionNode = Util.selectSingleNode(place, 'Description');
     if (descriptionNode != null) {
@@ -37154,6 +37438,7 @@ window.wwtlib = function(){
       var rotation = Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(Matrix3d._rotationZ(-this._roll$1 / 180 * Math.PI), Matrix3d._rotationX(-this._pitch$1 / 180 * Math.PI)), Matrix3d._rotationY(this._heading$1 / 180 * Math.PI));
       renderContext.set_world(Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(rotation, Matrix3d._scaling(this._scale$1.x, this._scale$1.y, this._scale$1.z)), Matrix3d.translation(this._translate$1)), oldWorld));
       renderContext.set_twoSidedLighting(this.get_twoSidedGeometry());
+      Planets.drawPointPlanet(renderContext, new Vector3d(), 1, Colors.get_red(), false);
       if (this._lightID$1 > 0) {
       }
       else {
@@ -37454,6 +37739,222 @@ window.wwtlib = function(){
         rowData['Pivot.X'] = child.pivotPoint.x.toString();
         rowData['Pivot.Y'] = child.pivotPoint.y.toString();
         rowData['Pivot.Z'] = child.pivotPoint.z.toString();
+        this._callbacks$1.showRowData(rowData);
+      }
+    },
+    getNodeContextMenu: function(node) {
+      return LayerUI.prototype.getNodeContextMenu.call(this, node);
+    }
+  };
+
+
+  // wwtlib.OrbitLayer
+
+  function OrbitLayer() {
+    this._frames$1 = [];
+    this._primaryUI$1 = null;
+    this._pointOpacity$1 = 1;
+    this._pointColor$1 = Colors.get_yellow();
+    this._filename$1 = '';
+    this._dataFile$1 = '';
+    Layer.call(this);
+  }
+  var OrbitLayer$ = {
+    get_frames: function() {
+      return this._frames$1;
+    },
+    set_frames: function(value) {
+      this._frames$1 = value;
+      return value;
+    },
+    getPrimaryUI: function() {
+      if (this._primaryUI$1 == null) {
+        this._primaryUI$1 = new OrbitLayerUI(this);
+      }
+      return this._primaryUI$1;
+    },
+    cleanUp: function() {
+      var $enum1 = ss.enumerate(this._frames$1);
+      while ($enum1.moveNext()) {
+        var frame = $enum1.current;
+        if (frame.get_orbit() != null) {
+          frame.get_orbit().cleanUp();
+          frame.set_orbit(null);
+        }
+      }
+    },
+    writeLayerProperties: function(xmlWriter) {
+      xmlWriter._writeAttributeString('PointOpacity', this.get_pointOpacity().toString());
+      xmlWriter._writeAttributeString('PointColor', this._pointColor$1.save());
+    },
+    get_pointOpacity: function() {
+      return this._pointOpacity$1;
+    },
+    set_pointOpacity: function(value) {
+      if (this._pointOpacity$1 !== value) {
+        this.version++;
+        this._pointOpacity$1 = value;
+      }
+      return value;
+    },
+    get_pointColor: function() {
+      return this._pointColor$1;
+    },
+    set_pointColor: function(value) {
+      if (this._pointColor$1 !== value) {
+        this.version++;
+        this._pointColor$1 = value;
+      }
+      return value;
+    },
+    getParams: function() {
+      var paramList = new Array(6);
+      paramList[0] = this._pointOpacity$1;
+      paramList[1] = this.get_color().r / 255;
+      paramList[2] = this.get_color().g / 255;
+      paramList[3] = this.get_color().b / 255;
+      paramList[4] = this.get_color().a / 255;
+      paramList[5] = this.get_opacity();
+      return paramList;
+    },
+    getParamNames: function() {
+      return [ 'PointOpacity', 'Color.Red', 'Color.Green', 'Color.Blue', 'Color.Alpha', 'Opacity' ];
+    },
+    setParams: function(paramList) {
+      if (paramList.length === 6) {
+        this._pointOpacity$1 = paramList[0];
+        this.set_opacity(paramList[5]);
+        var color = Color.fromArgb(ss.truncate((paramList[4] * 255)), ss.truncate((paramList[1] * 255)), ss.truncate((paramList[2] * 255)), ss.truncate((paramList[3] * 255)));
+        this.set_color(color);
+      }
+    },
+    initializeFromXml: function(node) {
+      this.set_pointOpacity(parseFloat(node.attributes.getNamedItem('PointOpacity').nodeValue));
+      this.set_pointColor(Color.load(node.attributes.getNamedItem('PointColor').nodeValue));
+    },
+    draw: function(renderContext, opacity, flat) {
+      var matSaved = renderContext.get_world();
+      renderContext.set_world(renderContext.get_worldBaseNonRotating());
+      var $enum1 = ss.enumerate(this._frames$1);
+      while ($enum1.moveNext()) {
+        var frame = $enum1.current;
+        if (frame.showOrbitPath) {
+          if (frame.get_orbit() == null) {
+            frame.set_orbit(new Orbit(frame.get_elements(), 360, this.get_color(), 1, renderContext.get_nominalRadius()));
+          }
+          frame.get_orbit().draw3D(renderContext, opacity * this.get_opacity(), new Vector3d());
+        }
+      }
+      renderContext.set_world(matSaved);
+      return true;
+    },
+    addFilesToCabinet: function(fc) {
+      this._filename$1 = fc.tempDirectory + ss.format('{0}\\{1}.txt', fc.get_packageID(), this.id.toString());
+      var dir = this._filename$1.substring(0, this._filename$1.lastIndexOf('\\'));
+      var blob = new Blob([ this._dataFile$1 ]);
+      fc.addFile(this._filename$1, blob);
+      Layer.prototype.addFilesToCabinet.call(this, fc);
+    },
+    loadData: function(tourDoc, filename) {
+      var $this = this;
+
+      var blob = tourDoc.getFileBlob(filename);
+      var doc = new FileReader();
+      doc.onloadend = function(ee) {
+        $this._dataFile$1 = ss.safeCast(doc.result, String);
+        var data = $this._dataFile$1.split('\n');
+        $this._frames$1.length = 0;
+        for (var i = 0; i < data.length; i += 2) {
+          var line1 = i;
+          var line2 = i + 1;
+          if (data[i].length > 0) {
+            var frame = new ReferenceFrame();
+            if (data[i].substring(0, 1) !== '1') {
+              line1++;
+              line2++;
+              frame.name = ss.trim(data[i]);
+              i++;
+            }
+            else if (data[i].substring(0, 1) === '1') {
+              frame.name = data[i].substring(2, 5);
+            }
+            else {
+              i -= 2;
+              continue;
+            }
+            frame.reference = 18;
+            frame.oblateness = 0;
+            frame.showOrbitPath = true;
+            frame.showAsPoint = true;
+            frame.referenceFrameType = 1;
+            frame.scale = 1;
+            frame.semiMajorAxisUnits = 1;
+            frame.meanRadius = 10;
+            frame.oblateness = 0;
+            frame.fromTLE(data[line1], data[line2], 398600441800000);
+            $this._frames$1.push(frame);
+          }
+          else {
+            i -= 1;
+          }
+        }
+      };
+      doc.readAsText(blob);
+    }
+  };
+
+
+  // wwtlib.OrbitLayerUI
+
+  function OrbitLayerUI(layer) {
+    this._layer$1 = null;
+    this._opened$1 = true;
+    this._callbacks$1 = null;
+    LayerUI.call(this);
+    this._layer$1 = layer;
+  }
+  var OrbitLayerUI$ = {
+    setUICallbacks: function(callbacks) {
+      this._callbacks$1 = callbacks;
+    },
+    get_hasTreeViewNodes: function() {
+      return true;
+    },
+    getTreeNodes: function() {
+      var nodes = [];
+      var $enum1 = ss.enumerate(this._layer$1.get_frames());
+      while ($enum1.moveNext()) {
+        var frame = $enum1.current;
+        var node = new LayerUITreeNode();
+        node.set_name(frame.name);
+        node.set_tag(frame);
+        node.set_checked(frame.showOrbitPath);
+        node.add_nodeSelected(ss.bind('_node_NodeSelected$1', this));
+        node.add_nodeChecked(ss.bind('_node_NodeChecked$1', this));
+        nodes.push(node);
+      }
+      return nodes;
+    },
+    _node_NodeChecked$1: function(node, newState) {
+      var frame = node.get_tag();
+      if (frame != null) {
+        frame.showOrbitPath = newState;
+      }
+    },
+    _node_NodeSelected$1: function(node) {
+      if (this._callbacks$1 != null) {
+        var frame = node.get_tag();
+        var rowData = {};
+        rowData['Name'] = frame.name;
+        rowData['SemiMajor Axis'] = frame.semiMajorAxis.toString();
+        rowData['SMA Units'] = frame.semiMajorAxisUnits.toString();
+        rowData['Inclination'] = frame.inclination.toString();
+        rowData['Eccentricity'] = frame.eccentricity.toString();
+        rowData['Long of Asc. Node'] = frame.longitudeOfAscendingNode.toString();
+        rowData['Argument Of Periapsis'] = frame.argumentOfPeriapsis.toString();
+        rowData['Epoch'] = frame.epoch.toString();
+        rowData['Mean Daily Motion'] = frame.meanDailyMotion.toString();
+        rowData['Mean Anomoly at Epoch'] = frame.meanAnomolyAtEpoch.toString();
         this._callbacks$1.showRowData(rowData);
       }
     },
@@ -42834,7 +43335,7 @@ window.wwtlib = function(){
     },
     set_lineColor: function(value) {
       Annotation.batchDirty = true;
-      this._lineColor$1 = Color.fromName(value);
+      this._lineColor$1 = Color.load(value);
       return value;
     },
     get_fillColor: function() {
@@ -43737,6 +44238,69 @@ window.wwtlib = function(){
   };
 
 
+  // wwtlib.ISSLayer
+
+  function ISSLayer() {
+    Object3dLayer.call(this);
+    this.id = ISSLayer.issGuid;
+  }
+  ISSLayer.loadBackground = function() {
+    if (ISSLayer._loading$2) {
+      return;
+    }
+    ISSLayer._loading$2 = true;
+    var url = 'http://www.worldwidetelescope.org/data/iss.wtt';
+    ISSLayer._doc$2 = TourDocument.fromUrlRaw(url, function() {
+      ISSLayer.createSpaceStation();
+    });
+  };
+  ISSLayer.createSpaceStation = function() {
+    ISSLayer._doc$2.set_id('28016047-97a9-4b33-a226-cd820262a151');
+    var filename = '0c10ae54-b6da-4282-bfda-f34562d403bc.3ds';
+    var o3d = new Object3d(ISSLayer._doc$2, filename, true, false, true, Colors.get_white());
+    if (o3d != null) {
+      o3d.issLayer = true;
+      ISSLayer._issmodel$2 = o3d;
+    }
+  };
+  var ISSLayer$ = {
+    draw: function(renderContext, opacity, flat) {
+      if (this.object3d == null && ISSLayer._issmodel$2 == null) {
+        if (!ISSLayer._loading$2) {
+          var worldView = Matrix3d.multiplyMatrix(renderContext.get_world(), renderContext.get_view());
+          var v = worldView.transform(Vector3d.get_empty());
+          var scaleFactor = Math.sqrt(worldView.get_m11() * worldView.get_m11() + worldView.get_m22() * worldView.get_m22() + worldView.get_m33() * worldView.get_m33());
+          var dist = v.length();
+          var radius = scaleFactor;
+          var viewportHeight = ss.truncate(renderContext.height);
+          var p11 = renderContext.get_projection().get_m11();
+          var p34 = renderContext.get_projection().get_m34();
+          var p44 = renderContext.get_projection().get_m44();
+          var w = Math.abs(p34) * dist + p44;
+          var pixelsPerUnit = (p11 / w) * viewportHeight;
+          var radiusInPixels = (radius * pixelsPerUnit);
+          if (radiusInPixels > 0.5) {
+            ISSLayer.loadBackground();
+          }
+        }
+      }
+      this.object3d = ISSLayer._issmodel$2;
+      return Object3dLayer.prototype.draw.call(this, renderContext, opacity, flat);
+    },
+    getPrimaryUI: function() {
+      return null;
+    },
+    addFilesToCabinet: function(fc) {
+      return;
+    },
+    loadData: function(doc, filename) {
+      return;
+    },
+    cleanUp: function() {
+    }
+  };
+
+
   // wwtlib.SlideChangedEventArgs
 
   function SlideChangedEventArgs(caption) {
@@ -44021,7 +44585,7 @@ window.wwtlib = function(){
       LayerMap: [ LayerMap, LayerMap$, null ],
       SkyOverlays: [ SkyOverlays, SkyOverlays$, null ],
       GroundOverlayLayer: [ GroundOverlayLayer, GroundOverlayLayer$, null ],
-      OrbitLayer: [ OrbitLayer, OrbitLayer$, null ],
+      FrameTarget: [ FrameTarget, FrameTarget$, null ],
       LayerUI: [ LayerUI, LayerUI$, null ],
       LayerUIMenuItem: [ LayerUIMenuItem, LayerUIMenuItem$, null ],
       LayerUITreeNode: [ LayerUITreeNode, LayerUITreeNode$, null ],
@@ -44040,6 +44604,7 @@ window.wwtlib = function(){
       VoColumn: [ VoColumn, VoColumn$, null ],
       WcsImage: [ WcsImage, WcsImage$, null ],
       KeplerianElements: [ KeplerianElements, KeplerianElements$, null ],
+      BodyAngles: [ BodyAngles, BodyAngles$, null ],
       Planets: [ Planets, Planets$, null ],
       Material: [ Material, Material$, null ],
       RenderContext: [ RenderContext, RenderContext$, null ],
@@ -44149,6 +44714,8 @@ window.wwtlib = function(){
       ImageSetLayer: [ ImageSetLayer, ImageSetLayer$, Layer ],
       Object3dLayer: [ Object3dLayer, Object3dLayer$, Layer, IUiController ],
       Object3dLayerUI: [ Object3dLayerUI, Object3dLayerUI$, LayerUI ],
+      OrbitLayer: [ OrbitLayer, OrbitLayer$, Layer ],
+      OrbitLayerUI: [ OrbitLayerUI, OrbitLayerUI$, LayerUI ],
       TimeSeriesLayer: [ TimeSeriesLayer, TimeSeriesLayer$, Layer ],
       VoTableLayer: [ VoTableLayer, VoTableLayer$, Layer ],
       PlotTile: [ PlotTile, PlotTile$, Tile ],
@@ -44166,6 +44733,7 @@ window.wwtlib = function(){
       PolyLine: [ PolyLine, PolyLine$, Annotation ],
       EquirectangularTile: [ EquirectangularTile, EquirectangularTile$, Tile ],
       MercatorTile: [ MercatorTile, MercatorTile$, Tile ],
+      ISSLayer: [ ISSLayer, ISSLayer$, Object3dLayer ],
       SlideChangedEventArgs: [ SlideChangedEventArgs, SlideChangedEventArgs$, ss.EventArgs ],
       ArrivedEventArgs: [ ArrivedEventArgs, ArrivedEventArgs$, ss.EventArgs ],
       AnnotationClickEventArgs: [ AnnotationClickEventArgs, AnnotationClickEventArgs$, ss.EventArgs ],
@@ -44459,10 +45027,13 @@ window.wwtlib = function(){
   Planets.showActualSize = Settings.get_active().get_actualPlanetScale();
   Planets.RC = (Math.PI / 180);
   Planets._jNow = 0;
+  Planets._planetAngles = [ new BodyAngles(286.13, 63.87, 84.176, 14.1844), new BodyAngles(281.0097, 61.4143, 329.548, 6.1385025), new BodyAngles(272.76, 67.16, 160.2, -1.4813688), new BodyAngles(317.68143, 52.8865, 176.63, 350.89198226), new BodyAngles(268.056595, 64.495303, 284.95, 870.536), new BodyAngles(40.589, 83.537, 38.9, 810.7939024), new BodyAngles(257.311, -15.175, 203.81, 501.1600928), new BodyAngles(299.36, 43.46, 253.18, 536.3128492), new BodyAngles(132.993, -6.163, 302.695, 56.3625225), new BodyAngles(269.9949, 66.5392, 38.3213, 13.17635815), new BodyAngles(268.05, 64.5, 200.39, 203.4889538), new BodyAngles(268.08, 64.51, 36.022, 101.3747235), new BodyAngles(268.2, 64.57, 44.064, 50.3176081), new BodyAngles(268.72, 64.83, 259.51, 21.5710715), new BodyAngles(0, 0, 0, 0), new BodyAngles(0, 0, 0, 0), new BodyAngles(0, 0, 0, 0), new BodyAngles(0, 0, 0, 0), new BodyAngles(0, 0, 0, 0), new BodyAngles(0, 90, 190.147, 360.9856235) ];
   Planets._lastPlanetCenterID = -2;
   Planets._orbitalSampleRate = 256;
   Planets._obliquity = 23.5 * Planets.RC;
   Planets._drawOrder = {};
+  Planets.earthMatrix = new Matrix3d();
+  Planets.earthMatrixInv = new Matrix3d();
   Planets._lastUpdate = new Date();
   Planets._ringsTriangleLists = new Array(2);
   Planets._ringImage = null;
@@ -44600,6 +45171,10 @@ window.wwtlib = function(){
   ToastTile.slashIndexBuffer = new Array(64);
   ToastTile.backSlashIndexBuffer = new Array(64);
   ToastTile.rootIndexBuffer = new Array(4);
+  ISSLayer.issGuid = Guid.fromString('00000001-0002-0003-0405-060708090a0b');
+  ISSLayer._loading$2 = false;
+  ISSLayer._issmodel$2 = null;
+  ISSLayer._doc$2 = null;
 
   return $exports;
 }();
