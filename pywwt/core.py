@@ -436,7 +436,7 @@ class BaseWWTWidget(HasTraits):
             line.add_point(points)
         return line
 
-    def add_fov(self, telescope, **kwargs):
+    def add_fov(self, telescope, center=None, **kwargs):
         """
         Add a telescope's field of view to the current view.
 
@@ -449,7 +449,7 @@ class BaseWWTWidget(HasTraits):
             Optional arguments that allow corresponding Polygon or
             Annotation attributes to be set upon shape initialization.
         """
-        fov = FieldOfView(self, telescope, **kwargs)
+        fov = FieldOfView(self, telescope, center, **kwargs)
         return fov
 
     def add_collection(self, points, **kwargs):

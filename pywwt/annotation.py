@@ -254,7 +254,6 @@ class Line(Annotation):
         super(Line, self)._on_trait_change(changed)
 
 
-
 class FieldOfView():
     """
     A collection of polygon annotations. Takes the name of a pre-loaded 
@@ -266,15 +265,89 @@ class FieldOfView():
     # should you be able to delete? change trait values?
     # should there be a list of polygons like in CircleCollection?
     # should self.available be an object so tab-completion is possible?
-    def __init__(self, parent, telescope, **kwargs):
+    def __init__(self, parent, telescope, center, **kwargs):
         self.parent = parent
-        self.available = ['k2']
-        self._gen_fov(telescope, **kwargs)
+        self.available = ['k2', 'jwst_nircam', 'hst_wfc3_uvis', 'hst_wfc3_ir',
+                          'hst_acs_wfc']
+        # dimensions in arcsec, # of panels
+        self.hst = {'_wfc3_uvis': [(162, 162), 2],
+                    '_wfc3_ir': [(136, 123), 1], '_acs_wfc': [(202, 202), 2],
+                    'jwst_nircam': [(129, 129), 1]}
+        self._gen_fov(telescope, center, **kwargs)
+        # anything other than k2 must have a center
 
-    def _gen_fov(self, telescope, **kwargs):
+    def _gen_fov(self, telescope, center, **kwargs):
         telescope = telescope.lower()
         if telescope in self.available:
-            if telescope == 'k2':
+            ra = center.ra.value
+            dec = center.dec.value
+            if telescope[:3] == 'hst':
+                instr = telescope[3:]
+                instr_h = self.hst[instr][0][0]
+                instr_w = self.hst[instr][0][1]
+                panels = self.hst[instr][1]
+
+                h = (instr_h * u.arcsec).to(u.deg).value / 2.
+                w = (instr_w * u.arcsec).to(u.deg).value / 2.
+                
+                if panels > 1:
+                    gap = (4 * u.arcsec).to(u.deg).value / 2.
+                    w -= gap/2.
+                else:
+                    gap = -w/2.
+                
+                i = 0
+                while i < panels:
+                    if i == 1:
+                        ra += w + gap
+
+                    corners = concatenate((
+                        SkyCoord(ra - gap,     dec + h, unit='deg'),
+                        SkyCoord(ra - gap - w, dec + h, unit='deg'),
+                        SkyCoord(ra - gap - w, dec - h, unit='deg'),
+                        SkyCoord(ra - gap,     dec - h, unit='deg')))
+
+                    self.parent.add_polygon(corners, **kwargs)
+                    i += 1
+                '''if telescope[3:] == '_wfc3_uvis':
+                    #gap = (4 * u.arcsec).to(u.deg).value / 2.
+                    #h = (self.hst[][0] * u.arcsec).to(u.deg).value / 2.
+                    #w = (162 * u.arcsec).to(u.deg).value / 2. - gap/2
+
+                    i = 0
+                    while i <= 1:
+                        if i == 1:
+                            ra += w + gap
+                        print (ra, gap, dec, h)
+                        print (ra - gap, dec + h)
+
+                        corners = concatenate((
+                            SkyCoord(ra - gap,     dec + h, unit='deg'),
+                            SkyCoord(ra - gap - w, dec + h, unit='deg'),
+                            SkyCoord(ra - gap - w, dec - h, unit='deg'),
+                            SkyCoord(ra - gap,     dec - h, unit='deg')))
+
+                        self.parent.add_polygon(corners, **kwargs)
+                        i += 1
+                elif telescope[3:] == '_acs_wfc':
+                    gap = (4 * u.arcsec).to(u.deg).value / 2.
+                    h = (202 * u.arcsec).to(u.deg).value / 2.
+                    w = (202 * u.arcsec).to(u.deg).value / 2. - gap/2
+
+                    i = 0
+                    while i <= 1:
+                        if i == 1:
+                            ra += w + gap
+
+                        corners = concatenate((
+                            SkyCoord(ra - gap,     dec + h, unit='deg'),
+                            SkyCoord(ra - gap - w, dec + h, unit='deg'),
+                            SkyCoord(ra - gap - w, dec - h, unit='deg'),
+                            SkyCoord(ra - gap,     dec - h, unit='deg')))
+
+                        self.parent.add_polygon(corners, **kwargs)
+                        i += 1'''                
+            elif telescope == 'k2':
                 json_file = requests.get('https://worldwidetelescope.github.io/pywwt/fov_files/k2-trimmed.json')
                 diction = json_file.json()
                 # check python version. sys.version_info.major > 3, OR:
@@ -291,13 +364,60 @@ class FieldOfView():
                         corners = SkyCoord(ras, decs, unit=u.deg)
 
                         if self.parent.galactic_mode:
-                            corners = corners.galctic
-                        poly = Polygon(self.parent, **kwargs)
-                        for coord in corners:
-                            poly.add_point(coord)
+                            corners = corners.galactic
+                        self.parent.add_polygon(corners, **kwargs)
+            elif telescope == 'jwst_nircam':
+                side = self.hst(telescope[0][0])
+                mid = (side * u.arcsec).to(u.deg).value / 2.
+                corners = concatenate((
+                    SkyCoord(ra - mid, dec - mid, unit='deg'),
+                    SkyCoord(ra + mid, dec - mid, unit='deg'),
+                    SkyCoord(ra + mid, dec + mid, unit='deg'),
+                    SkyCoord(ra - mid, dec + mid, unit='deg')))
+                self.parent.add_polygon(corners, **kwargs)
+                self._small_recs(ra, dec, **kwargs)
+            elif telescope == 'sdss':
+                # six columns of five 13.51x8.98 arcmin ccds
+                # each column is separated from the others by 4.253149 arcmin?
+                # **71.7 sec from beg. of one column to beg. of next
+                # **54 sec from beg. of ccd to end. (13.51/71.7)*54 = ^ ^
+                print("coming soon")
+            elif telescope[:7] == 'spitzer':
+                # irac, irs, mips
+                print("coming soon")
         else:
             raise ValueError('the given telescope\'s field of view is unavailable at this time')
         
+    def _small_recs(self, ra, dec, **kwargs):
+        side = (64 * u.arcsec).to(u.deg).value
+        gap = (4 * u.arcsec).to(u.deg).value / 2.
+        ex2 = (1 * u.arcsec).to(u.deg).value # for bottom
+        ex1 = ex2 / 2. # for left and right
+
+        i = 0
+        while i <= 3:
+            # top left corner for (ra, dec), tl, tr, br, bl
+            # ra: += side,
+            # top left corner is reference point for each polygon
+            if i % 2 == 0:
+                tl_ra = ra + side + gap + ex1
+            else:
+                tl_ra = ra - gap - ex1
+                
+            if i <= 1:
+                tl_dec = dec - gap
+            else:
+                tl_dec = dec + side + gap - ex2
+
+            corners = concatenate((
+                SkyCoord(tl_ra,        tl_dec,        unit='deg'),
+                SkyCoord(tl_ra - side, tl_dec,        unit='deg'),
+                SkyCoord(tl_ra - side, tl_dec - side, unit='deg'),
+                SkyCoord(tl_ra,        tl_dec - side, unit='deg')))
+
+            self.parent.add_polygon(corners, **kwargs)
+            i += 1
+
 
 class CircleCollection():
     """
