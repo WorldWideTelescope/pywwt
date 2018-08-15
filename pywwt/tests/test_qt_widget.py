@@ -44,7 +44,7 @@ def wait_and_check_output(seconds, capsys):
 
 def test_init(capsys):
     WWTQtClient(block_until_ready=True)
-    wait_and_check_output(1, capsys)
+    wait(1)
 
 
 class TestWWTWidget:
