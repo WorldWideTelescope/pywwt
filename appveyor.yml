@@ -4,6 +4,7 @@
 environment:
 
   global:
+      CI: "true"
       PYTHON: "C:\\conda"
       MINICONDA_VERSION: "latest"
       CMD_IN_ENV: "cmd /E:ON /V:ON /C .\\ci-helpers\\appveyor\\windows_sdk.cmd"

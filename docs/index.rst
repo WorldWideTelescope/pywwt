@@ -48,6 +48,7 @@ User guide
    qt
    settings
    annotations
+   views
    windows
    api
 

@@ -16,3 +16,7 @@ API Documentation
 .. automodapi:: pywwt.windows
    :no-inheritance-diagram:
    :no-inherited-members:
+
+.. automodapi:: pywwt.ss_proxy
+   :no-inheritance-diagram:
+   :no-inherited-members:

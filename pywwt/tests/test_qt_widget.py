@@ -44,7 +44,7 @@ def wait_and_check_output(seconds, capsys):
 
 def test_init(capsys):
     WWTQtClient(block_until_ready=True)
-    wait_and_check_output(1, capsys)
+    wait(1)
 
 
 class TestWWTWidget:
@@ -116,7 +116,8 @@ def assert_widget_image(tmpdir, widget, filename):
         with open(actual, 'rb') as f:
             actual = b64encode(f.read()).decode()
 
-        print(REPRODUCABILITY_SCRIPT.format(actual=actual, expected=expected))
+        if os.environ.get('CI', 'false').lower() == 'true':
+            print(REPRODUCABILITY_SCRIPT.format(actual=actual, expected=expected))
 
         pytest.fail(msg, pytrace=False)
 
@@ -128,6 +129,11 @@ def test_full(tmpdir, capsys):
     wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
     wwt.set_current_time(REFERENCE_TIME)
     wwt.foreground_opacity = 1.
+
+    # The crosshairs are currently broken on Mac/Linux but work on Windows.
+    # For consistency, we turn it off here so that the results are the same
+    # on all platforms.
+    wwt.crosshairs = False
 
     wait(4)
 
@@ -194,7 +200,7 @@ def test_full(tmpdir, capsys):
     circle2.fill_color = 'orange'
     circle2.opacity = 1
 
-    coord = SkyCoord([0, 4, 1], [-5, 0, 0], unit=('deg', 'deg'), frame='galactic')
+    coord = SkyCoord([1, 4, 0], [0, 0, -5], unit=('deg', 'deg'), frame='galactic')
 
     poly = wwt.add_polygon()
     poly.add_point(coord[0])

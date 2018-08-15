@@ -1,7 +1,10 @@
 from astropy import units as u
-from traitlets import HasTraits, observe, validate, TraitError
+from traitlets import HasTraits, validate
 
 from .traits import Bool, Int
+
+__all__ = ['SolarSystem']
+
 
 class SolarSystem(HasTraits):
 
@@ -41,7 +44,7 @@ class SolarSystem(HasTraits):
     orbits = Bool(True,
                   help='Whether to show orbit paths when the solar system is '
                        'displayed (`bool`)').tag(wwt='solarSystemOrbits')
-    objects = Bool(True, 
+    objects = Bool(True,
                    help='Whether to show the objects of the solar system in '
                         'solar system mode (`bool`)').tag(wwt='solarSystemPlanets')
     scale = Int(1, help='Specifies how to scale objects\' size in solar '

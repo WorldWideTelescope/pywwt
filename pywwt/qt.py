@@ -195,8 +195,8 @@ class WWTQtClient(BaseWWTWidget):
         """
         Load a FITS file.
 
-        Paramters
-        ---------
+        Parameters
+        ----------
         filename : str
             The filename of the FITS file to display.
         """
