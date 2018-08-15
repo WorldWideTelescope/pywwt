@@ -1,7 +1,8 @@
 About
 -----
 
-This branch of pyWWT hosts data files for sky surveys. At the moment, we only 
-offer the fields of the K2 campaign. If you have or are aware of files for 
-campaigns of other telescopes, please contribute them and we'll include them 
-here.
+This branch of the pyWWT repository hosts data files needed by the pywwt 
+package, including instrument footprints and the JavaScript files that link the 
+package to the web client. The K2 campaign is the only footprint we host at the 
+moment, so if you can point us to files for other sky surveys, please let us 
+know and we'll include them here.
