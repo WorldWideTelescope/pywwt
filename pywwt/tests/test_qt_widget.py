@@ -130,6 +130,11 @@ def test_full(tmpdir, capsys):
     wwt.set_current_time(REFERENCE_TIME)
     wwt.foreground_opacity = 1.
 
+    # The crosshairs are currently broken on Mac/Linux but work on Windows.
+    # For consistency, we turn it off here so that the results are the same
+    # on all platforms.
+    wwt.crosshairs = False
+
     wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step0.png')
