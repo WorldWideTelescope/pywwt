@@ -267,14 +267,18 @@ class FieldOfView():
     # should self.available be an object so tab-completion is possible?
     def __init__(self, parent, telescope, center, **kwargs):
         self.parent = parent
-        self.available = ['k2', 'jwst_nircam', 'hst_wfc3_uvis', 'hst_wfc3_ir',
-                          'hst_acs_wfc']
+        self.available = ['k2', 'hst_acs_wfc', 'hst_wfc3_ir', 'hst_wfc3_uvis',
+                          'jwst_nircam', 'jwst_niriss', 'spitzer_irac']
         # dimensions in arcsec, # of panels
-        self.hst = {'_wfc3_uvis': [(162, 162), 2],
+        self.dim = {'_wfc3_uvis': [(162, 162), 2],
                     '_wfc3_ir': [(136, 123), 1], '_acs_wfc': [(202, 202), 2],
-                    'jwst_nircam': [(129, 129), 1]}
+                    'jwst_nircam': [(129, 129), 1],
+                    'jwst_nircam_small': [(64, 64), 4],
+                    'jwst_niriss': [(133, 133), 1],
+                    'spitzer_irac': [(312, 312), 3]}
         self._gen_fov(telescope, center, **kwargs)
         # anything other than k2 must have a center
+        # perhaps use a different color for each instrument?
 
     def _gen_fov(self, telescope, center, **kwargs):
         telescope = telescope.lower()
@@ -283,9 +287,9 @@ class FieldOfView():
             dec = center.dec.value
             if telescope[:3] == 'hst':
                 instr = telescope[3:]
-                instr_h = self.hst[instr][0][0]
-                instr_w = self.hst[instr][0][1]
-                panels = self.hst[instr][1]
+                instr_h = self.dim[instr][0][0]
+                instr_w = self.dim[instr][0][1]
+                panels = self.dim[instr][1]
 
                 h = (instr_h * u.arcsec).to(u.deg).value / 2.
                 w = (instr_w * u.arcsec).to(u.deg).value / 2.
@@ -309,44 +313,6 @@ class FieldOfView():
 
                     self.parent.add_polygon(corners, **kwargs)
                     i += 1
-                '''if telescope[3:] == '_wfc3_uvis':
-                    #gap = (4 * u.arcsec).to(u.deg).value / 2.
-                    #h = (self.hst[][0] * u.arcsec).to(u.deg).value / 2.
-                    #w = (162 * u.arcsec).to(u.deg).value / 2. - gap/2
-
-                    i = 0
-                    while i <= 1:
-                        if i == 1:
-                            ra += w + gap
-                        print (ra, gap, dec, h)
-                        print (ra - gap, dec + h)
-
-                        corners = concatenate((
-                            SkyCoord(ra - gap,     dec + h, unit='deg'),
-                            SkyCoord(ra - gap - w, dec + h, unit='deg'),
-                            SkyCoord(ra - gap - w, dec - h, unit='deg'),
-                            SkyCoord(ra - gap,     dec - h, unit='deg')))
-
-                        self.parent.add_polygon(corners, **kwargs)
-                        i += 1
-                elif telescope[3:] == '_acs_wfc':
-                    gap = (4 * u.arcsec).to(u.deg).value / 2.
-                    h = (202 * u.arcsec).to(u.deg).value / 2.
-                    w = (202 * u.arcsec).to(u.deg).value / 2. - gap/2
-
-                    i = 0
-                    while i <= 1:
-                        if i == 1:
-                            ra += w + gap
-
-                        corners = concatenate((
-                            SkyCoord(ra - gap,     dec + h, unit='deg'),
-                            SkyCoord(ra - gap - w, dec + h, unit='deg'),
-                            SkyCoord(ra - gap - w, dec - h, unit='deg'),
-                            SkyCoord(ra - gap,     dec - h, unit='deg')))
-
-                        self.parent.add_polygon(corners, **kwargs)
-                        i += 1'''                
             elif telescope == 'k2':
                 json_file = requests.get('https://worldwidetelescope.github.io/pywwt/fov_files/k2-trimmed.json')
                 diction = json_file.json()
@@ -366,30 +332,49 @@ class FieldOfView():
                         if self.parent.galactic_mode:
                             corners = corners.galactic
                         self.parent.add_polygon(corners, **kwargs)
-            elif telescope == 'jwst_nircam':
-                side = self.hst(telescope[0][0])
+            elif telescope[:4] == 'jwst':
+                side = self.dim[telescope][0][0]
+                small = telescope + '_small'
                 mid = (side * u.arcsec).to(u.deg).value / 2.
                 corners = concatenate((
-                    SkyCoord(ra - mid, dec - mid, unit='deg'),
-                    SkyCoord(ra + mid, dec - mid, unit='deg'),
-                    SkyCoord(ra + mid, dec + mid, unit='deg'),
-                    SkyCoord(ra - mid, dec + mid, unit='deg')))
+                        SkyCoord(ra - mid, dec - mid, unit='deg'),
+                        SkyCoord(ra + mid, dec - mid, unit='deg'),
+                        SkyCoord(ra + mid, dec + mid, unit='deg'),
+                        SkyCoord(ra - mid, dec + mid, unit='deg')))
                 self.parent.add_polygon(corners, **kwargs)
-                self._small_recs(ra, dec, **kwargs)
+                if telescope[5:] == 'nircam':
+                    self._small_recs(ra, dec, small, **kwargs)
+            elif telescope[:7] == 'spitzer':
+                side = (self.dim[telescope][0][0] * u.arcsec).to(u.deg).value
+                panels = self.dim[telescope][1]
+                mid = side / 2.
+                gap = (1.52 * u.arcmin).to(u.deg).value / 2.
+
+                y_panel = side + gap
+                i = 0
+                while(i < panels):
+                    corners = concatenate((
+                        SkyCoord(ra - mid, dec + y_panel - mid, unit='deg'),
+                        SkyCoord(ra + mid, dec + y_panel - mid, unit='deg'),
+                        SkyCoord(ra + mid, dec + y_panel + mid, unit='deg'),
+                        SkyCoord(ra - mid, dec + y_panel + mid, unit='deg')))
+                    self.parent.add_polygon(corners, **kwargs)
+
+                    y_panel -= side + gap
+                    i += 1
             elif telescope == 'sdss':
                 # six columns of five 13.51x8.98 arcmin ccds
                 # each column is separated from the others by 4.253149 arcmin?
                 # **71.7 sec from beg. of one column to beg. of next
                 # **54 sec from beg. of ccd to end. (13.51/71.7)*54 = ^ ^
-                print("coming soon")
-            elif telescope[:7] == 'spitzer':
-                # irac, irs, mips
-                print("coming soon")
+                print("coming soon?")
         else:
             raise ValueError('the given telescope\'s field of view is unavailable at this time')
         
-    def _small_recs(self, ra, dec, **kwargs):
-        side = (64 * u.arcsec).to(u.deg).value
+    def _small_recs(self, ra, dec, telescope, **kwargs):
+        side = self.dim[telescope][0][0]
+        panels = self.dim[telescope][1]
+        side = (side * u.arcsec).to(u.deg).value
         gap = (4 * u.arcsec).to(u.deg).value / 2.
         ex2 = (1 * u.arcsec).to(u.deg).value # for bottom
         ex1 = ex2 / 2. # for left and right
@@ -397,7 +382,6 @@ class FieldOfView():
         i = 0
         while i <= 3:
             # top left corner for (ra, dec), tl, tr, br, bl
-            # ra: += side,
             # top left corner is reference point for each polygon
             if i % 2 == 0:
                 tl_ra = ra + side + gap + ex1
