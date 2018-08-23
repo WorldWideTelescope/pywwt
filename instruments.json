@@ -1,0 +1,10 @@
+{
+"hst_acs_wfc": [ [202, 202], 2],
+"hst_wfc3_uvis": [ [162, 162], 2],
+"hst_wfc3_ir": [ [136, 123], 1],
+"jwst_nircam": [ [129, 129], 1],
+"_jwst_nircam_small": [ [64, 64], 4],
+"jwst_niriss": [ [133, 133], 1],
+"spitzer_irac": [ [312, 312], 3],
+"k2": null
+}
