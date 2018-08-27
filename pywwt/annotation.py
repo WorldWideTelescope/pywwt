@@ -278,7 +278,10 @@ class FieldOfView():
                     'spitzer_irac': [(312, 312), 3]}
         self._gen_fov(telescope, center, **kwargs)
         # anything other than k2 must have a center
-        # perhaps use a different color for each instrument?
+
+        # to delete individual fovs, keep list of those created like in CircCol
+        # self.active = []
+        # then, def remove(self): 
 
     def _gen_fov(self, telescope, center, **kwargs):
         telescope = telescope.lower()
@@ -305,11 +308,26 @@ class FieldOfView():
                     if i == 1:
                         ra += w + gap
 
+                    swap1 = 0.; swap2 = 0.
+                    dec_pl = dec + h; dec_mn = dec - h
+                    
+                    # accounting for abs(dec +/- h) above 90 degrees
+                    if abs(dec_pl) > 90:
+                        dec_pl = 90. - (dec_pl - 90.)
+                        swap1 = 180.
+                    if abs(dec_mn) > 90:
+                        dec_mn = -90. - (dec_mn + 90.)
+                        swap2 = 180.
+
+                    ### seems like FOV size changes with location
+                    # (disappears near poles, presumably largest at equator)
+                    # maybe plot in pix instead of deg? how to keep consistent
+
                     corners = concatenate((
-                        SkyCoord(ra - gap,     dec + h, unit='deg'),
-                        SkyCoord(ra - gap - w, dec + h, unit='deg'),
-                        SkyCoord(ra - gap - w, dec - h, unit='deg'),
-                        SkyCoord(ra - gap,     dec - h, unit='deg')))
+                        SkyCoord(ra - gap + swap1,     dec_pl, unit='deg'),
+                        SkyCoord(ra - gap - w + swap1, dec_pl, unit='deg'),
+                        SkyCoord(ra - gap - w + swap2, dec_mn, unit='deg'),
+                        SkyCoord(ra - gap + swap2,     dec_mn, unit='deg')))
 
                     self.parent.add_polygon(corners, **kwargs)
                     i += 1
@@ -336,11 +354,21 @@ class FieldOfView():
                 side = self.dim[telescope][0][0]
                 small = telescope + '_small'
                 mid = (side * u.arcsec).to(u.deg).value / 2.
+
+                swap1 = 0.; swap2 = 0.
+                dec_mn = dec - mid; dec_pl = dec + mid                
+                if abs(dec_mn) > 90:
+                    dec_mn = -90. - (dec_mn + 90.)
+                    swap2 = 180.
+                if abs(dec_pl) > 90:
+                    dec_pl = 90. - (dec_pl - 90.)
+                    swap1 = 180.
+                    
                 corners = concatenate((
-                        SkyCoord(ra - mid, dec - mid, unit='deg'),
-                        SkyCoord(ra + mid, dec - mid, unit='deg'),
-                        SkyCoord(ra + mid, dec + mid, unit='deg'),
-                        SkyCoord(ra - mid, dec + mid, unit='deg')))
+                        SkyCoord(ra - mid + swap2, dec_mn, unit='deg'),
+                        SkyCoord(ra + mid + swap2, dec_mn, unit='deg'),
+                        SkyCoord(ra + mid + swap1, dec_pl, unit='deg'),
+                        SkyCoord(ra - mid + swap1, dec_pl, unit='deg')))
                 self.parent.add_polygon(corners, **kwargs)
                 if telescope[5:] == 'nircam':
                     self._small_recs(ra, dec, small, **kwargs)
@@ -353,21 +381,33 @@ class FieldOfView():
                 y_panel = side + gap
                 i = 0
                 while(i < panels):
+                    swap1 = 0.; swap2 = 0.
+                    dec_mn = dec + y_panel - mid; dec_pl = dec + y_panel + mid
+                    if abs(dec_mn) > 90:
+                        # must check both cases for each dec b/c some panels
+                        # can be entirely above/below a pole, in which case
+                        # abs(dec) > 90 for both decs
+                        if dec_mn < -90:
+                            dec_mn = -90. - (dec_mn + 90.)
+                        else: # dec_mn > 90
+                            dec_mn = 90. - (dec_mn - 90.)
+                        swap2 = 180.
+                    if abs(dec_pl) > 90:
+                        if dec_pl > 90:
+                            dec_pl = 90. - (dec_pl - 90.)
+                        else: # dec_pl < -90
+                            dec_pl = -90. - (dec_mn + 90.)
+                        swap1 = 180.
+                    
                     corners = concatenate((
-                        SkyCoord(ra - mid, dec + y_panel - mid, unit='deg'),
-                        SkyCoord(ra + mid, dec + y_panel - mid, unit='deg'),
-                        SkyCoord(ra + mid, dec + y_panel + mid, unit='deg'),
-                        SkyCoord(ra - mid, dec + y_panel + mid, unit='deg')))
+                        SkyCoord(ra - mid + swap2, dec_mn, unit='deg'),
+                        SkyCoord(ra + mid + swap2, dec_mn, unit='deg'),
+                        SkyCoord(ra + mid + swap1, dec_pl, unit='deg'),
+                        SkyCoord(ra - mid + swap1, dec_pl, unit='deg')))
                     self.parent.add_polygon(corners, **kwargs)
 
                     y_panel -= side + gap
                     i += 1
-            elif telescope == 'sdss':
-                # six columns of five 13.51x8.98 arcmin ccds
-                # each column is separated from the others by 4.253149 arcmin?
-                # **71.7 sec from beg. of one column to beg. of next
-                # **54 sec from beg. of ccd to end. (13.51/71.7)*54 = ^ ^
-                print("coming soon?")
         else:
             raise ValueError('the given telescope\'s field of view is unavailable at this time')
         
@@ -393,11 +433,26 @@ class FieldOfView():
             else:
                 tl_dec = dec + side + gap - ex2
 
+            swap1 = 0.; swap2 = 0.
+            dec_pl = tl_dec; dec_mn = tl_dec - side
+            if abs(dec_pl) > 90:
+                if dec_pl > 90:
+                    dec_pl = 90. - (dec_pl - 90.)
+                else: # dec_pl < -90
+                    dec_pl = -90. - (dec_mn + 90.)
+                    swap1 = 180.
+            if abs(dec_mn) > 90:
+                if dec_mn < -90:
+                    dec_mn = -90. - (dec_mn + 90.)
+                else: # dec_mn > 90
+                    dec_mn = 90. - (dec_mn - 90.)
+                    swap2 = 180.
+
             corners = concatenate((
-                SkyCoord(tl_ra,        tl_dec,        unit='deg'),
-                SkyCoord(tl_ra - side, tl_dec,        unit='deg'),
-                SkyCoord(tl_ra - side, tl_dec - side, unit='deg'),
-                SkyCoord(tl_ra,        tl_dec - side, unit='deg')))
+                SkyCoord(tl_ra + swap1,        dec_pl, unit='deg'),
+                SkyCoord(tl_ra - side + swap1, dec_pl, unit='deg'),
+                SkyCoord(tl_ra - side + swap2, dec_mn, unit='deg'),
+                SkyCoord(tl_ra + swap2,        dec_mn, unit='deg')))
 
             self.parent.add_polygon(corners, **kwargs)
             i += 1
