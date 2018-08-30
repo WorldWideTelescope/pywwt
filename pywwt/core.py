@@ -12,6 +12,7 @@ from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
 from .ss_proxy import SolarSystem
 from .layers import LayerManager
+from .instruments import Instruments
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -34,6 +35,7 @@ class BaseWWTWidget(HasTraits):
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
+        self.instruments = Instruments()
         self._available_modes = ['sky', 'planet', 'solar_system',
                                  'milky_way', 'universe', 'panorama']
         self.current_mode = 'sky'

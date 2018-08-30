@@ -263,15 +263,12 @@ class FieldOfView():
     # footprint: https://raw.githubusercontent.com/KeplerGO/K2FootprintFiles/master/json/k2-footprint.json
 
     # more efficient method than CircleCollection of changing trait values?
-    # should self.available be an object so tab-completion is possible?
     def __init__(self, parent, telescope, center, **kwargs):
         self.parent = parent
-        # once the new gh-pages PR is accepted, uncomment replace what avail/dim
-        # instruments = requests.get('https://worldwidetelescope.github.io/pywwt/instruments.json').json()
-        # self.available = list(instruments.keys())
-        # self.dim = list(instruments.values())
+        self.available = self.parent.instruments.available
+        self.dim = self.parent.instruments.dim
         
-        self.available = ['k2', 'hst_acs_wfc', 'hst_wfc3_ir', 'hst_wfc3_uvis',
+        """self.available = ['k2', 'hst_acs_wfc', 'hst_wfc3_ir', 'hst_wfc3_uvis',
                           'jwst_nircam', 'jwst_niriss', 'spitzer_irac']
         # dimensions in arcsec, # of panels
         self.dim = {'_wfc3_uvis': [(162, 162), 2],
@@ -279,7 +276,7 @@ class FieldOfView():
                     'jwst_nircam': [(129, 129), 1],
                     'jwst_nircam_small': [(64, 64), 4],
                     'jwst_niriss': [(133, 133), 1],
-                    'spitzer_irac': [(312, 312), 3]}
+                    'spitzer_irac': [(312, 312), 3]}"""
 
         # list of IDs of annotations created in this FieldofView instance
         self.active = []
@@ -295,10 +292,9 @@ class FieldOfView():
         telescope = telescope.lower()
         if telescope in self.available:
             if telescope[:3] == 'hst':
-                instr = telescope[3:]
-                instr_h = self.dim[instr][0][0]
-                instr_w = self.dim[instr][0][1]
-                panels = self.dim[instr][1]
+                instr_h = self.dim[telescope][0][0]
+                instr_w = self.dim[telescope][0][1]
+                panels = self.dim[telescope][1]
 
                 h = (instr_h * u.arcsec).to(u.deg).value / 2.
                 w = (instr_w * u.arcsec).to(u.deg).value / 2.
@@ -422,6 +418,9 @@ class FieldOfView():
             raise ValueError('the given telescope\'s field of view is unavailable at this time')
         
     def _small_recs(self, ra, dec, telescope, **kwargs):
+        # to match listing in dim since this is a subset of an instrument
+        telescope = "_" + telescope
+
         side = self.dim[telescope][0][0]
         panels = self.dim[telescope][1]
         side = (side * u.arcsec).to(u.deg).value
