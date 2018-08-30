@@ -262,11 +262,15 @@ class FieldOfView():
     # links for kepler. guide: https://keplerscience.arc.nasa.gov/k2-fields.html
     # footprint: https://raw.githubusercontent.com/KeplerGO/K2FootprintFiles/master/json/k2-footprint.json
 
-    # should you be able to delete? change trait values?
-    # should there be a list of polygons like in CircleCollection?
+    # more efficient method than CircleCollection of changing trait values?
     # should self.available be an object so tab-completion is possible?
     def __init__(self, parent, telescope, center, **kwargs):
         self.parent = parent
+        # once the new gh-pages PR is accepted, uncomment replace what avail/dim
+        # instruments = requests.get('https://worldwidetelescope.github.io/pywwt/instruments.json').json()
+        # self.available = list(instruments.keys())
+        # self.dim = list(instruments.values())
+        
         self.available = ['k2', 'hst_acs_wfc', 'hst_wfc3_ir', 'hst_wfc3_uvis',
                           'jwst_nircam', 'jwst_niriss', 'spitzer_irac']
         # dimensions in arcsec, # of panels
@@ -276,18 +280,20 @@ class FieldOfView():
                     'jwst_nircam_small': [(64, 64), 4],
                     'jwst_niriss': [(133, 133), 1],
                     'spitzer_irac': [(312, 312), 3]}
-        self._gen_fov(telescope, center, **kwargs)
-        # anything other than k2 must have a center
 
-        # to delete individual fovs, keep list of those created like in CircCol
-        # self.active = []
-        # then, def remove(self): 
+        # list of IDs of annotations created in this FieldofView instance
+        self.active = []
+        self._gen_fov(telescope, center, **kwargs)
 
     def _gen_fov(self, telescope, center, **kwargs):
-        telescope = telescope.lower()
-        if telescope in self.available:
+        # large footprints (e.g. k2) don't need center, so we confirm it exists
+        if hasattr(center, 'ra'):
+            # then save coords to variables
             ra = center.ra.value
             dec = center.dec.value
+            
+        telescope = telescope.lower()
+        if telescope in self.available:
             if telescope[:3] == 'hst':
                 instr = telescope[3:]
                 instr_h = self.dim[instr][0][0]
@@ -319,17 +325,14 @@ class FieldOfView():
                         dec_mn = -90. - (dec_mn + 90.)
                         swap2 = 180.
 
-                    ### seems like FOV size changes with location
-                    # (disappears near poles, presumably largest at equator)
-                    # maybe plot in pix instead of deg? how to keep consistent
-
                     corners = concatenate((
                         SkyCoord(ra - gap + swap1,     dec_pl, unit='deg'),
                         SkyCoord(ra - gap - w + swap1, dec_pl, unit='deg'),
                         SkyCoord(ra - gap - w + swap2, dec_mn, unit='deg'),
                         SkyCoord(ra - gap + swap2,     dec_mn, unit='deg')))
 
-                    self.parent.add_polygon(corners, **kwargs)
+                    annot = self.parent.add_polygon(corners, **kwargs)
+                    self.active.append(annot)
                     i += 1
             elif telescope == 'k2':
                 json_file = requests.get('https://worldwidetelescope.github.io/pywwt/fov_files/k2-trimmed.json')
@@ -349,7 +352,9 @@ class FieldOfView():
 
                         if self.parent.galactic_mode:
                             corners = corners.galactic
-                        self.parent.add_polygon(corners, **kwargs)
+
+                        annot = self.parent.add_polygon(corners, **kwargs)
+                        self.active.append(annot)
             elif telescope[:4] == 'jwst':
                 side = self.dim[telescope][0][0]
                 small = telescope + '_small'
@@ -369,7 +374,10 @@ class FieldOfView():
                         SkyCoord(ra + mid + swap2, dec_mn, unit='deg'),
                         SkyCoord(ra + mid + swap1, dec_pl, unit='deg'),
                         SkyCoord(ra - mid + swap1, dec_pl, unit='deg')))
-                self.parent.add_polygon(corners, **kwargs)
+
+                annot = self.parent.add_polygon(corners, **kwargs)
+                self.active.append(annot)
+                
                 if telescope[5:] == 'nircam':
                     self._small_recs(ra, dec, small, **kwargs)
             elif telescope[:7] == 'spitzer':
@@ -404,7 +412,9 @@ class FieldOfView():
                         SkyCoord(ra + mid + swap2, dec_mn, unit='deg'),
                         SkyCoord(ra + mid + swap1, dec_pl, unit='deg'),
                         SkyCoord(ra - mid + swap1, dec_pl, unit='deg')))
-                    self.parent.add_polygon(corners, **kwargs)
+
+                    annot = self.parent.add_polygon(corners, **kwargs)
+                    self.active.append(annot)
 
                     y_panel -= side + gap
                     i += 1
@@ -454,8 +464,14 @@ class FieldOfView():
                 SkyCoord(tl_ra - side + swap2, dec_mn, unit='deg'),
                 SkyCoord(tl_ra + swap2,        dec_mn, unit='deg')))
 
-            self.parent.add_polygon(corners, **kwargs)
+            annot = self.parent.add_polygon(corners, **kwargs)
+            self.active.append(annot)
+            
             i += 1
+
+    def remove(self):
+        for annot in self.active:
+            annot.remove()
 
 
 class CircleCollection():
