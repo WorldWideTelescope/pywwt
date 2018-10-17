@@ -163,23 +163,33 @@ function wwt_apply_json_message(wwt, msg) {
       frame = msg['frame']
 
       // Get columns for lon/lat
-      longitude = msg['longitude']
-      latitude = msg['latitude']
-      altitude = msg['altitude']
+      column_lon = msg['column_lon']
+      column_lat = msg['column_lat']
+      column_alt = msg['column_alt']
+      column_cmap = msg['column_cmap']
+      column_size = msg['column_size']
 
       layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
       layer.set_referenceFrame(frame);
 
-      tab = layer.get__table()
-      layer.set_lngColumn(tab.header.indexOf(longitude));
-      layer.set_latColumn(tab.header.indexOf(latitude));
-
-      if (altitude.length > 0) {
-        layer.set_altColumn(tab.header.indexOf(altitude));
-        layer.set_altUnit(1);  // meters for now
-      }
+      layer.set_altUnit(1);
 
       wwt.layers[msg['id']] = layer;
+      break;
+
+    case 'table_layer_set':
+
+      var layer = wwt.layers[msg['id']];
+
+      var name = msg['setting'];
+
+      if (name.includes('Column')) {
+        value = layer.get__table().header.indexOf(msg['value']);
+      } else {
+        value = msg['value']
+      }
+
+      layer["set_" + name](value);
       break;
 
   }
