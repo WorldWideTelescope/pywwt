@@ -9,8 +9,7 @@ from .traits import (Color, ColorWithOpacity, Bool,
                      Float, Int, Unicode, AstropyQuantity)
 
 from .annotation import Circle, Polygon, Line, CircleCollection
-from .imagery import get_imagery_layers
-from .layers import ImageryLayers
+from .imagery import get_imagery_layers, ImageryLayers
 from .ss_proxy import SolarSystem
 
 # The WWT web control API is described here:
