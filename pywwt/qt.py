@@ -67,8 +67,8 @@ class WWTQWebEnginePage(QWebEnginePage):
             self._js_response_received = True
             self._js_response = result
 
-        def runJavaScript(self, code, async=True):
-            if async:
+        def runJavaScript(self, code, asynchronous=True):
+            if asynchronous:
                 super(WWTQWebEnginePage, self).runJavaScript(code)
             else:
                 self._js_response_received = False
@@ -85,7 +85,7 @@ class WWTQWebEnginePage(QWebEnginePage):
             if 'wwt_ready' not in message:
                 print('{0} (line_number={1}, source_id={2})'.format(message, line_number, source_id))
 
-        def runJavaScript(self, code, async=False):
+        def runJavaScript(self, code, asynchronous=False):
             return self._frame.evaluateJavaScript(code)
 
         def _check_ready(self):
@@ -124,15 +124,15 @@ class WWTQtWidget(QtWidgets.QWidget):
     def _on_wwt_ready(self):
         self._run_js(WWT_JSON)
         self._wwt_ready = True
-        self._run_js(self._js_queue, async=True)
+        self._run_js(self._js_queue, asynchronous=True)
         self._js_queue = ""
 
-    def _run_js(self, js, async=True):
+    def _run_js(self, js, asynchronous=True):
         if not js:
             return
         if self._wwt_ready:
             logger.debug('Running javascript: %s' % js)
-            return self.page.runJavaScript(js, async=async)
+            return self.page.runJavaScript(js, asynchronous=asynchronous)
         else:
             logger.debug('Caching javascript: %s' % js)
             self._js_queue += js + '\n'
@@ -187,9 +187,9 @@ class WWTQtClient(BaseWWTWidget):
         """
         app.exec_()
 
-    def _send_msg(self, async=True, **kwargs):
+    def _send_msg(self, asynchronous=True, **kwargs):
         msg = json.dumps(kwargs)
-        return self.widget._run_js("wwt_apply_json_message(wwt, {0});".format(msg), async=async)
+        return self.widget._run_js("wwt_apply_json_message(wwt, {0});".format(msg), asynchronous=asynchronous)
 
     def load_fits_data(self, filename):
         """
