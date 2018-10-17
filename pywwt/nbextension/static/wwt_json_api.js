@@ -162,14 +162,32 @@ function wwt_apply_json_message(wwt, msg) {
       // Get reference frame
       frame = msg['frame']
 
+      // Get columns for lon/lat
+      longitude = msg['longitude']
+      latitude = msg['latitude']
+      altitude = msg['altitude']
+
+      // NOTE: WWT makes some assumptions to do with VO Tables that we don't
+      // necessarily want to be restricted by, so we create the layer manually
+      // below.
+
       // Load VO table and create layer
       table = wwtlib.VoTable.loadFromString(table);
+
+      table.getRAColumn = function() {return table.columns[longitude]};
+      table.getDecColumn = function() {return table.columns[latitude]};
+
       layer = wwtlib.VoTableLayer.create(table);
 
       // Set properties on the layer
       layer.set_name(msg['id']);  // Name is not important for us so just use the ID
       layer.set_astronomical(true);
       layer.set_referenceFrame(frame);
+
+      if (altitude.length > 0) {
+        layer.set_altColumn(table.columns[altitude].index);
+        layer.set_altUnit(1);  // meters for now
+      }
 
       // Add the layer to the correct frame
       wwtlib.LayerManager.get_layerList()[layer.id] = layer;

@@ -32,7 +32,7 @@ class TableLayer(Layer):
     A layer where the data is stored in an :class:`~astropy.table.Table`
     """
 
-    longigude = Unicode(help='The column to use for the longitude')
+    longitude = Unicode(help='The column to use for the longitude')
     latitude = Unicode(help='The column to use for the latitude')
     altitude = Unicode(help='The column to use for the altitude')
 
@@ -42,11 +42,19 @@ class TableLayer(Layer):
         self.table = table
         self.frame = frame
 
+        # Set default longitude/latitude column names
+        self.longitude = self.table.colnames[0]
+        self.latitude = self.table.colnames[0]
+
         # This has to come after setting self.table and self.frame
         super(TableLayer, self).__init__(parent=parent, **kwargs)
 
     @property
     def _table_b64(self):
+
+        # TODO: We need to make sure that the table has ra/dec columns since
+        # WWT absolutely needs that upon creation.
+
         b = BytesIO()
         self.table.write(b, format='votable')
         b.seek(0)
@@ -54,4 +62,6 @@ class TableLayer(Layer):
 
     def _initialize_layer(self):
         self.parent._send_msg(event='table_layer_create',
-                              id=self.id, table=self._table_b64, frame=self.frame)
+                              id=self.id, table=self._table_b64, frame=self.frame,
+                              longitude=self.longitude, latitude=self.latitude,
+                              altitude=self.altitude)
