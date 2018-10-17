@@ -1,5 +1,5 @@
 import uuid
-from io import BytesIO
+from io import StringIO
 from base64 import b64encode
 
 from traitlets import HasTraits
@@ -55,10 +55,15 @@ class TableLayer(Layer):
         # TODO: We need to make sure that the table has ra/dec columns since
         # WWT absolutely needs that upon creation.
 
-        b = BytesIO()
-        self.table.write(b, format='votable')
-        b.seek(0)
-        return b64encode(b.read()).decode('ascii')
+        s = StringIO()
+        self.table.write(s, format='ascii.csv')
+        s.seek(0)
+
+        # Enforce Windows line endings
+        # TODO: check if this needs to be different on Windows
+        csv = s.read().replace('\n', '\r\n')
+
+        return b64encode(csv.encode('ascii')).decode('ascii')
 
     def _initialize_layer(self):
         self.parent._send_msg(event='table_layer_create',

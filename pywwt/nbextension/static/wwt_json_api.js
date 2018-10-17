@@ -157,7 +157,7 @@ function wwt_apply_json_message(wwt, msg) {
     case 'table_layer_create':
 
       // Decode table from base64
-      table = atob(msg['table'])
+      csv = atob(msg['table'])
 
       // Get reference frame
       frame = msg['frame']
@@ -167,39 +167,17 @@ function wwt_apply_json_message(wwt, msg) {
       latitude = msg['latitude']
       altitude = msg['altitude']
 
-      // NOTE: WWT makes some assumptions to do with VO Tables that we don't
-      // necessarily want to be restricted by, so we create the layer manually
-      // below.
-
-      // Load VO table and create layer
-      table = wwtlib.VoTable.loadFromString(table);
-
-      table.getRAColumn = function() {return table.columns[longitude]};
-      table.getDecColumn = function() {return table.columns[latitude]};
-
-      layer = wwtlib.VoTableLayer.create(table);
-
-      // Set properties on the layer
-      layer.set_name(msg['id']);  // Name is not important for us so just use the ID
-      layer.set_astronomical(true);
+      layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
       layer.set_referenceFrame(frame);
 
+      tab = layer.get__table()
+      layer.set_lngColumn(tab.header.indexOf(longitude));
+      layer.set_latColumn(tab.header.indexOf(latitude));
+
       if (altitude.length > 0) {
-        layer.set_altColumn(table.columns[altitude].index);
+        layer.set_altColumn(tab.header.indexOf(altitude));
         layer.set_altUnit(1);  // meters for now
       }
-
-      // Add the layer to the correct frame
-      wwtlib.LayerManager.get_layerList()[layer.id] = layer;
-      wwtlib.LayerManager.get_allMaps()[frame].layers.push(layer);
-      wwtlib.LayerManager.get_allMaps()[frame].open = true;
-
-      // Make sure the layer is enabled
-      layer.enabled = true;
-
-      // Force the layer manager to reload
-      wwtlib.LayerManager._version++;
-      wwtlib.LayerManager.loadTree();
 
       wwt.layers[msg['id']] = layer;
       break;
