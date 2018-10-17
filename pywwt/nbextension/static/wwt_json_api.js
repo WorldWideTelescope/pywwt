@@ -7,6 +7,7 @@ function wwt_apply_json_message(wwt, msg) {
 
   if (!wwt.hasOwnProperty('annotations')) {
     wwt.annotations = {};
+    wwt.layers = {};
   }
 
   switch(msg['event']) {
@@ -151,6 +152,38 @@ function wwt_apply_json_message(wwt, msg) {
 
     case 'track_object':
       wwtlib.WWTControl.singleton.renderContext.set_solarSystemTrack(msg['code']);
+      break;
+
+    case 'table_layer_create':
+
+      // Decode table from base64
+      table = atob(msg['table'])
+
+      // Get reference frame
+      frame = msg['frame']
+
+      // Load VO table and create layer
+      table = wwtlib.VoTable.loadFromString(table);
+      layer = wwtlib.VoTableLayer.create(table);
+
+      // Set properties on the layer
+      layer.set_name(msg['id']);  // Name is not important for us so just use the ID
+      layer.set_astronomical(true);
+      layer.set_referenceFrame(frame);
+
+      // Add the layer to the correct frame
+      wwtlib.LayerManager.get_layerList()[layer.id] = layer;
+      wwtlib.LayerManager.get_allMaps()[frame].layers.push(layer);
+      wwtlib.LayerManager.get_allMaps()[frame].open = true;
+
+      // Make sure the layer is enabled
+      layer.enabled = true;
+
+      // Force the layer manager to reload
+      wwtlib.LayerManager._version++;
+      wwtlib.LayerManager.loadTree();
+
+      wwt.layers[msg['id']] = layer;
       break;
 
   }

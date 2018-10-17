@@ -11,6 +11,7 @@ from .traits import (Color, ColorWithOpacity, Bool,
 from .annotation import Circle, Polygon, Line, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
 from .ss_proxy import SolarSystem
+from .layers import TableLayer
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -450,6 +451,15 @@ class BaseWWTWidget(HasTraits):
         """
         collection = CircleCollection(self, points, **kwargs)
         return collection
+
+    def add_table_layer(self, table, frame='Sky', **kwargs):
+        """
+        Add a CircleCollection to the current view.
+
+        Parameters
+        ----------
+        """
+        return TableLayer(self, table=table, frame=frame, **kwargs)
 
     def _validate_fits_data(self, filename):
         if not os.path.exists(filename):
