@@ -47,8 +47,9 @@ User guide
    jupyter
    qt
    settings
-   annotations
    views
+   annotations
+   layers
    windows
    api
 

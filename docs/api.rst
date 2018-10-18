@@ -20,3 +20,7 @@ API Documentation
 .. automodapi:: pywwt.ss_proxy
    :no-inheritance-diagram:
    :no-inherited-members:
+
+.. automodapi:: pywwt.layers
+   :no-inheritance-diagram:
+   :no-inherited-members:
