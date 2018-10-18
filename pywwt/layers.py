@@ -1,116 +1,93 @@
-import re
+import uuid
+from io import StringIO
+from base64 import b64encode
 
-class ImageryLayers():
+from traitlets import HasTraits
+
+from .traits import Unicode, Float, Color
+
+__all__ = ['TableLayer']
+
+
+class TableLayer(HasTraits):
     """
-    A supplemental class that standardizes layer names, sorts them by 
-    bandpass, and makes it possible to tab complete them.
-    """
-
-    def __init__(self, layer_list):
-        self._layers = {}
-        self._spectrum = ['gamma', 'x', 'uv', 'visible',
-                          'ir', 'micro', 'radio', 'other']
-        self.integers = ['zero', 'one', 'two', 'three', 'four',
-                         'five', 'six', 'seven', 'eight', 'nine']
-        for band in self._spectrum:
-            self._layers[band] = {}
-        
-        self._list2dict(layer_list)
-
-    def _list2dict(self, og_list):
-        # Helps turn the list of layer names used to initialize the class
-        # (og_list) into a dict.
-        for layer in og_list:
-
-            if re.search(r'(?i)gamma',layer) is not None:
-                self._add2dict(self._layers, layer, 'gamma')
-                continue # automatically advance to next iteration
-
-            if re.search(r'(?i)x(-|\s)?ray',layer) is not None:
-                self._add2dict(self._layers, layer, 'x')
-                continue
-
-            if (re.search(r'(?i)ultra(-|\s)?violet',layer) is not None or
-                re.search(r'(?i)[^\d\w]+uv|uv[^\d\w]+',layer) is not None):
-                self._add2dict(self._layers, layer, 'uv')
-                continue
-
-            if (re.search(r'(?i)optical',layer) is not None or
-                re.search(r'(?i)visible',layer) is not None):
-                self._add2dict(self._layers, layer, 'visible')
-                continue
-
-            if (re.search(r'(?i)infrared',layer) is not None or
-                re.search(r'(?i)[^\d\w]+ir|ir[^\d\w]+',layer) is not None):
-                self._add2dict(self._layers, layer, 'ir')
-                continue
-
-            if (re.search(r'(?i)microwave',layer) is not None or
-                re.search(r'(?i)[^\d\w]+cmb|cmb[^\d\w]+',layer) is not None):
-                self._add2dict(self._layers, layer, 'micro')
-                continue
-
-            if re.search(r'(?i)radio',layer) is not None:
-                self._add2dict(self._layers, layer, 'radio')
-                continue
-
-            self._add2dict(self._layers, layer, 'other')
-
-    def _add2dict(self, diction, full_layer, bandpass):
-        # Handles a layer's (full_layer) actual addition to the master
-        # dict of layers (diction) according to its bandpass.
-        suffix = ''
-        short = self._shorten(full_layer) + suffix
-        
-        while short in diction[bandpass]:
-            if suffix:
-                suffix += 1
-            else:
-                suffix = 1
-                
-            short += str(suffix)
-
-        diction[bandpass][short] = {}
-        diction[bandpass][short]['full_name'] = full_layer
-
-    def _shorten(self, string):
-        # Unlocks tab completion by shortening a full layer's name
-        # (string) to a valid Python name based on its first word.        
-        cut_left = re.search(r'^[_\W]+', string)
-        if cut_left is not None:
-            string = string[cut_left.end():]
-
-        cut_right = re.search(r'[_\W]', string)
-        if cut_right is not None:
-            string = string[:cut_right.start()].lower()
-        
-        digit = re.search(r'^\d', string)
-        if digit is not None:
-            for i, num in enumerate(self.integers, 0):
-                if str(i) == digit.group(0):
-                    string = string[:digit.start()] + num + string[digit.end():]
-                    break
-
-        return string
-
-    def __dir__(self):
-        return sorted(self._layers.keys())
-
-    def __getattr__(self, band):
-        return Bandpass(self._layers[band])
-
-
-class Bandpass():
-    """
-    Allows the __getattr__() method from ImageryLayers to reach into the
-    inner dict corresponding to layers of a particular bandpass.
+    A layer where the data is stored in an :class:`~astropy.table.Table`
     """
 
-    def __init__(self, band):
-        self._band = band
+    column_lon = Unicode(help='The column to use for the longitude').tag(wwt='lngColumn')
+    column_lat = Unicode(help='The column to use for the latitude').tag(wwt='latColumn')
+    column_alt = Unicode(help='The column to use for the altitude').tag(wwt='altColumn')
+    column_cmap = Unicode(help='The column to use for the colormap').tag(wwt='colorMapColumn')
+    column_size = Unicode(help='The column to use for the size').tag(wwt='sizeColumn')
 
-    def __dir__(self):
-        return sorted(self._band.keys())
+    size_scalefactor = Float(1, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
 
-    def __getattr__(self, name):
-        return self._band[name]['full_name']
+    color = Color('white', help='The color of the markers').tag(wwt='color')
+
+    # TODO: support:
+    # altType
+    # xAxisColumn
+    # yAxisColumn
+    # zAxisColumn
+    # xAxisReverse
+    # yAxisReverse
+    # zAxisReverse
+    # color (for fixed color)
+
+    def __init__(self, parent=None, table=None, frame=None, **kwargs):
+
+        # TODO: need to validate reference frame
+        self.table = table
+        self.frame = frame
+
+        self.parent = parent
+        self.id = str(uuid.uuid4())
+
+        self._initialize_layer()
+
+        self.observe(self._on_trait_change, type='change')
+
+        if any(key not in self.trait_names() for key in kwargs):
+            raise KeyError('a key doesn\'t match any layer trait name')
+
+        super(TableLayer, self).__init__(**kwargs)
+
+        if 'column_lon' not in kwargs:
+            self.column_lon = self.table.colnames[0]
+
+        if 'column_lat' not in kwargs:
+            self.column_lat = self.table.colnames[1]
+
+    @property
+    def _table_b64(self):
+
+        # TODO: We need to make sure that the table has ra/dec columns since
+        # WWT absolutely needs that upon creation.
+
+        s = StringIO()
+        self.table.write(s, format='ascii.basic', delimiter=',', comment=False)
+        s.seek(0)
+
+        # Enforce Windows line endings
+        # TODO: check if this needs to be different on Windows
+        csv = s.read().replace('\n', '\r\n')
+
+        return b64encode(csv.encode('ascii')).decode('ascii')
+
+    def _initialize_layer(self):
+        self.parent._send_msg(event='table_layer_create',
+                              id=self.id, table=self._table_b64, frame=self.frame)
+
+    def _on_trait_change(self, changed):
+        # This method gets called anytime a trait gets changed. Since this class
+        # gets inherited by the Jupyter widgets class which adds some traits of
+        # its own, we only want to react to changes in traits that have the wwt
+        # metadata attribute (which indicates the name of the corresponding WWT
+        # setting).
+        wwt_name = self.trait_metadata(changed['name'], 'wwt')
+        if wwt_name is not None:
+            # TODO: need to generalize to not say table here
+            self.parent._send_msg(event='table_layer_set',
+                                  id=self.id,
+                                  setting=wwt_name,
+                                  value=changed['new'])

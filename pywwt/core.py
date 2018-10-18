@@ -9,9 +9,9 @@ from .traits import (Color, ColorWithOpacity, Bool,
                      Float, Int, Unicode, AstropyQuantity)
 
 from .annotation import Circle, Polygon, Line, CircleCollection
-from .imagery import get_imagery_layers
-from .layers import ImageryLayers
+from .imagery import get_imagery_layers, ImageryLayers
 from .ss_proxy import SolarSystem
+from .layers import TableLayer
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -124,8 +124,8 @@ class BaseWWTWidget(HasTraits):
         """
         Return the view's current right ascension and declination in degrees.
         """
-        return SkyCoord(self._send_msg(event='get_ra', async=False),
-                        self._send_msg(event='get_dec', async=False),
+        return SkyCoord(self._send_msg(event='get_ra', asynchronous=False),
+                        self._send_msg(event='get_dec', asynchronous=False),
                         unit=(u.hourangle, u.deg))
 
     def load_tour(self, url):
@@ -451,6 +451,20 @@ class BaseWWTWidget(HasTraits):
         """
         collection = CircleCollection(self, points, **kwargs)
         return collection
+
+    def add_data_layer(self, table=None, frame='Sky', **kwargs):
+        """
+        Add a CircleCollection to the current view.
+
+        Parameters
+        ----------
+        """
+        if table is not None:
+            return TableLayer(self, table=table, frame=frame, **kwargs)
+        else:
+            # NOTE: in future we may allow different arguments such as e.g.
+            # orbit=, hence why we haven't made this a positional argument.
+            raise ValueError("The table argument is required")
 
     def _validate_fits_data(self, filename):
         if not os.path.exists(filename):

@@ -1,3 +1,5 @@
+.. _views:
+
 Switching views
 ===============
 

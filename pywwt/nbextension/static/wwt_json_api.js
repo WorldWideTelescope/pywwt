@@ -7,6 +7,7 @@ function wwt_apply_json_message(wwt, msg) {
 
   if (!wwt.hasOwnProperty('annotations')) {
     wwt.annotations = {};
+    wwt.layers = {};
   }
 
   switch(msg['event']) {
@@ -151,6 +152,39 @@ function wwt_apply_json_message(wwt, msg) {
 
     case 'track_object':
       wwtlib.WWTControl.singleton.renderContext.set_solarSystemTrack(msg['code']);
+      break;
+
+    case 'table_layer_create':
+
+      // Decode table from base64
+      csv = atob(msg['table'])
+
+      // Get reference frame
+      frame = msg['frame']
+
+      layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
+      layer.set_referenceFrame(frame);
+
+      layer.set_altUnit(1);
+
+      wwt.layers[msg['id']] = layer;
+      break;
+
+    case 'table_layer_set':
+
+      var layer = wwt.layers[msg['id']];
+
+      var name = msg['setting'];
+
+      if (name.includes('Column')) {
+        value = layer.get__table().header.indexOf(msg['value']);
+      } else if(name == 'color') {
+        value = wwtlib.Color.fromHex(msg['value']);
+      } else {
+        value = msg['value']
+      }
+
+      layer["set_" + name](value);
       break;
 
   }
