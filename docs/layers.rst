@@ -15,4 +15,73 @@ of the planets or satellites.
 
 .. TODO: give a more exhaustive list of what can be used as a frame
 
-Points on the sky
+Loading the data
+----------------
+
+To start off, let's look at how to show a simple set positions on the sky. We'll
+use the `Open Exoplanet Catalogue <http://openexoplanetcatalogue.com>`_ as a
+first example. We start off by using `astropy.table
+<http://docs.astropy.org/en/stable/table/index.html>`_ to read in a
+comma-separated values (CSV) file of the data::
+
+    >>> from astropy.table import Table
+    >>> OEC = 'https://worldwidetelescope.github.io/pywwt/data/open_exoplanet_catalogue.csv'
+    >>> table = Table.read(OEC, delimiter=',', format='ascii.basic')
+
+Assuming that you already have either the Qt or Jupyter version of pywwt open
+as the ``wwt`` variable, you can then do::
+
+    >>> wwt.add_data_layer(table=table, frame='Sky', column_lon='ra', column_lat='dec')
+
+Note that we have specified which columns to use for the right ascension and
+declination.
+
+Let's now look at how to load data in the frame of reference of a celestial
+body. Let's first change the camera settings so that we are looking at the
+Earth (see :ref:`views` for more details)::
+
+    >>> wwt.set_view('solar_system')
+    >>> wwt.solar_system.track_object('Earth')
+
+Be sure to zoom in so that you can see the Earth properly. Next, we use a
+dataset that includes all recorded earthquakes in 2010::
+
+    >>> from astropy.table import Table
+    >>> EARTHQUAKES = 'https://worldwidetelescope.github.io/pywwt/data/earthquakes_2010.csv'
+    >>> table = Table.read(EARTHQUAKES, delimiter=',', format='ascii.basic')
+
+We can then add the data layer using::
+
+    >>> layer = wwt.add_data_layer(table=table, frame='Earth',
+                                   column_lon='longitude', column_lat='latitude')
+
+Note that ``column_lon`` and ``column_lat`` don't need to be specified in
+``add_data_layer`` - they can also be set afterwards using e.g.::
+
+    >>> layer.column_lon = 'longitude'
+
+In some cases, datasets provide a third dimension that can be used as an
+altitude or a radius. This can be provided using the ``column_alt`` column::
+
+    >>> layer.column_alt = 'depth'
+
+Visual attributes
+-----------------
+
+There are a number of settings to control the visual appearance of a layer.
+First off, the points can be made larger or smaller by changing::
+
+    >>> layer.size_scalefactor = 10.
+
+It is also possible to make the size of the points depend on one of the columns
+in the table. This can be done by making use of the ``column_size`` attribute::
+
+    >>> layer.column_size = 'mag'
+
+Similarly, the color of the points can either be set as a uniform color::
+
+    >>> layer.color = 'red'
+
+or it can be set to be dependent on one of the columns with::
+
+    >>> layer.column_cmap = 'depth'

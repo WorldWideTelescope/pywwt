@@ -4,7 +4,7 @@ from base64 import b64encode
 
 from traitlets import HasTraits
 
-from .traits import Unicode, Float
+from .traits import Unicode, Float, Color
 
 __all__ = ['TableLayer']
 
@@ -21,6 +21,8 @@ class TableLayer(HasTraits):
     column_size = Unicode(help='The column to use for the size').tag(wwt='sizeColumn')
 
     size_scalefactor = Float(1, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
+
+    color = Color('white', help='The color of the markers').tag(wwt='color')
 
     # TODO: support:
     # altType
@@ -63,7 +65,7 @@ class TableLayer(HasTraits):
         # WWT absolutely needs that upon creation.
 
         s = StringIO()
-        self.table.write(s, format='ascii.csv')
+        self.table.write(s, format='ascii.basic', delimiter=',', comment=False)
         s.seek(0)
 
         # Enforce Windows line endings

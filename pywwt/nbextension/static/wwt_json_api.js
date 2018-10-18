@@ -162,13 +162,6 @@ function wwt_apply_json_message(wwt, msg) {
       // Get reference frame
       frame = msg['frame']
 
-      // Get columns for lon/lat
-      column_lon = msg['column_lon']
-      column_lat = msg['column_lat']
-      column_alt = msg['column_alt']
-      column_cmap = msg['column_cmap']
-      column_size = msg['column_size']
-
       layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
       layer.set_referenceFrame(frame);
 
@@ -185,6 +178,8 @@ function wwt_apply_json_message(wwt, msg) {
 
       if (name.includes('Column')) {
         value = layer.get__table().header.indexOf(msg['value']);
+      } else if(name == 'color') {
+        value = wwtlib.Color.fromHex(msg['value']);
       } else {
         value = msg['value']
       }

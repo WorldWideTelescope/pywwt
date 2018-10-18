@@ -452,14 +452,19 @@ class BaseWWTWidget(HasTraits):
         collection = CircleCollection(self, points, **kwargs)
         return collection
 
-    def add_table_layer(self, table, frame='Sky', **kwargs):
+    def add_data_layer(self, table=None, frame='Sky', **kwargs):
         """
         Add a CircleCollection to the current view.
 
         Parameters
         ----------
         """
-        return TableLayer(self, table=table, frame=frame, **kwargs)
+        if table is not None:
+            return TableLayer(self, table=table, frame=frame, **kwargs)
+        else:
+            # NOTE: in future we may allow different arguments such as e.g.
+            # orbit=, hence why we haven't made this a positional argument.
+            raise ValueError("The table argument is required")
 
     def _validate_fits_data(self, filename):
         if not os.path.exists(filename):
