@@ -74,10 +74,7 @@ class TableLayer(HasTraits):
 
     def _initialize_layer(self):
         self.parent._send_msg(event='table_layer_create',
-                              id=self.id, table=self._table_b64, frame=self.frame,
-                              column_lon=self.column_lon, column_lat=self.column_lat,
-                              column_alt=self.column_alt, column_cmap=self.column_cmap,
-                              column_size=self.column_size)
+                              id=self.id, table=self._table_b64, frame=self.frame)
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
