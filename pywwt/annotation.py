@@ -3,6 +3,7 @@ from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
 from astropy.coordinates import concatenate, SkyCoord
 import requests
+import numpy as np
 
 from .traits import (Color, ColorWithOpacity, Bool,
                      Float, Unicode, AstropyQuantity)
@@ -263,74 +264,26 @@ class FieldOfView():
     # footprint: https://raw.githubusercontent.com/KeplerGO/K2FootprintFiles/master/json/k2-footprint.json
 
     # more efficient method than CircleCollection of changing trait values?
-    def __init__(self, parent, telescope, center, **kwargs):
+    def __init__(self, parent, telescope, center, rot, **kwargs):
         self.parent = parent
         self.available = self.parent.instruments.available
         self.dim = self.parent.instruments.dim
         
-        """self.available = ['k2', 'hst_acs_wfc', 'hst_wfc3_ir', 'hst_wfc3_uvis',
-                          'jwst_nircam', 'jwst_niriss', 'spitzer_irac']
-        # dimensions in arcsec, # of panels
-        self.dim = {'_wfc3_uvis': [(162, 162), 2],
-                    '_wfc3_ir': [(136, 123), 1], '_acs_wfc': [(202, 202), 2],
-                    'jwst_nircam': [(129, 129), 1],
-                    'jwst_nircam_small': [(64, 64), 4],
-                    'jwst_niriss': [(133, 133), 1],
-                    'spitzer_irac': [(312, 312), 3]}"""
-
         # list of IDs of annotations created in this FieldofView instance
         self.active = []
-        self._gen_fov(telescope, center, **kwargs)
+        self._gen_fov(telescope, center, rot, **kwargs)
 
-    def _gen_fov(self, telescope, center, **kwargs):
+    def _gen_fov(self, telescope, center, rot, **kwargs):
         # large footprints (e.g. k2) don't need center, so we confirm it exists
         if hasattr(center, 'ra'):
             # then save coords to variables
             ra = center.ra.value
             dec = center.dec.value
+            origin = [ra, dec]
             
         telescope = telescope.lower()
         if telescope in self.available:
-            if telescope[:3] == 'hst':
-                instr_h = self.dim[telescope][0][0]
-                instr_w = self.dim[telescope][0][1]
-                panels = self.dim[telescope][1]
-
-                h = (instr_h * u.arcsec).to(u.deg).value / 2.
-                w = (instr_w * u.arcsec).to(u.deg).value / 2.
-                
-                if panels > 1:
-                    gap = (4 * u.arcsec).to(u.deg).value / 2.
-                    w -= gap/2.
-                else:
-                    gap = -w/2.
-                
-                i = 0
-                while i < panels:
-                    if i == 1:
-                        ra += w + gap
-
-                    swap1 = 0.; swap2 = 0.
-                    dec_pl = dec + h; dec_mn = dec - h
-                    
-                    # accounting for abs(dec +/- h) above 90 degrees
-                    if abs(dec_pl) > 90:
-                        dec_pl = 90. - (dec_pl - 90.)
-                        swap1 = 180.
-                    if abs(dec_mn) > 90:
-                        dec_mn = -90. - (dec_mn + 90.)
-                        swap2 = 180.
-
-                    corners = concatenate((
-                        SkyCoord(ra - gap + swap1,     dec_pl, unit='deg'),
-                        SkyCoord(ra - gap - w + swap1, dec_pl, unit='deg'),
-                        SkyCoord(ra - gap - w + swap2, dec_mn, unit='deg'),
-                        SkyCoord(ra - gap + swap2,     dec_mn, unit='deg')))
-
-                    annot = self.parent.add_polygon(corners, **kwargs)
-                    self.active.append(annot)
-                    i += 1
-            elif telescope == 'k2':
+            if telescope == 'k2':
                 json_file = requests.get('https://worldwidetelescope.github.io/pywwt/fov_files/k2-trimmed.json')
                 diction = json_file.json()
                 # check python version. sys.version_info.major > 3, OR:
@@ -351,64 +304,60 @@ class FieldOfView():
 
                         annot = self.parent.add_polygon(corners, **kwargs)
                         self.active.append(annot)
+            elif telescope[:3] == 'hst':
+                instr_h = self.dim[telescope][0][0]
+                instr_w = self.dim[telescope][0][1]
+                panels = self.dim[telescope][1]
+
+                h = (instr_h * u.arcsec).to(u.deg).value / 2.
+                w = (instr_w * u.arcsec).to(u.deg).value / 2.
+                
+                if panels > 1:
+                    gap = (4 * u.arcsec).to(u.deg).value / 2.
+                    w -= gap/2.
+                    ra -= w/2. + gap/2. # + gap/2. is new for _rotate
+                else:
+                    gap = -w/2.
+
+                mid = [h, w/2.]
+                
+                i = 0
+                while i < panels:
+                    if i == 1:
+                        ra += w + gap
+                        
+                    corners = self._rotate(ra, dec, mid, origin, rot)
+                    annot = self.parent.add_polygon(corners, **kwargs)
+                    self.active.append(annot)
+                    i += 1
             elif telescope[:4] == 'jwst':
-                side = self.dim[telescope][0][0]
-                small = telescope + '_small'
-                mid = (side * u.arcsec).to(u.deg).value / 2.
-
-                swap1 = 0.; swap2 = 0.
-                dec_mn = dec - mid; dec_pl = dec + mid                
-                if abs(dec_mn) > 90:
-                    dec_mn = -90. - (dec_mn + 90.)
-                    swap2 = 180.
-                if abs(dec_pl) > 90:
-                    dec_pl = 90. - (dec_pl - 90.)
-                    swap1 = 180.
-                    
-                corners = concatenate((
-                        SkyCoord(ra - mid + swap2, dec_mn, unit='deg'),
-                        SkyCoord(ra + mid + swap2, dec_mn, unit='deg'),
-                        SkyCoord(ra + mid + swap1, dec_pl, unit='deg'),
-                        SkyCoord(ra - mid + swap1, dec_pl, unit='deg')))
-
+                instr_h = self.dim[telescope][0][0]
+                instr_w = self.dim[telescope][0][1]
+                mid = [(instr_h * u.arcsec).to(u.deg).value / 2.,
+                       (instr_w * u.arcsec).to(u.deg).value / 2.]
+                
+                corners = self._rotate(ra, dec, mid, origin, rot)
                 annot = self.parent.add_polygon(corners, **kwargs)
                 self.active.append(annot)
                 
                 if telescope[5:] == 'nircam':
-                    self._small_recs(ra, dec, small, **kwargs)
+                    small = telescope + '_small'
+                    self._small_recs(ra, dec, origin, small, rot, **kwargs)
             elif telescope[:7] == 'spitzer':
-                side = (self.dim[telescope][0][0] * u.arcsec).to(u.deg).value
+                instr_h = self.dim[telescope][0][0]
+                instr_w = self.dim[telescope][0][1]
                 panels = self.dim[telescope][1]
-                mid = side / 2.
+                
+                side = (instr_h * u.arcsec).to(u.deg).value
+                mid = [(instr_h * u.arcsec).to(u.deg).value / 2.,
+                       (instr_w * u.arcsec).to(u.deg).value / 2.]
+                
                 gap = (1.52 * u.arcmin).to(u.deg).value / 2.
 
                 y_panel = side + gap
                 i = 0
                 while(i < panels):
-                    swap1 = 0.; swap2 = 0.
-                    dec_mn = dec + y_panel - mid; dec_pl = dec + y_panel + mid
-                    if abs(dec_mn) > 90:
-                        # must check both cases for each dec b/c some panels
-                        # can be entirely above/below a pole, in which case
-                        # abs(dec) > 90 for both decs
-                        if dec_mn < -90:
-                            dec_mn = -90. - (dec_mn + 90.)
-                        else: # dec_mn > 90
-                            dec_mn = 90. - (dec_mn - 90.)
-                        swap2 = 180.
-                    if abs(dec_pl) > 90:
-                        if dec_pl > 90:
-                            dec_pl = 90. - (dec_pl - 90.)
-                        else: # dec_pl < -90
-                            dec_pl = -90. - (dec_mn + 90.)
-                        swap1 = 180.
-                    
-                    corners = concatenate((
-                        SkyCoord(ra - mid + swap2, dec_mn, unit='deg'),
-                        SkyCoord(ra + mid + swap2, dec_mn, unit='deg'),
-                        SkyCoord(ra + mid + swap1, dec_pl, unit='deg'),
-                        SkyCoord(ra - mid + swap1, dec_pl, unit='deg')))
-
+                    corners = self._rotate(ra, dec + y_panel, mid, origin, rot)
                     annot = self.parent.add_polygon(corners, **kwargs)
                     self.active.append(annot)
 
@@ -416,22 +365,81 @@ class FieldOfView():
                     i += 1
         else:
             raise ValueError('the given telescope\'s field of view is unavailable at this time')
+
+    def _rotate(self, ra, dec, mid, origin, rot):
+        # convert rot to radians for numpy's trig functions
+        rot = rot.to(u.rad).value
+        cos = np.cos(rot); sin = np.sin(rot)
         
-    def _small_recs(self, ra, dec, telescope, **kwargs):
+        # if the point at the center of rotation is not the center of the shape:
+        o_ra = origin[0]; o_dec = origin[1]
+
+        # get coord values of corners of the shape...
+        # by subtracting half the length of a side
+        # from bottom left counter-clockwise: (+-, --, -+, ++) (--, +-, ++, -+)
+        ra_mn = ra - mid[1]; ra_pl = ra + mid[1]
+        dec_mn = dec - mid[0]; dec_pl = dec + mid[0]
+
+        # check that abs(dec) < 90;
+        # if not, adjust and set the corresponding ra to be swapped by 180
+        swap0 = 0.; swap1 = 0.
+        if abs(dec_mn) > 90:
+            # must check both cases for each dec b/c some panels
+            # can be entirely above/below a pole (e.g. in Spitzer),
+            # in which case abs(dec) > 90 for both decs
+            if dec_mn < -90:
+                dec_mn = -90. - (dec_mn + 90.)
+            else: # dec_mn > 90
+                dec_mn = 90. - (dec_mn - 90.)
+            swap0 = 180.
+        if abs(dec_pl) > 90:
+            if dec_pl > 90:
+                dec_pl = 90. - (dec_pl - 90.)
+            else: # dec_pl < -90
+                dec_pl = -90. - (dec_mn + 90.)
+            swap1 = 180.
+        
+        # temporarily translate corners pre-rotation
+        r0 = ra_mn - o_ra; r1 = ra_pl - o_ra
+        d0 = dec_mn - o_dec; d1 = dec_pl - o_dec
+
+        # then, use trigonometry to rotate and undo the previous translation
+        rotated = concatenate((
+            SkyCoord(o_ra + r1*cos - d0*sin + swap0,
+                     o_dec + r1*sin + d0*cos, unit='deg'),
+            SkyCoord(o_ra + r0*cos - d0*sin + swap0,
+                     o_dec + r0*sin + d0*cos, unit='deg'),
+            SkyCoord(o_ra + r0*cos - d1*sin + swap1,
+                     o_dec + r0*sin + d1*cos, unit='deg'),
+            SkyCoord(o_ra + r1*cos - d1*sin + swap1,
+                     o_dec + r1*sin + d1*cos, unit='deg')))
+
+        # check for galactic coords
+        if self.parent.galactic_mode:
+            rotated = rotated.galactic
+
+        return rotated
+        
+    def _small_recs(self, ra, dec, origin, telescope, rot, **kwargs):
         # to match listing in dim since this is a subset of an instrument
         telescope = "_" + telescope
 
-        side = self.dim[telescope][0][0]
+        instr_h = self.dim[telescope][0][0]
+        instr_w = self.dim[telescope][0][1]
         panels = self.dim[telescope][1]
-        side = (side * u.arcsec).to(u.deg).value
+                
+        side = (instr_h * u.arcsec).to(u.deg).value
+        mid = [(instr_h * u.arcsec).to(u.deg).value / 2.,
+               (instr_w * u.arcsec).to(u.deg).value / 2.]
+
         gap = (4 * u.arcsec).to(u.deg).value / 2.
         ex2 = (1 * u.arcsec).to(u.deg).value # for bottom
         ex1 = ex2 / 2. # for left and right
 
         i = 0
-        while i <= 3:
-            # top left corner for (ra, dec), tl, tr, br, bl
-            # top left corner is reference point for each polygon
+        while i < panels:
+            # get coords for the center of the current rect
+            # first, get coords of top left corner
             if i % 2 == 0:
                 tl_ra = ra + side + gap + ex1
             else:
@@ -442,33 +450,19 @@ class FieldOfView():
             else:
                 tl_dec = dec + side + gap - ex2
 
-            swap1 = 0.; swap2 = 0.
-            dec_pl = tl_dec; dec_mn = tl_dec - side
-            if abs(dec_pl) > 90:
-                if dec_pl > 90:
-                    dec_pl = 90. - (dec_pl - 90.)
-                else: # dec_pl < -90
-                    dec_pl = -90. - (dec_mn + 90.)
-                    swap1 = 180.
-            if abs(dec_mn) > 90:
-                if dec_mn < -90:
-                    dec_mn = -90. - (dec_mn + 90.)
-                else: # dec_mn > 90
-                    dec_mn = 90. - (dec_mn - 90.)
-                    swap2 = 180.
+            # then, subtract half the length of a side to reach the center
+            cen_ra = tl_ra - side/2.; cen_dec = tl_dec - side/2.
 
-            corners = concatenate((
-                SkyCoord(tl_ra + swap1,        dec_pl, unit='deg'),
-                SkyCoord(tl_ra - side + swap1, dec_pl, unit='deg'),
-                SkyCoord(tl_ra - side + swap2, dec_mn, unit='deg'),
-                SkyCoord(tl_ra + swap2,        dec_mn, unit='deg')))
-
+            corners = self._rotate(cen_ra, cen_dec, mid, origin, rot)
             annot = self.parent.add_polygon(corners, **kwargs)
             self.active.append(annot)
             
             i += 1
 
     def remove(self):
+        """
+        Removes the specified annotation from the current view.
+        """
         for annot in self.active:
             annot.remove()
 

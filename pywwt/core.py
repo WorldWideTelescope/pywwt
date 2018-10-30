@@ -385,7 +385,7 @@ class BaseWWTWidget(HasTraits):
 
         Parameters
         ----------
-        center : `~astropy.units.Quantity`
+        center : `~astropy.units.Quantity`, optional
             The coordinates of desired center of the circle. If blank,
             defaults to the center of the current view.
         kwargs
@@ -404,7 +404,7 @@ class BaseWWTWidget(HasTraits):
 
         Parameters
         ----------
-        points : `~astropy.units.Quantity`
+        points : `~astropy.units.Quantity`, optional
             The desired points that make up the polygon. If blank or just
             one point, the annotation will be initialized but will not be
             visible until more points are added.
@@ -424,7 +424,7 @@ class BaseWWTWidget(HasTraits):
 
         Parameters
         ----------
-        points : `~astropy.units.Quantity`
+        points : `~astropy.units.Quantity`, optional
             The desired points that make up the line. If blank or just one
             point, the annotation will be initialized but will not be
             visible until more points are added.
@@ -438,20 +438,26 @@ class BaseWWTWidget(HasTraits):
             line.add_point(points)
         return line
 
-    def add_fov(self, telescope, center=None, **kwargs):
+    def add_fov(self, telescope, center=None, rotate=0 * u.rad, **kwargs):
         """
-        Add a telescope's field of view to the current view.
+        Add a telescope's field of view (FOV) to the current view.
 
         Parameters
         ----------
         telescope : `str`
             The telescope, selected from a list of presets, whose field of
             view will be displayed.
+        center : `~astropy.units.Quantity`, optional
+            The coordinates of desired center of the FOV. If blank,
+            defaults to the center of the current view.
+        rotate : `~astropy.units.Quantity`, optional
+            The amount to rotate the FOV. Both radians and degrees are 
+            accepted. If blank, defaults to 0 radians (no rotation).
         kwargs
             Optional arguments that allow corresponding Polygon or
             Annotation attributes to be set upon shape initialization.
         """
-        fov = FieldOfView(self, telescope, center, **kwargs)
+        fov = FieldOfView(self, telescope, center, rotate, **kwargs)
         return fov
 
     def add_collection(self, points, **kwargs):
