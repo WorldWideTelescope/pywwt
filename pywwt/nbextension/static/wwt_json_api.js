@@ -176,7 +176,8 @@ function wwt_apply_json_message(wwt, msg) {
 
       var name = msg['setting'];
 
-      if (name.includes('Column')) {
+      //if (name.includes('Column')) { // compatability issues?
+      if (name.indexOf('Column') >= 0) {
         value = layer.get__table().header.indexOf(msg['value']);
       } else if(name == 'color') {
         value = wwtlib.Color.fromHex(msg['value']);
