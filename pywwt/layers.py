@@ -72,7 +72,7 @@ class TableLayer(HasTraits):
         # TODO: check if this needs to be different on Windows
         csv = s.read().replace('\n', '\r\n')
 
-        return b64encode(csv.encode('ascii')).decode('ascii')
+        return b64encode(csv.encode('ascii', errors='replace')).decode('ascii')
 
     def _initialize_layer(self):
         self.parent._send_msg(event='table_layer_create',
