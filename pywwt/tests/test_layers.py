@@ -1,20 +1,10 @@
-import os
-import time
-from datetime import datetime
-
-import pytest
-
-from astropy.coordinates import SkyCoord
-from astropy import units as u
 from astropy.table import Table
-
-from qtpy.QtWidgets import QApplication
-from qtpy.QtWebEngineWidgets import WEBENGINE
-
-from matplotlib.testing.compare import compare_images
 
 from ..qt import WWTQtClient
 from .test_qt_widget import check_silent_output
+
+from ..layers import TableLayer
+
 
 class TestLayers:
 
@@ -43,6 +33,10 @@ class TestLayers:
 
         assert self.widget.layers[0] is layer1
         assert self.widget.layers[1] is layer2
+
+        # Test iteration
+        for layer in self.widget.layers:
+            assert isinstance(layer, TableLayer)
 
         layer1.remove()
 
