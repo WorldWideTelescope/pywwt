@@ -78,6 +78,12 @@ class TableLayer(HasTraits):
         self.parent._send_msg(event='table_layer_create',
                               id=self.id, table=self._table_b64, frame=self.frame)
 
+    def remove(self):
+        """
+        Remove the layer.
+        """
+        self.parent._send_msg(event='table_layer_remove', id=self.id)
+
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
         # gets inherited by the Jupyter widgets class which adds some traits of

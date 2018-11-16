@@ -188,6 +188,17 @@ function wwt_apply_json_message(wwt, msg) {
       layer["set_" + name](value);
       break;
 
+    case 'table_layer_remove':
+
+      var layer = wwt.layers[msg['id']];
+      console.log('REMOVE');
+      console.log(layer.id);
+      wwtlib.LayerManager.deleteLayerByID(layer.id);
+      layer.cleanUp();
+      delete wwt.layers[msg['id']];
+      break;
+
+
   }
 
 }
