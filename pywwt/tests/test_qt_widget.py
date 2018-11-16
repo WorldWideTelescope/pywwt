@@ -21,30 +21,15 @@ DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 REFERENCE_TIME = datetime(2017, 1, 1, 0, 0, 0, 0)
 
 
-def wait(seconds):
-
-    app = QApplication.instance()
-
-    time1 = time.time()
-    while time.time() - time1 < seconds:
-        app.processEvents()
-
-
-def wait_and_check_output(seconds, capsys):
-
-    # TODO: would be nice to find a way to do this that doesn't
-    # rely on waiting a fixed number of seconds
-
-    wait(seconds)
-
+def check_silent_output(capsys):
     out, err = capsys.readouterr()
     assert out.strip() == ""
     assert err.strip() == ""
 
 
 def test_init(capsys):
-    WWTQtClient(block_until_ready=True)
-    wait(1)
+    wwt = WWTQtClient(block_until_ready=True)
+    wwt.wait(1)
 
 
 class TestWWTWidget:
@@ -55,22 +40,26 @@ class TestWWTWidget:
     def test_settings(self, capsys):
         self.widget.constellation_figures = True
         self.widget.constellation_figures = False
-        wait_and_check_output(1, capsys)
+        self.widget.wait(1)
+        check_silent_output(capsys)
 
     def test_methods(self, capsys):
         self.widget.center_on_coordinates(M42, fov=10 * u.deg)
-        wait_and_check_output(1, capsys)
+        self.widget.wait(1)
+        check_silent_output(capsys)
 
     def test_coordinates(self, capsys):
         self.widget.center_on_coordinates(M42, fov=10 * u.deg)
         assert M42.separation(self.widget.get_center()).arcsec < 1.e-6
-        wait_and_check_output(1, capsys)
+        self.widget.wait(1)
+        check_silent_output(capsys)
 
     def test_annotations(self, capsys):
         circle = self.widget.add_circle()
         circle.opacity = 0.8
         circle.set_center(M42)
-        wait_and_check_output(1, capsys)
+        self.widget.wait(1)
+        check_silent_output(capsys)
 
 
 # The following is a template for a script that will allow developers who see
@@ -135,14 +124,14 @@ def test_full(tmpdir, capsys):
     # on all platforms.
     wwt.crosshairs = False
 
-    wait(4)
+    wwt.wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step0.png')
 
     gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='galactic')
     wwt.center_on_coordinates(gc, 60 * u.deg)
 
-    wait(4)
+    wwt.wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step1.png')
 
@@ -153,7 +142,7 @@ def test_full(tmpdir, capsys):
     wwt.constellation_boundaries = True
     wwt.constellation_figures = True
 
-    wait(4)
+    wwt.wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step2.png')
 
@@ -163,13 +152,13 @@ def test_full(tmpdir, capsys):
     wwt.ecliptic = True
     wwt.grid = True
 
-    wait(4)
+    wwt.wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step3.png')
 
     wwt.foreground = 'SFD Dust Map (Infrared)'
 
-    wait(4)
+    wwt.wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step4.png')
 
@@ -220,6 +209,6 @@ def test_full(tmpdir, capsys):
     polyline.color = 'green'
     polyline.width = 3 * u.pixel
 
-    wait(4)
+    wwt.wait(4)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step5.png')

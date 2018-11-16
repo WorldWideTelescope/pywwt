@@ -1,12 +1,80 @@
+import sys
 import uuid
-from io import StringIO
+
+if sys.version_info[0] == 2:
+    from io import BytesIO as StringIO
+else:
+    from io import StringIO
+    
 from base64 import b64encode
 
 from traitlets import HasTraits
 
 from .traits import Unicode, Float, Color
 
-__all__ = ['TableLayer']
+__all__ = ['LayerManager', 'TableLayer']
+
+
+class LayerManager(object):
+    """
+    A simple container for layers.
+    """
+
+    def __init__(self, parent=None):
+        self._layers = []
+        self._parent = parent
+
+    def add_data_layer(self, table=None, frame='Sky', **kwargs):
+        """
+        Add a data layer to the current view
+
+        Parameters
+        ----------
+        """
+        if table is not None:
+            layer = TableLayer(self._parent, table=table, frame=frame, **kwargs)
+        else:
+            # NOTE: in future we may allow different arguments such as e.g.
+            # orbit=, hence why we haven't made this a positional argument.
+            raise ValueError("The table argument is required")
+        self._add_layer(layer)
+        return layer
+
+    def _add_layer(self, layer):
+        if layer in self._layers:
+            raise ValueError("layer already exists in layer manager")
+        self._layers.append(layer)
+        layer._manager = self
+
+    def remove_layer(self, layer):
+        if layer not in self._layers:
+            raise ValueError("layer not in layer manager")
+        layer.remove()
+        # By this point, the call to remove() above may already have resulted
+        # in the layer getting removed, so we check first if it's still present.
+        if layer in self._layers:
+            self._layers.remove(layer)
+
+    def __len__(self):
+        return len(self._layers)
+
+    def __iter__(self):
+        for layer in self._layers:
+            yield layer
+
+    def __getitem__(self, item):
+        return self._layers[item]
+
+    def __str__(self):
+        if len(self) == 0:
+            return 'Layer manager with no layers'
+        else:
+            s = 'Layer manager with {0} layers:\n\n'.format(len(self))
+            for ilayer, layer in enumerate(self._layers):
+                s += '  [{0}]: {1}\n'.format(ilayer, layer)
+            return s
+
+    __repr__ = __str__
 
 
 class TableLayer(HasTraits):
@@ -43,6 +111,11 @@ class TableLayer(HasTraits):
         self.parent = parent
         self.id = str(uuid.uuid4())
 
+        # Attribute to keep track of the manager, so that we can notify the
+        # manager if a layer is removed.
+        self._manager = None
+        self._removed = False
+
         self._initialize_layer()
 
         self.observe(self._on_trait_change, type='change')
@@ -78,6 +151,17 @@ class TableLayer(HasTraits):
         self.parent._send_msg(event='table_layer_create',
                               id=self.id, table=self._table_b64, frame=self.frame)
 
+    def remove(self):
+        """
+        Remove the layer.
+        """
+        if self._removed:
+            return
+        self.parent._send_msg(event='table_layer_remove', id=self.id)
+        self._removed = True
+        if self._manager is not None:
+            self._manager.remove_layer(self)
+
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
         # gets inherited by the Jupyter widgets class which adds some traits of
@@ -91,3 +175,9 @@ class TableLayer(HasTraits):
                                   id=self.id,
                                   setting=wwt_name,
                                   value=changed['new'])
+
+    def __str__(self):
+        return 'TableLayer with {0} markers'.format(len(self.table))
+
+    def __repr__(self):
+        return '<{0}>'.format(str(self))
