@@ -31,7 +31,8 @@ comma-separated values (CSV) file of the data::
 Assuming that you already have either the Qt or Jupyter version of pywwt open
 as the ``wwt`` variable, you can then do::
 
-    >>> wwt.add_data_layer(table=table, frame='Sky', column_lon='ra', column_lat='dec')
+    >>> wwt.layers.add_data_layer(table=table, frame='Sky',
+    ...                           column_lon='ra', column_lat='dec')
 
 Note that we have specified which columns to use for the right ascension and
 declination.
@@ -52,8 +53,8 @@ dataset that includes all recorded earthquakes in 2010::
 
 We can then add the data layer using::
 
-    >>> layer = wwt.add_data_layer(table=table, frame='Earth',
-                                   column_lon='longitude', column_lat='latitude')
+    >>> layer = wwt.layers.add_data_layer(table=table, frame='Earth',
+    ...                                   column_lon='longitude', column_lat='latitude')
 
 Note that ``column_lon`` and ``column_lat`` don't need to be specified in
 ``add_data_layer`` - they can also be set afterwards using e.g.::
@@ -85,3 +86,25 @@ Similarly, the color of the points can either be set as a uniform color::
 or it can be set to be dependent on one of the columns with::
 
     >>> layer.column_cmap = 'depth'
+
+Listing layers and removing layers
+----------------------------------
+
+You can list the layers present in the visualization by doing::
+
+    >>> wwt.layers
+    Layer manager with 1 layers:
+
+      [0]: TableLayer with 1616 markers
+
+You can remove a layer by either doing::
+
+    >>> layer.remove()
+
+or::
+
+    >>> wwt.layers.remove(layer)
+
+If you don't have a reference to the layer, you can always do::
+
+    >>> wwt.layers.remove(wwt.layers[0])
