@@ -1,5 +1,11 @@
+import sys
 import uuid
-from io import StringIO
+
+if sys.version_info[0] == 2:
+    from io import BytesIO as StringIO
+else:
+    from io import StringIO
+    
 from base64 import b64encode
 
 from traitlets import HasTraits
