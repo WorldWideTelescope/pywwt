@@ -7,6 +7,7 @@ from __future__ import absolute_import, division, print_function
 
 import os
 import json
+import time
 
 from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
 from qtpy import QtWidgets, QtGui, QtCore
@@ -180,12 +181,23 @@ class WWTQtClient(BaseWWTWidget):
                 if self.widget._wwt_ready:
                     break
 
-    def wait(self):
+    def wait(self, duration=None):
         """
         Prevents WorldWide Telescope from closing once Python reaches the
         end of a given script.
+
+        Parameters
+        ----------
+        duration : int or float or None
+            How many seconds to wait for. By default, this waits until the
+            Qt window is closed.
         """
-        app.exec_()
+        if duration is None:
+            app.exec_()
+        else:
+            time1 = time.time()
+            while time.time() - time1 < duration:
+                app.processEvents()
 
     def _send_msg(self, asynchronous=True, **kwargs):
         msg = json.dumps(kwargs)
