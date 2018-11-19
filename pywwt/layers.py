@@ -6,11 +6,12 @@ if sys.version_info[0] == 2:  # noqa
 else:
     from io import StringIO
 
+import warnings
 from base64 import b64encode
 
 from astropy import units as u
 
-from traitlets import HasTraits, validate
+from traitlets import HasTraits, validate, observe
 from .traits import Any, Unicode, Float, Color
 
 __all__ = ['LayerManager', 'TableLayer']
@@ -32,6 +33,14 @@ VALID_ALT_UNITS = {u.m: 'meters',
                    u.Mpc: 'megaParsecs'}
 
 VALID_ALT_TYPES = ['depth', 'altitude', 'distance', 'seaLevel', 'terrain']
+
+
+def pick_unit_if_available(unit, valid_units):
+    # Check for equality rather than just identity
+    for valid_unit in valid_units:
+        if unit == valid_unit:
+            return valid_unit
+    return unit
 
 
 class LayerManager(object):
@@ -116,13 +125,22 @@ class TableLayer(HasTraits):
 
     color = Color('white', help='The color of the markers').tag(wwt='color')
 
+    # TODO: support:
+    # xAxisColumn
+    # yAxisColumn
+    # zAxisColumn
+    # xAxisReverse
+    # yAxisReverse
+    # zAxisReverse
+
     @validate('lon_unit')
     def _check_lon_unit(self, proposal):
         # Pass the proposal to Unit - this allows us to validate the unit,
         # and allows strings to be passed.
         unit = u.Unit(proposal['value'])
+        unit = pick_unit_if_available(unit, VALID_LON_UNITS)
         if unit in VALID_LON_UNITS:
-            return VALID_LON_UNITS[unit]
+            return unit
         else:
             raise ValueError('lon_unit should be one of {0}'.format('/'.join(str(x) for x in VALID_LON_UNITS)))
 
@@ -130,9 +148,11 @@ class TableLayer(HasTraits):
     def _check_alt_unit(self, proposal):
         # Pass the proposal to Unit - this allows us to validate the unit,
         # and allows strings to be passed.
-        unit = u.Unit(proposal['value'])
+        with u.imperial.enable():
+            unit = u.Unit(proposal['value'])
+        unit = pick_unit_if_available(unit, VALID_ALT_UNITS)
         if unit in VALID_ALT_UNITS:
-            return VALID_ALT_UNITS[unit]
+            return unit
         else:
             raise ValueError('alt_unit should be one of {0}'.format('/'.join(str(x) for x in VALID_ALT_UNITS)))
 
@@ -143,13 +163,29 @@ class TableLayer(HasTraits):
         else:
             raise ValueError('alt_type should be one of {0}'.format('/'.join(str(x) for x in VALID_ALT_TYPES)))
 
-    # TODO: support:
-    # xAxisColumn
-    # yAxisColumn
-    # zAxisColumn
-    # xAxisReverse
-    # yAxisReverse
-    # zAxisReverse
+    @observe('alt_att')
+    def _on_alt_att_change(self, value):
+        # Check if we can set the unit of the altitude automatically
+        column = self.table[self.alt_att]
+        unit = pick_unit_if_available(column.unit, VALID_ALT_UNITS)
+        if unit in VALID_ALT_UNITS:
+            self.alt_unit = unit
+        elif unit is not None:
+            warnings.warn('Column {0} has units of {1} but this is not a valid '
+                          'unit of altitude - set the unit directly with '
+                          'alt_unit'.format(value['new'], unit), UserWarning)
+
+    @observe('lon_att')
+    def _on_lon_att_change(self, value):
+        # Check if we can set the unit of the altitude automatically
+        column = self.table[self.lon_att]
+        unit = pick_unit_if_available(column.unit, VALID_LON_UNITS)
+        if unit in VALID_LON_UNITS:
+            self.lon_unit = unit
+        elif unit is not None:
+            warnings.warn('Column {0} has units of {1} but this is not a valid '
+                          'unit of longitude - set the unit directly with '
+                          'lon_unit'.format(value['new'], unit), UserWarning)
 
     def __init__(self, parent=None, table=None, frame=None, **kwargs):
 
@@ -219,11 +255,16 @@ class TableLayer(HasTraits):
         # setting).
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         if wwt_name is not None:
+            value = changed['new']
+            if changed['name'] == 'alt_unit':
+                value = VALID_ALT_UNITS[value]
+            elif changed['name'] == 'lon_unit':
+                value = VALID_LON_UNITS[value]
             # TODO: need to generalize to not say table here
             self.parent._send_msg(event='table_layer_set',
                                   id=self.id,
                                   setting=wwt_name,
-                                  value=changed['new'])
+                                  value=value)
 
     def __str__(self):
         return 'TableLayer with {0} markers'.format(len(self.table))
