@@ -1,18 +1,37 @@
 import sys
 import uuid
 
-if sys.version_info[0] == 2:
+if sys.version_info[0] == 2:  # noqa
     from io import BytesIO as StringIO
 else:
     from io import StringIO
-    
+
 from base64 import b64encode
 
-from traitlets import HasTraits
+from astropy import units as u
 
-from .traits import Unicode, Float, Color
+from traitlets import HasTraits, validate
+from .traits import Any, Unicode, Float, Color
 
 __all__ = ['LayerManager', 'TableLayer']
+
+VALID_LON_UNITS = {u.deg: 'degrees',
+                   u.hour: 'hours',
+                   u.hourangle: 'hours'}
+
+
+# NOTE: for cartesian coordinates, we can also allow custom units
+VALID_ALT_UNITS = {u.m: 'meters',
+                   u.imperial.foot: 'feet',
+                   u.imperial.inch: 'inches',
+                   u.imperial.mile: 'miles',
+                   u.km: 'kilometers',
+                   u.au: 'astronomicalUnits',
+                   u.lyr: 'lightYears',
+                   u.pc: 'parsecs',
+                   u.Mpc: 'megaParsecs'}
+
+VALID_ALT_TYPES = ['depth', 'altitude', 'distance', 'seaLevel', 'terrain']
 
 
 class LayerManager(object):
@@ -82,25 +101,55 @@ class TableLayer(HasTraits):
     A layer where the data is stored in an :class:`~astropy.table.Table`
     """
 
-    column_lon = Unicode(help='The column to use for the longitude').tag(wwt='lngColumn')
-    column_lat = Unicode(help='The column to use for the latitude').tag(wwt='latColumn')
-    column_alt = Unicode(help='The column to use for the altitude').tag(wwt='altColumn')
-    column_cmap = Unicode(help='The column to use for the colormap').tag(wwt='colorMapColumn')
-    column_size = Unicode(help='The column to use for the size').tag(wwt='sizeColumn')
+    lon_att = Unicode(help='The column to use for the longitude').tag(wwt='lngColumn')
+    lon_unit = Any(help='The units to use for longitude').tag(wwt='raUnits')
+    lat_att = Unicode(help='The column to use for the latitude').tag(wwt='latColumn')
 
-    size_scalefactor = Float(1, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
+    alt_att = Unicode(help='The column to use for the altitude').tag(wwt='altColumn')
+    alt_unit = Any(help='The units to use for the altitude').tag(wwt='altUnit')
+    alt_type = Unicode(help='The type of altitude').tag(wwt='altType')
+
+    cmap_att = Unicode(help='The column to use for the colormap').tag(wwt='colorMapColumn')
+
+    size_att = Unicode(help='The column to use for the size').tag(wwt='sizeColumn')
+    size_scale = Float(1, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
 
     color = Color('white', help='The color of the markers').tag(wwt='color')
 
+    @validate('lon_unit')
+    def _check_lon_unit(self, proposal):
+        # Pass the proposal to Unit - this allows us to validate the unit,
+        # and allows strings to be passed.
+        unit = u.Unit(proposal['value'])
+        if unit in VALID_LON_UNITS:
+            return VALID_LON_UNITS[unit]
+        else:
+            raise ValueError('lon_unit should be one of {0}'.format('/'.join(str(x) for x in VALID_LON_UNITS)))
+
+    @validate('alt_unit')
+    def _check_alt_unit(self, proposal):
+        # Pass the proposal to Unit - this allows us to validate the unit,
+        # and allows strings to be passed.
+        unit = u.Unit(proposal['value'])
+        if unit in VALID_ALT_UNITS:
+            return VALID_ALT_UNITS[unit]
+        else:
+            raise ValueError('alt_unit should be one of {0}'.format('/'.join(str(x) for x in VALID_ALT_UNITS)))
+
+    @validate('alt_type')
+    def _check_alt_type(self, proposal):
+        if proposal['value'] in VALID_ALT_TYPES:
+            return proposal['value']
+        else:
+            raise ValueError('alt_type should be one of {0}'.format('/'.join(str(x) for x in VALID_ALT_TYPES)))
+
     # TODO: support:
-    # altType
     # xAxisColumn
     # yAxisColumn
     # zAxisColumn
     # xAxisReverse
     # yAxisReverse
     # zAxisReverse
-    # color (for fixed color)
 
     def __init__(self, parent=None, table=None, frame=None, **kwargs):
 
@@ -125,11 +174,11 @@ class TableLayer(HasTraits):
 
         super(TableLayer, self).__init__(**kwargs)
 
-        if 'column_lon' not in kwargs:
-            self.column_lon = self.table.colnames[0]
+        if 'lon_att' not in kwargs:
+            self.lon_att = self.table.colnames[0]
 
-        if 'column_lat' not in kwargs:
-            self.column_lat = self.table.colnames[1]
+        if 'lat_att' not in kwargs:
+            self.lat_att = self.table.colnames[1]
 
     @property
     def _table_b64(self):
