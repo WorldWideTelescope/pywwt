@@ -79,12 +79,12 @@ class TestLayers:
         # Using an unsupported unit
         with pytest.raises(ValueError) as exc:
             layer.alt_unit = u.kg
-        assert exc.value.args[0].strip() == "alt_unit should be one of m/ft/inch/mi/km/AU/lyr/pc/Mpc"
+        assert exc.value.args[0].strip() == "alt_unit should be one of AU/Mpc/ft/inch/km/lyr/m/mi/pc"
 
         # Using a non-equal custom unit
         with pytest.raises(ValueError) as exc:
             layer.alt_unit = u.def_unit('same_as_half_km', 500 * u.m)
-        assert exc.value.args[0].strip() == "alt_unit should be one of m/ft/inch/mi/km/AU/lyr/pc/Mpc"
+        assert exc.value.args[0].strip() == "alt_unit should be one of AU/Mpc/ft/inch/km/lyr/m/mi/pc"
 
     def test_lon_unit(self):
 

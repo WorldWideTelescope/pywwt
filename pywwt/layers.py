@@ -142,7 +142,7 @@ class TableLayer(HasTraits):
         if unit in VALID_LON_UNITS:
             return unit
         else:
-            raise ValueError('lon_unit should be one of {0}'.format('/'.join(str(x) for x in VALID_LON_UNITS)))
+            raise ValueError('lon_unit should be one of {0}'.format('/'.join(sorted(str(x) for x in VALID_LON_UNITS))))
 
     @validate('alt_unit')
     def _check_alt_unit(self, proposal):
@@ -154,7 +154,7 @@ class TableLayer(HasTraits):
         if unit in VALID_ALT_UNITS:
             return unit
         else:
-            raise ValueError('alt_unit should be one of {0}'.format('/'.join(str(x) for x in VALID_ALT_UNITS)))
+            raise ValueError('alt_unit should be one of {0}'.format('/'.join(sorted(str(x) for x in VALID_ALT_UNITS))))
 
     @validate('alt_type')
     def _check_alt_type(self, proposal):
