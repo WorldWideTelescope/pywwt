@@ -32,7 +32,7 @@ Assuming that you already have either the Qt or Jupyter version of pywwt open
 as the ``wwt`` variable, you can then do::
 
     >>> wwt.layers.add_data_layer(table=table, frame='Sky',
-    ...                           column_lon='ra', column_lat='dec')
+    ...                           lon_att='ra', lat_att='dec')
 
 Note that we have specified which columns to use for the right ascension and
 declination.
@@ -54,17 +54,49 @@ dataset that includes all recorded earthquakes in 2010::
 We can then add the data layer using::
 
     >>> layer = wwt.layers.add_data_layer(table=table, frame='Earth',
-    ...                                   column_lon='longitude', column_lat='latitude')
+    ...                                   lon_att='longitude', lat_att='latitude')
 
-Note that ``column_lon`` and ``column_lat`` don't need to be specified in
+Note that ``lon_att`` and ``lat_att`` don't need to be specified in
 ``add_data_layer`` - they can also be set afterwards using e.g.::
 
-    >>> layer.column_lon = 'longitude'
+    >>> layer.lon_att = 'longitude'
 
 In some cases, datasets provide a third dimension that can be used as an
-altitude or a radius. This can be provided using the ``column_alt`` column::
+altitude or a radius. This can be provided using the ``alt_att`` column::
 
-    >>> layer.column_alt = 'depth'
+    >>> layer.alt_att = 'depth'
+
+Data settings
+-------------
+
+There are several settings that can be used to fine-tune the interpretation of
+the data. First, we can set how to interpret the 'altitude'::
+
+    >>> layer.alt_type = 'distance'
+
+The valid options are ``'distance'`` (distance from the origin), ``altitude``
+(outward distance from the planetary surface), ``depth`` (inward distance from
+the planetary surface), and ``sealevel`` (reset altitude to be at sea level).
+
+.. TODO: figure out what 'terrain' does.
+
+It is also possible to specify the units to use for the altitude::
+
+    >>> from astropy import units as u
+    >>> layer.alt_unit = u.km
+
+This should be astropy :class:`~astropy.units.Unit` and should be one of
+``u.m``, ``u.km``, ``u.au``, ``u.lyr``, ``u.pc``, ``u.Mpc``,
+``u.imperial.foot``, or ``u.imperial.mile``. It is also possible to pass a
+string provided that when passed to :class:`~astropy.units.Unit` this returns
+one of the valid units.
+
+Finally, it is possible to set the units for the longitude::
+
+    >>> layer.lon_unit = u.hourangle
+
+The valid values are ``u.degree`` and ``u.hourangle`` (or simply ``u.hour``) or
+their string equivalents.
 
 Visual attributes
 -----------------
@@ -72,12 +104,12 @@ Visual attributes
 There are a number of settings to control the visual appearance of a layer.
 First off, the points can be made larger or smaller by changing::
 
-    >>> layer.size_scalefactor = 10.
+    >>> layer.size_scale = 10.
 
 It is also possible to make the size of the points depend on one of the columns
-in the table. This can be done by making use of the ``column_size`` attribute::
+in the table. This can be done by making use of the ``size_att`` attribute::
 
-    >>> layer.column_size = 'mag'
+    >>> layer.size_att = 'mag'
 
 Similarly, the color of the points can either be set as a uniform color::
 
@@ -85,7 +117,7 @@ Similarly, the color of the points can either be set as a uniform color::
 
 or it can be set to be dependent on one of the columns with::
 
-    >>> layer.column_cmap = 'depth'
+    >>> layer.cmap_att = 'depth'
 
 Listing layers and removing layers
 ----------------------------------

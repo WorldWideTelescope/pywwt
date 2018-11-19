@@ -13,8 +13,8 @@ env:
   global:
     - SETUP_XVFB=True
     - CONDA_CHANNELS="astrofrog/label/dev"
-    - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest requests nomkl matplotlib beautifulsoup4 lxml jupyterlab flask flask-cors"
-    - PIP_DEPENDENCIES="sphinx-automodapi numpydoc sphinx_rtd_theme pytest-faulthandler"
+    - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest pytest-cov requests nomkl matplotlib beautifulsoup4 lxml jupyterlab flask flask-cors"
+    - PIP_DEPENDENCIES="sphinx-automodapi numpydoc sphinx_rtd_theme pytest-faulthandler codecov"
   matrix:
     - PYTHON_VERSION=2.7
     - PYTHON_VERSION=3.5
@@ -34,5 +34,8 @@ script:
 
   # For now the image tests don't work well on MacOS X, which requires WebEngine. The
   # tests only pass if the Qt window is always in the foreground.
-  - if [[ $TRAVIS_OS_NAME == linux ]]; then py.test pywwt; fi
-  - cd docs ; make html linkcheck
+  - if [[ $TRAVIS_OS_NAME == linux ]]; then pytest pywwt --cov pywwt; fi
+  - cd docs ; make html linkcheck ; cd ..
+
+after_success:
+  - codecov
