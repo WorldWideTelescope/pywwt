@@ -66,6 +66,38 @@ altitude or a radius. This can be provided using the ``alt_att`` column::
 
     >>> layer.alt_att = 'depth'
 
+Data settings
+-------------
+
+There are several settings that can be used to fine-tune the interpretation of
+the data. First, we can set how to interpret the 'altitude'::
+
+    >>> layer.alt_type = 'distance'
+
+The valid options are ``'distance'`` (distance from the origin), ``altitude``
+(outward distance from the planetary surface), ``depth`` (inward distance from
+the planetary surface), and ``sealevel`` (reset altitude to be at sea level).
+
+.. TODO: figure out what 'terrain' does.
+
+It is also possible to specify the units to use for the altitude::
+
+    >>> from astropy import units as u
+    >>> layer.alt_unit = u.km
+
+This should be astropy :class:`~astropy.units.Unit` and should be one of
+``u.m``, ``u.km``, ``u.au``, ``u.lyr``, ``u.pc``, ``u.Mpc``,
+``u.imperial.foot``, or ``u.imperial.mile``. It is also possible to pass a
+string provided that when passed to :class:`~astropy.units.Unit` this returns
+one of the valid units.
+
+Finally, it is possible to set the units for the longitude::
+
+    >>> layer.lon_unit = u.hourangle
+
+The valid values are ``u.degree`` and ``u.hourangle`` (or simply ``u.hour``) or
+their string equivalents.
+
 Visual attributes
 -----------------
 
