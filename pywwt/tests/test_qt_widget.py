@@ -1,5 +1,5 @@
 import os
-import time
+import sys
 from datetime import datetime
 
 import pytest
@@ -7,7 +7,6 @@ import pytest
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 
-from qtpy.QtWidgets import QApplication
 from qtpy.QtWebEngineWidgets import WEBENGINE
 
 from matplotlib.testing.compare import compare_images
@@ -93,6 +92,8 @@ def assert_widget_image(tmpdir, widget, filename):
     actual = tmpdir.join(filename).strpath
     widget.render(actual)
     framework = 'webengine' if WEBENGINE else 'webkit'
+    if sys.platform.startswith('win'):
+        framework += '_win'
     expected = os.path.join(DATA, framework, filename)
     msg = compare_images(expected, actual, tol=1.5)
     if msg is not None:
