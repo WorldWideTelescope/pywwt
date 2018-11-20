@@ -165,6 +165,14 @@ function wwt_apply_json_message(wwt, msg) {
       layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
       layer.set_referenceFrame(frame);
 
+      // FIXME: for now, this doesn't have any effect because WWT should add a 180
+      // degree offset but it doesn't - see
+      // https://github.com/WorldWideTelescope/wwt-web-client/pull/182 for a
+      // possible fix.
+      if (frame == 'Sky') {
+        layer.set_astronomical(true);
+      }
+
       layer.set_altUnit(1);
 
       wwt.layers[msg['id']] = layer;
