@@ -178,10 +178,28 @@ function wwt_apply_json_message(wwt, msg) {
       wwt.layers[msg['id']] = layer;
       break;
 
-    case 'table_layer_set':
+    case 'table_layer_update':
 
       var layer = wwt.layers[msg['id']];
 
+      // Decode table from base64
+      csv = atob(msg['table']);
+
+      // FIXME: the SpreadSheetLayer loadFromString method rties
+      layer.loadFromString(csv, true, true, true, false)
+
+      // FIXME: workaround for the fact that at the moment, WWT appears
+      // to only refresh if the color is changed. So we change to black then
+      // back.
+      color = layer.get_color();
+      layer.set_color(wwtlib.Color.fromHex('#000000'));
+      layer.set_color(color);
+
+      break;
+
+    case 'table_layer_set':
+
+      var layer = wwt.layers[msg['id']];
       var name = msg['setting'];
 
       //if (name.includes('Column')) { // compatability issues?
