@@ -171,3 +171,41 @@ class TestLayers:
 
         with pytest.warns(UserWarning, match=expected_warning):
             layer.lon_att = 'flux'
+
+    def test_update_data(self):
+
+        self.table['flux'].unit = 'm'
+        layer = self.widget.layers.add_data_layer(table=self.table,
+                                                  lon_att='ra', lat_att='dec', alt_att='flux')
+
+        assert layer.lon_att == 'ra'
+        assert layer.lon_unit is u.deg
+        assert layer.lat_att == 'dec'
+        assert layer.alt_att == 'flux'
+        assert layer.alt_unit is u.m
+
+        # Replace with a table with the same column names but different units
+        # for the lon and alt
+        table = Table()
+        table['ra'] = [1, 2, 3] * u.hourangle
+        table['dec'] = [4, 5, 6]
+        table['flux'] = [2, 3, 4] * u.km
+        layer.update_data(table=table)
+
+        assert layer.lon_att == 'ra'
+        assert layer.lon_unit is u.hourangle
+        assert layer.lat_att == 'dec'
+        assert layer.alt_att == 'flux'
+        assert layer.alt_unit is u.km
+
+        # Replace with a table with different column names
+        table = Table()
+        table['a'] = [1, 2, 3] * u.deg
+        table['b'] = [4, 5, 6]
+        table['c'] = [2, 3, 4] * u.au
+        layer.update_data(table=table)
+
+        assert layer.lon_att == 'a'
+        assert layer.lon_unit is u.deg
+        assert layer.lat_att == 'b'
+        assert layer.alt_att == ''

@@ -165,22 +165,48 @@ function wwt_apply_json_message(wwt, msg) {
       layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
       layer.set_referenceFrame(frame);
 
+      // FIXME: for now, this doesn't have any effect because WWT should add a 180
+      // degree offset but it doesn't - see
+      // https://github.com/WorldWideTelescope/wwt-web-client/pull/182 for a
+      // possible fix.
+      if (frame == 'Sky') {
+        layer.set_astronomical(true);
+      }
+
       layer.set_altUnit(1);
 
       wwt.layers[msg['id']] = layer;
       break;
 
-    case 'table_layer_set':
+    case 'table_layer_update':
 
       var layer = wwt.layers[msg['id']];
 
+      // Decode table from base64
+      csv = atob(msg['table']);
+
+      // FIXME: the SpreadSheetLayer loadFromString method rties
+      layer.loadFromString(csv, true, true, true, false)
+
+      // FIXME: workaround for the fact that at the moment, WWT appears
+      // to only refresh if the color is changed. So we change to black then
+      // back.
+      color = layer.get_color();
+      layer.set_color(wwtlib.Color.fromHex('#000000'));
+      layer.set_color(color);
+
+      break;
+
+    case 'table_layer_set':
+
+      var layer = wwt.layers[msg['id']];
       var name = msg['setting'];
 
       //if (name.includes('Column')) { // compatability issues?
       if (name.indexOf('Column') >= 0) {
         value = layer.get__table().header.indexOf(msg['value']);
       } else if(name == 'color') {
-        value = wwtlib.Color.fromHex(msg['value']);
+        value = wwtlib.Color.fromSimpleHex(msg['value']);
       } else if(name == 'altUnit') {
         value = wwtlib.AltUnits[msg['value']];
       } else if(name == 'raUnits') {

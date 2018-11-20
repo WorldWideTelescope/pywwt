@@ -124,6 +124,7 @@ class TableLayer(HasTraits):
     size_scale = Float(1, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
 
     color = Color('white', help='The color of the markers').tag(wwt='color')
+    opacity = Float(1, help='The opacity of the markers').tag(wwt='color')
 
     # TODO: support:
     # xAxisColumn
@@ -164,8 +165,10 @@ class TableLayer(HasTraits):
             raise ValueError('alt_type should be one of {0}'.format('/'.join(str(x) for x in VALID_ALT_TYPES)))
 
     @observe('alt_att')
-    def _on_alt_att_change(self, value):
+    def _on_alt_att_change(self, *value):
         # Check if we can set the unit of the altitude automatically
+        if len(self.alt_att) == 0:
+            return
         column = self.table[self.alt_att]
         unit = pick_unit_if_available(column.unit, VALID_ALT_UNITS)
         if unit in VALID_ALT_UNITS:
@@ -173,11 +176,13 @@ class TableLayer(HasTraits):
         elif unit is not None:
             warnings.warn('Column {0} has units of {1} but this is not a valid '
                           'unit of altitude - set the unit directly with '
-                          'alt_unit'.format(value['new'], unit), UserWarning)
+                          'alt_unit'.format(self.alt_att, unit), UserWarning)
 
     @observe('lon_att')
-    def _on_lon_att_change(self, value):
+    def _on_lon_att_change(self, *value):
         # Check if we can set the unit of the altitude automatically
+        if len(self.lon_att) == 0:
+            return
         column = self.table[self.lon_att]
         unit = pick_unit_if_available(column.unit, VALID_LON_UNITS)
         if unit in VALID_LON_UNITS:
@@ -185,7 +190,7 @@ class TableLayer(HasTraits):
         elif unit is not None:
             warnings.warn('Column {0} has units of {1} but this is not a valid '
                           'unit of longitude - set the unit directly with '
-                          'lon_unit'.format(value['new'], unit), UserWarning)
+                          'lon_unit'.format(self.lon_att, unit), UserWarning)
 
     def __init__(self, parent=None, table=None, frame=None, **kwargs):
 
@@ -236,6 +241,27 @@ class TableLayer(HasTraits):
         self.parent._send_msg(event='table_layer_create',
                               id=self.id, table=self._table_b64, frame=self.frame)
 
+    def update_data(self, table=None):
+        """
+        Update the underlying data.
+        """
+        self.table = table
+        self.parent._send_msg(event='table_layer_update', id=self.id, table=self._table_b64)
+
+        if len(self.alt_att) > 0:
+            if self.alt_att in self.table.colnames:
+                self._on_alt_att_change()
+            else:
+                self.alt_att = ''
+
+        if self.lon_att in self.table.colnames:
+            self._on_lon_att_change()
+        else:
+            self.lon_att = self.table.colnames[0]
+
+        if self.lat_att not in self.table.colnames:
+            self.lat_att = self.table.colnames[1]
+
     def remove(self):
         """
         Remove the layer.
@@ -260,6 +286,10 @@ class TableLayer(HasTraits):
                 value = VALID_ALT_UNITS[value]
             elif changed['name'] == 'lon_unit':
                 value = VALID_LON_UNITS[value]
+            elif changed['name'] in ('color', 'opacity'):
+                wwt_name = 'color'
+                opacity_hex = "%0.2x" % int(self.opacity * 255)
+                value = opacity_hex + self.color[1:]
             # TODO: need to generalize to not say table here
             self.parent._send_msg(event='table_layer_set',
                                   id=self.id,
