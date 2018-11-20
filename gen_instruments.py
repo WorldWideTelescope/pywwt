@@ -1,5 +1,6 @@
 import json
 import requests
+from astropy import units as u
 
 to_json = {}
 
@@ -51,6 +52,8 @@ def draw_k2():
     return all_coords
 
 
+# dimensions here are in arcseconds for ease of entry (except for k2)
+# they are converted to degrees in a later loop
 instruments = {'hst_acs_wfc':   {'pos': 'relative', 'l': 202, 'w': 202,
                                  'build': 'curl', 'panels': 2, 'gap': [4, 0]},
                'hst_wfc3_uvis': {'pos': 'relative', 'l': 162, 'w': 162,
@@ -59,8 +62,6 @@ instruments = {'hst_acs_wfc':   {'pos': 'relative', 'l': 202, 'w': 202,
                                  'build': 'curl', 'panels': 1, 'gap': None},
                'jwst_nircam':   {'pos': 'relative', 'l': 129, 'w': 129,
                                  'build': 'curl', 'panels': 1, 'gap': None},
-               # add in pywwt that if inst[-6:] == 'nircam', also call the entry
-               # that starts with inst[-6:], or the following:
                'nircam_small':  {'pos': 'relative', 'l': 64, 'w': 64,
                                  'build': 'curl', 'panels': 4, 'gap': [4.5, 4]},
                # confirm that the extra gaps added are correct
@@ -76,9 +77,14 @@ for inst, specs in instruments.items():
     # test that pos matches what the user entered
     if inst == 'k2':
         all_coords = draw_k2()
-        to_json[inst] = [inst, specs['pos'], all_coords]
+        to_json[inst] = [specs['pos'], all_coords]
         continue
         
+    # convert measurements from arcseconds to degrees
+    specs['l'] /= 3600.; specs['w'] /= 3600.
+    if specs['gap']:
+        specs['gap'] = [i/3600. for i in specs['gap']]
+    
     all_coords = []
     center_x = 0; center_y = 0
     if specs['build'] == 'curl':
@@ -138,7 +144,7 @@ for inst, specs in instruments.items():
 
         i += 1
 
-    to_json[inst] = [inst, specs['pos'], all_coords]
+    to_json[inst] = [specs['pos'], all_coords]
 
 #print(to_json['jwst_nircam'])
 #print(to_json['nircam_small'])  # exemplars
