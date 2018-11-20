@@ -188,7 +188,7 @@ function wwt_apply_json_message(wwt, msg) {
       if (name.indexOf('Column') >= 0) {
         value = layer.get__table().header.indexOf(msg['value']);
       } else if(name == 'color') {
-        value = wwtlib.Color.fromHex(msg['value']);
+        value = wwtlib.Color.fromSimpleHex(msg['value']);
       } else if(name == 'altUnit') {
         value = wwtlib.AltUnits[msg['value']];
       } else if(name == 'raUnits') {
