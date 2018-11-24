@@ -12,14 +12,14 @@ def draw_rect(l, w, center):
     while(j < 4):
         # start from top right: (-+, ++, +-, --)
         if j % 3 != 0:
-            ras.append(l/2. + center[0])
+            ras.append(w/2. + center[0])
         else:
-            ras.append(-l/2. + center[0])
+            ras.append(-w/2. + center[0])
         
         if j < 2:
-            decs.append(w/2. + center[1])
+            decs.append(l/2. + center[1])
         else:
-            decs.append(-w/2. + center[1])
+            decs.append(-l/2. + center[1])
 
         j += 1
 
@@ -54,27 +54,26 @@ def draw_k2():
 
 # dimensions here are in arcseconds for ease of entry (except for k2)
 # they are converted to degrees in a later loop
-instruments = {'hst_acs_wfc':   {'pos': 'relative', 'l': 202, 'w': 202,
-                                 'build': 'curl', 'panels': 2, 'gap': [4, 0]},
-               'hst_wfc3_uvis': {'pos': 'relative', 'l': 162, 'w': 162,
-                                 'build': 'curl', 'panels': 2, 'gap': [4, 0]},
+instruments = {'hst_acs_wfc':   {'pos': 'relative', 'l': 202, 'w': 100,
+                                 'build': 'curl', 'panels': 2, 'gap': [2, 0]},
+               # ^ total acs_wfc dimensions: 202 x 202 ^
+               'hst_wfc3_uvis': {'pos': 'relative', 'l': 162, 'w': 80,
+                                 'build': 'curl', 'panels': 2, 'gap': [2, 0]},
+               # ^ total wfc3_uvis dimensions: 162 x 162 ^
                'hst_wfc3_ir':   {'pos': 'relative', 'l': 136, 'w': 123,
                                  'build': 'curl', 'panels': 1, 'gap': None},
                'jwst_nircam':   {'pos': 'relative', 'l': 129, 'w': 129,
                                  'build': 'curl', 'panels': 1, 'gap': None},
-               'nircam_small':  {'pos': 'relative', 'l': 64, 'w': 64,
+               'nircam_short':  {'pos': 'relative', 'l': 64, 'w': 64,
                                  'build': 'curl', 'panels': 4, 'gap': [4.5, 4]},
-               # confirm that the extra gaps added are correct
                'jwst_niriss':   {'pos': 'relative', 'l': 133, 'w': 133,
                                  'build': 'curl', 'panels': 1, 'gap': None},
                'spitzer_irac':  {'pos': 'relative', 'l': 312, 'w': 312,
-                                 'build': 'stack', 'panels': 3, 'gap': [0, 91.2]
-               },
+                                 'build': 'stack', 'panels': 3, 'gap': [0, 72]},
                'k2':            {'pos': 'absolute'}
 }
 
 for inst, specs in instruments.items():
-    # test that pos matches what the user entered
     if inst == 'k2':
         all_coords = draw_k2()
         to_json[inst] = [specs['pos'], all_coords]
@@ -91,14 +90,14 @@ for inst, specs in instruments.items():
         # build the FOV in counter-clockwise 'C'-shape, beginning at top right
         # if there are only two points, leave center_y as 0
         if specs['panels'] == 2:
-            center_x = specs['l']/2.
+            center_x = specs['w']/2.
             if specs['gap']:
                 center_x += specs['gap'][0]/2.
 
         # else, start with the coords for the center of the shape at top right
         # (standard number of shapes for 'curl' is 4)
         if specs['panels'] > 2:
-            center_x = specs['l']/2.; center_y = specs['w']/2.
+            center_x = specs['w']/2.; center_y = specs['l']/2.
             if specs['gap']:
                 center_x += specs['gap'][0]/2.; center_y += specs['gap'][1]/2.
 
@@ -119,18 +118,20 @@ for inst, specs in instruments.items():
 
         if specs['build'] == 'curl':
             if i % 3 != 0:
-                center_x = abs(center_x)
+                cx = abs(center_x)
             else:
-                center_x = -abs(center_x)
+                cx = -abs(center_x)
         
             if i < 2:
-                center_y = abs(center_y)
+                cy = abs(center_y)
             else:
-                center_y = -abs(center_y)
-                if inst == 'nircam_small':
-                    center_y -= .5
+                cy = -abs(center_y)
+                if inst == 'nircam_short':
+                    # the bottom panels have a further y offset of 1 degree
+                    # (i.e. gap should be [4.5, 5] for them; we correct it here)
+                    cy -= .5/3600
 
-            coords = draw_rect(specs['l'], specs['w'], (center_x, center_y))
+            coords = draw_rect(specs['l'], specs['w'], (cx, cy))
             all_coords.append([coords[0], coords[1]])
             # each set of coords for a shape should be a list within all_coords.
             # for a two-panel rectangular FOV, all_coords should contain
@@ -146,10 +147,13 @@ for inst, specs in instruments.items():
 
     to_json[inst] = [specs['pos'], all_coords]
 
-#print(to_json['jwst_nircam'])
-#print(to_json['nircam_small'])  # exemplars
-#print(to_json['k2'])
+#from pprint import pprint
+#pprint(to_json['hst_wfc3_ir'])
+#pprint(to_json['spitzer_irac'])
+#pprint(to_json['jwst_nircam'])
+#pprint(to_json['nircam_short'])  # exemplars
+#pprint(to_json['k2'])
 with open('instruments.json', 'w') as output:
     json.dump(to_json, output, sort_keys=True)#, indent=2)
 #full_json = json.dumps(to_json, sort_keys=True)#, indent=2)
-#print(full_json)
+#pprint(full_json)
