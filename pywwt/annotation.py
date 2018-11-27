@@ -274,190 +274,72 @@ class FieldOfView():
         self._gen_fov(telescope, center, rot, **kwargs)
 
     def _gen_fov(self, telescope, center, rot, **kwargs):
-        # large footprints (e.g. k2) don't need center, so we confirm it exists
-        if hasattr(center, 'ra'):
-            # then save coords to variables
-            ra = center.ra.value
-            dec = center.dec.value
-            origin = [ra, dec]
-            
-        telescope = telescope.lower()
-        if telescope in self.available:
-            if telescope == 'k2':
-                json_file = requests.get('https://worldwidetelescope.github.io/pywwt/fov_files/k2-trimmed.json')
-                diction = json_file.json()
-                # check python version. sys.version_info.major > 3, OR:
-                try:
-                    iter_diction = diction.items()
-                except AttributeError:
-                    iter_diction = diction.iteritems()
-                for key, value in iter_diction:
-                    channels = value['channels']
-                    for index in channels:
-                        #if index == '1':
-                        ras = channels[str(index)]['corners_ra']
-                        decs = channels[str(index)]['corners_dec']
-                        corners = SkyCoord(ras, decs, unit=u.deg)
-
-                        if self.parent.galactic_mode:
-                            corners = corners.galactic
-
-                        annot = self.parent.add_polygon(corners, **kwargs)
-                        self.active.append(annot)
-            elif telescope[:3] == 'hst':
-                instr_h = self.dim[telescope][0][0]
-                instr_w = self.dim[telescope][0][1]
-                panels = self.dim[telescope][1]
-
-                h = (instr_h * u.arcsec).to(u.deg).value / 2.
-                w = (instr_w * u.arcsec).to(u.deg).value / 2.
-                
-                if panels > 1:
-                    gap = (4 * u.arcsec).to(u.deg).value / 2.
-                    w -= gap/2.
-                    ra -= w/2. + gap/2. # + gap/2. is new for _rotate
-                else:
-                    gap = -w/2.
-
-                mid = [h, w/2.]
-                
-                i = 0
-                while i < panels:
-                    if i == 1:
-                        ra += w + gap
-                        
-                    corners = self._rotate(ra, dec, mid, origin, rot)
-                    annot = self.parent.add_polygon(corners, **kwargs)
-                    self.active.append(annot)
-                    i += 1
-            elif telescope[:4] == 'jwst':
-                instr_h = self.dim[telescope][0][0]
-                instr_w = self.dim[telescope][0][1]
-                mid = [(instr_h * u.arcsec).to(u.deg).value / 2.,
-                       (instr_w * u.arcsec).to(u.deg).value / 2.]
-                
-                corners = self._rotate(ra, dec, mid, origin, rot)
-                annot = self.parent.add_polygon(corners, **kwargs)
-                self.active.append(annot)
-                
-                if telescope[5:] == 'nircam':
-                    small = telescope + '_small'
-                    self._small_recs(ra, dec, origin, small, rot, **kwargs)
-            elif telescope[:7] == 'spitzer':
-                instr_h = self.dim[telescope][0][0]
-                instr_w = self.dim[telescope][0][1]
-                panels = self.dim[telescope][1]
-                
-                side = (instr_h * u.arcsec).to(u.deg).value
-                mid = [(instr_h * u.arcsec).to(u.deg).value / 2.,
-                       (instr_w * u.arcsec).to(u.deg).value / 2.]
-                
-                gap = (1.52 * u.arcmin).to(u.deg).value / 2.
-
-                y_panel = side + gap
-                i = 0
-                while(i < panels):
-                    corners = self._rotate(ra, dec + y_panel, mid, origin, rot)
-                    annot = self.parent.add_polygon(corners, **kwargs)
-                    self.active.append(annot)
-
-                    y_panel -= side + gap
-                    i += 1
-        else:
+        #telescope = telescope.lower()
+        if telescope not in self.available:
             raise ValueError('the given telescope\'s field of view is unavailable at this time')
 
-    def _rotate(self, ra, dec, mid, origin, rot):
-        # convert rot to radians for numpy's trig functions
-        rot = rot.to(u.rad).value
-        cos = np.cos(rot); sin = np.sin(rot)
-        
-        # if the point at the center of rotation is not the center of the shape:
-        o_ra = origin[0]; o_dec = origin[1]
+        position = self.dim[telescope][0]
+        dimensions = self.dim[telescope][-1]
+        # dimensions is a list of lists [ [[ras], [decs]], '', ...]
 
-        # get coord values of corners of the shape...
-        # by subtracting half the length of a side
-        # from bottom left counter-clockwise: (+-, --, -+, ++) (--, +-, ++, -+)
-        ra_mn = ra - mid[1]; ra_pl = ra + mid[1]
-        dec_mn = dec - mid[0]; dec_pl = dec + mid[0]
+        # test that pos matches what the user entered
+        if center and position == 'absolute':
+            raise ValueError('the given telescope does not take center coordinates')
+        elif not center and position == 'relative':
+            raise ValueError('the given telescope requires center coordinates')
 
-        # check that abs(dec) < 90;
-        # if not, adjust and set the corresponding ra to be swapped by 180
-        swap0 = 0.; swap1 = 0.
-        if abs(dec_mn) > 90:
-            # must check both cases for each dec b/c some panels
-            # can be entirely above/below a pole (e.g. in Spitzer),
-            # in which case abs(dec) > 90 for both decs
-            if dec_mn < -90:
-                dec_mn = -90. - (dec_mn + 90.)
-            else: # dec_mn > 90
-                dec_mn = 90. - (dec_mn - 90.)
-            swap0 = 180.
-        if abs(dec_pl) > 90:
-            if dec_pl > 90:
-                dec_pl = 90. - (dec_pl - 90.)
-            else: # dec_pl < -90
-                dec_pl = -90. - (dec_mn + 90.)
-            swap1 = 180.
-        
-        # temporarily translate corners pre-rotation
-        r0 = ra_mn - o_ra; r1 = ra_pl - o_ra
-        d0 = dec_mn - o_dec; d1 = dec_pl - o_dec
+        # draw jwst nircam's inner panels first
+        if telescope[-6:] == 'nircam':
+            self._gen_fov('nircam_short', center, rot, **kwargs)
 
-        # then, use trigonometry to rotate and undo the previous translation
-        rotated = concatenate((
-            SkyCoord(o_ra + r1*cos - d0*sin + swap0,
-                     o_dec + r1*sin + d0*cos, unit='deg'),
-            SkyCoord(o_ra + r0*cos - d0*sin + swap0,
-                     o_dec + r0*sin + d0*cos, unit='deg'),
-            SkyCoord(o_ra + r0*cos - d1*sin + swap1,
-                     o_dec + r0*sin + d1*cos, unit='deg'),
-            SkyCoord(o_ra + r1*cos - d1*sin + swap1,
-                     o_dec + r1*sin + d1*cos, unit='deg')))
+        for panel in dimensions:
+            ras = (panel[0] * u.deg).value
+            decs = (panel[1] * u.deg).value
+            ra_r, dec_r = self._rotate(ras, decs, rot)
 
-        # check for galactic coords
-        if self.parent.galactic_mode:
-            rotated = rotated.galactic
-
-        return rotated
-        
-    def _small_recs(self, ra, dec, origin, telescope, rot, **kwargs):
-        # to match listing in dim since this is a subset of an instrument
-        telescope = "_" + telescope
-
-        instr_h = self.dim[telescope][0][0]
-        instr_w = self.dim[telescope][0][1]
-        panels = self.dim[telescope][1]
-                
-        side = (instr_h * u.arcsec).to(u.deg).value
-        mid = [(instr_h * u.arcsec).to(u.deg).value / 2.,
-               (instr_w * u.arcsec).to(u.deg).value / 2.]
-
-        gap = (4 * u.arcsec).to(u.deg).value / 2.
-        ex2 = (1 * u.arcsec).to(u.deg).value # for bottom
-        ex1 = ex2 / 2. # for left and right
-
-        i = 0
-        while i < panels:
-            # get coords for the center of the current rect
-            # first, get coords of top left corner
-            if i % 2 == 0:
-                tl_ra = ra + side + gap + ex1
+            if telescope == 'k2':
+                ra_tr = ra_r; dec_tr = dec_r
             else:
-                tl_ra = ra - gap - ex1
-                
-            if i <= 1:
-                tl_dec = dec - gap
-            else:
-                tl_dec = dec + side + gap - ex2
+                center_ra = center.ra.to(u.deg).value
+                center_dec = center.dec.to(u.deg).value
 
-            # then, subtract half the length of a side to reach the center
-            cen_ra = tl_ra - side/2.; cen_dec = tl_dec - side/2.
+                dec_tr = [center_dec + dec for dec in dec_r]
+                # scale RA by dec (due to polar contraction of spherical coords)
+                ra_tr = [center_ra +
+                         ra / np.cos((dec_tr[i] * u.deg).to(u.rad)).value
+                         for i, ra in enumerate(ra_r)]
 
-            corners = self._rotate(cen_ra, cen_dec, mid, origin, rot)
+                # check that abs(dec) < 90. if not, adjust it, and then
+                # set the corresponding ra to be swapped by 180
+                for i, dec in enumerate(dec_tr):
+                    if abs(dec) > 90:
+                        if dec < -90:
+                            dec_tr[i] = -90. - (dec + 90.)
+                        else: # dec > 90
+                            dec_tr[i] = 90. - (dec - 90.)
+                        ra_tr[i] += 180.
+
+            corners = SkyCoord(ra_tr, dec_tr, unit='deg')
+            if self.parent.galactic_mode:
+                corners = corners.galactic
+
+            #print(corners)
             annot = self.parent.add_polygon(corners, **kwargs)
             self.active.append(annot)
-            
+
+    def _rotate(self, ras, decs, rot):
+        # now, we rotate shapes at the origin before translating
+        rot = rot.to(u.rad).value
+        cos = np.cos(rot); sin = np.sin(rot)
+        ra_rot = []; dec_rot = []
+
+        i = 0
+        while i < len(ras):
+            ra_rot.append(ras[i]*cos - decs[i]*sin)
+            dec_rot.append(ras[i]*sin + decs[i]*cos)
             i += 1
+
+        return ra_rot, dec_rot
 
     def remove(self):
         """
