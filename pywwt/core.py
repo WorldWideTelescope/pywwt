@@ -438,15 +438,16 @@ class BaseWWTWidget(HasTraits):
             line.add_point(points)
         return line
 
-    def add_fov(self, telescope, center=None, rotate=0 * u.rad, **kwargs):
+    def add_fov(self, telescope, center=None, rotate=0*u.rad, **kwargs):
         """
         Add a telescope's field of view (FOV) to the current view.
 
         Parameters
         ----------
         telescope : `str`
-            The telescope, selected from a list of presets, whose field of
-            view will be displayed.
+            The telescope whose field of view will be displayed. Be sure to
+            use the `wwt.instruments` object to see and select from the
+            preset list of instruments available in pyWWT.
         center : `~astropy.units.Quantity`, optional
             The coordinates of desired center of the FOV. If blank,
             defaults to the center of the current view.

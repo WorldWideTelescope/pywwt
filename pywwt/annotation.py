@@ -260,27 +260,25 @@ class FieldOfView():
     A collection of polygon annotations. Takes the name of a pre-loaded 
     telescope and displays its field of view.
     """
-    # links for kepler. guide: https://keplerscience.arc.nasa.gov/k2-fields.html
-    # footprint: https://raw.githubusercontent.com/KeplerGO/K2FootprintFiles/master/json/k2-footprint.json
-
-    # more efficient method than CircleCollection of changing trait values?
+    # a more efficient method than CircleCollection of changing trait values?
+    
     def __init__(self, parent, telescope, center, rot, **kwargs):
         self.parent = parent
-        self.available = self.parent.instruments.available
-        self.dim = self.parent.instruments.dim
+        self._available = self.parent.instruments.available
+        self._entry = self.parent.instruments.entry
         
         # list of IDs of annotations created in this FieldofView instance
         self.active = []
         self._gen_fov(telescope, center, rot, **kwargs)
-
+        
     def _gen_fov(self, telescope, center, rot, **kwargs):
-        #telescope = telescope.lower()
-        if telescope not in self.available:
+        # test if telescope is available
+        if telescope not in self._available:
             raise ValueError('the given telescope\'s field of view is unavailable at this time')
 
-        position = self.dim[telescope][0]
-        dimensions = self.dim[telescope][-1]
-        # dimensions is a list of lists [ [[ras], [decs]], '', ...]
+        position = self._entry[telescope][0]
+        dimensions = self._entry[telescope][-1]
+        # dimensions is a list of lists, i.e. [ [[ras], [decs]], '', ...]
 
         # test that pos matches what the user entered
         if center and position == 'absolute':
@@ -288,26 +286,20 @@ class FieldOfView():
         elif not center and position == 'relative':
             raise ValueError('the given telescope requires center coordinates')
 
-        # draw jwst nircam's inner panels first
-        if telescope[-6:] == 'nircam':
-            self._gen_fov('nircam_short', center, rot, **kwargs)
-
         for panel in dimensions:
             ras = (panel[0] * u.deg).value
             decs = (panel[1] * u.deg).value
             ra_r, dec_r = self._rotate(ras, decs, rot)
 
-            if telescope == 'k2':
-                ra_tr = ra_r; dec_tr = dec_r
+            if position == 'absolute':
+                ra_tr, dec_tr = ra_r, dec_r
             else:
                 center_ra = center.ra.to(u.deg).value
                 center_dec = center.dec.to(u.deg).value
-
-                dec_tr = [center_dec + dec for dec in dec_r]
+                
+                dec_tr = center_dec + dec_r
                 # scale RA by dec (due to polar contraction of spherical coords)
-                ra_tr = [center_ra +
-                         ra / np.cos((dec_tr[i] * u.deg).to(u.rad)).value
-                         for i, ra in enumerate(ra_r)]
+                ra_tr = center_ra + ra_r / np.cos(dec_tr * u.deg).value
 
                 # check that abs(dec) < 90. if not, adjust it, and then
                 # set the corresponding ra to be swapped by 180
@@ -318,26 +310,18 @@ class FieldOfView():
                         else: # dec > 90
                             dec_tr[i] = 90. - (dec - 90.)
                         ra_tr[i] += 180.
-
-            corners = SkyCoord(ra_tr, dec_tr, unit='deg')
+            
+            corners = SkyCoord(ra_tr, dec_tr, unit=u.deg)
             if self.parent.galactic_mode:
                 corners = corners.galactic
 
-            #print(corners)
             annot = self.parent.add_polygon(corners, **kwargs)
             self.active.append(annot)
 
     def _rotate(self, ras, decs, rot):
-        # now, we rotate shapes at the origin before translating
-        rot = rot.to(u.rad).value
-        cos = np.cos(rot); sin = np.sin(rot)
-        ra_rot = []; dec_rot = []
-
-        i = 0
-        while i < len(ras):
-            ra_rot.append(ras[i]*cos - decs[i]*sin)
-            dec_rot.append(ras[i]*sin + decs[i]*cos)
-            i += 1
+        cos, sin = np.cos(rot).value, np.sin(rot).value
+        ra_rot = ras * cos - decs * sin
+        dec_rot = ras * sin + decs * cos
 
         return ra_rot, dec_rot
 
