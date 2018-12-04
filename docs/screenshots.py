@@ -22,7 +22,7 @@ line.color = 'salmon'
 wwt.wait()
 wwt.render('images/big_dipper2.png')
 
-# polygon.png
+# polygons.png
 wwt.center_on_coordinates(SkyCoord.from_name('eta orion'))
 wwt.crosshairs = False
 
@@ -96,3 +96,21 @@ wwt.foreground = 'Planck Dust & Gas'
 wwt.foreground_opacity = .75
 wwt.wait()
 wwt.render('images/dust_on_gamma.png')
+
+# universe.png
+wwt.set_view('universe')
+
+wwt.wait()
+wwt.render('images/universe.png')
+
+# hdf.png
+wwt.set_view('sky')
+wwt.clear_annotations()
+
+hdf = SkyCoord(189.206, 62.216, unit=u.deg)
+wwt.background = wwt.imagery.visible.sdss
+wwt.center_on_coordinates(hdf, fov=2.8*u.arcmin)
+fov = wwt.add_fov(wwt.instruments.hst_wfc3_ir, center=hdf,
+                  rotate=12*u.deg, line_color='#D4BD8A')
+wwt.wait()
+wwt.render('images/hdf.png')
