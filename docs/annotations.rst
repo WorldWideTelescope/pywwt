@@ -121,9 +121,12 @@ Polygons are made in the same way as lines, but using the
 See :class:`~pywwt.Polygon` for a full list of available properties.
 The main difference compared to lines is that the viewer will automatically
 connect the last point added to the first in order to form a closed shape. This
-is still the case if new points are added after the shape is initialized. The
-closed nature of the shape leads to the availability of a fill color (which can
-be toggled on and off). Using polygons allows arbitrarily complex shapes to be
-shown on the sky:
+is still the case if new points are added after the shape is initialized. 
+
+The closed nature of the shape means a fill color can be toggled on or off, but
+*only if the polygon is built counter-clockwise.* Otherwise, no fill will 
+appear.
+
+Using polygons allows arbitrarily complex shapes to be shown on the sky:
 
 .. image:: images/polygons.png
