@@ -36,6 +36,14 @@ function wwt_apply_json_message(wwt, msg) {
       wwt.stopTour();
       break;
 
+    case 'resume_time':
+      wwtlib.SpaceTimeController.set_syncToClock(msg['state']);
+      break;
+
+    case 'pause_time':
+      wwtlib.SpaceTimeController.set_syncToClock(msg['state']);
+      break;
+
     case 'load_image_collection':
       wwt.loadImageCollection(msg['url']);
       break;
