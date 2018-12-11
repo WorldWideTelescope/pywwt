@@ -2,6 +2,7 @@ from qtpy import QtWidgets
 
 app = None
 
+
 def get_qapp():
     global app
     if app is None:
