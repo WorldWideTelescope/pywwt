@@ -22,10 +22,19 @@ if QT_INSTALLED and OPENGL_INSTALLED:
     class OpenGLWidget(QOpenGLWidget):
 
         def getOpenGLInfo(self):
-            info = {'vendor': gl.glGetString(gl.GL_VENDOR).decode('ascii'),
-                    'renderer': gl.glGetString(gl.GL_RENDERER).decode('ascii'),
-                    'version': gl.glGetString(gl.GL_VERSION).decode('ascii'),
-                    'shader_version': gl.glGetString(gl.GL_SHADING_LANGUAGE_VERSION).decode('ascii')}
+
+            gl_parameters = {'vendor': gl.GL_VENDOR,
+                             'renderer': gl.GL_RENDERER,
+                             'version': gl.GL_VERSION,
+                             'shader': gl.GL_SHADING_LANGUAGE_VERSION}
+
+            info = {}
+            for key, setting in gl_parameters.items():
+                try:
+                    info[key] = gl.glGetString(setting).decode('ascii')
+                except Exception:
+                    info[key] = 'could not be determined'
+
             return info
 
 
@@ -58,7 +67,7 @@ def pytest_report_header(config):
             lines.append("OpenGL Vendor: {0}".format(opengl_info['vendor']))
             lines.append("OpenGL Renderer: {0}".format(opengl_info['renderer']))
             lines.append("OpenGL Version: {0}".format(opengl_info['version']))
-            lines.append("Shader Version: {0}".format(opengl_info['shader_version']))
+            lines.append("Shader Version: {0}".format(opengl_info['shader']))
 
         else:
 
