@@ -92,7 +92,7 @@ def assert_widget_image(tmpdir, widget, filename):
     actual = tmpdir.join(filename).strpath
     widget.render(actual)
     framework = 'webengine' if WEBENGINE else 'webkit'
-    if sys.platform.startswith('win'):
+    if sys.platform.startswith('win') and not WEBENGINE:
         framework += '_win'
     expected = os.path.join(DATA, framework, filename)
     msg = compare_images(expected, actual, tol=1.5)
