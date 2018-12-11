@@ -76,3 +76,10 @@ def pytest_report_header(config):
         lines.append("Qt not installed")
 
     return os.linesep + os.linesep.join(lines) + os.linesep
+
+
+def pytest_unconfigure(config):
+
+    if QT_INSTALLED:
+        from .app import cleanup_qapp
+        cleanup_qapp()
