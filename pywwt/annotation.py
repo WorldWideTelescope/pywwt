@@ -166,6 +166,9 @@ class Polygon(Annotation):
         """
         Add one or more points to a polygon object.
 
+        If you want to fill the polygon, you should ensure that the vertices
+        form a counter-clockwise polygon.
+
         Parameters
         ----------
         coord : `~astropy.units.Quantity`

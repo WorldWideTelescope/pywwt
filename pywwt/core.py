@@ -405,7 +405,9 @@ class BaseWWTWidget(HasTraits):
         points : `~astropy.units.Quantity`
             The desired points that make up the polygon. If blank or just
             one point, the annotation will be initialized but will not be
-            visible until more points are added.
+            visible until more points are added. Note that the points should
+            be specified in counter-clockwise order on the sky if you intend
+            to fill the polygon.
         kwargs
             Optional arguments that allow corresponding Polygon or
             Annotation attributes to be set upon shape initialization.

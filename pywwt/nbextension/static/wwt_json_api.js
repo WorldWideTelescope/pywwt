@@ -185,15 +185,7 @@ function wwt_apply_json_message(wwt, msg) {
       // Decode table from base64
       csv = atob(msg['table']);
 
-      // FIXME: the SpreadSheetLayer loadFromString method rties
       layer.loadFromString(csv, true, true, true, false)
-
-      // FIXME: workaround for the fact that at the moment, WWT appears
-      // to only refresh if the color is changed. So we change to black then
-      // back.
-      color = layer.get_color();
-      layer.set_color(wwtlib.Color.fromHex('#000000'));
-      layer.set_color(color);
 
       break;
 
@@ -233,14 +225,8 @@ function wwt_apply_json_message(wwt, msg) {
     case 'table_layer_remove':
 
       var layer = wwt.layers[msg['id']];
-      wwtlib.LayerManager.deleteLayerByID(layer.id);
-      layer.cleanUp();
-      // FIXME: workaround for the fact that layers don't actually get removed.
-      // Just make it transparent instead!
-      layer.set_color(wwtlib.Color.fromArgb(0, 0, 0, 0));
-      delete wwt.layers[msg['id']];
+      wwtlib.LayerManager.deleteLayerByID(layer.id, true, true);
       break;
-
 
   }
 

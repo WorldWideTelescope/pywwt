@@ -55,13 +55,13 @@ for erasing every existing annotation from view called
 
 **CircleCollection**
 
-To add several identical circles at once, as you might while plotting a survey, 
-use :meth:`~pywwt.BaseWWTWidget.add_collection()`. This method is built to be 
-compatible with Astropy workflows, so it can take a column of 
-:class:`~astropy.coordinates.SkyCoord` style coordinates from an Astropy table 
-as its argument. (A regular list of coordinates works, too.) Besides its 
-ability to take several coordinates at once, this method functions exactly like 
-:meth:`~pywwt.BaseWWTWidget.add_circle`, so optional keyword arguments that set 
+To add several identical circles at once, as you might while plotting a survey,
+use :meth:`~pywwt.BaseWWTWidget.add_collection()`. This method is built to be
+compatible with Astropy workflows, so it can take a column of
+:class:`~astropy.coordinates.SkyCoord` style coordinates from an Astropy table
+as its argument. (A regular list of coordinates works, too.) Besides its
+ability to take several coordinates at once, this method functions exactly like
+:meth:`~pywwt.BaseWWTWidget.add_circle`, so optional keyword arguments that set
 Circle properties are also available.
 
 Lines
@@ -93,7 +93,7 @@ This code block results in the following picture.
 See :class:`~pywwt.Line` for a full list of available properties.
 
 The constellation is not completely connected, but as shown below, points can
-also be added after the line has been initialized using 
+also be added after the line has been initialized using
 :meth:`~pywwt.Line.add_point`::
 
     >>> line.add_point(SkyCoord.from_name('Megrez'))
@@ -117,6 +117,9 @@ Polygons are made in the same way as lines, but using the
 :meth:`~pywwt.BaseWWTWidget.add_polygon` method::
 
     >>> polygon = wwt.add_polygon(bd)
+
+Note that vertices should be specified in counter-clockwise order if you intend
+to fill the polygon.
 
 See :class:`~pywwt.Polygon` for a full list of available properties.
 The main difference compared to lines is that the viewer will automatically
