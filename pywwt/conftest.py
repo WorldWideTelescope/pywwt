@@ -40,8 +40,6 @@ if QT_INSTALLED and OPENGL_INSTALLED:
 
 def pytest_report_header(config):
 
-    print("IN HEADER")
-
     lines = []
 
     if QT_INSTALLED:
