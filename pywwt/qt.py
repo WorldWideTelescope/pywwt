@@ -12,6 +12,7 @@ import time
 from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
 from qtpy import QtWidgets, QtGui, QtCore
 
+from .app import get_qapp
 from .core import BaseWWTWidget
 from .logger import logger
 from .data_server import get_data_server
@@ -69,6 +70,7 @@ class WWTQWebEnginePage(QWebEnginePage):
             self._js_response = result
 
         def runJavaScript(self, code, asynchronous=True):
+            app = get_qapp()
             if asynchronous:
                 super(WWTQWebEnginePage, self).runJavaScript(code)
             else:
@@ -139,9 +141,6 @@ class WWTQtWidget(QtWidgets.QWidget):
             self._js_queue += js + '\n'
 
 
-app = None
-
-
 class WWTQtClient(BaseWWTWidget):
     """
     A client to create and drive the Qt widget.
@@ -158,11 +157,7 @@ class WWTQtClient(BaseWWTWidget):
 
     def __init__(self, block_until_ready=False, size=None):
 
-        global app
-        if app is None:
-            app = QtWidgets.QApplication.instance()
-            if app is None:
-                app = QtWidgets.QApplication([''])
+        app = get_qapp()
 
         self._data_server = get_data_server()
         self._data_server.serve_file(WWT_JSON_FILE, real_name=True)
@@ -192,6 +187,7 @@ class WWTQtClient(BaseWWTWidget):
             How many seconds to wait for. By default, this waits until the
             Qt window is closed.
         """
+        app = get_qapp()
         if duration is None:
             app.exec_()
         else:
