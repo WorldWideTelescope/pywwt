@@ -233,14 +233,8 @@ function wwt_apply_json_message(wwt, msg) {
     case 'table_layer_remove':
 
       var layer = wwt.layers[msg['id']];
-      wwtlib.LayerManager.deleteLayerByID(layer.id);
-      layer.cleanUp();
-      // FIXME: workaround for the fact that layers don't actually get removed.
-      // Just make it transparent instead!
-      layer.set_color(wwtlib.Color.fromArgb(0, 0, 0, 0));
-      delete wwt.layers[msg['id']];
+      wwtlib.LayerManager.deleteLayerByID(layer.id, true, true);
       break;
-
 
   }
 
