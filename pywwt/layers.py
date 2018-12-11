@@ -124,7 +124,7 @@ class TableLayer(HasTraits):
     size_scale = Float(1, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
 
     color = Color('white', help='The color of the markers').tag(wwt='color')
-    opacity = Float(1, help='The opacity of the markers').tag(wwt='color')
+    opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
 
     # TODO: support:
     # xAxisColumn
@@ -286,10 +286,6 @@ class TableLayer(HasTraits):
                 value = VALID_ALT_UNITS[value]
             elif changed['name'] == 'lon_unit':
                 value = VALID_LON_UNITS[value]
-            elif changed['name'] in ('color', 'opacity'):
-                wwt_name = 'color'
-                opacity_hex = "%0.2x" % int(self.opacity * 255)
-                value = opacity_hex + self.color[1:]
             # TODO: need to generalize to not say table here
             self.parent._send_msg(event='table_layer_set',
                                   id=self.id,
