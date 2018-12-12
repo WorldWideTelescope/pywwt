@@ -1,5 +1,7 @@
 from qtpy import QtWidgets
 
+__all__ = ['get_qapp', 'cleanup_qapp']
+
 app = None
 
 
@@ -10,3 +12,9 @@ def get_qapp():
         if app is None:
             app = QtWidgets.QApplication([''])
     return app
+
+
+def cleanup_qapp():
+    global app
+    app.quit()
+    app = None
