@@ -5,7 +5,7 @@ package:
 {{source}}
 
 build:
-  number: 0
+  number: 1
   script: python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
@@ -17,18 +17,22 @@ requirements:
 
   run:
     - python
-    - traitlets
-    - ipywidgets >=7.0
-    - astropy
-    - qtpy
-    - pyqt
-    - widgetsnbextension
-    - ipyevents
+    - numpy >=1.9
+    - matplotlib >=1.5
+    - astropy >=1.0
     - requests
-    - matplotlib
     - beautifulsoup4
-    - lxml
     - python-dateutil
+    - lxml
+    - ipywidgets >=7.0
+    - ipyevents
+    - traitlets
+    - pyqt
+    - qtpy
+    - flask
+    - flask-cors
+    - six
+    - widgetsnbextension
     - jupyterlab
     - notebook
 
