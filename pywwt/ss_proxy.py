@@ -39,7 +39,7 @@ class SolarSystem(HasTraits):
                                 'background in solar system mode '
                                 '(`bool`)').tag(wwt='solarSystemMilkyWay')
     #multi_res = Bool(False, help='Whether to show the multi-resolution textures for planets where available (`bool`)').tag(wwt='solarSystemMultiRes') ###
-    #minor_orbits = Bool(False, help='Whether to show the orbits of minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorOrbits') ###
+    minor_orbits = Bool(False, help='Whether to show the orbits of minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorOrbits')
     #minor_planets = Bool(False, help='Whether to show minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorPlanets') ###
     orbits = Bool(True,
                   help='Whether to show orbit paths when the solar system is '
@@ -50,7 +50,8 @@ class SolarSystem(HasTraits):
     scale = Int(1, help='Specifies how to scale objects\' size in solar '
                         'system mode, with 1 as actual size and 100 as the '
                         'maximum (`int`)').tag(wwt='solarSystemScale')
-    #stars = Bool(False, help='Whether to show background stars in solar system mode (`bool`)').tag(wwt='solarSystemStars') ###
+    stars = Bool(True, help='Whether to show background stars in solar system '
+                            'mode (`bool`)').tag(wwt='solarSystemStars')
 
     @validate('scale')
     def _validate_scale(self, proposal):
