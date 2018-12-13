@@ -8,17 +8,21 @@ environment:
       CONDA_DEPENDENCIES: "jinja2 requests"
 
   matrix:
-      - PYTHON_VERSION: "2.7"
-        STABLE: true
-      - PYTHON_VERSION: "3.5"
-        STABLE: true
-      - PYTHON_VERSION: "3.6"
-        STABLE: true
+      # - PYTHON_VERSION: "2.7"
+      #   STABLE: true
+      # - PYTHON_VERSION: "3.5"
+      #   STABLE: true
+      # - PYTHON_VERSION: "3.6"
+      #   STABLE: true
+      # - PYTHON_VERSION: "3.7"
+      #   STABLE: true
       - PYTHON_VERSION: "2.7"
         STABLE: false
       - PYTHON_VERSION: "3.5"
         STABLE: false
       - PYTHON_VERSION: "3.6"
+        STABLE: false
+      - PYTHON_VERSION: "3.7"
         STABLE: false
 
 platform:
