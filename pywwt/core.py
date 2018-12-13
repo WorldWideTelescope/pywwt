@@ -162,7 +162,7 @@ class BaseWWTWidget(HasTraits):
         """
         Pause the progression of time in the viewer.
         """
-        if self._paused == False:
+        if not self._paused:
             self._send_msg(event='pause_time', state=self._paused)
             self._paused = not self._paused
 
@@ -170,7 +170,7 @@ class BaseWWTWidget(HasTraits):
         """
         Resume the progression of time in the viewer.
         """
-        if self._paused == True:
+        if self._paused:
             self._send_msg(event='resume_time', state=self._paused)
             self._paused = not self._paused
 
