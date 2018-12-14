@@ -4,7 +4,7 @@
 source activate root
 
 # Install conda-build and the anaconda client
-conda install conda-build anaconda-client
+conda install conda-build anaconda-client python=3.6
 
 # Install and jinja2 for the prepare script to work
 conda install jinja2 requests
