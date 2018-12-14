@@ -37,6 +37,7 @@ class BaseWWTWidget(HasTraits):
         self._available_modes = ['sky', 'planet', 'solar_system',
                                  'milky_way', 'universe', 'panorama']
         self.current_mode = 'sky'
+        self._paused = False
         self.layers = LayerManager(parent=self)
 
         # NOTE: we deliberately don't force _on_trait_change to be called here
@@ -157,6 +158,39 @@ class BaseWWTWidget(HasTraits):
         """
         self._send_msg(event='resume_tour')
 
+    def pause_time(self):
+        """
+        Pause the progression of time in the viewer.
+        """
+        if not self._paused:
+            self._send_msg(event='pause_time', state=self._paused)
+            self._paused = not self._paused
+
+    def play_time(self):
+        """
+        Resume the progression of time in the viewer.
+        """
+        if self._paused:
+            self._send_msg(event='resume_time', state=self._paused)
+            self._paused = not self._paused
+
+    def set_current_time(self, dt):
+        """
+        Set the viewer time to match the real-world time.
+
+        Parameters
+        ----------
+        dt : `~datetime.datetime` or `~astropy.time.Time`
+            The current time, either as a `datetime.datetime` object or an
+            astropy :class:`astropy.time.Time` object.
+        """
+        if isinstance(dt, Time):
+            dt = dt.datetime
+        self._send_msg(event='set_datetime',
+                       year=dt.year, month=dt.month, day=dt.day,
+                       hour=dt.hour, minute=dt.minute, second=dt.second,
+                       millisecond=int(dt.microsecond / 1000.))
+
     def center_on_coordinates(self, coord, fov=60 * u.deg, instant=True):
         """
         Center the view on a particular object or point in the sky.
@@ -179,23 +213,6 @@ class BaseWWTWidget(HasTraits):
                        dec=coord_icrs.dec.deg,
                        fov=fov.to(u.deg).value,
                        instant=instant)
-
-    def set_current_time(self, dt):
-        """
-        Set the viewer time to match the real-world time.
-
-        Parameters
-        ----------
-        dt : `~datetime.datetime` or `~astropy.time.Time`
-            The current time, either as a `datetime.datetime` object or an
-            astropy :class:`astropy.time.Time` object.
-        """
-        if isinstance(dt, Time):
-            dt = dt.datetime
-        self._send_msg(event='set_datetime',
-                       year=dt.year, month=dt.month, day=dt.day,
-                       hour=dt.hour, minute=dt.minute, second=dt.second,
-                       millisecond=int(dt.microsecond / 1000.))
 
     galactic_mode = Bool(False,
                          help='Whether the galactic plane should be horizontal '
