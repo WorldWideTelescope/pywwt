@@ -11,7 +11,7 @@ from .traits import (Color, ColorWithOpacity, Bool,
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
 
-__all__ = ['Annotation', 'Circle', 'Polygon', 'Line']
+__all__ = ['Annotation', 'Circle', 'Polygon', 'Line', 'FieldOfView']
 
 
 class Annotation(HasTraits):
@@ -260,11 +260,11 @@ class Line(Annotation):
 
 class FieldOfView():
     """
-    A collection of polygon annotations. Takes the name of a pre-loaded 
+    A collection of polygon annotations. Takes the name of a pre-loaded
     telescope and displays its field of view.
     """
     # a more efficient method than CircleCollection of changing trait values?
-    
+
     def __init__(self, parent, telescope, center, rot, **kwargs):
         # make sure rot is astropy quantity in proper units for self._rotate()
         try:
@@ -278,11 +278,11 @@ class FieldOfView():
         self.parent = parent
         self._available = self.parent.instruments.available
         self._entry = self.parent.instruments.entry
-        
+
         # list of IDs of annotations created in this FieldofView instance
         self.active = []
         self._gen_fov(telescope, center, rot, **kwargs)
-        
+
     def _gen_fov(self, telescope, center, rot, **kwargs):
         # test if telescope is available
         if telescope not in self._available:
@@ -307,7 +307,7 @@ class FieldOfView():
             # rotate points if necessary
             if position == 'relative' and rot != 0:
                 ras, decs = self._rotate(ras, decs, rot)
-                
+
             # translate points to user-specified location if relative
             if position == 'relative':
                 center_ra = center.ra.to(u.deg).value

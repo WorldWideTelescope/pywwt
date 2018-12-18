@@ -24,3 +24,7 @@ API Documentation
 .. automodapi:: pywwt.layers
    :no-inheritance-diagram:
    :no-inherited-members:
+
+.. automodapi:: pywwt.instruments
+   :no-inheritance-diagram:
+   :no-inherited-members:

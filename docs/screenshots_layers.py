@@ -13,14 +13,13 @@ layer = wwt.layers.add_data_layer(table=table, frame='Sky',
                                   lon_att='ra', lat_att='dec', lon_unit='deg')
 
 layer.size_scale = 50
-layer.color = 'purple'
 
 kepler = SkyCoord(76.532562, 13.289502, unit='deg', frame='galactic')
 wwt.center_on_coordinates(kepler, fov=40 * u.deg)
 
 wwt.wait(3)
 
-wwt.render('data_layers_kepler.png')
+wwt.render('images/data_layers_kepler.png')
 
 layer.remove()
 
@@ -41,7 +40,7 @@ layer = wwt.layers.add_data_layer(table=table, frame='Earth',
 
 wwt.wait(3)
 
-wwt.render('data_layers_earthquakes.png')
+wwt.render('images/data_layers_earthquakes.png')
 
 wwt.wait()
 

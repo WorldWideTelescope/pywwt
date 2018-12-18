@@ -11,7 +11,7 @@ the James Webb Space Telescope, and larger footprints like the field of the K2
 mission come out of the box and ready to use with pyWWT.
 
 (If you have an instrument you'd like to simulate, you can still use the methods
-from :ref:`foo_bar` to plot it, but please also consider forwarding its
+from :ref:`annotations` to plot it, but please also consider forwarding its
 dimensions and further information to us on GitHub. We are especially interested
 in adding more footprints from other sky surveys.)
 

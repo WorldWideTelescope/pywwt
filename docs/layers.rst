@@ -35,6 +35,7 @@ as the ``wwt`` variable, you can then do::
     ...                           lon_att='ra', lat_att='dec')
 
 .. image:: images/data_layers_kepler.png
+   :align: center
 
 Note that we have specified which columns to use for the right ascension and
 declination.
@@ -59,6 +60,7 @@ We can then add the data layer using::
     ...                                   lon_att='longitude', lat_att='latitude')
 
 .. image:: images/data_layers_earthquakes.png
+   :align: center
 
 Note that ``lon_att`` and ``lat_att`` don't need to be specified in
 ``add_data_layer`` - they can also be set afterwards using e.g.::

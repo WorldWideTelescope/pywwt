@@ -35,7 +35,7 @@ class BaseWWTWidget(HasTraits):
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
-        self.instruments = Instruments()
+        self._instruments = Instruments()
         self._available_modes = ['sky', 'planet', 'solar_system',
                                  'milky_way', 'universe', 'panorama']
         self.current_mode = 'sky'
@@ -457,6 +457,13 @@ class BaseWWTWidget(HasTraits):
             line.add_point(points)
         return line
 
+    @property
+    def instruments(self):
+        """
+        Instruments available for use in `add_fov`
+        """
+        return self._instruments
+
     def add_fov(self, telescope, center=None, rotate=0*u.rad, **kwargs):
         """
         Add a telescope's field of view (FOV) to the current view.
@@ -464,14 +471,14 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         telescope : `str`
-            The telescope whose field of view will be displayed. Be sure to
-            use the `wwt.instruments` object to see and select from the
-            preset list of instruments available in pyWWT.
+            The telescope whose field of view will be displayed. Be sure to use
+            the ``instruments`` attribute to see and select from the preset list
+            of instruments available in pyWWT.
         center : `~astropy.units.Quantity`, optional
             The coordinates of desired center of the FOV. If blank,
             defaults to the center of the current view.
         rotate : `~astropy.units.Quantity`, optional
-            The amount to rotate the FOV. Both radians and degrees are 
+            The amount to rotate the FOV. Both radians and degrees are
             accepted. If blank, defaults to 0 radians (no rotation).
         kwargs
             Optional arguments that allow corresponding Polygon or
