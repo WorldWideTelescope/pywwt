@@ -34,6 +34,8 @@ as the ``wwt`` variable, you can then do::
     >>> wwt.layers.add_data_layer(table=table, frame='Sky',
     ...                           lon_att='ra', lat_att='dec')
 
+.. image:: images/data_layers_kepler.png
+
 Note that we have specified which columns to use for the right ascension and
 declination.
 
@@ -55,6 +57,8 @@ We can then add the data layer using::
 
     >>> layer = wwt.layers.add_data_layer(table=table, frame='Earth',
     ...                                   lon_att='longitude', lat_att='latitude')
+
+.. image:: images/data_layers_earthquakes.png
 
 Note that ``lon_att`` and ``lat_att`` don't need to be specified in
 ``add_data_layer`` - they can also be set afterwards using e.g.::

@@ -50,6 +50,7 @@ User guide
    views
    annotations
    layers
+   fov
    windows
    api
 

@@ -3,28 +3,28 @@
 About fields of view
 ====================
 
-Fields of view (FOVs) are pre-loaded annotations that provide approximate 
-projections of how instruments from major telescopes look on the sky, which is 
-useful in simulating observing runs. FOVs for existing instruments (such as 
-those from NASA's Hubble and Spitzer Space Telescopes), future instruments on 
-the James Webb Space Telescope, and larger footprints like the field of the K2 
+Fields of view (FOVs) are pre-loaded annotations that provide approximate
+projections of how instruments from major telescopes look on the sky, which is
+useful in simulating observing runs. FOVs for existing instruments (such as
+those from NASA's Hubble and Spitzer Space Telescopes), future instruments on
+the James Webb Space Telescope, and larger footprints like the field of the K2
 mission come out of the box and ready to use with pyWWT.
 
-(If you have an instrument you'd like to simulate, you can still use the methods 
-from :ref:`foo_bar` to plot it, but please also consider forwarding its 
-dimensions and further information to us on GitHub. We are especially interested 
+(If you have an instrument you'd like to simulate, you can still use the methods
+from :ref:`foo_bar` to plot it, but please also consider forwarding its
+dimensions and further information to us on GitHub. We are especially interested
 in adding more footprints from other sky surveys.)
 
 
 Plotting an instrument
 ----------------------
 
-Use the :meth:`~pywwt.BaseWWTWidget.add_fov` method to add a pre-loaded FOV to 
+Use the :meth:`~pywwt.BaseWWTWidget.add_fov` method to add a pre-loaded FOV to
 the viewer::
 
     >>> from astropy import units as u
     >>> from astropy.coordinates import SkyCoord
-    >>> 
+    >>>
     >>> hdf = SkyCoord(189.206, 62.216, unit=u.deg)
     >>> wwt.background = wwt.imagery.visible.sdss
     >>> wwt.center_on_coordinates(hdf, fov=2.8*u.arcmin)
@@ -32,13 +32,13 @@ the viewer::
     >>> # recreate the Hubble Deep Field image
     >>> fov = wwt.add_fov(wwt.instruments.hst_wfc3_ir, center=hdf,
     ...                   rotate=12*u.deg, line_color='#D4BD8A')
-    
+
 .. image:: images/hdf.png
 
-Only certain instrument names are accepted, so be sure to use the 
-:obj:`pywwt.instruments.Instruments` object in selecting the proper one. To see 
-which instruments are currently available, either use tab-completion in an 
-interactive interpreter with :obj:`pywwt.instruments.Instruments`, or return a 
+Only certain instrument names are accepted, so be sure to use the
+:obj:`pywwt.instruments.Instruments` object in selecting the proper one. To see
+which instruments are currently available, either use tab-completion in an
+interactive interpreter with :obj:`pywwt.instruments.Instruments`, or return a
 list like so::
 
     >>> wwt.instruments.available
@@ -49,19 +49,19 @@ list like so::
     'jwst_niriss',
     'k2',
     ''spitzer_irac']
-    
-For :meth:`~pywwt.BaseWWTWidget.add_fov`, the instrument name is the only 
-required argument; center defaults to the center of your view and rotation 
-defaults to 0. Additionally, since FOVs are drawn as polygons, editable 
-properties for annotations (see :class:`~pywwt.Polygon` for a full list) work as 
-trailing keyword arguments, just as ``line_color`` did in the earlier example 
+
+For :meth:`~pywwt.BaseWWTWidget.add_fov`, the instrument name is the only
+required argument; center defaults to the center of your view and rotation
+defaults to 0. Additionally, since FOVs are drawn as polygons, editable
+properties for annotations (see :class:`~pywwt.Polygon` for a full list) work as
+trailing keyword arguments, just as ``line_color`` did in the earlier example
 function call.
 
-Once an FOV is no longer needed, it can be removed from view via its 
-:meth:`~pywwt.FieldOfView.remove` method. 
-:meth:`~pywwt.BaseWWTWidget.clear_annotations` will also clear FOVs in addition 
+Once an FOV is no longer needed, it can be removed from view via its
+:meth:`~pywwt.FieldOfView.remove` method.
+:meth:`~pywwt.BaseWWTWidget.clear_annotations` will also clear FOVs in addition
 to regular annotations.
 
-.. note:: Due to the spherical projection system used by WWT, FOVs warp near the 
-poles. This especially true for FOVs that are larger in size, contain multiple 
-panels, or have been rotated.
+.. note:: Due to the spherical projection system used by WWT, FOVs warp near the
+          poles. This especially true for FOVs that are larger in size, contain
+          multiple  panels, or have been rotated.
