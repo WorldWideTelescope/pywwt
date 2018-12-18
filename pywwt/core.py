@@ -8,10 +8,11 @@ from astropy.coordinates import SkyCoord
 from .traits import (Color, ColorWithOpacity, Bool,
                      Float, Int, Unicode, AstropyQuantity)
 
-from .annotation import Circle, Polygon, Line, CircleCollection
+from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
 from .ss_proxy import SolarSystem
 from .layers import LayerManager
+from .instruments import Instruments
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -34,6 +35,7 @@ class BaseWWTWidget(HasTraits):
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
+        self.instruments = Instruments()
         self._available_modes = ['sky', 'planet', 'solar_system',
                                  'milky_way', 'universe', 'panorama']
         self.current_mode = 'sky'
@@ -400,7 +402,7 @@ class BaseWWTWidget(HasTraits):
 
         Parameters
         ----------
-        center : `~astropy.units.Quantity`
+        center : `~astropy.units.Quantity`, optional
             The coordinates of desired center of the circle. If blank,
             defaults to the center of the current view.
         kwargs
@@ -419,7 +421,7 @@ class BaseWWTWidget(HasTraits):
 
         Parameters
         ----------
-        points : `~astropy.units.Quantity`
+        points : `~astropy.units.Quantity`, optional
             The desired points that make up the polygon. If blank or just
             one point, the annotation will be initialized but will not be
             visible until more points are added. Note that the points should
@@ -441,7 +443,7 @@ class BaseWWTWidget(HasTraits):
 
         Parameters
         ----------
-        points : `~astropy.units.Quantity`
+        points : `~astropy.units.Quantity`, optional
             The desired points that make up the line. If blank or just one
             point, the annotation will be initialized but will not be
             visible until more points are added.
@@ -454,6 +456,29 @@ class BaseWWTWidget(HasTraits):
         if points:
             line.add_point(points)
         return line
+
+    def add_fov(self, telescope, center=None, rotate=0*u.rad, **kwargs):
+        """
+        Add a telescope's field of view (FOV) to the current view.
+
+        Parameters
+        ----------
+        telescope : `str`
+            The telescope whose field of view will be displayed. Be sure to
+            use the `wwt.instruments` object to see and select from the
+            preset list of instruments available in pyWWT.
+        center : `~astropy.units.Quantity`, optional
+            The coordinates of desired center of the FOV. If blank,
+            defaults to the center of the current view.
+        rotate : `~astropy.units.Quantity`, optional
+            The amount to rotate the FOV. Both radians and degrees are 
+            accepted. If blank, defaults to 0 radians (no rotation).
+        kwargs
+            Optional arguments that allow corresponding Polygon or
+            Annotation attributes to be set upon shape initialization.
+        """
+        fov = FieldOfView(self, telescope, center, rotate, **kwargs)
+        return fov
 
     def add_collection(self, points, **kwargs):
         """

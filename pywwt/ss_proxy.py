@@ -7,6 +7,10 @@ __all__ = ['SolarSystem']
 
 
 class SolarSystem(HasTraits):
+    """
+    A supplemental class that enables tab-completion for settings
+    associated with solar system mode.
+    """
 
     def __init__(self, base_wwt_widget):
         super(SolarSystem, self).__init__()

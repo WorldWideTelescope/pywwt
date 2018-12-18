@@ -1,9 +1,12 @@
 import uuid
 from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
-from astropy.coordinates import concatenate
+from astropy.coordinates import concatenate, SkyCoord
+import requests
+import numpy as np
 
-from .traits import Color, ColorWithOpacity, Bool, Float, Unicode, AstropyQuantity
+from .traits import (Color, ColorWithOpacity, Bool,
+                     Float, Unicode, AstropyQuantity)
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
@@ -253,6 +256,98 @@ class Line(Annotation):
             changed['new'] = changed['new'].value
 
         super(Line, self)._on_trait_change(changed)
+
+
+class FieldOfView():
+    """
+    A collection of polygon annotations. Takes the name of a pre-loaded 
+    telescope and displays its field of view.
+    """
+    # a more efficient method than CircleCollection of changing trait values?
+    
+    def __init__(self, parent, telescope, center, rot, **kwargs):
+        # make sure rot is astropy quantity in proper units for self._rotate()
+        try:
+            if not rot.unit.is_equivalent(u.deg):
+                raise AttributeError
+        except AttributeError:
+            raise ValueError('rotate argument must be Astropy quantity with '
+                             'degree or radian-equivalent units')
+
+        # get the JSON list of FOVs from parent BaseWWTWidget class
+        self.parent = parent
+        self._available = self.parent.instruments.available
+        self._entry = self.parent.instruments.entry
+        
+        # list of IDs of annotations created in this FieldofView instance
+        self.active = []
+        self._gen_fov(telescope, center, rot, **kwargs)
+        
+    def _gen_fov(self, telescope, center, rot, **kwargs):
+        # test if telescope is available
+        if telescope not in self._available:
+            raise ValueError('the given telescope\'s field of view is '
+                             'unavailable at this time')
+
+        position = self._entry[telescope][0]
+        dimensions = self._entry[telescope][-1]
+        # dimensions is a list of lists, i.e. [ [[ras], [decs]], '', ...]
+
+        # test that pos matches what the user entered
+        if center and position == 'absolute':
+            raise ValueError('the given telescope does not take center '
+                             'coordinates')
+        elif not center and position == 'relative':
+            raise ValueError('the given telescope requires center coordinates')
+
+        for panel in dimensions:
+            ras = (panel[0] * u.deg).value
+            decs = (panel[1] * u.deg).value
+
+            # rotate points if necessary
+            if position == 'relative' and rot != 0:
+                ras, decs = self._rotate(ras, decs, rot)
+                
+            # translate points to user-specified location if relative
+            if position == 'relative':
+                center_ra = center.ra.to(u.deg).value
+                center_dec = center.dec.to(u.deg).value
+
+                decs = center_dec + decs
+                # scale RA by dec (due to polar contraction of spherical coords)
+                ras = center_ra + ras / np.cos(decs * u.deg).value
+
+                # check that abs(dec) < 90. if not, adjust it, and then
+                # set the corresponding ra to be swapped by 180
+                for i, dec in enumerate(decs):
+                    if abs(dec) > 90:
+                        if dec < -90:
+                            decs[i] = -90. - (dec + 90.)
+                        else: # dec > 90
+                            decs[i] = 90. - (dec - 90.)
+                        ras[i] += 180.
+
+            corners = SkyCoord(ras, decs, unit=u.deg)
+            if self.parent.galactic_mode:
+                corners = corners.galactic
+
+            # draw the panel
+            annot = self.parent.add_polygon(corners, **kwargs)
+            self.active.append(annot)
+
+    def _rotate(self, ras, decs, rot):
+        cos, sin = np.cos(rot).value, np.sin(rot).value
+        ra_rot = ras * cos - decs * sin
+        dec_rot = ras * sin + decs * cos
+
+        return ra_rot, dec_rot
+
+    def remove(self):
+        """
+        Removes the specified field of view from the viewer.
+        """
+        for annot in self.active:
+            annot.remove()
 
 
 class CircleCollection():
