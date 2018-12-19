@@ -1,7 +1,7 @@
 .. _views:
 
-Switching views
-===============
+Changing and controlling views
+==============================
 
 PyWWT includes the option to toggle between view modes in the same manner as in
 the WorldWide Telescope Web Client by using the
@@ -9,6 +9,15 @@ the WorldWide Telescope Web Client by using the
 the sky, as well as 3D views of celestial bodies, the solar system, the galaxy,
 or the observable universe. The rest of the documentation is based on the
 default sky mode, so here we discuss what makes the other modes different.
+
+In general, changing view involves using the
+:meth:`~pywwt.BaseWWTWidget.set_view` method with a string that indicates the
+desired view. You can find a list of available views by doing::
+
+    >>> wwt.available_views
+    ['callisto', 'earth', 'europa', 'ganymede', 'io', 'jupiter', 'mars',
+    'mercury', 'milky way', 'moon', 'neptune', 'panorama', 'pluto', 'saturn',
+    'sky', 'solar system', 'sun', 'universe', 'uranus', 'venus']
 
 Planet view
 -----------
@@ -96,12 +105,21 @@ NASA's Pathfinder rover on Mars. The rest of the panoramas and their
 view-specific functionalities will be imported from the Web Client in a future
 release.
 
-Available views
----------------
+Time controls
+-------------
 
-You can find a list of available views by doing::
+By default, WWT shows views changing in real time. To pause the passage of time,
+you can use the :meth:`~pywwt.BaseWWTWidget.pause_time` method::
 
-    >>> wwt.available_views
-    ['callisto', 'earth', 'europa', 'ganymede', 'io', 'jupiter', 'mars',
-    'mercury', 'milky way', 'moon', 'neptune', 'panorama', 'pluto', 'saturn',
-    'sky', 'solar system', 'sun', 'universe', 'uranus', 'venus']
+    >>> wwt.pause_time()
+
+You can then resume the passage of time with the
+:meth:`~pywwt.BaseWWTWidget.play_time` method::
+
+    >>> wwt.play_time()
+
+You can also change the rate of passage of time by passing a ``rate`` argument
+to :meth:`~pywwt.BaseWWTWidget.play_time` - for example to speed things up by
+a factor of 10000, use::
+
+    >>> wwt.play_time(rate=10000)

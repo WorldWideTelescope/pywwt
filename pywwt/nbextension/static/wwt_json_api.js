@@ -37,11 +37,12 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'resume_time':
-      wwtlib.SpaceTimeController.set_syncToClock(msg['state']);
+      wwtlib.SpaceTimeController.set_syncToClock(true);
+      wwtlib.SpaceTimeController.set_timeRate(msg['rate']);
       break;
 
     case 'pause_time':
-      wwtlib.SpaceTimeController.set_syncToClock(msg['state']);
+      wwtlib.SpaceTimeController.set_syncToClock(false);
       break;
 
     case 'load_image_collection':
@@ -151,6 +152,7 @@ function wwt_apply_json_message(wwt, msg) {
                           msg['millisecond']);
 
       stc = wwtlib.SpaceTimeController;
+      stc.set_timeRate(1);
       stc.set_now(date);
       break;
 

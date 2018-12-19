@@ -1,5 +1,5 @@
-Modifying visual settings
-=========================
+Basic controls
+==============
 
 Once a Jupyter or Qt widget has been created, the way in which you change
 settings and interact with WorldWide Telescope is the same.
@@ -113,6 +113,7 @@ The preceding code superimposes a dust and gas map on an all-sky gamma ray
 intensity survey and produces the following output:
 
 .. image:: images/dust_on_gamma.png
+   :align: center
 
 In the Jupyter version, it is possible to add GUI controls that allow the
 layers to be chosen from drop down menus. To get these, type::
@@ -123,16 +124,4 @@ The controls also include a slider that interactively changes the opacity of
 the foreground layer, as shown in the following image:
 
 .. image:: images/layercontrols.png
-
-Running tours
--------------
-
-Also present are methods that allow you to load, pause, and resume tours from
-the WWT website. To load and play a tour, use the
-:meth:`~pywwt.BaseWWTWidget.load_tour` method::
-
-    >>> wwt.load_tour('http://www.worldwidetelescope.org/docs/wtml/tourone.wtt')
-
-You can pause and resume it using the
-:meth:`~pywwt.BaseWWTWidget.pause_tour` and
-:meth:`~pywwt.BaseWWTWidget.resume_tour` methods.
+   :align: center
