@@ -283,9 +283,9 @@ class TableLayer(HasTraits):
         if wwt_name is not None:
             value = changed['new']
             if changed['name'] == 'alt_unit':
-                value = VALID_ALT_UNITS[value]
+                value = VALID_ALT_UNITS[self._check_alt_unit({'value': value})]
             elif changed['name'] == 'lon_unit':
-                value = VALID_LON_UNITS[value]
+                value = VALID_LON_UNITS[self._check_lon_unit({'value': value})]
             # TODO: need to generalize to not say table here
             self.parent._send_msg(event='table_layer_set',
                                   id=self.id,

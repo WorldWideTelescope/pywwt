@@ -1,7 +1,7 @@
 Modifying visual settings
 =========================
 
-Once a Jupyter or Qt widget has been created, the way in which you change 
+Once a Jupyter or Qt widget has been created, the way in which you change
 settings and interact with WorldWide Telescope is the same.
 
 Visual settings
@@ -42,6 +42,7 @@ tallest building in Santiago, Chile. You would then enter::
 All of the preceding code results in the following view:
 
 .. image:: images/stgo_view.png
+   :align: center
 
 Screenshots like the one above are saved through a widget method that takes
 your desired file name its argument::
@@ -71,10 +72,10 @@ Foreground/background layers
 
 Up to two image layers can be shown in the viewer. The viewer's ability to
 display multiple layers allows users to visually compare large all-sky surveys
-and smaller studies. They can also add a good amount of aesthetic value for 
+and smaller studies. They can also add a good amount of aesthetic value for
 tours or general use, and there are several methods of selecting them.
 
-About 20 layers of different wavelengths, scopes, and eras are currently 
+About 20 layers of different wavelengths, scopes, and eras are currently
 available. You can list them using the widget's :meth:`~pywwt.BaseWWTWidget.available_layers` method::
 
     >>> wwt.available_layers
@@ -89,19 +90,19 @@ available. You can list them using the widget's :meth:`~pywwt.BaseWWTWidget.avai
      'USNOB: US Naval Observatory B 1.0 (Synthetic, Optical)',
      'VLSS: VLA Low-frequency Sky Survey (Radio)', 'WISE All Sky (Infrared)',
      'WMAP ILC 5-Year Cosmic Microwave Background']
-     
-Using the ``foreground`` and ``background`` attributes, it is possible to 
-directly set layers using these full names. The opacity of the foreground layer 
+
+Using the ``foreground`` and ``background`` attributes, it is possible to
+directly set layers using these full names. The opacity of the foreground layer
 is also modifiable::
 
     >>> wwt.background = 'Fermi LAT 8-year (gamma)'
     >>> wwt.foreground = 'Planck Dust & Gas'
     >>> wwt.foreground_opacity = .75
 
-For easier layer assignment, especially when you don't yet know which layer you 
-want, use the ``imagery`` attribute. It automatically sorts layers by 
-wavelength ('radio', 'uv', etc.), shortens their names, and allows for their 
-selection through tab completion. The resulting objects point back to the 
+For easier layer assignment, especially when you don't yet know which layer you
+want, use the ``imagery`` attribute. It automatically sorts layers by
+wavelength ('radio', 'uv', etc.), shortens their names, and allows for their
+selection through tab completion. The resulting objects point back to the
 original layer names, so they can be used in the same manner as above::
 
     >>> wwt.background = wwt.imagery.gamma.fermi
@@ -113,12 +114,12 @@ intensity survey and produces the following output:
 
 .. image:: images/dust_on_gamma.png
 
-In the Jupyter version, it is possible to add GUI controls that allow the 
+In the Jupyter version, it is possible to add GUI controls that allow the
 layers to be chosen from drop down menus. To get these, type::
 
     >>> wwt.layer_controls
-    
-The controls also include a slider that interactively changes the opacity of 
+
+The controls also include a slider that interactively changes the opacity of
 the foreground layer, as shown in the following image:
 
 .. image:: images/layercontrols.png

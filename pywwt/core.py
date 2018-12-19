@@ -10,7 +10,7 @@ from .traits import (Color, ColorWithOpacity, Bool,
 
 from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
-from .ss_proxy import SolarSystem
+from .solar_system import SolarSystem
 from .layers import LayerManager
 from .instruments import Instruments
 
@@ -18,6 +18,13 @@ from .instruments import Instruments
 # https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
 
 DEFAULT_SURVEYS_URL = 'https://WorldWideTelescope.github.io/pywwt/surveys.xml'
+
+VIEW_MODES_2D = ['sky', 'sun', 'mercury', 'venus', 'earth', 'moon', 'mars',
+                 'jupiter', 'callisto', 'europa', 'ganymede', 'io',
+                 'saturn', 'uranus', 'neptune', 'pluto',
+                 'panorama']
+VIEW_MODES_3D = ['solar system', 'milky way', 'universe']
+
 
 __all__ = ['BaseWWTWidget']
 
@@ -35,9 +42,7 @@ class BaseWWTWidget(HasTraits):
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
-        self.instruments = Instruments()
-        self._available_modes = ['sky', 'planet', 'solar_system',
-                                 'milky_way', 'universe', 'panorama']
+        self._instruments = Instruments()
         self.current_mode = 'sky'
         self._paused = False
         self.layers = LayerManager(parent=self)
@@ -265,36 +270,37 @@ class BaseWWTWidget(HasTraits):
 
     def set_view(self, mode):
         """
-        Change the view mode. Options include the default sky mode, a 3D
-        universe mode with different viewing levels (the solar system, the
-        Milky Way, and the observed universe), individual views of major
-        solar system objects, and panoramas from lunar missions and NASA's
-        Mars rovers.
+        Change the view mode.
+
+        Valid options include the default sky mode, a 3D universe mode with
+        different viewing levels (the solar system, the Milky Way, and the
+        observed universe), individual views of major solar system objects, and
+        panoramas from lunar missions and NASA's Mars rovers.
+
+        To find the list of available views, use the
+        :attr:`~pywwt.BaseWWTWidget.available_views`.
 
         Parameters
         ----------
         mode : `str`
             The desired view mode. (default: 'sky')
         """
-        mode = mode.lower()
-        available = ['sky', 'sun', 'mercury', 'venus', 'earth', 'moon', 'mars',
-                     'jupiter', 'callisto', 'europa', 'ganymede', 'io',
-                     'saturn', 'uranus', 'neptune', 'pluto',
-                     'panorama']
-        ss_levels = ['solar_system', 'milky_way', 'universe']
-        ss_mode = '3D Solar System View'
 
-        if mode in available:
+        mode = mode.lower()
+
+        solar_system_mode = '3D Solar System View'
+
+        if mode in VIEW_MODES_2D:
             self._send_msg(event='set_viewer_mode', mode=mode)
             if mode == 'sky' or mode == 'panorama':
                 self.current_mode = mode
             else:
                 self.current_mode = 'planet'
-        elif mode in ss_levels:
-            self._send_msg(event='set_viewer_mode', mode=ss_mode)
+        elif mode in VIEW_MODES_3D:
+            self._send_msg(event='set_viewer_mode', mode=solar_system_mode)
             self.current_mode = mode
         else:
-            raise ValueError('the given mode does not exist')
+            raise ValueError('mode should be one of {0}'.format('/'.join(VIEW_MODES_2D + VIEW_MODES_3D)))
 
         self.reset_view()
 
@@ -305,28 +311,28 @@ class BaseWWTWidget(HasTraits):
         """
         if self.current_mode == 'sky':
             self.center_on_coordinates(SkyCoord(0., 0., unit=u.deg),
-                                      fov=60*u.deg, instant=False)
+                                       fov=60*u.deg, instant=False)
         if self.current_mode == 'planet':
             self.center_on_coordinates(SkyCoord(35.55, 11.43, unit=u.deg),
-                                      fov=40*u.deg, instant=False)
-        if self.current_mode == 'solar_system':
+                                       fov=40*u.deg, instant=False)
+        if self.current_mode == 'solar system':
             self.center_on_coordinates(SkyCoord(0., 0., unit=u.deg),
-                                      fov=50*u.deg, instant=False)
-        if self.current_mode == 'milky_way':
+                                       fov=50*u.deg, instant=False)
+        if self.current_mode == 'milky way':
             self.center_on_coordinates(SkyCoord(114.85, -29.52, unit=u.deg),
-                                      fov=6e9*u.deg, instant=False)
+                                       fov=6e9*u.deg, instant=False)
         if self.current_mode == 'universe':
             self.center_on_coordinates(SkyCoord(16.67, 37.72, unit=u.deg),
-                                      fov=1e14*u.deg, instant=False)
+                                       fov=1e14*u.deg, instant=False)
         if self.current_mode == 'panorama':
             pass
 
     @property
-    def available_modes(self):
+    def available_views(self):
         """
         A list of the modes that are currently available in the viewer.
         """
-        return sorted(self._available_modes)
+        return sorted(VIEW_MODES_2D + VIEW_MODES_3D)
 
     def load_image_collection(self, url):
         """
@@ -457,6 +463,13 @@ class BaseWWTWidget(HasTraits):
             line.add_point(points)
         return line
 
+    @property
+    def instruments(self):
+        """
+        Instruments available for use in `add_fov`
+        """
+        return self._instruments
+
     def add_fov(self, telescope, center=None, rotate=0*u.rad, **kwargs):
         """
         Add a telescope's field of view (FOV) to the current view.
@@ -464,21 +477,20 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         telescope : `str`
-            The telescope whose field of view will be displayed. Be sure to
-            use the `wwt.instruments` object to see and select from the
-            preset list of instruments available in pyWWT.
+            The telescope whose field of view will be displayed. Be sure to use
+            the ``instruments`` attribute to see and select from the preset list
+            of instruments available in pyWWT.
         center : `~astropy.units.Quantity`, optional
             The coordinates of desired center of the FOV. If blank,
             defaults to the center of the current view.
         rotate : `~astropy.units.Quantity`, optional
-            The amount to rotate the FOV. Both radians and degrees are 
+            The amount to rotate the FOV. Both radians and degrees are
             accepted. If blank, defaults to 0 radians (no rotation).
         kwargs
             Optional arguments that allow corresponding Polygon or
             Annotation attributes to be set upon shape initialization.
         """
-        fov = FieldOfView(self, telescope, center, rotate, **kwargs)
-        return fov
+        return FieldOfView(self, telescope, center, rotate, **kwargs)
 
     def add_collection(self, points, **kwargs):
         """
