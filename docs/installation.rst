@@ -26,7 +26,7 @@ Installing pywwt with pip
 -------------------------
 
 You can also install the latest release of pywwt using `pip
-<http://pip.pypa.io>`_::
+<https://pip.pypa.io/en/stable/>`_::
 
     pip install pywwt
 
@@ -46,23 +46,23 @@ If you install pywwt using pip or conda as described above, any required
 dependencies will get installed automatically (with the exception of PyQt/PySide
 if using pip). For the record, these dependencies are as follows:
 
-* `Python <http://www.python.org>`_ 2.7, or 3.5 or later
-* `NumPy <http://www.numpy.org>`_ 1.9 or later
-* `Matplotlib <http://matplotlib.org>`_ 1.5 or later
+* `Python <https://www.python.org>`_ 2.7, or 3.5 or later
+* `NumPy <https://www.numpy.org>`_ 1.9 or later
+* `Matplotlib <https://matplotlib.org>`_ 1.5 or later
 * `Astropy <http://www.astropy.org>`_ 1.0 or later
 * `Requests <http://docs.python-requests.org/en/latest/>`_
-* `Beautiful Soup 4 <http://www.crummy.com/software/BeautifulSoup>`_
+* `Beautiful Soup 4 <https://www.crummy.com/software/BeautifulSoup>`_
 * `Dateutil <http://labix.org/python-dateutil>`_
-* `lxml <http://lxml.de>`_
-* `ipywidgets <http://ipywidgets.readthedocs.io>`_ 7.0.0 or later
+* `lxml <https://lxml.de>`_
+* `ipywidgets <https://ipywidgets.readthedocs.io>`_ 7.0.0 or later
 * `ipyevents <https://github.com/mwcraig/ipyevents>`_
-* `traitlets <http://traitlets.readthedocs.io>`_
+* `traitlets <https://traitlets.readthedocs.io>`_
 
 In addition, if you want to use the Qt widget, you will need:
 
 * `PySide <https://wiki.qt.io/PySide>`__ or `PyQt
   <https://riverbankcomputing.com/software/pyqt/intro>`__ (both PyQt4 and PyQt5 are supported)
-* `QtPy <https://pypi.python.org/pypi/QtPy/>`__ 1.2 or higher
+* `QtPy <https://pypi.org/project/QtPy/>`__ 1.2 or higher
 
 Installing the developer version
 --------------------------------
