@@ -41,7 +41,7 @@ All attributes and methods of solar system mode are housed within the widget's
 ``solar_system`` object so they're easier to find. Like the sky view, it's
 possible to edit this view to your liking. For example, orbit paths are shown
 by default, but if you would like to turn them off, use the
-:attr:`~pywwt.ss_proxy.SolarSystem.orbits` attribute::
+:attr:`~pywwt.solar_system.SolarSystem.orbits` attribute::
 
     >> wwt.solar_system.orbits = False
 
@@ -51,7 +51,7 @@ objects on a scale from 1 (actual size) to 100. We plan to reveal more options
 soon to match those currently present in the Web Client.
 
 This mode also comes with its own method,
-:meth:`~pywwt.ss_proxy.SolarSystem.track_object`, that centers the viewer on a major
+:meth:`~pywwt.solar_system.SolarSystem.track_object`, that centers the viewer on a major
 solar system object of your choice as it both rotates and follows its orbital
 path::
 

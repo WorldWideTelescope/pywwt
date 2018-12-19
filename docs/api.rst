@@ -17,7 +17,7 @@ API Documentation
    :no-inheritance-diagram:
    :no-inherited-members:
 
-.. automodapi:: pywwt.ss_proxy
+.. automodapi:: pywwt.solar_system
    :no-inheritance-diagram:
    :no-inherited-members:
 

@@ -10,7 +10,7 @@ from .traits import (Color, ColorWithOpacity, Bool,
 
 from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
-from .ss_proxy import SolarSystem
+from .solar_system import SolarSystem
 from .layers import LayerManager
 from .instruments import Instruments
 
@@ -287,7 +287,7 @@ class BaseWWTWidget(HasTraits):
 
         mode = mode.lower()
 
-        ss_mode = '3D Solar System View'
+        solar_system_mode = '3D Solar System View'
 
         if mode in VIEW_MODES_2D:
             self._send_msg(event='set_viewer_mode', mode=mode)
@@ -296,7 +296,7 @@ class BaseWWTWidget(HasTraits):
             else:
                 self.current_mode = 'planet'
         elif mode in VIEW_MODES_3D:
-            self._send_msg(event='set_viewer_mode', mode=ss_mode)
+            self._send_msg(event='set_viewer_mode', mode=solar_system_mode)
             self.current_mode = mode
         else:
             raise ValueError('mode should be one of {0}'.format('/'.join(VIEW_MODES_2D + VIEW_MODES_3D)))
@@ -314,10 +314,10 @@ class BaseWWTWidget(HasTraits):
         if self.current_mode == 'planet':
             self.center_on_coordinates(SkyCoord(35.55, 11.43, unit=u.deg),
                                        fov=40*u.deg, instant=False)
-        if self.current_mode == 'solar_system':
+        if self.current_mode == 'solar system':
             self.center_on_coordinates(SkyCoord(0., 0., unit=u.deg),
                                        fov=50*u.deg, instant=False)
-        if self.current_mode == 'milky_way':
+        if self.current_mode == 'milky way':
             self.center_on_coordinates(SkyCoord(114.85, -29.52, unit=u.deg),
                                        fov=6e9*u.deg, instant=False)
         if self.current_mode == 'universe':
