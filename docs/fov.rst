@@ -34,12 +34,13 @@ the viewer::
     ...                   rotate=12*u.deg, line_color='#D4BD8A')
 
 .. image:: images/hdf.png
+   :align: center
 
 Only certain instrument names are accepted, so be sure to use the
-:obj:`pywwt.instruments.Instruments` object in selecting the proper one. To see
-which instruments are currently available, either use tab-completion in an
-interactive interpreter with :obj:`pywwt.instruments.Instruments`, or return a
-list like so::
+:attr:`~pywwt.BaseWWTWidget.instruments` attribute as shown above to help you
+select a valid one. To see which instruments are currently available, either use
+tab-completion in an interactive interpreter with
+:attr:`~pywwt.BaseWWTWidget.instruments`, or return a list like so::
 
     >>> wwt.instruments.available
     ['hst_acs_wfc',
@@ -48,20 +49,23 @@ list like so::
     'jwst_nircam',
     'jwst_niriss',
     'k2',
-    ''spitzer_irac']
+    'spitzer_irac']
 
 For :meth:`~pywwt.BaseWWTWidget.add_fov`, the instrument name is the only
 required argument; center defaults to the center of your view and rotation
 defaults to 0. Additionally, since FOVs are drawn as polygons, editable
 properties for annotations (see :class:`~pywwt.Polygon` for a full list) work as
-trailing keyword arguments, just as ``line_color`` did in the earlier example
-function call.
+keyword arguments in :meth:`~pywwt.BaseWWTWidget.add_fov`, just as
+``line_color`` did in the example at the top of this page.
 
 Once an FOV is no longer needed, it can be removed from view via its
-:meth:`~pywwt.FieldOfView.remove` method.
-:meth:`~pywwt.BaseWWTWidget.clear_annotations` will also clear FOVs in addition
-to regular annotations.
+:meth:`~pywwt.FieldOfView.remove` method, e.g.::
 
-.. note:: Due to the spherical projection system used by WWT, FOVs warp near the
-          poles. This especially true for FOVs that are larger in size, contain
-          multiple  panels, or have been rotated.
+    >>> fov.remove()
+
+Note that :meth:`~pywwt.BaseWWTWidget.clear_annotations` will also clear FOVs in
+addition to regular annotations.
+
+.. note:: Due to the spherical projection system used by WWT, FOVs may be
+          distorted near the poles. This especially true for FOVs that are
+          larger in size, contain multiple panels, or have been rotated.

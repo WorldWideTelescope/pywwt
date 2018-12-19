@@ -3,15 +3,16 @@
 Switching views
 ===============
 
-New in release 0.4.0 is the ability to toggle between modes in the same manner
-as in the WorldWide Telescope Web Client by using the
-:meth:`~pywwt.BaseWWTWidget.set_view` method. Available modes include sky,
-planet, solar system, Milky Way, universe, and panorama. The rest of the
-documentation is based on the default sky mode, so here we discuss what makes
-the others different.
+PyWWT includes the option to toggle between view modes in the same manner as in
+the WorldWide Telescope Web Client by using the
+:meth:`~pywwt.BaseWWTWidget.set_view` method. Available modes include a view of
+the sky, as well as 3D views of celestial bodies, the solar system, the galaxy,
+or the observable universe. The rest of the documentation is based on the
+default sky mode, so here we discuss what makes the other modes different.
 
 Planet view
 -----------
+
 Use this mode to get individual views of most of the major objects in the solar
 system -- the Sun, the planets, Pluto, Earth's Moon, and Jupiter's Galilean
 satellites. To use this mode, enter the name of your desired object as the
@@ -22,16 +23,19 @@ argument for :meth:`~pywwt.BaseWWTWidget.set_view`::
 Once you've done that, your view should resemble the following:
 
 .. image:: images/moon.png
+   :align: center
 
-Solar system, Milky Way, and Universe views
+Solar System, Milky Way, and Universe views
 -------------------------------------------
 
 These three views come from the same mode at different field-of-view levels.
 
-**Solar system**
+Solar system
+^^^^^^^^^^^^
+
 This mode displays all objects that orbit the Sun. To access it, enter::
 
-    >>> wwt.set_view('solar_system')
+    >>> wwt.set_view('Solar System')
 
 All attributes and methods of solar system mode are housed within the widget's
 ``solar_system`` object so they're easier to find. Like the sky view, it's
@@ -60,7 +64,9 @@ path::
             stars and Milky Way as the backdrop. Planet view displays the
             object in question and nothing else.
 
-**Milky Way**
+Milky Way
+^^^^^^^^^
+
 The Milky Way view changes the scale of the view such that all of the galaxy is
 visible:
 
@@ -69,9 +75,11 @@ visible:
 It can be used as a base point for exploration of galaxies. Access it by
 entering::
 
-    >>> wwt.set_view('Milky_Way')
+    >>> wwt.set_view('Milky Way')
 
-**Universe**
+Universe
+^^^^^^^^
+
 The Universe view zooms all the way out to the extent of the observed universe:
 
 .. image:: images/universe.png
@@ -87,3 +95,13 @@ Mars and the Moon. It's currently only possible to explore a single image from
 NASA's Pathfinder rover on Mars. The rest of the panoramas and their
 view-specific functionalities will be imported from the Web Client in a future
 release.
+
+Available views
+---------------
+
+You can find a list of available views by doing::
+
+    >>> wwt.available_views
+    ['callisto', 'earth', 'europa', 'ganymede', 'io', 'jupiter', 'mars',
+    'mercury', 'milky way', 'moon', 'neptune', 'panorama', 'pluto', 'saturn',
+    'sky', 'solar system', 'sun', 'universe', 'uranus', 'venus']

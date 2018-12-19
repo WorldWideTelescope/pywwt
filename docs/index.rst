@@ -1,8 +1,3 @@
-.. pywwt documentation master file, created by
-   sphinx-quickstart on Mon Dec  4 10:41:14 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 pywwt: WorldWide Telescope from Python
 ======================================
 
@@ -25,10 +20,11 @@ and includes the following:
 * A client for the Windows version of WorldWide Telescope
 
 .. image:: images/stgo_view.png
+   :align: center
 
-This package is still under development and the functionality will be expanded
-over the coming weeks/months. Please do let us know if you try it out and run
-into any issues (see `Getting help`_).
+This package is still under development and functionality is still being added.
+Please do let us know if you try it out and run into any issues (see `Getting
+help`_).
 
 Quick start
 -----------

@@ -17,6 +17,10 @@ the visual properties of the annotation. See the sections below for more
 information about each specific shape. Note that coordinates must be provided as
 :class:`~astropy.coordinates.SkyCoord` objects.
 
+.. note:: If you are interested in plotting a set of positions, data layers
+          will be much more efficient/faster than annotations - see :doc:`layers`
+          for more details.
+
 Circles
 -------
 
@@ -46,14 +50,13 @@ be generated in the center of your view::
                               fill=True, fill_color='#C4D600')
 
 .. image:: images/circles.png
+   :align: center
 
 Once an annotation is no longer needed, it can be
 removed via its :meth:`pywwt.Circle.remove` method. The main
 WorldWide Telescope object (``wwt`` in this case) also has a dedicated method
 for erasing every existing annotation from view called
 :meth:`~pywwt.BaseWWTWidget.clear_annotations`.
-
-**CircleCollection**
 
 To add several identical circles at once, as you might while plotting a survey,
 use :meth:`~pywwt.BaseWWTWidget.add_collection()`. This method is built to be
@@ -89,6 +92,7 @@ traces the Big Dipper, fetching stellar coordinates through a
 This code block results in the following picture.
 
 .. image:: images/big_dipper.png
+   :align: center
 
 See :class:`~pywwt.Line` for a full list of available properties.
 
@@ -109,6 +113,7 @@ or a tuple of (red, green, blue) values (each in the range [0:1]), e.g.::
 The above example results in the following line annotation:
 
 .. image:: images/big_dipper2.png
+   :align: center
 
 Polygons
 --------
@@ -124,12 +129,13 @@ to fill the polygon.
 See :class:`~pywwt.Polygon` for a full list of available properties.
 The main difference compared to lines is that the viewer will automatically
 connect the last point added to the first in order to form a closed shape. This
-is still the case if new points are added after the shape is initialized. 
+is still the case if new points are added after the shape is initialized.
 
 The closed nature of the shape means a fill color can be toggled on or off, but
-*only if the polygon is built counter-clockwise.* Otherwise, no fill will 
+*only if the polygon is built counter-clockwise.* Otherwise, no fill will
 appear.
 
 Using polygons allows arbitrarily complex shapes to be shown on the sky:
 
 .. image:: images/polygons.png
+   :align: center

@@ -19,6 +19,13 @@ from .instruments import Instruments
 
 DEFAULT_SURVEYS_URL = 'https://WorldWideTelescope.github.io/pywwt/surveys.xml'
 
+VIEW_MODES_2D = ['sky', 'sun', 'mercury', 'venus', 'earth', 'moon', 'mars',
+                 'jupiter', 'callisto', 'europa', 'ganymede', 'io',
+                 'saturn', 'uranus', 'neptune', 'pluto',
+                 'panorama']
+VIEW_MODES_3D = ['solar system', 'milky way', 'universe']
+
+
 __all__ = ['BaseWWTWidget']
 
 
@@ -36,8 +43,6 @@ class BaseWWTWidget(HasTraits):
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
         self._instruments = Instruments()
-        self._available_modes = ['sky', 'planet', 'solar_system',
-                                 'milky_way', 'universe', 'panorama']
         self.current_mode = 'sky'
         self._paused = False
         self.layers = LayerManager(parent=self)
@@ -265,36 +270,36 @@ class BaseWWTWidget(HasTraits):
 
     def set_view(self, mode):
         """
-        Change the view mode. Options include the default sky mode, a 3D
-        universe mode with different viewing levels (the solar system, the
-        Milky Way, and the observed universe), individual views of major
-        solar system objects, and panoramas from lunar missions and NASA's
-        Mars rovers.
+        Change the view mode.
+
+        Valid options include the default sky mode, a 3D universe mode with
+        different viewing levels (the solar system, the Milky Way, and the
+        observed universe), individual views of major solar system objects, and
+        panoramas from lunar missions and NASA's Mars rovers.
+
+        To find the
 
         Parameters
         ----------
         mode : `str`
             The desired view mode. (default: 'sky')
         """
+
         mode = mode.lower()
-        available = ['sky', 'sun', 'mercury', 'venus', 'earth', 'moon', 'mars',
-                     'jupiter', 'callisto', 'europa', 'ganymede', 'io',
-                     'saturn', 'uranus', 'neptune', 'pluto',
-                     'panorama']
-        ss_levels = ['solar_system', 'milky_way', 'universe']
+
         ss_mode = '3D Solar System View'
 
-        if mode in available:
+        if mode in VIEW_MODES_2D:
             self._send_msg(event='set_viewer_mode', mode=mode)
             if mode == 'sky' or mode == 'panorama':
                 self.current_mode = mode
             else:
                 self.current_mode = 'planet'
-        elif mode in ss_levels:
+        elif mode in VIEW_MODES_3D:
             self._send_msg(event='set_viewer_mode', mode=ss_mode)
             self.current_mode = mode
         else:
-            raise ValueError('the given mode does not exist')
+            raise ValueError('mode should be one of {0}'.format('/'.join(VIEW_MODES_2D + VIEW_MODES_3D)))
 
         self.reset_view()
 
@@ -305,28 +310,28 @@ class BaseWWTWidget(HasTraits):
         """
         if self.current_mode == 'sky':
             self.center_on_coordinates(SkyCoord(0., 0., unit=u.deg),
-                                      fov=60*u.deg, instant=False)
+                                       fov=60*u.deg, instant=False)
         if self.current_mode == 'planet':
             self.center_on_coordinates(SkyCoord(35.55, 11.43, unit=u.deg),
-                                      fov=40*u.deg, instant=False)
+                                       fov=40*u.deg, instant=False)
         if self.current_mode == 'solar_system':
             self.center_on_coordinates(SkyCoord(0., 0., unit=u.deg),
-                                      fov=50*u.deg, instant=False)
+                                       fov=50*u.deg, instant=False)
         if self.current_mode == 'milky_way':
             self.center_on_coordinates(SkyCoord(114.85, -29.52, unit=u.deg),
-                                      fov=6e9*u.deg, instant=False)
+                                       fov=6e9*u.deg, instant=False)
         if self.current_mode == 'universe':
             self.center_on_coordinates(SkyCoord(16.67, 37.72, unit=u.deg),
-                                      fov=1e14*u.deg, instant=False)
+                                       fov=1e14*u.deg, instant=False)
         if self.current_mode == 'panorama':
             pass
 
     @property
-    def available_modes(self):
+    def available_views(self):
         """
         A list of the modes that are currently available in the viewer.
         """
-        return sorted(self._available_modes)
+        return sorted(VIEW_MODES_2D + VIEW_MODES_3D)
 
     def load_image_collection(self, url):
         """
@@ -484,8 +489,7 @@ class BaseWWTWidget(HasTraits):
             Optional arguments that allow corresponding Polygon or
             Annotation attributes to be set upon shape initialization.
         """
-        fov = FieldOfView(self, telescope, center, rotate, **kwargs)
-        return fov
+        return FieldOfView(self, telescope, center, rotate, **kwargs)
 
     def add_collection(self, points, **kwargs):
         """
