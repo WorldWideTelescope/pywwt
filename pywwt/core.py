@@ -169,19 +169,20 @@ class BaseWWTWidget(HasTraits):
         """
         Pause the progression of time in the viewer.
         """
-        if not self._paused:
-            self._send_msg(event='pause_time', state=self._paused)
-            self._paused = not self._paused
+        self._send_msg(event='pause_time')
 
-    def play_time(self):
+    def play_time(self, rate=1):
         """
         Resume the progression of time in the viewer.
-        """
-        if self._paused:
-            self._send_msg(event='resume_time', state=self._paused)
-            self._paused = not self._paused
 
-    def set_current_time(self, dt):
+        Parameters
+        ----------
+        rate : int or float
+            The rate at which time passes (1 meaning real-time)
+        """
+        self._send_msg(event='resume_time', rate=rate)
+
+    def set_current_time(self, dt=None):
         """
         Set the viewer time to match the real-world time.
 
@@ -189,8 +190,11 @@ class BaseWWTWidget(HasTraits):
         ----------
         dt : `~datetime.datetime` or `~astropy.time.Time`
             The current time, either as a `datetime.datetime` object or an
-            astropy :class:`astropy.time.Time` object.
+            astropy :class:`astropy.time.Time` object. If not specified, this
+            uses the current time
         """
+        if dt is None:
+            dt = Time.now()
         if isinstance(dt, Time):
             dt = dt.datetime
         self._send_msg(event='set_datetime',

@@ -1,7 +1,7 @@
 .. _fov:
 
-About fields of view
-====================
+Showing fields of view
+======================
 
 Fields of view (FOVs) are pre-loaded annotations that provide approximate
 projections of how instruments from major telescopes look on the sky, which is
