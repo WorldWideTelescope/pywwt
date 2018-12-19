@@ -1,7 +1,8 @@
 0.4.0 (unreleased)
 ------------------
 
-- Added ``pause_time`` and ``play_time`` for controlling time. [#146]
+- Added ``pause_time`` and ``play_time`` for controlling time and make it
+  possible to control the rate of passage of time. [#146, #152]
 
 - Added support for displaying fields of view for common telescope. [#102]
 
