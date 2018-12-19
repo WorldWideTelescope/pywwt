@@ -111,21 +111,17 @@ setup_args = dict(
         'test': [
             'pytest',
             'pytest-cov',
-            'nbval',
-        ],
-        'examples': [
-            # Any requirements for the examples to run
         ],
         'docs': [
-            'sphinx>=1.5',
-            'recommonmark',
+            'sphinx>=1.6',
+            'sphinx-automodapi',
+            'numpydoc',
             'sphinx_rtd_theme',
-            'nbsphinx>=0.2.13',
             'jupyter_sphinx',
-            'nbsphinx-link',
-            'pytest_check_links',
-            'pypandoc',
         ],
+        'qt': [
+            'PyQt5'
+        ]
     },
     entry_points = {
     },
