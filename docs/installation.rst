@@ -30,11 +30,6 @@ You can also install the latest release of pywwt using `pip
 
     pip install pywwt
 
-If you want to use the Jupyter widget, you will need to also enable the
-extension using::
-
-    jupyter nbextension enable --py --sys-prefix pywwt
-
 If you want to use the Qt widget, you will need to install
 `PyQt <https://riverbankcomputing.com/software/pyqt/intro>`_ or
 `PySide <https://wiki.qt.io/PySide>`_ separately.
