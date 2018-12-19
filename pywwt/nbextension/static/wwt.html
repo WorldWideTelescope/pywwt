@@ -6,7 +6,7 @@
     <meta charset="utf-8" http-equiv="X-UA-Compatible" content="chrome=1, IE=edge"/>
 
     <title>Simple WWT Web Client</title>
-    <script src="https://worldwidetelescope.github.io/pywwt/wwtsdk.js"></script>
+    <script src="https://WorldWideTelescope.github.io/pywwt/wwtsdk.js"></script>
     <script src="https://code.jquery.com/jquery-1.8.3.min.js"></script>
     <script src="wwt_json_api.js"></script>
 
@@ -162,8 +162,8 @@
                          moveCodes[event.code] : moveCodes[event.keyCode];
             if (event.shiftKey) { action.shiftKey = 1; }
             else                { action.shiftKey = 0; }
-            if (event.ctrlKey) { action.ctrlKey = 1; }
-            else               { action.ctrlKey = 0; }
+            if (event.altKey) { action.altKey = 1; }
+            else               { action.altKey = 0; }
             canvas.dispatchEvent(action);
           }
         });
@@ -176,7 +176,7 @@
             if (event.shiftKey) { delay = 500; }
             else                { delay = 100; }
             setTimeout(function() {proceed = true}, delay);
-            if (event.ctrlKey)
+            if (event.altKey)
               wwtlib.WWTControl.singleton._tilt(event.movementX, event.movementY);
             else
               wwtlib.WWTControl.singleton.move(event.movementX, event.movementY);
