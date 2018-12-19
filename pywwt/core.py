@@ -277,7 +277,8 @@ class BaseWWTWidget(HasTraits):
         observed universe), individual views of major solar system objects, and
         panoramas from lunar missions and NASA's Mars rovers.
 
-        To find the
+        To find the list of available views, use the
+        :attr:`~pywwt.BaseWWTWidget.available_views`.
 
         Parameters
         ----------
