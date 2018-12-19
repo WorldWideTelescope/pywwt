@@ -51,6 +51,7 @@ User guide
    annotations
    layers
    fov
+   shortcuts
    tours
    windows
    api
