@@ -23,7 +23,7 @@ wwt.render('images/data_layers_kepler.png')
 
 layer.remove()
 
-wwt.set_view('solar_system')
+wwt.set_view('solar system')
 
 wwt.wait(5)
 
