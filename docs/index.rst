@@ -4,23 +4,27 @@ pywwt: WorldWide Telescope from Python
 About
 -----
 
-`WorldWide Telescope
-<http://worldwidetelescope.org/home>`_ is a free and powerful viewer developed
-by the American Astronomical Society than can display astronomical and planetary
-data. The two main versions of WorldWide Telescope are a web client, which works
-across all platforms, and a Windows desktop application. WorldWide Telescope is
-designed to be useful to a wide audience, including researchers, educators, and
-the general public.
+`WorldWide Telescope <http://worldwidetelescope.org/home>`_ is a free and
+powerful visualization engine developed by the `American Astronomical Society
+<https://aas.org'>`_ that can display astronomical and planetary data. The two
+main versions of WorldWide Telescope are the cross-platform HTML/WebGL-based
+“web client”, and a Windows desktop application. Both versions can access a
+large (multi-terabyte) collection of astronomical survey data stored in the
+cloud. WorldWide Telescope is designed to be useful to a wide audience,
+including researchers, educators, and the general public.
 
-The pywwt package aims to make it easy to use WorldWide Telescope from Python,
-and includes the following:
+The pywwt package allows you to embed the WorldWide Telescope interface in a
+`Jupyter <http://jupyter.org>`_ notebook, control it, and display arbitrary
+astronomical and planetary data sets in it. It also provides:
 
-* A `Jupyter <http://jupyter.org>`_ notebook/lab widget
 * A standalone Qt viewer/widget
-* A client for the Windows version of WorldWide Telescope
+* A client for the Windows version of the WorldWide Telescope application
 
-.. image:: images/stgo_view.png
+.. figure:: images/data_layers_kepler.png
    :align: center
+   :alt: A WWT screenshot showing exoplanets in the Kepler field overlaid on a background sky map.
+
+   A map of exoplanets in the Kepler field rendered over background imagery by pywwt.
 
 This package is still under development and functionality is still being added.
 Please do let us know if you try it out and run into any issues (see `Getting
@@ -29,9 +33,9 @@ help`_).
 Quick start
 -----------
 
-If you want to try out the WorldWide Telescope Jupyter widget without installing
-anything locally, you can do so by viewing an example Jupyter notebook online
-`at mybinder.org <https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?filepath=pywwt_jupyter.ipynb>`_.
+The quickest way to see what the pywwt can do is to run some of our example
+Jupyter notebooks in the cloud: open them up `at mybinder.org
+<https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?filepath=pywwt_jupyter.ipynb>`_.
 
 User guide
 ----------
@@ -55,10 +59,10 @@ Getting help
 ------------
 
 If you run into any issues when using pywwt, please open an issue
-`here <https://github.com/WorldWideTelescope/pywwt/issues>`_.
+`on its GitHub repository <https://github.com/WorldWideTelescope/pywwt/issues>`_.
 
 Acknowledgments
 ---------------
 
-This work is funded through the American Astronomical Society WorldWide Telescope
-project.
+Work on pywwt is funded through the `American Astronomical Society`_ WorldWide
+Telescope project.
