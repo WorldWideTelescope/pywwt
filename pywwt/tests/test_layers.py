@@ -6,7 +6,7 @@ from astropy import units as u
 from ..qt import WWTQtClient
 from .test_qt_widget import check_silent_output
 
-from ..layers import TableLayer
+from ..layers import TableLayer, guess_lon_lat_columns
 
 
 class TestLayers:
@@ -14,9 +14,9 @@ class TestLayers:
     def setup_class(self):
         self.widget = WWTQtClient(block_until_ready=True)
         self.table = Table()
-        self.table['ra'] = [1, 2, 3] * u.deg
-        self.table['dec'] = [4, 5, 6]
         self.table['flux'] = [2, 3, 4]
+        self.table['dec'] = [4, 5, 6]
+        self.table['ra'] = [1, 2, 3] * u.deg
 
     def test_add_and_remove_layer(self, capsys):
 
@@ -209,3 +209,18 @@ class TestLayers:
         assert layer.lon_unit is u.deg
         assert layer.lat_att == 'b'
         assert layer.alt_att == ''
+
+
+CASES = [[('flux', 'dec', 'ra'), ('ra', 'dec')],
+         [('mass', 'lat', 'lon'), ('lon', 'lat')],
+         [('a', 'lng', 'b', 'lat'), ('lng', 'lat')],
+         [('flux', 'ra', 'radius', 'dec'), ('ra', 'dec')],
+         [('FLUX', 'DECJ2000', 'RAJ2000'), ('RAJ2000', 'DECJ2000')],
+         [('DISTANCE', 'LON1', 'LAT1'), ('LON1', 'LAT1')],
+         [('flux', 'lng2', 'lat2', 'lng1', 'lat1'), (None, None)],
+         [('ra', 'ra', 'dec'), (None, None)]]
+
+
+@pytest.mark.parametrize(('colnames', 'expected'), CASES)
+def test_guess_lon_lat_columns(colnames, expected):
+    assert guess_lon_lat_columns(colnames) == expected
