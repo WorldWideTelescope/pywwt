@@ -1,6 +1,8 @@
 0.4.0 (unreleased)
 ------------------
 
+- Added keyboard shorcuts for movement in-viewer. [#81]
+
 - Disable crosshairs by default. [#157]
 
 - Added ``pause_time`` and ``play_time`` for controlling time and make it
