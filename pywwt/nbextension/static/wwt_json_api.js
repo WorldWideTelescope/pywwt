@@ -157,7 +157,11 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'set_viewer_mode':
+      // We need to set both the backround and foreground layers
+      // otherwise when changing to planet view, there are weird
+      // artifacts due to the fact one of the layes is the sky.
       wwt.setBackgroundImageByName(msg['mode']);
+      wwt.setForegroundImageByName(msg['mode']);
       break;
 
     case 'track_object':
