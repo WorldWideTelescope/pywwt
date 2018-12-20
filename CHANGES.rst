@@ -1,6 +1,8 @@
 0.4.0 (unreleased)
 ------------------
 
+- Disable crosshairs by default. [#157]
+
 - Added ``pause_time`` and ``play_time`` for controlling time and make it
   possible to control the rate of passage of time. [#146, #152]
 
