@@ -1,7 +1,7 @@
-0.4.0 (unreleased)
+0.4.0 (2018-12-20)
 ------------------
 
-- Added keyboard shorcuts for movement in-viewer. [#81]
+- Added keyboard shortcuts for movement in-viewer. [#81]
 
 - Disable crosshairs by default. [#157]
 

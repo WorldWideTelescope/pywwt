@@ -62,7 +62,7 @@ copyright = '2017, ' + author
 # built documents.
 #
 # The short X.Y version.
-version = '0.4.0.dev0'
+version = '0.4.0'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -201,4 +201,3 @@ nitpick_ignore = [('py:class', 'ipywidgets.widgets.domwidget.DOMWidget')]
 default_role = 'obj'
 
 html_logo = 'images/logo.png'
-
