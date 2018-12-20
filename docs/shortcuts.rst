@@ -1,4 +1,4 @@
-.. _layers:
+.. _shortcuts:
 
 Keyboard shortcuts
 ==================
