@@ -35,6 +35,7 @@
         // The true enables WebGL
         wwt = wwtlib.WWTControl.initControlParam("WWTCanvas", true);
         wwt.add_ready(wwtReady);
+        wwt.add_ready(keyScroll);
       }
 
       function wwtReady() {
@@ -89,8 +90,116 @@
 
       }
 
-    </script>
+      function keyScroll() {
 
+        // It seems that QWebEngine(Page) hasn't updated all of its JS standards,
+        // so we include deprecated methods to accomodate the Qt version in the
+        // try/catch clause and the first event listener.
+
+        i = 0;
+        var canvas = document.body.getElementsByTagName("canvas")[0];
+
+        function newEvent(action, attributes, deprecated) {
+          if (!deprecated)
+            var event = new CustomEvent(action);
+          else {
+            var event = document.createEvent("CustomEvent");
+            event.initEvent(action, false, false);
+          }          
+          if (attributes)
+            for (var attr in attributes)
+              event[attr] = attributes[attr];
+
+          return event;
+        }
+        
+        try {
+          var wheelUp = new WheelEvent("wheel", {deltaY: 53, delta: 53});
+          var wheelDn = new WheelEvent("wheel", {deltaY: -53, delta: -53});
+
+          // using custom instead of default mousemove for more selective event firing
+          var mouseLf = newEvent("move", {movementX: 53, movementY: 0});
+          var mouseUp = newEvent("move", {movementX: 0, movementY: 53});
+          var mouseRg = newEvent("move", {movementX: -53, movementY: 0});
+          var mouseDn = newEvent("move", {movementX: 0, movementY: -53});
+
+          //var mouseRg = new MouseEvent("mousemove", {movementX: -53, movementY: 0});
+        } catch (e) {
+          if (e instanceof TypeError) { // for Qt; initEvent is deprecated
+            var wheelUp = newEvent("wheel", {deltaY: 53}, true);
+            var wheelDn = newEvent("wheel", {deltaY: -53}, true);
+
+            var mouseLf = newEvent("move", {movementX: 53, movementY: 0}, true);
+            var mouseUp = newEvent("move", {movementX: 0, movementY: 53}, true);
+            var mouseRg = newEvent("move", {movementX: -53, movementY: 0}, true);
+            var mouseDn = newEvent("move", {movementX: 0, movementY: -53}, true);
+          }
+          else
+            throw e;
+        }
+        
+        zoomCodes = {"KeyZ": wheelUp, "KeyX": wheelDn, 
+                     90: wheelUp, 88: wheelDn};
+        moveCodes = {"KeyJ": mouseLf, "KeyI": mouseUp, 
+                     "KeyL": mouseRg, "KeyK": mouseDn, 
+                     74: mouseLf, 73: mouseUp, 76: mouseRg, 75: mouseDn};
+        
+        window.addEventListener("keydown", function(event) {
+          // must check the deprecated keyCode property for Qt          
+          
+          if (zoomCodes.hasOwnProperty(event.code) ||
+              zoomCodes.hasOwnProperty(event.keyCode)) {
+            var action = (typeof event.code !== "undefined") ? 
+                         zoomCodes[event.code] : zoomCodes[event.keyCode];
+            if (event.shiftKey) { action.shiftKey = 1; }
+            else                { action.shiftKey = 0; }
+            canvas.dispatchEvent(action);
+          }
+          
+          if (moveCodes.hasOwnProperty(event.code) ||
+              moveCodes.hasOwnProperty(event.keyCode)) {
+            var action = (typeof event.code !== "undefined") ? 
+                         moveCodes[event.code] : moveCodes[event.keyCode];
+            if (event.shiftKey) { action.shiftKey = 1; }
+            else                { action.shiftKey = 0; }
+            if (event.altKey) { action.altKey = 1; }
+            else               { action.altKey = 0; }
+            canvas.dispatchEvent(action);
+          }
+        });
+        
+        canvas.addEventListener("move", (function(proceed) {
+          return function(event) {
+            if (!proceed) { return false; }
+            proceed = false;
+            
+            if (event.shiftKey) { delay = 500; }
+            else                { delay = 100; }
+            setTimeout(function() {proceed = true}, delay);
+            if (event.altKey)
+              wwtlib.WWTControl.singleton._tilt(event.movementX, event.movementY);
+            else
+              wwtlib.WWTControl.singleton.move(event.movementX, event.movementY);
+          }
+        })(true));
+        
+        // use self-executing anonymous function to make zoom smooth
+        canvas.addEventListener("wheel", (function(proceed) {
+          return function(event) {
+            if (!proceed) { return false; }
+            proceed = false;
+            
+            if (event.shiftKey) { delay = 500; } // milliseconds
+            else                { delay = 100; }
+            setTimeout(function() {proceed = true}, delay);
+
+            if (event.deltaY < 0) { wwtlib.WWTControl.singleton.zoom(1.43); }
+            else                  { wwtlib.WWTControl.singleton.zoom(0.7); }
+          }
+        })(true));
+      }
+
+    </script>
   </head>
 
   <body onload="initialize()" style="margin: 0; padding: 0">
