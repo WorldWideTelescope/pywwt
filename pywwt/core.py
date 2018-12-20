@@ -109,7 +109,7 @@ class BaseWWTWidget(HasTraits):
     #constellation_pictures = Bool(False, help='Whether to show pictures of the constellations\' mythological representations (`bool`)').tag(wwt='showConstellationPictures')
     #constellation_labels = Bool(False, help='Whether to show labelss for constellations (`bool`)').tag(wwt='showConstellationLabels')
 
-    crosshairs = Bool(True, help='Whether to show crosshairs at the center of '
+    crosshairs = Bool(False, help='Whether to show crosshairs at the center of '
                                  'the field (`bool`)').tag(wwt='showCrosshairs')
     crosshairs_color = Color('white',
                              help='The color of the crosshairs '
