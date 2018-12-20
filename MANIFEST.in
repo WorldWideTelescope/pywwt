@@ -1,5 +1,6 @@
-include LICENSE.txt
+include LICENSE.rst
 include README.rst
+include CHANGES.rst
 
 include setupbase.py
 include pytest.ini
