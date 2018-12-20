@@ -151,7 +151,7 @@ class TableLayer(HasTraits):
     cmap_att = Unicode(help='The column to use for the colormap').tag(wwt='colorMapColumn')
 
     size_att = Unicode(help='The column to use for the size').tag(wwt='sizeColumn')
-    size_scale = Float(1, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
+    size_scale = Float(10, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
 
     color = Color('white', help='The color of the markers').tag(wwt='color')
     opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
@@ -238,6 +238,11 @@ class TableLayer(HasTraits):
 
         self._initialize_layer()
 
+        # Force defaults
+        self._on_trait_change({'name': 'size_scale', 'new': self.size_scale})
+        self._on_trait_change({'name': 'color', 'new': self.color})
+        self._on_trait_change({'name': 'opacity', 'new': self.opacity})
+
         self.observe(self._on_trait_change, type='change')
 
         if any(key not in self.trait_names() for key in kwargs):
@@ -320,7 +325,6 @@ class TableLayer(HasTraits):
                 value = VALID_ALT_UNITS[self._check_alt_unit({'value': value})]
             elif changed['name'] == 'lon_unit':
                 value = VALID_LON_UNITS[self._check_lon_unit({'value': value})]
-            # TODO: need to generalize to not say table here
             self.parent._send_msg(event='table_layer_set',
                                   id=self.id,
                                   setting=wwt_name,

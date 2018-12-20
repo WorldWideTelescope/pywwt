@@ -295,6 +295,9 @@ class BaseWWTWidget(HasTraits):
         solar_system_mode = '3D Solar System View'
 
         if mode in VIEW_MODES_2D:
+            if mode == 'earth':
+                # Switch to a daytime view of the earth
+                mode = 'Bing Maps Aerial'
             self._send_msg(event='set_viewer_mode', mode=mode)
             if mode == 'sky' or mode == 'panorama':
                 self.current_mode = mode
