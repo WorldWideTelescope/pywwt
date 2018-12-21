@@ -35,7 +35,7 @@ Quick start
 
 The quickest way to see what the pywwt can do is to run some of our example
 Jupyter notebooks in the cloud: open them up `at mybinder.org
-<https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?filepath=pywwt_jupyter.ipynb>`_.
+<https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?filepath=basic.ipynb>`_.
 
 User guide
 ----------
