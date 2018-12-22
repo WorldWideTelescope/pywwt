@@ -8076,7 +8076,7 @@ window.wwtlib = function(){
         else {
           if (!this._pointBuffers.length) {
             if (PointList.starTexture == null) {
-              PointList.starTexture = Planets.loadPlanetTexture('//cdn.worldwidetelescope.org/webclient/images/StarProfileAlpha.png');
+              PointList.starTexture = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/StarProfileAlpha.png');
             }
             var count = this._points.length;
             var pointBuffer = null;
@@ -9752,7 +9752,7 @@ window.wwtlib = function(){
   }
   Grids._createGalaxyImage = function(renderContext) {
     if (Grids._milkyWayImage == null) {
-      Grids._milkyWayImage = Planets.loadPlanetTexture('//cdn.worldwidetelescope.org/webclient/images/milkywaybar.jpg');
+      Grids._milkyWayImage = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/milkywaybar.jpg');
     }
     var subdivs = 50;
     var lat, lng;
@@ -9841,7 +9841,7 @@ window.wwtlib = function(){
   };
   Grids.initStarVertexBuffer = function(renderContext) {
     if (!Grids._starsDownloading) {
-      Grids.getStarFile('//worldwidetelescope.org/wwtweb/catalog.aspx?Q=hipparcos');
+      Grids.getStarFile('http://worldwidetelescope.org/wwtweb/catalog.aspx?Q=hipparcos');
       Grids._starsDownloading = true;
     }
     if (Grids._starSprites == null && Grids._starCount > 0) {
@@ -9932,7 +9932,7 @@ window.wwtlib = function(){
           while (num.length < 4) {
             num = '0' + num;
           }
-          var name = ss.format('//cdn.worldwidetelescope.org/webclient/images/gal_{0}.jpg', num);
+          var name = ss.format('http://cdn.worldwidetelescope.org/webclient/images/gal_{0}.jpg', num);
           Grids._galaxyTextures[i] = Planets.loadPlanetTexture(name);
         }
       }
@@ -10008,7 +10008,7 @@ window.wwtlib = function(){
   };
   Grids._downloadCosmosFile = function() {
     if (!Grids._downloadingGalaxy) {
-      Grids.getGalaxyFile('//worldwidetelescope.org/wwtweb/catalog.aspx?Q=cosmosnewbin');
+      Grids.getGalaxyFile('http://worldwidetelescope.org/wwtweb/catalog.aspx?Q=cosmosnewbin');
       Grids._downloadingGalaxy = true;
     }
     return false;
@@ -15525,7 +15525,7 @@ window.wwtlib = function(){
     }
     if (MinorPlanets._mpcVertexBuffer == null) {
       if (MinorPlanets.starTexture == null) {
-        MinorPlanets.starTexture = Planets.loadPlanetTexture('//cdn.worldwidetelescope.org/webclient/images/starProfileAlpha.png');
+        MinorPlanets.starTexture = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/starProfileAlpha.png');
       }
       for (var i = 0; i < 7; i++) {
         MinorPlanets._mpcBlendStates[i] = BlendState.create(false, 1000);
@@ -15551,7 +15551,7 @@ window.wwtlib = function(){
     }
   };
   MinorPlanets._startInit = function() {
-    MinorPlanets.getMpcFile('//cdn.worldwidetelescope.org/wwtweb/catalog.aspx?Q=mpcbin');
+    MinorPlanets.getMpcFile('http://cdn.worldwidetelescope.org/wwtweb/catalog.aspx?Q=mpcbin');
   };
   MinorPlanets.initMPCVertexBuffer = function() {
     try {
@@ -16159,7 +16159,7 @@ window.wwtlib = function(){
     return true;
   };
   Planets._loadPlanetTextures = function() {
-    var baseUrl = '//worldwidetelescope.org/webclient/Images/';
+    var baseUrl = 'http://worldwidetelescope.org/webclient/Images/';
     Planets._planetTextures = new Array(20);
     Planets._planetTextures[0] = Planets.loadPlanetTexture(baseUrl + 'sun.png');
     Planets._planetTextures[1] = Planets.loadPlanetTexture(baseUrl + 'mercury.png');
@@ -16745,7 +16745,7 @@ window.wwtlib = function(){
     if (Planets._ringsVertexBuffer != null) {
       return;
     }
-    Planets._ringsTexture = Planets.loadPlanetTexture('//cdn.worldwidetelescope.org/webclient/images/SaturnRingsStrip.png');
+    Planets._ringsTexture = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/SaturnRingsStrip.png');
     var inner = 1.113;
     var outer = 2.25;
     Planets._ringsVertexBuffer = new PositionTextureVertexBuffer(((192 + 1) * 2));
@@ -18935,8 +18935,8 @@ window.wwtlib = function(){
     this._textureDirty = true;
     this._version = 0;
     this._cellHeight = height;
-    this._texture = Planets.loadPlanetTexture('//cdn.worldwidetelescope.org/webclient/images/glyphs1.png');
-    this._webFile = new WebFile('//cdn.worldwidetelescope.org/webclient/images/glyphs1.xml');
+    this._texture = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/glyphs1.png');
+    this._webFile = new WebFile('http://cdn.worldwidetelescope.org/webclient/images/glyphs1.xml');
     this._webFile.onStateChange = ss.bind('_glyphXmlReady', this);
     this._webFile.send();
   }
@@ -20122,7 +20122,7 @@ window.wwtlib = function(){
     },
     get_demURL: function() {
       if (!this.dataset.get_projection()) {
-        var baseUrl = '//cdn.worldwidetelescope.org/wwtweb/demtile.aspx?q={0},{1},{2},M';
+        var baseUrl = 'http://cdn.worldwidetelescope.org/wwtweb/demtile.aspx?q={0},{1},{2},M';
         if (!ss.emptyString(this.dataset.get_demUrl())) {
           baseUrl = this.dataset.get_demUrl();
         }
@@ -20554,7 +20554,7 @@ window.wwtlib = function(){
         return this._thumbnailUrlField;
       }
       else {
-        return ss.format('//worldwidetelescope.org/wwtweb/GetTourThumbnail.aspx?GUID={0}', this.id);
+        return ss.format('http://worldwidetelescope.org/wwtweb/GetTourThumbnail.aspx?GUID={0}', this.id);
       }
     },
     set_thumbnailUrl: function(value) {
@@ -20563,7 +20563,7 @@ window.wwtlib = function(){
     },
     get_tourUrl: function() {
       if (ss.emptyString(this._tourUrl)) {
-        return ss.format('//cdn.worldwidetelescope.org/wwtweb/GetTour.aspx?GUID={0}', this.id);
+        return ss.format('http://cdn.worldwidetelescope.org/wwtweb/GetTour.aspx?GUID={0}', this.id);
       }
       else {
         return this._tourUrl;
@@ -27166,7 +27166,7 @@ window.wwtlib = function(){
     return '';
   };
   Util.getProxiedUrl = function(url) {
-    if (ss.startsWith(url.toLowerCase(), '//worldwidetelescope.org') || ss.startsWith(url.toLowerCase(), '//worldwidetelescope.org')) {
+    if (ss.startsWith(url.toLowerCase(), 'http://worldwidetelescope.org') || ss.startsWith(url.toLowerCase(), '//worldwidetelescope.org')) {
       if (url.toLowerCase().indexOf('worldwidetelescope.org/wwtweb/') < 12) {
         return url;
       }
@@ -27179,6 +27179,8 @@ window.wwtlib = function(){
       return url.split('wwtstaging.azurewebsites.net')[1];
     }
     if (ss.startsWith(url.toLowerCase(), 'http')) {
+      // additional hack: the proxy can't do HTTPS, so force HTTP and hope for the best
+      url = url.replace(/^https:/, 'http:');
       return '//worldwidetelescope.org/webserviceproxy.aspx?targeturl=' + encodeURIComponent(url);
     }
     return url;
@@ -27201,7 +27203,9 @@ window.wwtlib = function(){
     return ss.format('{0}:{1}:{2}', hours, min, sec);
   };
   Util.getTourComponent = function(url, name) {
-    return '//worldwidetelescope.org/GetTourFile.aspx?targeturl=' + encodeURIComponent(url) + '&filename=' + name;
+    // additional hack: the proxy can't do HTTPS, so force HTTP and hope for the best
+    url = url.replace(/^https:/, 'http:');
+    return 'http://worldwidetelescope.org/GetTourFile.aspx?targeturl=' + encodeURIComponent(url) + '&filename=' + name;
   };
   Util.xmlDate = function(d) {
     var hours = d.getHours();
@@ -28675,12 +28679,12 @@ window.wwtlib = function(){
       WWTControl.singleton.renderContext.width = canvas.width;
       WWTControl.singleton.renderContext.height = canvas.height;
       WWTControl.singleton.setup(canvas);
-      WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('DSS', '//cdn.worldwidetelescope.org/wwtweb/dss.aspx?q={1},{2},{3}', 2, 3, 3, 100, 0, 12, 256, 180, '.png', false, '', 0, 0, 0, false, '//worldwidetelescope.org/thumbnails/DSS.png', true, false, 0, 0, 0, '', '', '', '', 1, 'Sky'));
+      WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('DSS', 'http://cdn.worldwidetelescope.org/wwtweb/dss.aspx?q={1},{2},{3}', 2, 3, 3, 100, 0, 12, 256, 180, '.png', false, '', 0, 0, 0, false, 'http://worldwidetelescope.org/thumbnails/DSS.png', true, false, 0, 0, 0, '', '', '', '', 1, 'Sky'));
       if (WWTControl.startMode === 'earth') {
-        WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('Blue Marble', '//worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},bm200407', 0, 3, 3, 101, 0, 7, 256, 180, '.png', false, '', 0, 0, 0, false, '//worldwidetelescope.org/wwtweb/thumbnail.aspx?name=bm200407', true, false, 0, 0, 0, '', '', '', '', 6371000, 'Earth'));
+        WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('Blue Marble', 'http://worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},bm200407', 0, 3, 3, 101, 0, 7, 256, 180, '.png', false, '', 0, 0, 0, false, 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?name=bm200407', true, false, 0, 0, 0, '', '', '', '', 6371000, 'Earth'));
       }
       if (WWTControl.startMode === 'bing') {
-        WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('Virtual Earth Aerial', '//a{0}.ortho.tiles.virtualearth.net/tiles/a{1}.jpeg?g=15', 0, 3, 0, 102, 1, 20, 256, 360, '.png', false, '0123', 0, 0, 0, false, '//worldwidetelescope.org/wwtweb/thumbnail.aspx?name=earth', true, false, 0, 0, 0, '', '', '', '', 6371000, 'Earth'));
+        WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('Virtual Earth Aerial', '//a{0}.ortho.tiles.virtualearth.net/tiles/a{1}.jpeg?g=15', 0, 3, 0, 102, 1, 20, 256, 360, '.png', false, '0123', 0, 0, 0, false, 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?name=earth', true, false, 0, 0, 0, '', '', '', '', 6371000, 'Earth'));
       }
     }
     WWTControl.singleton.renderContext.viewCamera.lng += 0;
@@ -29134,7 +29138,7 @@ window.wwtlib = function(){
       }
       if (Settings.get_active().get_showConstellationFigures()) {
         if (WWTControl.constellationsFigures == null) {
-          WWTControl.constellationsFigures = Constellations.create('Constellations', '//worldwidetelescope.org/data/figures.txt', false, false, false);
+          WWTControl.constellationsFigures = Constellations.create('Constellations', 'http://worldwidetelescope.org/data/figures.txt', false, false, false);
         }
         WWTControl.constellationsFigures.draw(this.renderContext, false, 'UMA', false);
       }
@@ -29173,7 +29177,7 @@ window.wwtlib = function(){
       }
       if (Settings.get_active().get_showConstellationBoundries()) {
         if (WWTControl.constellationsBoundries == null) {
-          WWTControl.constellationsBoundries = Constellations.create('Constellations', '//worldwidetelescope.org/data/constellations.txt', true, false, false);
+          WWTControl.constellationsBoundries = Constellations.create('Constellations', 'http://worldwidetelescope.org/data/constellations.txt', true, false, false);
         }
         WWTControl.constellationsBoundries.draw(this.renderContext, Settings.get_active().get_showConstellationSelection(), this.constellation, false);
       }
@@ -29344,8 +29348,8 @@ window.wwtlib = function(){
         this._fgDevice = this._foregroundCanvas.getContext('2d');
       }
       this._webFolder = new Folder();
-      this._webFolder.loadFromUrl('//worldwidetelescope.org/wwtweb/catalog.aspx?X=ImageSets5', ss.bind('setupComplete', this));
-      var webFile = new WebFile('//worldwidetelescope.org/wwtweb/weblogin.aspx?user=12345678-03D2-4935-8D0F-DCE54C9113E5&Version=HTML5&webkey=AX2011Gqqu&platform=web');
+      this._webFolder.loadFromUrl('http://worldwidetelescope.org/wwtweb/catalog.aspx?X=ImageSets5', ss.bind('setupComplete', this));
+      var webFile = new WebFile('http://worldwidetelescope.org/wwtweb/weblogin.aspx?user=12345678-03D2-4935-8D0F-DCE54C9113E5&Version=HTML5&webkey=AX2011Gqqu&platform=web');
       webFile.send();
     },
     setupComplete: function() {
@@ -29360,7 +29364,7 @@ window.wwtlib = function(){
         var div = document.getElementById('UI');
         div.insertBefore(this.explorer.canvas);
         WWTControl.exploreRoot = new Folder();
-        WWTControl.exploreRoot.loadFromUrl('//worldwidetelescope.org/wwtweb/catalog.aspx?W=NewExploreRoot', function() {
+        WWTControl.exploreRoot.loadFromUrl('http://worldwidetelescope.org/wwtweb/catalog.aspx?W=NewExploreRoot', function() {
           $this.explorer._addItems(WWTControl.exploreRoot.get_children());
           $this.explorer.refresh();
         });
@@ -31031,7 +31035,7 @@ window.wwtlib = function(){
     if (Constellations.artwork == null) {
       if (Constellations._artFile == null) {
         Constellations._artFile = new Folder();
-        Constellations._artFile.loadFromUrl('//worldwidetelescope.org/wwtweb/catalog.aspx?W=hevelius', Constellations._onArtReady);
+        Constellations._artFile.loadFromUrl('http://worldwidetelescope.org/wwtweb/catalog.aspx?W=hevelius', Constellations._onArtReady);
       }
       return;
     }
@@ -34316,7 +34320,7 @@ window.wwtlib = function(){
     },
     get_thumbnailUrl: function() {
       if (ss.emptyString(this._thumbnailUrlField)) {
-        return '//worldwidetelescope.org/wwtweb/thumbnail.aspx?name=folder';
+        return 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?name=folder';
       }
       return this._thumbnailUrlField;
     },
@@ -34836,7 +34840,7 @@ window.wwtlib = function(){
       return value;
     },
     get_thumbnailUrl: function() {
-      return '//worldwidetelescope.org/wwtweb/thumbnail.aspx?Name=folderup';
+      return 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?Name=folderup';
     },
     set_thumbnailUrl: function(value) {
       return;
@@ -35211,7 +35215,7 @@ window.wwtlib = function(){
     },
     get_demUrl: function() {
       if (ss.emptyString(this.demUrl) && !this._projection) {
-        return '//worldwidetelescope.org/wwtweb/BingDemTile.aspx?Q={0},{1},{2}';
+        return 'http://worldwidetelescope.org/wwtweb/BingDemTile.aspx?Q={0},{1},{2}';
       }
       return this.demUrl;
     },
@@ -35979,9 +35983,9 @@ window.wwtlib = function(){
           name = name.substr(0, name.indexOf(';'));
         }
         if (this.get_classification() === 1) {
-          return '//worldwidetelescope.org/wwtweb/thumbnail.aspx?name=star';
+          return 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?name=star';
         }
-        return '//worldwidetelescope.org/wwtweb/thumbnail.aspx?name=' + name.toLowerCase();
+        return 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?name=' + name.toLowerCase();
       }
       return this._thumbnailField;
     },
@@ -45594,14 +45598,14 @@ window.wwtlib = function(){
   LayerManager._moonfile = '';
   LayerManager._selectedLayer = null;
   LayerManager._lastMenuClick = new Vector2d();
-  LayerManager.getMoonFile('//worldwidetelescope.org/wwtweb/catalog.aspx?Q=moons');
+  LayerManager.getMoonFile('http://worldwidetelescope.org/wwtweb/catalog.aspx?Q=moons');
   LayerUI._type = null;
   Object3d.maX_VERTICES = 8000;
   Object3d.maX_POLYGONS = 8000;
   Orbit._orbitalToWwt = Matrix3d.create(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
   Orbit._initBegun = false;
   PushPin._pinTextureCache = {};
-  PushPin._pins = Planets.loadPlanetTexture('//cdn.worldwidetelescope.org/webclient/images/pins.png');
+  PushPin._pins = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/pins.png');
   MinorPlanets.mpcList = [];
   MinorPlanets._initBegun = false;
   MinorPlanets._mpcBlendStates = new Array(7);
@@ -45719,7 +45723,7 @@ window.wwtlib = function(){
   Annotation.batchDirty = true;
   Constellations.RC = 0.017453292519943;
   Constellations._maxSeperation = 0.745;
-  Constellations.containment = Constellations.create('Constellations', '//worldwidetelescope.org/data/constellations.txt', true, true, true);
+  Constellations.containment = Constellations.create('Constellations', 'http://worldwidetelescope.org/data/constellations.txt', true, true, true);
   Constellations._constToDraw = '';
   Constellations.selectedSegment = null;
   Constellations._artFile = null;
@@ -45727,7 +45731,7 @@ window.wwtlib = function(){
   Constellations.boundries = null;
   Constellations.pictureBlendStates = {};
   (function() {
-    var url = '//worldwidetelescope.org/wwtweb/catalog.aspx?q=ConstellationNamePositions_EN';
+    var url = 'http://worldwidetelescope.org/wwtweb/catalog.aspx?q=ConstellationNamePositions_EN';
     Constellations._webFileConstNames = new WebFile(url);
     Constellations._webFileConstNames.onStateChange = Constellations._loadNames;
     Constellations._webFileConstNames.send();
