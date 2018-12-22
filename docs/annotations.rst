@@ -47,7 +47,7 @@ be generated in the center of your view::
 
     >>> wwt.center_on_coordinates(SkyCoord(190, -55, unit=u.deg))
     >>> crc2 = wwt.add_circle(radius=10 * u.pixel, opacity=.4,
-                              fill=True, fill_color='#C4D600')
+    ...                       fill=True, fill_color='#C4D600')
 
 .. image:: images/circles.png
    :align: center
@@ -85,7 +85,7 @@ traces the Big Dipper, fetching stellar coordinates through a
     ...                   SkyCoord.from_name('Megrez'),
     ...                   SkyCoord.from_name('Phecda'),
     ...                   SkyCoord.from_name('Merak'),
-    ...                   SkyCoord.from_name('Dubhe'))
+    ...                   SkyCoord.from_name('Dubhe')))
     >>> wwt.center_on_coordinates(SkyCoord.from_name('Megrez'))
     >>> line = wwt.add_line(bd, width=3 * u.pixel)
 

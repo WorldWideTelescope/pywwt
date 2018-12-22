@@ -46,7 +46,7 @@ Let's now look at how to load data in the frame of reference of a celestial
 body. Let's first change the camera settings so that we are looking at the
 Earth (see :ref:`views` for more details)::
 
-    >>> wwt.set_view('solar_system')
+    >>> wwt.set_view('solar system')
     >>> wwt.solar_system.track_object('Earth')
 
 Be sure to zoom in so that you can see the Earth properly. Next, we use a
