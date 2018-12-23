@@ -3,6 +3,13 @@
 
 - No changes yet.
 
+0.4.1 (2018-12-23)
+------------------
+
+- Work around an issue with getting base URLs on e.g. mybinder.
+
+- Improvements to documentation. [#160, #164]
+
 0.4.0 (2018-12-20)
 ------------------
 
