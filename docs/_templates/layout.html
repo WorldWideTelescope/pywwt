@@ -1,0 +1,8 @@
+{% extends "sphinx_rtd_theme/layout.html" %}
+
+{% block extrahead %}
+{% if not embedded %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type="text/javascript" src="{{ pathto('_static/copybutton.js', 1) }}"></script>
+{% endif %}
+{% endblock %}
