@@ -44,8 +44,8 @@ All of the preceding code results in the following view:
 .. image:: images/stgo_view.png
    :align: center
 
-Screenshots like the one above are saved through a widget method that takes
-your desired file name its argument::
+If you are using the Qt widget, you can save a screenshot like the one above
+through a method that takes your desired file name its argument::
 
     >>> wwt.render('stgo_view.png')
 
@@ -76,7 +76,8 @@ and smaller studies. They can also add a good amount of aesthetic value for
 tours or general use, and there are several methods of selecting them.
 
 About 20 layers of different wavelengths, scopes, and eras are currently
-available. You can list them using the widget's :meth:`~pywwt.BaseWWTWidget.available_layers` method::
+available. You can list them using the widget's
+:attr:`~pywwt.BaseWWTWidget.available_layers` attribute::
 
     >>> wwt.available_layers
     ['2MASS: Catalog (Synthetic, Near Infrared)', '2Mass: Imagery (Infrared)',
