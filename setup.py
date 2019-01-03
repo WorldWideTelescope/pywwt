@@ -62,10 +62,13 @@ cmdclass['jsdeps'] = combine_commands(
     ensure_targets(jstargets),
 )
 
+with open('README.rst') as f:
+    LONG_DESCRIPTION = f.read()
 
 setup_args = dict(
     name            = name,
     description     = 'WorldWide Telescope from Python',
+    long_description = LONG_DESCRIPTION,
     version         = version,
     scripts         = glob(pjoin('scripts', '*')),
     cmdclass        = cmdclass,
