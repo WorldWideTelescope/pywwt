@@ -279,6 +279,7 @@ class TableLayer(HasTraits):
         self._on_trait_change({'name': 'opacity', 'new': self.opacity})
         self._on_trait_change({'name': 'marker_type', 'new': self.marker_type})
         self._on_trait_change({'name': 'marker_scale', 'new': self.marker_scale})
+        self._on_trait_change({'name': 'far_side_visible', 'new': self.far_side_visible})
 
         self.observe(self._on_trait_change, type='change')
 
