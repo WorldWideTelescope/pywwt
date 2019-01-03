@@ -11049,6 +11049,9 @@ window.wwtlib = function(){
   LayerManager.get_frameWizardDialog = function() {
     return LayerManager._frameWizardDialog;
   };
+  LayerManager.get_dataVizWizardDialog = function() {
+    return LayerManager._dataVizWizardDialog;
+  };
   LayerManager.get_referenceFramePropsDialog = function() {
     return LayerManager._referenceFramePropsDialog;
   };
@@ -11291,6 +11294,19 @@ window.wwtlib = function(){
   };
   LayerManager.addImageSetLayer = function(imageset, title) {
     var layer = ImageSetLayer.create(imageset);
+    layer.doneLoading(null);
+    layer.set_name(title);
+    layer.set_astronomical(true);
+    layer.set_referenceFrame('Sky');
+    LayerManager.get_layerList()[layer.id] = layer;
+    LayerManager.get_allMaps()['Sky'].layers.push(layer);
+    LayerManager.get_allMaps()['Sky'].open = true;
+    layer.enabled = true;
+    LayerManager._version++;
+    LayerManager.loadTree();
+    return layer;
+  };
+  LayerManager.addFitsImageSetLayer = function(layer, title) {
     layer.doneLoading(null);
     layer.set_name(title);
     layer.set_astronomical(true);
@@ -11886,7 +11902,7 @@ window.wwtlib = function(){
         var isl = ss.safeCast(selected, ImageSetLayer);
         defaultImageset.checked = isl.get_overrideDefaultLayer();
       }
-      if (ss.canCast(selected, GreatCirlceRouteLayer)) {
+      if (ss.canCast(selected, SpreadSheetLayer) || ss.canCast(selected, GreatCirlceRouteLayer)) {
         LayerManager._contextMenu.items.push(propertiesMenu);
       }
       if (ss.canCast(selected, VoTableLayer)) {
@@ -12124,6 +12140,10 @@ window.wwtlib = function(){
     isl.set_overrideDefaultLayer(!isl.get_overrideDefaultLayer());
   };
   LayerManager._propertiesMenu_Click = function(sender, e) {
+    if (ss.canCast(LayerManager._selectedLayer, SpreadSheetLayer)) {
+      var target = LayerManager._selectedLayer;
+      LayerManager.get_dataVizWizardDialog().show(target, e);
+    }
     if (ss.canCast(LayerManager._selectedLayer, GreatCirlceRouteLayer)) {
       LayerManager.get_greatCircleDlg().show(LayerManager._selectedLayer, new ss.EventArgs());
     }
@@ -12222,10 +12242,7 @@ window.wwtlib = function(){
     LayerManager.loadTree();
   };
   LayerManager._pasteLayer_Click = function(sender, e) {
-    var clip = function(clipText) {
-      LayerManager.createSpreadsheetLayer(LayerManager.get_currentMap(), 'Clipboard', clipText);
-    };
-    navigator.clipboard.readText().then(clip);
+    LayerManager.get_dataVizWizardDialog().show(LayerManager.get_currentMap(), e);
   };
   LayerManager.createSpreadsheetLayer = function(frame, name, data) {
     var layer = new SpreadSheetLayer();
@@ -18110,16 +18127,29 @@ window.wwtlib = function(){
       }
     },
     loadFits: function(url) {
-      var img = new FitsImage(url, null, ss.bind('_onWcsLoad', this));
+      return this.loadFitsLayer(url, '', true, null);
     },
-    _onWcsLoad: function(wcsImage) {
-      var width = ss.truncate(wcsImage.get_sizeX());
-      var height = ss.truncate(wcsImage.get_sizeY());
-      var imageset = Imageset.create(wcsImage.get_description(), Util.getHashCode(wcsImage.get_filename()).toString(), 2, 3, 5, Util.getHashCode(wcsImage.get_filename()), 0, 0, 256, wcsImage.get_scaleY(), '.tif', wcsImage.get_scaleX() > 0, '', wcsImage.get_centerX(), wcsImage.get_centerY(), wcsImage.get_rotation(), false, '', false, false, 1, wcsImage.get_referenceX(), wcsImage.get_referenceY(), wcsImage.get_copyright(), wcsImage.get_creditsUrl(), '', '', 0, '');
-      imageset.set_wcsImage(wcsImage);
-      LayerManager.addImageSetLayer(imageset, LayerManager.getNextFitsName());
-      LayerManager.loadTree();
-      WWTControl.singleton.gotoRADecZoom(wcsImage.get_centerX() / 15, wcsImage.get_centerY(), 10 * wcsImage.get_scaleY() * height, false);
+    loadFitsLayer: function(url, name, gotoTarget, loaded) {
+      if (ss.whitespace(name)) {
+        name = LayerManager.getNextFitsName();
+      }
+      var imagesetLayer = new ImageSetLayer();
+      var img = new FitsImage(url, null, function(wcsImage) {
+        var width = ss.truncate(wcsImage.get_sizeX());
+        var height = ss.truncate(wcsImage.get_sizeY());
+        var imageset = Imageset.create(wcsImage.get_description(), Util.getHashCode(wcsImage.get_filename()).toString(), 2, 3, 5, Util.getHashCode(wcsImage.get_filename()), 0, 0, 256, wcsImage.get_scaleY(), '.tif', wcsImage.get_scaleX() > 0, '', wcsImage.get_centerX(), wcsImage.get_centerY(), wcsImage.get_rotation(), false, '', false, false, 1, wcsImage.get_referenceX(), wcsImage.get_referenceY(), wcsImage.get_copyright(), wcsImage.get_creditsUrl(), '', '', 0, '');
+        imageset.set_wcsImage(wcsImage);
+        imagesetLayer.set_imageSet(imageset);
+        LayerManager.addFitsImageSetLayer(imagesetLayer, name);
+        LayerManager.loadTree();
+        if (gotoTarget) {
+          WWTControl.singleton.gotoRADecZoom(wcsImage.get_centerX() / 15, wcsImage.get_centerY(), 10 * wcsImage.get_scaleY() * height, false);
+        }
+        if (loaded != null) {
+          loaded(imagesetLayer);
+        }
+      });
+      return imagesetLayer;
     },
     get_hideTourFeedback: function() {
       return this.hideTourFeedback;
@@ -27951,10 +27981,15 @@ window.wwtlib = function(){
   Histogram.updateImage = function(isl, z) {
     var image = ss.safeCast(isl.get_imageSet().get_wcsImage(), FitsImage);
     var Tile = TileCache.getTile(0, 0, 0, isl.get_imageSet(), null);
-    var factor = (image.maxVal - image.minVal) / 256;
     var low = image.lastBitmapMin;
     var hi = image.lastBitmapMax;
     Tile.texture2d = image.getScaledBitmap(low, hi, image.lastScale, Math.floor(z * (image.depth - 1))).getTexture();
+  };
+  Histogram.updateScale = function(isl, scale, low, hi) {
+    var image = ss.safeCast(isl.get_imageSet().get_wcsImage(), FitsImage);
+    var Tile = TileCache.getTile(0, 0, 0, isl.get_imageSet(), null);
+    var z = image.lastBitmapZ;
+    Tile.texture2d = image.getScaledBitmap(low, hi, scale, z).getTexture();
   };
   var Histogram$ = {
     close: function(e) {
@@ -37525,6 +37560,19 @@ window.wwtlib = function(){
     setParams: function(paramList) {
       Layer.prototype.setParams.call(this, paramList);
     },
+    setImageScale: function(scaleType, min, max) {
+      this._min$1 = min;
+      this._max$1 = max;
+      this._lastScale$1 = scaleType;
+      if (ss.canCast(this._imageSet$1.get_wcsImage(), FitsImage)) {
+        Histogram.updateScale(this, scaleType, min, max);
+      }
+    },
+    setImageZ: function(z) {
+      if (ss.canCast(this._imageSet$1.get_wcsImage(), FitsImage)) {
+        Histogram.updateImage(this, z);
+      }
+    },
     loadData: function(tourDoc, filename) {
       if (ss.startsWith(this._extension$1.toLowerCase(), '.fit')) {
         var blob = tourDoc.getFileBlob(ss.replaceString(filename, '.txt', this._extension$1));
@@ -39765,6 +39813,7 @@ window.wwtlib = function(){
       if (this.version !== this.lastVersion) {
         this.cleanUp();
       }
+      this.lastVersion = this.version;
       if (this.bufferIsFlat !== flat) {
         this.cleanUp();
         this.bufferIsFlat = flat;
@@ -43861,6 +43910,17 @@ window.wwtlib = function(){
   };
 
 
+  // wwtlib.DataVizWizard
+
+  function DataVizWizard() {
+    Dialog.call(this);
+  }
+  var DataVizWizard$ = {
+    OK: function() {
+    }
+  };
+
+
   // wwtlib.Circle
 
   function Circle() {
@@ -45310,6 +45370,7 @@ window.wwtlib = function(){
       FrameWizard: [ FrameWizard, FrameWizard$, Dialog ],
       ReferenceFrameProps: [ ReferenceFrameProps, ReferenceFrameProps$, Dialog ],
       GreatCircleDialog: [ GreatCircleDialog, GreatCircleDialog$, Dialog ],
+      DataVizWizard: [ DataVizWizard, DataVizWizard$, Dialog ],
       Circle: [ Circle, Circle$, Annotation ],
       Poly: [ Poly, Poly$, Annotation ],
       PolyLine: [ PolyLine, PolyLine$, Annotation ],
@@ -45585,6 +45646,7 @@ window.wwtlib = function(){
   KeplerVertex.baseDate = ss.truncate(SpaceTimeController.utcToJulian(ss.now()));
   LayerManager._version = 0;
   LayerManager._frameWizardDialog = new FrameWizard();
+  LayerManager._dataVizWizardDialog = new DataVizWizard();
   LayerManager._referenceFramePropsDialog = new ReferenceFrameProps();
   LayerManager._greatCircleDialog = new GreatCircleDialog();
   LayerManager._tourLayers = false;
