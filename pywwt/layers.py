@@ -12,7 +12,7 @@ from base64 import b64encode
 from astropy import units as u
 
 from traitlets import HasTraits, validate, observe
-from .traits import Any, Unicode, Float, Color
+from .traits import Any, Unicode, Float, Color, Bool
 
 __all__ = ['LayerManager', 'TableLayer']
 
@@ -173,6 +173,9 @@ class TableLayer(HasTraits):
     marker_type = Unicode('gaussian', help='The type of marker').tag(wwt='plotType')
     marker_scale = Unicode('screen', help='Whether the scale is defined in '
                            'world or pixel coordinates').tag(wwt='markerScale')
+
+    far_side_visible = Bool(False, help='Whether markers on the far side are '
+                            'visible').tag(wwt='showFarSide')
 
     # TODO: support:
     # xAxisColumn
