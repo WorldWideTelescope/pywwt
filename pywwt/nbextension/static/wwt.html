@@ -113,30 +113,14 @@
           return event;
         }
 
-        try {
-          var wheelUp = new WheelEvent("wheel", {deltaY: 53, delta: 53});
-          var wheelDn = new WheelEvent("wheel", {deltaY: -53, delta: -53});
 
-          // using custom instead of default mousemove for more selective event firing
-          var mouseLf = newEvent("move", {movementX: 53, movementY: 0});
-          var mouseUp = newEvent("move", {movementX: 0, movementY: 53});
-          var mouseRg = newEvent("move", {movementX: -53, movementY: 0});
-          var mouseDn = newEvent("move", {movementX: 0, movementY: -53});
+        var wheelUp = newEvent("wwt-zoom", {deltaY: 53, delta: 53}, true);
+        var wheelDn = newEvent("wwt-zoom", {deltaY: -53, delta: -53}, true);
 
-          //var mouseRg = new MouseEvent("mousemove", {movementX: -53, movementY: 0});
-        } catch (e) {
-          if (e instanceof TypeError) { // for Qt; initEvent is deprecated
-            var wheelUp = newEvent("wheel", {deltaY: 53}, true);
-            var wheelDn = newEvent("wheel", {deltaY: -53}, true);
-
-            var mouseLf = newEvent("move", {movementX: 53, movementY: 0}, true);
-            var mouseUp = newEvent("move", {movementX: 0, movementY: 53}, true);
-            var mouseRg = newEvent("move", {movementX: -53, movementY: 0}, true);
-            var mouseDn = newEvent("move", {movementX: 0, movementY: -53}, true);
-          }
-          else
-            throw e;
-        }
+        var mouseLf = newEvent("wwt-move", {movementX: 53, movementY: 0}, true);
+        var mouseUp = newEvent("wwt-move", {movementX: 0, movementY: 53}, true);
+        var mouseRg = newEvent("wwt-move", {movementX: -53, movementY: 0}, true);
+        var mouseDn = newEvent("wwt-move", {movementX: 0, movementY: -53}, true);
 
         zoomCodes = {"KeyZ": wheelUp, "KeyX": wheelDn,
                      90: wheelUp, 88: wheelDn};
@@ -168,7 +152,7 @@
           }
         });
 
-        canvas.addEventListener("move", (function(proceed) {
+        canvas.addEventListener("wwt-move", (function(proceed) {
           return function(event) {
             if (!proceed) { return false; }
             proceed = false;
@@ -183,8 +167,7 @@
           }
         })(true));
 
-        // use self-executing anonymous function to make zoom smooth
-        canvas.addEventListener("wheel", (function(proceed) {
+        canvas.addEventListener("wwt-zoom", (function(proceed) {
           return function(event) {
             if (!proceed) { return false; }
             proceed = false;
