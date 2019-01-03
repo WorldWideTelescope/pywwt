@@ -1,7 +1,7 @@
 0.5.0 (unreleased)
 ------------------
 
-- No changes yet.
+- Fixed issues with zooming using trackpad/scroll wheel. [#166]
 
 0.4.1 (2018-12-23)
 ------------------
