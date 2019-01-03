@@ -3,6 +3,25 @@
 // we can then use it for both the Jupyter widget and other front-ends such
 // as the Qt one.
 
+
+var ReferenceFramesRadius = {
+  Sun: 696000000,
+  Mercury: 2439700,
+  Venus: 6051800,
+  Earth: 6371000,
+  Mars: 3390000,
+  Jupiter: 69911000,
+  Saturn: 58232000,
+  Uranus: 25362000,
+  Neptune: 24622000,
+  Pluto: 1161000,
+  Moon: 1737100,
+  Io: 1821500,
+  Europa: 1561000,
+  Ganymede: 2631200,
+  Callisto: 2410300
+};
+
 function wwt_apply_json_message(wwt, msg) {
 
   if (!wwt.hasOwnProperty('annotations')) {
@@ -179,6 +198,13 @@ function wwt_apply_json_message(wwt, msg) {
       layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
       layer.set_referenceFrame(frame);
 
+      // FIXME: at the moment WWT incorrectly sets the mean radius of the object
+      // in the frame to that of the Earth, so we need to override this here.
+      radius = ReferenceFramesRadius[frame];
+      if (radius != undefined) {
+        layer._meanRadius$1 = radius;
+      }
+
       // FIXME: for now, this doesn't have any effect because WWT should add a 180
       // degree offset but it doesn't - see
       // https://github.com/WorldWideTelescope/wwt-web-client/pull/182 for a
@@ -219,6 +245,10 @@ function wwt_apply_json_message(wwt, msg) {
         value = wwtlib.RAUnits[msg['value']];
       } else if(name == 'altType') {
         value = wwtlib.AltTypes[msg['value']];
+      } else if(name == 'plotType') {
+        value = wwtlib.PlotTypes[msg['value']];
+      } else if(name == 'markerScale') {
+        value = wwtlib.MarkerScales[msg['value']];
       } else {
         value = msg['value']
       }
