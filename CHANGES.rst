@@ -6,10 +6,10 @@
 - Added support for customizing the layer marker type (``marker_type``), the
   option to specify whether the marker size is absolute or relative to the
   screen (``marker_scale``), and the option to show points on the far side of
-  an object (``far_side_visible``).
+  an object (``far_side_visible``). [#165]
 
 - Fixed a bug that caused issues with the distance/altitude of points when not
-  centered on the Earth.
+  centered on the Earth. [#165]
 
 0.4.1 (2018-12-23)
 ------------------
