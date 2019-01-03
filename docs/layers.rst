@@ -127,6 +127,20 @@ or it can be set to be dependent on one of the columns with::
 
     >>> layer.cmap_att = 'depth'
 
+By default, the marker size stays constant relative to the screen, but this can
+be changed with::
+
+    >>> layer.marker_scale = 'world'
+
+To change it back to be relative to the screen, you can do::
+
+    >>> layer.marker_scale = 'screen'
+
+Finally, if you want to show all markers even if they are on the far side of
+a celestial object, you can use::
+
+    >>> layer.far_side_visible = True
+
 Listing layers and removing layers
 ----------------------------------
 

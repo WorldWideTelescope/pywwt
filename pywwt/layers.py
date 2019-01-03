@@ -12,9 +12,13 @@ from base64 import b64encode
 from astropy import units as u
 
 from traitlets import HasTraits, validate, observe
-from .traits import Any, Unicode, Float, Color
+from .traits import Any, Unicode, Float, Color, Bool
 
 __all__ = ['LayerManager', 'TableLayer']
+
+VALID_FRAMES = ['sky', 'ecliptic', 'galactic', 'sun', 'mercury', 'venus',
+                'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
+                'pluto', 'moon', 'io', 'europa', 'ganymede', 'callisto']
 
 VALID_LON_UNITS = {u.deg: 'degrees',
                    u.hour: 'hours',
@@ -33,6 +37,10 @@ VALID_ALT_UNITS = {u.m: 'meters',
                    u.Mpc: 'megaParsecs'}
 
 VALID_ALT_TYPES = ['depth', 'altitude', 'distance', 'seaLevel', 'terrain']
+
+VALID_MARKER_TYPES = ['gaussian', 'point', 'circle', 'square', 'pushpin']
+
+VALID_MARKER_SCALES = ['screen', 'world']
 
 
 def guess_lon_lat_columns(colnames):
@@ -89,6 +97,12 @@ class LayerManager(object):
         Parameters
         ----------
         """
+
+        # Validate frame
+        if frame.lower() not in VALID_FRAMES:
+            raise ValueError('frame should be one of {0}'.format('/'.join(sorted(str(x) for x in VALID_FRAMES))))
+        frame = frame.capitalize()
+
         if table is not None:
             layer = TableLayer(self._parent, table=table, frame=frame, **kwargs)
         else:
@@ -156,6 +170,13 @@ class TableLayer(HasTraits):
     color = Color('white', help='The color of the markers').tag(wwt='color')
     opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
 
+    marker_type = Unicode('gaussian', help='The type of marker').tag(wwt='plotType')
+    marker_scale = Unicode('screen', help='Whether the scale is defined in '
+                           'world or pixel coordinates').tag(wwt='markerScale')
+
+    far_side_visible = Bool(False, help='Whether markers on the far side are '
+                            'visible').tag(wwt='showFarSide')
+
     # TODO: support:
     # xAxisColumn
     # yAxisColumn
@@ -193,6 +214,20 @@ class TableLayer(HasTraits):
             return proposal['value']
         else:
             raise ValueError('alt_type should be one of {0}'.format('/'.join(str(x) for x in VALID_ALT_TYPES)))
+
+    @validate('marker_type')
+    def _check_marker_type(self, proposal):
+        if proposal['value'] in VALID_MARKER_TYPES:
+            return proposal['value']
+        else:
+            raise ValueError('marker_type should be one of {0}'.format('/'.join(str(x) for x in VALID_MARKER_TYPES)))
+
+    @validate('marker_scale')
+    def _check_marker_scale(self, proposal):
+        if proposal['value'] in VALID_MARKER_SCALES:
+            return proposal['value']
+        else:
+            raise ValueError('marker_scale should be one of {0}'.format('/'.join(str(x) for x in VALID_MARKER_SCALES)))
 
     @observe('alt_att')
     def _on_alt_att_change(self, *value):
@@ -242,6 +277,9 @@ class TableLayer(HasTraits):
         self._on_trait_change({'name': 'size_scale', 'new': self.size_scale})
         self._on_trait_change({'name': 'color', 'new': self.color})
         self._on_trait_change({'name': 'opacity', 'new': self.opacity})
+        self._on_trait_change({'name': 'marker_type', 'new': self.marker_type})
+        self._on_trait_change({'name': 'marker_scale', 'new': self.marker_scale})
+        self._on_trait_change({'name': 'far_side_visible', 'new': self.far_side_visible})
 
         self.observe(self._on_trait_change, type='change')
 
