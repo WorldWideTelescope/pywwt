@@ -198,6 +198,15 @@ function wwt_apply_json_message(wwt, msg) {
       layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
       layer.set_referenceFrame(frame);
 
+      // Override any guesses
+      layer.set_lngColumn(undefined);
+      layer.set_latColumn(undefined);
+      layer.set_altColumn(undefined);
+      layer.set_sizeColumn(undefined);
+      layer.set_colorMapColumn(undefined);
+      layer.set_startDateColumn(undefined);
+      layer.set_endDateColumn(undefined);
+
       // FIXME: at the moment WWT incorrectly sets the mean radius of the object
       // in the frame to that of the Earth, so we need to override this here.
       radius = ReferenceFramesRadius[frame];
@@ -227,6 +236,13 @@ function wwt_apply_json_message(wwt, msg) {
 
       layer.loadFromString(csv, true, true, true, false)
 
+      // FIXME: workaround for the fact that at the moment, WWT appears
+      // to only refresh if the color is changed. So we change to black then
+      // back (https://github.com/WorldWideTelescope/wwt-web-client/issues/192)
+      color = layer.get_color();
+      layer.set_color(wwtlib.Color.fromHex('#000000'));
+      layer.set_color(color);
+
       break;
 
     case 'table_layer_set':
@@ -254,15 +270,6 @@ function wwt_apply_json_message(wwt, msg) {
       }
 
       layer["set_" + name](value);
-
-      // FIXME: workaround for the fact that at the moment, WWT appears
-      // to only refresh if the color is changed. So we change to black then
-      // back.
-      if (name != 'color') {
-        color = layer.get_color();
-        layer.set_color(wwtlib.Color.fromHex('#000000'));
-        layer.set_color(color);
-      }
 
       break;
 
