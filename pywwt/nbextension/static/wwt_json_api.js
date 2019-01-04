@@ -198,6 +198,15 @@ function wwt_apply_json_message(wwt, msg) {
       layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
       layer.set_referenceFrame(frame);
 
+      // Override any guesses
+      layer.set_lngColumn(undefined);
+      layer.set_latColumn(undefined);
+      layer.set_altColumn(undefined);
+      layer.set_sizeColumn(undefined);
+      layer.set_colorMapColumn(undefined);
+      layer.set_startDateColumn(undefined);
+      layer.set_endDateColumn(undefined);
+
       // FIXME: at the moment WWT incorrectly sets the mean radius of the object
       // in the frame to that of the Earth, so we need to override this here.
       radius = ReferenceFramesRadius[frame];
