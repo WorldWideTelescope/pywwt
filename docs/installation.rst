@@ -22,6 +22,12 @@ release of pywwt using::
 This will automatically install pywwt, its `dependencies <Dependencies>`_, and
 will enable the Jupyter extension.
 
+If you want to use WWT inside Jupyter Lab, you may need to also run::
+
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+if you have never used widgets in Jupyter Lab before.
+
 Installing pywwt with pip
 -------------------------
 
@@ -33,6 +39,12 @@ You can also install the latest release of pywwt using `pip
 If you want to use the Qt widget, you will need to install
 `PyQt <https://riverbankcomputing.com/software/pyqt/intro>`_ or
 `PySide <https://wiki.qt.io/PySide>`_ separately.
+
+If you want to use WWT inside Jupyter Lab, you may need to also run::
+
+    jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+if you have never used widgets in Jupyter Lab before.
 
 Dependencies
 ------------
