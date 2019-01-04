@@ -298,6 +298,8 @@ class BaseWWTWidget(HasTraits):
             if mode == 'earth':
                 # Switch to a daytime view of the earth
                 mode = 'Bing Maps Aerial'
+            elif mode == 'mars':
+                mode = 'Visible Imagery'
             self._send_msg(event='set_viewer_mode', mode=mode)
             if mode == 'sky' or mode == 'panorama':
                 self.current_mode = mode
