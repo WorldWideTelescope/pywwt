@@ -31,8 +31,8 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     _model_name = Unicode('WWTModel').tag(sync=True)
     _view_module = Unicode('pywwt').tag(sync=True)
     _model_module = Unicode('pywwt').tag(sync=True)
-    _view_module_version = Unicode('0.5.0').tag(sync=True)
-    _model_module_version = Unicode('0.5.0').tag(sync=True)
+    _view_module_version = Unicode('0.6.0').tag(sync=True)
+    _model_module_version = Unicode('0.6.0').tag(sync=True)
 
     def __init__(self):
         widgets.DOMWidget.__init__(self)
