@@ -6,7 +6,9 @@
 0.5.2 (unreleased)
 ------------------
 
-- Fixed ``set_view('Mars')``.
+- Added instructions for using Jupyter Lab. [#170]
+
+- Fixed ``set_view('Mars')``. [#171]
 
 0.5.1 (2019-01-04)
 ------------------
