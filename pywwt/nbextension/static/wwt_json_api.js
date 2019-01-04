@@ -264,15 +264,6 @@ function wwt_apply_json_message(wwt, msg) {
 
       layer["set_" + name](value);
 
-      // FIXME: workaround for the fact that at the moment, WWT appears
-      // to only refresh if the color is changed. So we change to black then
-      // back.
-      if (name != 'color') {
-        color = layer.get_color();
-        layer.set_color(wwtlib.Color.fromHex('#000000'));
-        layer.set_color(color);
-      }
-
       break;
 
     case 'table_layer_remove':
