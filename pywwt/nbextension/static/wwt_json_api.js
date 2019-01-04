@@ -236,6 +236,13 @@ function wwt_apply_json_message(wwt, msg) {
 
       layer.loadFromString(csv, true, true, true, false)
 
+      // FIXME: workaround for the fact that at the moment, WWT appears
+      // to only refresh if the color is changed. So we change to black then
+      // back (https://github.com/WorldWideTelescope/wwt-web-client/issues/192)
+      color = layer.get_color();
+      layer.set_color(wwtlib.Color.fromHex('#000000'));
+      layer.set_color(color);
+
       break;
 
     case 'table_layer_set':
