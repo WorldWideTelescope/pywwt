@@ -1,4 +1,4 @@
-0.5.1 (unreleased)
+0.5.1 (2019-01-04)
 ------------------
 
 - Fixed a bug that caused layers to not immediately update when updating
@@ -7,7 +7,7 @@
 - Fixed a bug that caused some columns to be pre-assigned to e.g. size_att
   based on column name. [#167]
 
-0.5.0 (2018-01-04)
+0.5.0 (2019-01-04)
 ------------------
 
 - Fixed issues with zooming using trackpad/scroll wheel. [#166]
