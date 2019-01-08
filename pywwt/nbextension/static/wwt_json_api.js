@@ -199,13 +199,13 @@ function wwt_apply_json_message(wwt, msg) {
       layer.set_referenceFrame(frame);
 
       // Override any guesses
-      layer.set_lngColumn(undefined);
-      layer.set_latColumn(undefined);
-      layer.set_altColumn(undefined);
-      layer.set_sizeColumn(undefined);
-      layer.set_colorMapColumn(undefined);
-      layer.set_startDateColumn(undefined);
-      layer.set_endDateColumn(undefined);
+      layer.set_lngColumn(-1);
+      layer.set_latColumn(-1);
+      layer.set_altColumn(-1);
+      layer.set_sizeColumn(-1);
+      layer.set_colorMapColumn(-1);
+      layer.set_startDateColumn(-1);
+      layer.set_endDateColumn(-1);
 
       // FIXME: at the moment WWT incorrectly sets the mean radius of the object
       // in the frame to that of the Earth, so we need to override this here.
