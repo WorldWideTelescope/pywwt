@@ -10,6 +10,8 @@
 
 - Fixed ``set_view('Mars')``. [#171]
 
+- Fixed issue with layers not appearing under certain circumstances. [#173]
+
 0.5.1 (2019-01-04)
 ------------------
 
