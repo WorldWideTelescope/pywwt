@@ -7,10 +7,10 @@ release after the version number, and make sure the changelog is up to date.
 Then edit the following files to update the version numbers:
 
 * ``docs/conf.py``
-* ``pywwt/_version.py`` (make sure the string in the tuple is set to ``final``)
 * ``lib/wwt.js``
 * ``package.json``
 * ``pywwt/jupyter.py``
+* ``pywwt/_version.py`` (make sure the string in the tuple is set to ``final``)
 
 At this point, commit all changes and use the following for the commit message::
 

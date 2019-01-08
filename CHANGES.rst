@@ -1,4 +1,4 @@
-0.5.2 (unreleased)
+0.5.2 (2019-01-08)
 ------------------
 
 - Added instructions for using Jupyter Lab. [#170]
