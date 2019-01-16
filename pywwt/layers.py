@@ -274,6 +274,7 @@ class TableLayer(HasTraits):
         self._initialize_layer()
 
         # Force defaults
+        self._on_trait_change({'name': 'alt_type', 'new': self.alt_type})
         self._on_trait_change({'name': 'size_scale', 'new': self.size_scale})
         self._on_trait_change({'name': 'color', 'new': self.color})
         self._on_trait_change({'name': 'opacity', 'new': self.opacity})
