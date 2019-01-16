@@ -7,9 +7,9 @@
 ------------------
 
 - Exposed option to turn off large-scale SDSS data in 3D mode, improving
-  performance.
+  performance. [#176]
 
-- Make sure default altitude type is set correctly.
+- Make sure default altitude type is set correctly. [#176]
 
 0.5.2 (2019-01-08)
 ------------------
