@@ -34,7 +34,7 @@ class SolarSystem(HasTraits):
                                 value=new_value)
 
     #cmb = Bool(False, help='Whether to show the cosmic microwave background in solar system mode (`bool`)').tag(wwt='solarSystemCMB') ###
-    cosmos = Bool(False, help='Whether to show data from the SDSS survey (`bool`)').tag(wwt='solarSystemCosmos') ###
+    cosmos = Bool(True, help='Whether to show data from the SDSS survey (`bool`)').tag(wwt='solarSystemCosmos') ###
     #display = Bool(False, help='Whether to show the solar system while in solar system mode (`bool`)').tag(wwt='solarSystemOverlays') ###
     lighting = Bool(True,
                     help='Whether to show the lighting effect of the Sun on the'
