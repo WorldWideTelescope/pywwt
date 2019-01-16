@@ -3,7 +3,7 @@
 
 - No changes yet.
 
-0.5.3 (unreleased)
+0.5.3 (2019-01-16)
 ------------------
 
 - Exposed option to turn off large-scale SDSS data in 3D mode, improving
