@@ -52,7 +52,7 @@ possible to edit this view to your liking. For example, orbit paths are shown
 by default, but if you would like to turn them off, use the
 :attr:`~pywwt.solar_system.SolarSystem.orbits` attribute::
 
-    >> wwt.solar_system.orbits = False
+    >>> wwt.solar_system.orbits = False
 
 The objects themselves can also be hidden using a similar technique. Another
 useful attribute, ``scale``, enables you to change the size of the major
@@ -64,7 +64,7 @@ This mode also comes with its own method,
 solar system object of your choice as it both rotates and follows its orbital
 path::
 
-    >> wwt.solar_system.track_object('Jupiter')
+    >>> wwt.solar_system.track_object('Jupiter')
 
 .. note::   ``track_object`` is similar in spirit and syntax to planet view,
             but they are not the same. The former exists within the context of
