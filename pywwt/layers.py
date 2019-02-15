@@ -44,6 +44,11 @@ VALID_MARKER_TYPES = ['gaussian', 'point', 'circle', 'square', 'pushpin']
 
 VALID_MARKER_SCALES = ['screen', 'world']
 
+# The following are columns that we add dynamically and internally, so we need
+# to make sure they have unique names that won't clash with existing columns
+SIZE_COLUMN_NAME = str(uuid.uuid4())
+CMAP_COLUMN_NAME = str(uuid.uuid4())
+
 
 def guess_lon_lat_columns(colnames):
     """
@@ -349,7 +354,7 @@ class TableLayer(HasTraits):
 
         size = (column - self.size_vmin) / (self.size_vmax - self.size_vmin) * 10
 
-        self.table['__size__'] = size
+        self.table[SIZE_COLUMN_NAME] = size
 
         self.parent._send_msg(event='table_layer_update', id=self.id,
                               table=self._table_b64)
@@ -358,7 +363,7 @@ class TableLayer(HasTraits):
                               setting='pointScaleType', value=0)
 
         self.parent._send_msg(event='table_layer_set', id=self.id,
-                              setting='sizeColumn', value='__size__')
+                              setting='sizeColumn', value=SIZE_COLUMN_NAME)
 
     @observe('cmap_att')
     def _on_cmap_att_change(self, *value):
@@ -406,7 +411,7 @@ class TableLayer(HasTraits):
         rgba = cm.get_cmap(self.cmap)(values)
         hex_values = [to_hex(row[:-1]) for row in rgba]
 
-        self.table['__cmap__'] = hex_values
+        self.table[CMAP_COLUMN_NAME] = hex_values
         self.table['ra'] += 1
 
         self.parent._send_msg(event='table_layer_update', id=self.id,
@@ -416,7 +421,7 @@ class TableLayer(HasTraits):
                               setting='_colorMap', value=3)
 
         self.parent._send_msg(event='table_layer_set', id=self.id,
-                              setting='colorMapColumn', value='__cmap__')
+                              setting='colorMapColumn', value=CMAP_COLUMN_NAME)
 
     @property
     def _table_b64(self):
