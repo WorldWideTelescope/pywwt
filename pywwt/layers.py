@@ -9,6 +9,7 @@ else:
 import warnings
 from base64 import b64encode
 
+import numpy as np
 from astropy import units as u
 
 from traitlets import HasTraits, validate, observe
@@ -164,8 +165,14 @@ class TableLayer(HasTraits):
 
     cmap_att = Unicode(help='The column to use for the colormap').tag(wwt='colorMapColumn')
 
-    size_att = Unicode(help='The column to use for the size').tag(wwt='sizeColumn')
     size_scale = Float(10, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
+
+    # NOTE: we deliberately don't link size_att to sizeColumn because we need to
+    # compute the sizes ourselves based on the min/max and then use the
+    # resulting column.
+    size_att = Unicode(help='The column to use for the size')
+    size_vmin = Float(None, allow_none=True)
+    size_vmax = Float(None, allow_none=True)
 
     color = Color('white', help='The color of the markers').tag(wwt='color')
     opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
@@ -257,6 +264,49 @@ class TableLayer(HasTraits):
                           'unit of longitude - set the unit directly with '
                           'lon_unit'.format(self.lon_att, unit), UserWarning)
 
+    @observe('size_att')
+    def _on_size_att_change(self, *value):
+
+        # Set the min/max levels automatically based on the min/max values
+
+        if len(self.size_att) == 0:
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='sizeColumn', value=-1)
+            return
+
+        self.size_vmin = None
+        self.size_vmax = None
+
+        column = self.table[self.size_att]
+
+        self.size_vmin = np.nanmin(column)
+        self.size_vmax = np.nanmax(column)
+
+    @observe('size_vmin', 'size_vmax')
+    def _on_size_vmin_vmax_change(self, *value):
+
+        # Update the size column in the table
+
+        if self.size_vmin is None or self.size_vmax is None:
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='sizeColumn', value=-1)
+            return
+
+        column = self.table[self.size_att]
+
+        size = (column - self.size_vmin) / (self.size_vmax - self.size_vmin) * 10
+
+        self.table['__size__'] = size
+
+        self.parent._send_msg(event='table_layer_update', id=self.id,
+                              table=self._table_b64)
+
+        self.parent._send_msg(event='table_layer_set', id=self.id,
+                              setting='pointScaleType', value=0)
+
+        self.parent._send_msg(event='table_layer_set', id=self.id,
+                              setting='sizeColumn', value='__size__')
+
     def __init__(self, parent=None, table=None, frame=None, **kwargs):
 
         # TODO: need to validate reference frame
@@ -281,6 +331,7 @@ class TableLayer(HasTraits):
         self._on_trait_change({'name': 'marker_type', 'new': self.marker_type})
         self._on_trait_change({'name': 'marker_scale', 'new': self.marker_scale})
         self._on_trait_change({'name': 'far_side_visible', 'new': self.far_side_visible})
+        self._on_trait_change({'name': 'size_att', 'new': self.size_att})
 
         self.observe(self._on_trait_change, type='change')
 
@@ -321,7 +372,7 @@ class TableLayer(HasTraits):
         """
         Update the underlying data.
         """
-        self.table = table
+        self.table = table.copy(copy_data=False)
         self.parent._send_msg(event='table_layer_update', id=self.id, table=self._table_b64)
 
         if len(self.alt_att) > 0:

@@ -234,7 +234,7 @@ function wwt_apply_json_message(wwt, msg) {
       // Decode table from base64
       csv = atob(msg['table']);
 
-      layer.loadFromString(csv, true, true, true, false)
+      layer.loadFromString(csv, true, true, true, true)
 
       // FIXME: workaround for the fact that at the moment, WWT appears
       // to only refresh if the color is changed. So we change to black then
