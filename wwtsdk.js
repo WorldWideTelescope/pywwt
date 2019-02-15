@@ -11939,7 +11939,7 @@ window.wwtlib = function(){
       var newLight = ToolStripMenuItem.create('Add Light');
       var addFeedMenu = ToolStripMenuItem.create(Language.getLocalizedText(956, 'Add OData/table feed as Layer'));
       var addWmsLayer = ToolStripMenuItem.create(Language.getLocalizedText(987, 'New WMS Layer'));
-      var addGirdLayer = ToolStripMenuItem.create(Language.getLocalizedText(1300, 'New Lat/Lng Grid'));
+      var addGridLayer = ToolStripMenuItem.create(Language.getLocalizedText(1300, 'New Lat/Lng Grid'));
       var addGreatCircle = ToolStripMenuItem.create(Language.getLocalizedText(988, 'New Great Circle'));
       var importTLE = ToolStripMenuItem.create(Language.getLocalizedText(989, 'Import Orbital Elements'));
       var addMpc = ToolStripMenuItem.create(Language.getLocalizedText(1301, 'Add Minor Planet'));
@@ -11968,7 +11968,7 @@ window.wwtlib = function(){
       deleteFrameMenu.click = LayerManager._deleteFrameMenu_Click;
       popertiesMenu.click = LayerManager._framePropertiesMenu_Click;
       addGreatCircle.click = LayerManager._addGreatCircle_Click;
-      addGirdLayer.click = LayerManager._addGirdLayer_Click;
+      addGridLayer.click = LayerManager._addGirdLayer_Click;
       var convertToOrbit = ToolStripMenuItem.create('Extract Orbit Layer');
       if (map.frame.reference !== 19) {
         if ((WWTControl.singleton.get_solarSystemMode() | WWTControl.singleton.sandboxMode) === 1) {
@@ -12015,7 +12015,7 @@ window.wwtlib = function(){
       }
       if (!Sky) {
         LayerManager._contextMenu.items.push(addGreatCircle);
-        LayerManager._contextMenu.items.push(addGirdLayer);
+        LayerManager._contextMenu.items.push(addGridLayer);
       }
       if ((map.frame.reference !== 19 && map.frame.name === 'Sun') || (map.frame.reference === 19 && map.parent != null && map.parent.frame.name === 'Sun')) {
         LayerManager._contextMenu.items.push(addMpc);
@@ -29027,23 +29027,28 @@ window.wwtlib = function(){
         }
         this.renderContext.drawImageSet(this.renderContext.get_backgroundImageset(), 100);
         if (this.renderContext.get_foregroundImageset() != null) {
-          if (this.renderContext.viewCamera.opacity !== 100 && this.renderContext.gl == null) {
-            if (this._foregroundCanvas.width !== this.renderContext.width || this._foregroundCanvas.height !== this.renderContext.height) {
-              this._foregroundCanvas.width = ss.truncate(this.renderContext.width);
-              this._foregroundCanvas.height = ss.truncate(this.renderContext.height);
-            }
-            var saveDevice = this.renderContext.device;
-            this._fgDevice.clearRect(0, 0, this.renderContext.width, this.renderContext.height);
-            this.renderContext.device = this._fgDevice;
-            this.renderContext.drawImageSet(this.renderContext.get_foregroundImageset(), 100);
-            this.renderContext.device = saveDevice;
-            this.renderContext.device.save();
-            this.renderContext.device.globalAlpha = this.renderContext.viewCamera.opacity / 100;
-            this.renderContext.device.drawImage(this._foregroundCanvas, 0, 0);
-            this.renderContext.device.restore();
+          if (this.renderContext.get_foregroundImageset().get_dataSetType() !== this.renderContext.get_backgroundImageset().get_dataSetType()) {
+            this.renderContext.set_foregroundImageset(null);
           }
           else {
-            this.renderContext.drawImageSet(this.renderContext.get_foregroundImageset(), this.renderContext.viewCamera.opacity);
+            if (this.renderContext.viewCamera.opacity !== 100 && this.renderContext.gl == null) {
+              if (this._foregroundCanvas.width !== this.renderContext.width || this._foregroundCanvas.height !== this.renderContext.height) {
+                this._foregroundCanvas.width = ss.truncate(this.renderContext.width);
+                this._foregroundCanvas.height = ss.truncate(this.renderContext.height);
+              }
+              var saveDevice = this.renderContext.device;
+              this._fgDevice.clearRect(0, 0, this.renderContext.width, this.renderContext.height);
+              this.renderContext.device = this._fgDevice;
+              this.renderContext.drawImageSet(this.renderContext.get_foregroundImageset(), 100);
+              this.renderContext.device = saveDevice;
+              this.renderContext.device.save();
+              this.renderContext.device.globalAlpha = this.renderContext.viewCamera.opacity / 100;
+              this.renderContext.device.drawImage(this._foregroundCanvas, 0, 0);
+              this.renderContext.device.restore();
+            }
+            else {
+              this.renderContext.drawImageSet(this.renderContext.get_foregroundImageset(), this.renderContext.viewCamera.opacity);
+            }
           }
         }
         if (this.renderType === 2 && Settings.get_active().get_showSolarSystem()) {
@@ -29947,8 +29952,17 @@ window.wwtlib = function(){
         this.set__mover(null);
         this.renderContext.targetCamera = cameraParams.copy();
         this.renderContext.viewCamera = this.renderContext.targetCamera.copy();
+        if (this.renderContext.space && Settings.get_active().get_galacticMode()) {
+          var gPoint = Coordinates.j2000toGalactic(this.renderContext.viewCamera.get_RA() * 15, this.renderContext.viewCamera.get_dec());
+          this.renderContext.targetAlt = this.renderContext.alt = gPoint[1];
+          this.renderContext.targetAz = this.renderContext.az = gPoint[0];
+        }
+        else if (this.renderContext.space && Settings.get_active().get_localHorizonMode()) {
+          var currentAltAz = Coordinates.equitorialToHorizon(Coordinates.fromRaDec(this.renderContext.viewCamera.get_RA(), this.renderContext.viewCamera.get_dec()), SpaceTimeController.get_location(), SpaceTimeController.get_now());
+          this.renderContext.targetAlt = this.renderContext.alt = currentAltAz.get_alt();
+          this.renderContext.targetAz = this.renderContext.az = currentAltAz.get_az();
+        }
         this._mover_Midpoint();
-        this._moving = true;
       }
       else {
         this.set__mover(ViewMoverSlew.create(this.renderContext.viewCamera, cameraParams));
@@ -35733,6 +35747,7 @@ window.wwtlib = function(){
     this._magnitude = 0;
     this._distnace = 0;
     this.angularSize = 60;
+    this.annotation = '';
     this._thumbNail = null;
     this._studyImageset = null;
     this._backgroundImageSet = null;
@@ -35801,6 +35816,9 @@ window.wwtlib = function(){
     }
     if (place.attributes.getNamedItem('Rotation') != null) {
       newPlace._camParams.rotation = parseFloat(place.attributes.getNamedItem('Rotation').nodeValue);
+    }
+    if (place.attributes.getNamedItem('Annotation') != null) {
+      newPlace.annotation = place.attributes.getNamedItem('Annotation').nodeValue;
     }
     if (place.attributes.getNamedItem('Angle') != null) {
       newPlace._camParams.angle = parseFloat(place.attributes.getNamedItem('Angle').nodeValue);
@@ -35972,6 +35990,13 @@ window.wwtlib = function(){
     },
     set_zoomLevel: function(value) {
       this._camParams.zoom = value;
+      return value;
+    },
+    get_annotation: function() {
+      return this.annotation;
+    },
+    set_annotation: function(value) {
+      this.annotation = value;
       return value;
     },
     get_studyImageset: function() {
