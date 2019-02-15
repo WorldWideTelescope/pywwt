@@ -1,7 +1,7 @@
 from traitlets import (TraitType, TraitError,
                        Any as OriginalAny,
                        Bool as OriginalBool,
-                       Float as OriginalFloat,
+                       CFloat as OriginalFloat,
                        Int as OriginalInt,
                        Unicode as OriginalUnicode)
 from astropy import units as u

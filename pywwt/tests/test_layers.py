@@ -2,9 +2,10 @@ import pytest
 
 from astropy.table import Table
 from astropy import units as u
+from astropy.coordinates import SkyCoord
 
 from ..qt import WWTQtClient
-from .test_qt_widget import check_silent_output
+from .test_qt_widget import check_silent_output, assert_widget_image
 
 from ..layers import TableLayer, guess_lon_lat_columns
 
@@ -224,3 +225,83 @@ CASES = [[('flux', 'dec', 'ra'), ('ra', 'dec')],
 @pytest.mark.parametrize(('colnames', 'expected'), CASES)
 def test_guess_lon_lat_columns(colnames, expected):
     assert guess_lon_lat_columns(colnames) == expected
+
+
+def test_layers_image(tmpdir):
+
+    # A series of tests that excercise the layer functionality and compare
+    # the results with a set of baseline images.
+
+    wwt = WWTQtClient(block_until_ready=True)
+
+    wwt.foreground = 'Black Sky Background'
+    wwt.background = 'Black Sky Background'
+
+    # TODO: need a way to completely turn off sun + planets. For now we just
+    # point towards the ecliptic North pole
+    wwt.center_on_coordinates(SkyCoord(18 * u.hourangle, 66 * u.deg))
+
+    # Simple default case
+
+    table = Table()
+    table['flux'] = [2, 3, 4, 5, 6]
+    table['dec'] = [84, 85, 86, 87, 88]
+    table['ra'] = [250, 260, 270, 280, 290] * u.deg
+
+    layer1 = wwt.layers.add_data_layer(table=table)
+
+    # Case where we change the default values on initialization
+
+    table = Table()
+    table['flux'] = [2, 3, 4, 5, 6]
+    table['dec'] = [74, 75, 76, 77, 78]
+    table['ra'] = [250, 260, 270, 280, 290] * u.deg
+    table['other'] = [255, 265, 275, 285, 295] * u.deg
+
+    layer2 = wwt.layers.add_data_layer(table=table, color='red', lon_att='other', size_scale=100, opacity=0.5)
+
+    # Case where we change the values after initialization
+
+    table = Table()
+    table['flux'] = [2, 3, 4, 5, 6]
+    table['dec'] = [64, 65, 66, 67, 68]
+    table['ra'] = [250, 260, 270, 280, 290] * u.deg
+    table['other'] = [255, 265, 275, 285, 295] * u.deg
+
+    layer3 = wwt.layers.add_data_layer(table=table)
+
+    wwt.wait(2)
+
+    layer3.color = 'green'
+    layer3.lon_att = 'other'
+    layer3.size_scale = 50
+    layer3.opacity = 0.8
+
+    # Case with size and color encoding where we change the default values on initialization
+
+    table = Table()
+    table['flux'] = [2, 3, 4, 5, 6]
+    table['dec'] = [54, 55, 56, 57, 58]
+    table['ra'] = [250, 260, 270, 280, 290] * u.deg
+    table['other'] = [255, 265, 275, 285, 295] * u.deg
+
+    layer4 = wwt.layers.add_data_layer(table=table, cmap_att='other', size_att='flux')
+
+    # Case with size and color encoding where we change the values after initialization
+
+    table = Table()
+    table['flux'] = [2, 3, 4, 5, 6]
+    table['dec'] = [44, 45, 46, 47, 48]
+    table['ra'] = [250, 260, 270, 280, 290] * u.deg
+    table['other'] = [255, 265, 275, 285, 295] * u.deg
+
+    layer5 = wwt.layers.add_data_layer(table=table)
+
+    wwt.wait(2)
+
+    layer5.cmap_att = 'other'
+    layer5.size_att = 'flux'
+
+    wwt.wait(2)
+
+    assert_widget_image(tmpdir, wwt, 'sky_layers.png')
