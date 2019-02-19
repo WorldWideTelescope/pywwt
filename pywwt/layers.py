@@ -11,6 +11,7 @@ from base64 import b64encode
 
 import numpy as np
 from matplotlib.pyplot import cm
+from matplotlib.colors import Colormap
 from astropy import units as u
 
 from traitlets import HasTraits, validate, observe
@@ -184,7 +185,7 @@ class TableLayer(HasTraits):
     cmap_att = Unicode(help='The column to use for the colormap')
     cmap_vmin = Float(None, allow_none=True)
     cmap_vmax = Float(None, allow_none=True)
-    cmap = Unicode('viridis', help='The name of a Matplotlib colormap')
+    cmap = Any(cm.viridis, help='The Matplotlib colormap')
 
     color = Color('white', help='The color of the markers').tag(wwt='color')
     opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
@@ -292,7 +293,10 @@ class TableLayer(HasTraits):
 
     @validate('cmap')
     def _check_cmap(self, proposal):
-        cm.get_cmap(proposal['value'])
+        if isinstance(proposal['value'], str):
+            return cm.get_cmap(proposal['value'])
+        elif not isinstance(proposal['value'], Colormap):
+            raise TypeError('cmap should be set to a Matplotlib colormap')
 
     @observe('alt_att')
     def _on_alt_att_change(self, *value):
@@ -408,8 +412,8 @@ class TableLayer(HasTraits):
         values = (column - self.cmap_vmin) / (self.cmap_vmax - self.cmap_vmin)
 
         # PERF: vectorize the calculation of the hex strings
-        rgba = cm.get_cmap(self.cmap)(values)
-        hex_values = [to_hex(row[:-1]) for row in rgba]
+        rgb = self.cmap(values)[:, :-1]
+        hex_values = [to_hex(x) for x in rgb]
 
         self.table[CMAP_COLUMN_NAME] = hex_values
         self.table['ra'] += 1
