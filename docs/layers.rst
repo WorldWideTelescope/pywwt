@@ -119,6 +119,9 @@ in the table. This can be done by making use of the ``size_att`` attribute::
 
     >>> layer.size_att = 'mag'
 
+then using ``layer.size_vmin`` and ``layer.size_vmax`` to control the values
+that should be used for the smallest to largest point size respectively.
+
 Similarly, the color of the points can either be set as a uniform color::
 
     >>> layer.color = 'red'
@@ -126,6 +129,15 @@ Similarly, the color of the points can either be set as a uniform color::
 or it can be set to be dependent on one of the columns with::
 
     >>> layer.cmap_att = 'depth'
+
+then using ``layer.cmap_vmin`` and ``layer.cmap_vmax`` to control the values
+that should be used for the colors on each end of the colormap. By default
+the colormap is set to the Matplotlib 'viridis' colormap but this can be changed
+using the following attribute, which should be given the name of a `Matplotlib
+colormap <https://matplotlib.org/examples/color/colormaps_reference.html>`_
+or a colormap object::
+
+    >>> layer.cmap = 'plasma'
 
 By default, the marker size stays constant relative to the screen, but this can
 be changed with::
