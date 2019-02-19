@@ -234,14 +234,9 @@ function wwt_apply_json_message(wwt, msg) {
       // Decode table from base64
       csv = atob(msg['table']);
 
-      layer.loadFromString(csv, true, true, true, true)
-
-      // FIXME: workaround for the fact that at the moment, WWT appears
-      // to only refresh if the color is changed. So we change to black then
-      // back (https://github.com/WorldWideTelescope/wwt-web-client/issues/192)
-      color = layer.get_color();
-      layer.set_color(wwtlib.Color.fromHex('#000000'));
-      layer.set_color(color);
+      // Use updateData instead of loadFromString here since updateData also
+      // takes care of cache invalidation.
+      layer.upadteData(csv, true, true, true)
 
       break;
 
