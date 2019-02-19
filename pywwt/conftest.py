@@ -1,5 +1,7 @@
 import os
-import sys
+from datetime import datetime
+
+import pytest
 
 try:
     import qtpy
@@ -83,3 +85,21 @@ def pytest_unconfigure(config):
     if QT_INSTALLED:
         from .app import cleanup_qapp
         cleanup_qapp()
+
+
+REFERENCE_TIME = datetime(2017, 1, 1, 0, 0, 0, 0)
+
+
+@pytest.fixture(scope='session')
+def wwt_qt_client():
+    from .qt import WWTQtClient
+    wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
+    return wwt
+
+
+@pytest.fixture(autouse=True)
+def reset_state(wwt_qt_client):
+    wwt_qt_client.reset()
+    wwt_qt_client.pause_time()
+    wwt_qt_client.set_current_time(REFERENCE_TIME)
+    yield  # This yields the test itself

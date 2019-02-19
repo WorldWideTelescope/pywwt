@@ -5,24 +5,20 @@ from astropy.table import Table
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 
-from ..qt import WWTQtClient
 from .test_qt_widget import assert_widget_image
 
+from ..core import BaseWWTWidget
 from ..layers import TableLayer, guess_lon_lat_columns
 
 
 class TestLayers:
 
     def setup_method(self, method):
-        self.client = WWTQtClient(block_until_ready=True)
+        self.client = BaseWWTWidget()
         self.table = Table()
         self.table['flux'] = [2, 3, 4]
         self.table['dec'] = [4, 5, 6]
         self.table['ra'] = [1, 2, 3] * u.deg
-
-    def teardown_method(self, method):
-        self.client.close()
-        self.client = None
 
     def test_add_and_remove_layer(self, capsys):
 
@@ -57,9 +53,6 @@ class TestLayers:
 
         assert len(self.client.layers) == 0
         assert str(self.client.layers) == 'Layer manager with no layers'
-
-        self.client.wait(1)
-        # check_silent_output(capsys)
 
     def test_alt_unit(self):
 
@@ -232,12 +225,12 @@ def test_guess_lon_lat_columns(colnames, expected):
     assert guess_lon_lat_columns(colnames) == expected
 
 
-def test_layers_image(tmpdir):
+def test_layers_image(tmpdir, wwt_qt_client):
 
     # A series of tests that excercise the layer functionality and compare
     # the results with a set of baseline images.
 
-    wwt = WWTQtClient(block_until_ready=True)
+    wwt = wwt_qt_client
 
     wwt.foreground = 'Black Sky Background'
     wwt.background = 'Black Sky Background'
@@ -313,5 +306,3 @@ def test_layers_image(tmpdir):
     # OpenGL features that aren't available there.
     if os.environ.get('CI', 'false').lower() == 'false':
         assert_widget_image(tmpdir, wwt, 'sky_layers.png')
-
-    wwt.close()
