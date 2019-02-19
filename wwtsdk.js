@@ -8035,6 +8035,7 @@ window.wwtlib = function(){
       this._colors.length = 0;
       this._points.length = 0;
       this._dates.length = 0;
+      this._sizes.length = 0;
       this._emptyPointBuffer();
     },
     _emptyPointBuffer: function() {
