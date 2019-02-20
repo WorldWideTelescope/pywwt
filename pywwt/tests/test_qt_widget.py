@@ -29,35 +29,40 @@ def check_silent_output(capsys):
 def test_init(capsys):
     wwt = WWTQtClient(block_until_ready=True)
     wwt.wait(1)
+    wwt.widget.close()
 
 
 class TestWWTWidget:
 
     def setup_class(self):
-        self.widget = WWTQtClient(block_until_ready=True)
+        self.client = WWTQtClient(block_until_ready=True)
+
+    def teardown_class(self):
+        self.client.widget.close()
+        self.client = None
 
     def test_settings(self, capsys):
-        self.widget.constellation_figures = True
-        self.widget.constellation_figures = False
-        self.widget.wait(1)
+        self.client.constellation_figures = True
+        self.client.constellation_figures = False
+        self.client.wait(1)
         check_silent_output(capsys)
 
     def test_methods(self, capsys):
-        self.widget.center_on_coordinates(M42, fov=10 * u.deg)
-        self.widget.wait(1)
+        self.client.center_on_coordinates(M42, fov=10 * u.deg)
+        self.client.wait(1)
         check_silent_output(capsys)
 
     def test_coordinates(self, capsys):
-        self.widget.center_on_coordinates(M42, fov=10 * u.deg)
-        assert M42.separation(self.widget.get_center()).arcsec < 1.e-6
-        self.widget.wait(1)
+        self.client.center_on_coordinates(M42, fov=10 * u.deg)
+        assert M42.separation(self.client.get_center()).arcsec < 1.e-6
+        self.client.wait(1)
         check_silent_output(capsys)
 
     def test_annotations(self, capsys):
-        circle = self.widget.add_circle()
+        circle = self.client.add_circle()
         circle.opacity = 0.8
         circle.set_center(M42)
-        self.widget.wait(1)
+        self.client.wait(1)
         check_silent_output(capsys)
 
 
