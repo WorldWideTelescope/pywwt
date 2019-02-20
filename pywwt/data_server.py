@@ -2,6 +2,7 @@ import os
 import time
 import socket
 import logging
+import requests
 from hashlib import md5
 from threading import Thread
 
@@ -14,7 +15,7 @@ def get_data_server(verbose=True):
     object which can be used to register files to serve.
     """
 
-    from flask import Flask
+    from flask import Flask, request
     from flask_cors import CORS
 
     class FlaskWrapper(Flask):
@@ -79,10 +80,22 @@ def get_data_server(verbose=True):
             with open(self._files[hash], 'rb') as f:
                 return f.read()
 
+        def stop(self):
+            url = 'http://' + self.host + ':' + str(self.port) + '/shutdown'
+            print(requests.post(url).text)
+
     ds = DataServer()
 
     @app.route("/data/<hash>")
     def data(hash):
         return ds.get_file_contents(hash)
+
+    @app.route('/shutdown', methods=['POST'])
+    def shutdown():
+        func = request.environ.get('werkzeug.server.shutdown')
+        if func is None:
+            raise RuntimeError('Not running with the Werkzeug Server')
+        func()
+        return 'Server shutting down...'
 
     return ds

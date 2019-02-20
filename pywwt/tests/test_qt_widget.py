@@ -29,7 +29,7 @@ def check_silent_output(capsys):
 def test_init(capsys):
     wwt = WWTQtClient(block_until_ready=True)
     wwt.wait(1)
-    wwt.widget.close()
+    wwt.close()
 
 
 class TestWWTWidget:
@@ -38,7 +38,7 @@ class TestWWTWidget:
         self.client = WWTQtClient(block_until_ready=True)
 
     def teardown_class(self):
-        self.client.widget.close()
+        self.client.close()
         self.client = None
 
     def test_settings(self, capsys):

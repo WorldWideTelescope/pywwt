@@ -21,7 +21,7 @@ class TestLayers:
         self.table['ra'] = [1, 2, 3] * u.deg
 
     def teardown_method(self, method):
-        self.client.widget.close()
+        self.client.close()
         self.client = None
 
     def test_add_and_remove_layer(self, capsys):
@@ -314,4 +314,4 @@ def test_layers_image(tmpdir):
     if os.environ.get('CI', 'false').lower() == 'false':
         assert_widget_image(tmpdir, wwt, 'sky_layers.png')
 
-    wwt.widget.close()
+    wwt.close()
