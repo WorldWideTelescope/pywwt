@@ -2,7 +2,6 @@ import os
 import time
 import socket
 import logging
-import requests
 from hashlib import md5
 from threading import Thread
 
@@ -22,7 +21,7 @@ def get_data_server(verbose=True):
     if _data_server is not None:
         return _data_server
 
-    from flask import Flask, request
+    from flask import Flask
     from flask_cors import CORS
 
     class FlaskWrapper(Flask):
