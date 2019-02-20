@@ -228,5 +228,7 @@ class WWTQtClient(BaseWWTWidget):
         painter.end()
 
     def close(self):
+        self.widget.page = None
+        self.widget.web = None
         self.widget.close()
         self.widget = None
