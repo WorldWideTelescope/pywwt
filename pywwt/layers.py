@@ -179,8 +179,8 @@ class TableLayer(HasTraits):
     size_vmin = Float(None, allow_none=True)
     size_vmax = Float(None, allow_none=True)
 
-    # NOTE: we deliberately don't link size_att to sizeColumn because we need to
-    # compute the sizes ourselves based on the min/max and then use the
+    # NOTE: we deliberately don't link cmap_att to colorMapColumn because we
+    # need to compute the colors ourselves based on the min/max and then use the
     # resulting column.
     cmap_att = Unicode(help='The column to use for the colormap')
     cmap_vmin = Float(None, allow_none=True)
