@@ -8,12 +8,19 @@ from threading import Thread
 
 __all__ = ['get_data_server']
 
+_data_server = None
+
 
 def get_data_server(verbose=True):
     """
     This starts up a flask server and returns a handle to a DataServer
     object which can be used to register files to serve.
     """
+
+    global _data_server
+
+    if _data_server is not None:
+        return _data_server
 
     from flask import Flask, request
     from flask_cors import CORS
@@ -80,22 +87,12 @@ def get_data_server(verbose=True):
             with open(self._files[hash], 'rb') as f:
                 return f.read()
 
-        def stop(self):
-            url = 'http://' + self.host + ':' + str(self.port) + '/shutdown'
-            print(requests.post(url).text)
-
     ds = DataServer()
 
     @app.route("/data/<hash>")
     def data(hash):
         return ds.get_file_contents(hash)
 
-    @app.route('/shutdown', methods=['POST'])
-    def shutdown():
-        func = request.environ.get('werkzeug.server.shutdown')
-        if func is None:
-            raise RuntimeError('Not running with the Werkzeug Server')
-        func()
-        return 'Server shutting down...'
+    _data_server = ds
 
     return ds

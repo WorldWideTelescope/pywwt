@@ -228,7 +228,5 @@ class WWTQtClient(BaseWWTWidget):
         painter.end()
 
     def close(self):
-        self._data_server.stop()
-        self._data_server = None
         self.widget.close()
         self.widget = None
