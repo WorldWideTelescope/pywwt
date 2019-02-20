@@ -1,6 +1,6 @@
 import os
 import sys
-from datetime import datetime
+from traceback import print_exc
 
 import pytest
 
@@ -11,13 +11,9 @@ from qtpy.QtWebEngineWidgets import WEBENGINE
 
 from matplotlib.testing.compare import compare_images
 
-from ..qt import WWTQtClient
-
 M42 = SkyCoord.from_name('M42')
 
 DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
-
-REFERENCE_TIME = datetime(2017, 1, 1, 0, 0, 0, 0)
 
 
 def check_silent_output(capsys):
@@ -26,38 +22,30 @@ def check_silent_output(capsys):
     assert err.strip() == ""
 
 
-def test_init(capsys):
-    wwt = WWTQtClient(block_until_ready=True)
-    wwt.wait(1)
-
-
 class TestWWTWidget:
 
-    def setup_class(self):
-        self.widget = WWTQtClient(block_until_ready=True)
-
-    def test_settings(self, capsys):
-        self.widget.constellation_figures = True
-        self.widget.constellation_figures = False
-        self.widget.wait(1)
+    def test_settings(self, capsys, wwt_qt_client):
+        wwt_qt_client.constellation_figures = True
+        wwt_qt_client.constellation_figures = False
+        wwt_qt_client.wait(1)
         check_silent_output(capsys)
 
-    def test_methods(self, capsys):
-        self.widget.center_on_coordinates(M42, fov=10 * u.deg)
-        self.widget.wait(1)
+    def test_methods(self, capsys, wwt_qt_client):
+        wwt_qt_client.center_on_coordinates(M42, fov=10 * u.deg)
+        wwt_qt_client.wait(1)
         check_silent_output(capsys)
 
-    def test_coordinates(self, capsys):
-        self.widget.center_on_coordinates(M42, fov=10 * u.deg)
-        assert M42.separation(self.widget.get_center()).arcsec < 1.e-6
-        self.widget.wait(1)
+    def test_coordinates(self, capsys, wwt_qt_client):
+        wwt_qt_client.center_on_coordinates(M42, fov=10 * u.deg)
+        assert M42.separation(wwt_qt_client.get_center()).arcsec < 1.e-6
+        wwt_qt_client.wait(1)
         check_silent_output(capsys)
 
-    def test_annotations(self, capsys):
-        circle = self.widget.add_circle()
+    def test_annotations(self, capsys, wwt_qt_client):
+        circle = wwt_qt_client.add_circle()
         circle.opacity = 0.8
         circle.set_center(M42)
-        self.widget.wait(1)
+        wwt_qt_client.wait(1)
         check_silent_output(capsys)
 
 
@@ -97,7 +85,12 @@ def assert_widget_image(tmpdir, widget, filename):
     elif sys.platform.startswith('darwin'):
         framework += '_osx'
     expected = os.path.join(DATA, framework, filename)
-    msg = compare_images(expected, actual, tol=1.5)
+    try:
+        msg = compare_images(expected, actual, tol=1.5)
+    except Exception:
+        msg = 'Image comparison failed:'
+        print_exc()
+
     if msg is not None:
 
         from base64 import b64encode
@@ -114,12 +107,11 @@ def assert_widget_image(tmpdir, widget, filename):
         pytest.fail(msg, pytrace=False)
 
 
-def test_full(tmpdir, capsys):
+def test_full(tmpdir, capsys, wwt_qt_client):
 
     # Test a whole session, with image comparison along the way.
 
-    wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
-    wwt.set_current_time(REFERENCE_TIME)
+    wwt = wwt_qt_client
     wwt.foreground_opacity = 1.
 
     # The crosshairs are currently broken on Mac/Linux but work on Windows.

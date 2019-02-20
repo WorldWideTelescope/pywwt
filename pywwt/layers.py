@@ -9,10 +9,13 @@ else:
 import warnings
 from base64 import b64encode
 
+import numpy as np
+from matplotlib.pyplot import cm
+from matplotlib.colors import Colormap
 from astropy import units as u
 
 from traitlets import HasTraits, validate, observe
-from .traits import Any, Unicode, Float, Color, Bool
+from .traits import Any, Unicode, Float, Color, Bool, to_hex
 
 __all__ = ['LayerManager', 'TableLayer']
 
@@ -41,6 +44,11 @@ VALID_ALT_TYPES = ['depth', 'altitude', 'distance', 'seaLevel', 'terrain']
 VALID_MARKER_TYPES = ['gaussian', 'point', 'circle', 'square', 'pushpin']
 
 VALID_MARKER_SCALES = ['screen', 'world']
+
+# The following are columns that we add dynamically and internally, so we need
+# to make sure they have unique names that won't clash with existing columns
+SIZE_COLUMN_NAME = str(uuid.uuid4())
+CMAP_COLUMN_NAME = str(uuid.uuid4())
 
 
 def guess_lon_lat_columns(colnames):
@@ -162,10 +170,22 @@ class TableLayer(HasTraits):
     alt_unit = Any(help='The units to use for the altitude').tag(wwt='altUnit')
     alt_type = Unicode(help='The type of altitude').tag(wwt='altType')
 
-    cmap_att = Unicode(help='The column to use for the colormap').tag(wwt='colorMapColumn')
-
-    size_att = Unicode(help='The column to use for the size').tag(wwt='sizeColumn')
     size_scale = Float(10, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
+
+    # NOTE: we deliberately don't link size_att to sizeColumn because we need to
+    # compute the sizes ourselves based on the min/max and then use the
+    # resulting column.
+    size_att = Unicode(help='The column to use for the size')
+    size_vmin = Float(None, allow_none=True)
+    size_vmax = Float(None, allow_none=True)
+
+    # NOTE: we deliberately don't link cmap_att to colorMapColumn because we
+    # need to compute the colors ourselves based on the min/max and then use the
+    # resulting column.
+    cmap_att = Unicode(help='The column to use for the colormap')
+    cmap_vmin = Float(None, allow_none=True)
+    cmap_vmax = Float(None, allow_none=True)
+    cmap = Any(cm.viridis, help='The Matplotlib colormap')
 
     color = Color('white', help='The color of the markers').tag(wwt='color')
     opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
@@ -184,6 +204,48 @@ class TableLayer(HasTraits):
     # xAxisReverse
     # yAxisReverse
     # zAxisReverse
+
+    def __init__(self, parent=None, table=None, frame=None, **kwargs):
+
+        # TODO: need to validate reference frame
+        self.table = table
+        self.frame = frame
+
+        self.parent = parent
+        self.id = str(uuid.uuid4())
+
+        # Attribute to keep track of the manager, so that we can notify the
+        # manager if a layer is removed.
+        self._manager = None
+        self._removed = False
+
+        self._initialize_layer()
+
+        # Force defaults
+        self._on_trait_change({'name': 'alt_type', 'new': self.alt_type})
+        self._on_trait_change({'name': 'size_scale', 'new': self.size_scale})
+        self._on_trait_change({'name': 'color', 'new': self.color})
+        self._on_trait_change({'name': 'opacity', 'new': self.opacity})
+        self._on_trait_change({'name': 'marker_type', 'new': self.marker_type})
+        self._on_trait_change({'name': 'marker_scale', 'new': self.marker_scale})
+        self._on_trait_change({'name': 'far_side_visible', 'new': self.far_side_visible})
+        self._on_trait_change({'name': 'size_att', 'new': self.size_att})
+        self._on_trait_change({'name': 'cmap_att', 'new': self.cmap_att})
+
+        self.observe(self._on_trait_change, type='change')
+
+        if any(key not in self.trait_names() for key in kwargs):
+            raise KeyError('a key doesn\'t match any layer trait name')
+
+        super(TableLayer, self).__init__(**kwargs)
+
+        lon_guess, lat_guess = guess_lon_lat_columns(self.table.colnames)
+
+        if 'lon_att' not in kwargs:
+            self.lon_att = lon_guess or self.table.colnames[0]
+
+        if 'lat_att' not in kwargs:
+            self.lat_att = lat_guess or self.table.colnames[1]
 
     @validate('lon_unit')
     def _check_lon_unit(self, proposal):
@@ -229,6 +291,15 @@ class TableLayer(HasTraits):
         else:
             raise ValueError('marker_scale should be one of {0}'.format('/'.join(str(x) for x in VALID_MARKER_SCALES)))
 
+    @validate('cmap')
+    def _check_cmap(self, proposal):
+        if isinstance(proposal['value'], str):
+            return cm.get_cmap(proposal['value'])
+        elif not isinstance(proposal['value'], Colormap):
+            raise TypeError('cmap should be set to a Matplotlib colormap')
+        else:
+            return proposal['value']
+
     @observe('alt_att')
     def _on_alt_att_change(self, *value):
         # Check if we can set the unit of the altitude automatically
@@ -257,45 +328,105 @@ class TableLayer(HasTraits):
                           'unit of longitude - set the unit directly with '
                           'lon_unit'.format(self.lon_att, unit), UserWarning)
 
-    def __init__(self, parent=None, table=None, frame=None, **kwargs):
+    @observe('size_att')
+    def _on_size_att_change(self, *value):
 
-        # TODO: need to validate reference frame
-        self.table = table
-        self.frame = frame
+        # Set the min/max levels automatically based on the min/max values
 
-        self.parent = parent
-        self.id = str(uuid.uuid4())
+        if len(self.size_att) == 0:
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='sizeColumn', value=-1)
+            return
 
-        # Attribute to keep track of the manager, so that we can notify the
-        # manager if a layer is removed.
-        self._manager = None
-        self._removed = False
+        self.size_vmin = None
+        self.size_vmax = None
 
-        self._initialize_layer()
+        column = self.table[self.size_att]
 
-        # Force defaults
-        self._on_trait_change({'name': 'alt_type', 'new': self.alt_type})
-        self._on_trait_change({'name': 'size_scale', 'new': self.size_scale})
-        self._on_trait_change({'name': 'color', 'new': self.color})
-        self._on_trait_change({'name': 'opacity', 'new': self.opacity})
-        self._on_trait_change({'name': 'marker_type', 'new': self.marker_type})
-        self._on_trait_change({'name': 'marker_scale', 'new': self.marker_scale})
-        self._on_trait_change({'name': 'far_side_visible', 'new': self.far_side_visible})
+        self.size_vmin = np.nanmin(column)
+        self.size_vmax = np.nanmax(column)
 
-        self.observe(self._on_trait_change, type='change')
+    @observe('size_vmin', 'size_vmax')
+    def _on_size_vmin_vmax_change(self, *value):
 
-        if any(key not in self.trait_names() for key in kwargs):
-            raise KeyError('a key doesn\'t match any layer trait name')
+        # Update the size column in the table
 
-        super(TableLayer, self).__init__(**kwargs)
+        if len(self.size_att) == 0 or self.size_vmin is None or self.size_vmax is None:
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='sizeColumn', value=-1)
+            return
 
-        lon_guess, lat_guess = guess_lon_lat_columns(self.table.colnames)
+        column = self.table[self.size_att]
 
-        if 'lon_att' not in kwargs:
-            self.lon_att = lon_guess or self.table.colnames[0]
+        size = (column - self.size_vmin) / (self.size_vmax - self.size_vmin) * 10
 
-        if 'lat_att' not in kwargs:
-            self.lat_att = lat_guess or self.table.colnames[1]
+        self.table[SIZE_COLUMN_NAME] = size
+
+        self.parent._send_msg(event='table_layer_update', id=self.id,
+                              table=self._table_b64)
+
+        self.parent._send_msg(event='table_layer_set', id=self.id,
+                              setting='pointScaleType', value=0)
+
+        self.parent._send_msg(event='table_layer_set', id=self.id,
+                              setting='sizeColumn', value=SIZE_COLUMN_NAME)
+
+    @observe('cmap_att')
+    def _on_cmap_att_change(self, *value):
+
+        # Set the min/max levels automatically based on the min/max values
+
+        if len(self.cmap_att) == 0:
+
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='colorMapColumn', value=-1)
+
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='_colorMap', value=0)
+
+            return
+
+        self.cmap_vmin = None
+        self.cmap_vmax = None
+
+        column = self.table[self.cmap_att]
+
+        self.cmap_vmin = np.nanmin(column)
+        self.cmap_vmax = np.nanmax(column)
+
+    @observe('cmap_vmin', 'cmap_vmax', 'cmap')
+    def _on_cmap_vmin_vmax_change(self, *value):
+
+        # Update the cmap column in the table
+
+        if len(self.cmap_att) == 0 or self.cmap_vmin is None or self.cmap_vmax is None:
+
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='colorMapColumn', value=-1)
+
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='_colorMap', value=0)
+
+            return
+
+        column = self.table[self.cmap_att]
+
+        values = (column - self.cmap_vmin) / (self.cmap_vmax - self.cmap_vmin)
+
+        # PERF: vectorize the calculation of the hex strings
+        rgb = self.cmap(values)[:, :-1]
+        hex_values = [to_hex(x) for x in rgb]
+
+        self.table[CMAP_COLUMN_NAME] = hex_values
+
+        self.parent._send_msg(event='table_layer_update', id=self.id,
+                              table=self._table_b64)
+
+        self.parent._send_msg(event='table_layer_set', id=self.id,
+                              setting='_colorMap', value=3)
+
+        self.parent._send_msg(event='table_layer_set', id=self.id,
+                              setting='colorMapColumn', value=CMAP_COLUMN_NAME)
 
     @property
     def _table_b64(self):
@@ -321,7 +452,7 @@ class TableLayer(HasTraits):
         """
         Update the underlying data.
         """
-        self.table = table
+        self.table = table.copy(copy_data=False)
         self.parent._send_msg(event='table_layer_update', id=self.id, table=self._table_b64)
 
         if len(self.alt_att) > 0:

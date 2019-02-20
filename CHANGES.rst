@@ -1,7 +1,8 @@
 0.6.0 (unreleased)
 ------------------
 
-- No changes yet.
+- Implement support for color-coloding and scaling points in layers according
+  to table attributes. [#183]
 
 0.5.3 (2019-01-16)
 ------------------

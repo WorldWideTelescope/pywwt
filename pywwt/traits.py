@@ -1,7 +1,7 @@
 from traitlets import (TraitType, TraitError,
                        Any as OriginalAny,
                        Bool as OriginalBool,
-                       Float as OriginalFloat,
+                       CFloat as OriginalFloat,
                        Int as OriginalInt,
                        Unicode as OriginalUnicode)
 from astropy import units as u
@@ -13,6 +13,9 @@ except ImportError:
     from matplotlib.colors import colorConverter, rgb2hex
     def to_hex(input):  # noqa
         return rgb2hex(colorConverter.to_rgb(input))
+
+__all__ = ['Any', 'Bool', 'Float', 'Int', 'Unicode', 'AstropyQuantity',
+           'Color', 'ColorWithOpacity', 'to_hex']
 
 # We inherit the original trait classes to make sure that the docstrings are set
 
@@ -40,12 +43,13 @@ class Float(OriginalFloat):
         if self.help:
             self.__doc__ = self.help
 
+
 class Int(OriginalInt):
 
     def __init__(self, *args, **kwargs):
         super(Int, self).__init__(*args, **kwargs)
         if self.help:
-            self.__doc__ = self.help            
+            self.__doc__ = self.help
 
 
 class Unicode(OriginalUnicode):

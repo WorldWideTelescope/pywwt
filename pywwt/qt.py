@@ -226,3 +226,9 @@ class WWTQtClient(BaseWWTWidget):
         self.widget.render(painter)
         image.save(filename)
         painter.end()
+
+    def close(self):
+        self.widget.page = None
+        self.widget.web = None
+        self.widget.close()
+        self.widget = None

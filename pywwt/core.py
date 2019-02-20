@@ -5,8 +5,7 @@ from astropy.time import Time
 from astropy.coordinates import SkyCoord
 
 # We import the trait classes from .traits since we do various customizations
-from .traits import (Color, ColorWithOpacity, Bool,
-                     Float, Int, Unicode, AstropyQuantity)
+from .traits import Color, Bool, Float, Unicode, AstropyQuantity
 
 from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
@@ -72,7 +71,7 @@ class BaseWWTWidget(HasTraits):
 
     def _send_msg(self, **kwargs):
         # This method should be overridden and should send the message to WWT
-        raise NotImplementedError()
+        pass
 
     actual_planet_scale = Bool(False,
                                help='Whether to show planets to scale or as '
@@ -526,3 +525,20 @@ class BaseWWTWidget(HasTraits):
         projection = wcs.celestial.wcs.ctype[0][4:]
         if projection != '-TAN':
             raise ValueError("Only -TAN FITS files are supported at the moment")
+
+    def reset(self):
+        """
+        Reset WWT to initial state.
+        """
+
+        # Remove any existing layers
+        for layer in self.layers:
+            layer.remove()
+
+        # Reset coordinates to initial view
+        gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='icrs')
+        self.center_on_coordinates(gc, 60 * u.deg)
+
+        # Reset traits to default values
+        for trait_name, trait in self.traits().items():
+            setattr(self, trait_name, trait.default_value)
