@@ -38689,6 +38689,7 @@ window.wwtlib = function(){
       this.loadFromString(ss.safeCast(data, String), true, purgeOld, purgeAll, hasHeader);
       this.computeDateDomainRange(-1, -1);
       this._dataDirty$1 = true;
+      this.dirty = true;
       return true;
     },
     loadData: function(tourDoc, filename) {
