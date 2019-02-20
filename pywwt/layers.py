@@ -297,6 +297,8 @@ class TableLayer(HasTraits):
             return cm.get_cmap(proposal['value'])
         elif not isinstance(proposal['value'], Colormap):
             raise TypeError('cmap should be set to a Matplotlib colormap')
+        else:
+            return proposal['value']
 
     @observe('alt_att')
     def _on_alt_att_change(self, *value):
@@ -349,7 +351,7 @@ class TableLayer(HasTraits):
 
         # Update the size column in the table
 
-        if self.size_vmin is None or self.size_vmax is None:
+        if len(self.size_att) == 0 or self.size_vmin is None or self.size_vmax is None:
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='sizeColumn', value=-1)
             return
@@ -392,12 +394,12 @@ class TableLayer(HasTraits):
         self.cmap_vmin = np.nanmin(column)
         self.cmap_vmax = np.nanmax(column)
 
-    @observe('cmap_vmin', 'cmap_vmax')
+    @observe('cmap_vmin', 'cmap_vmax', 'cmap')
     def _on_cmap_vmin_vmax_change(self, *value):
 
         # Update the cmap column in the table
 
-        if self.cmap_vmin is None or self.cmap_vmax is None:
+        if len(self.cmap_att) == 0 or self.cmap_vmin is None or self.cmap_vmax is None:
 
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='colorMapColumn', value=-1)
@@ -416,7 +418,6 @@ class TableLayer(HasTraits):
         hex_values = [to_hex(x) for x in rgb]
 
         self.table[CMAP_COLUMN_NAME] = hex_values
-        self.table['ra'] += 1
 
         self.parent._send_msg(event='table_layer_update', id=self.id,
                               table=self._table_b64)
