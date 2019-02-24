@@ -184,9 +184,35 @@ function wwt_apply_json_message(wwt, msg) {
       wwt.setBackgroundImageByName(msg['mode']);
       wwt.setForegroundImageByName(msg['mode']);
       break;
-
+/*
     case 'track_object':
       wwtlib.WWTControl.singleton.renderContext.set_solarSystemTrack(msg['code']);
+      break;
+*/
+    case 'track_and_zoom':
+      var object = msg['obj'];
+      var ra = wwt.getRA();
+      var dec = wwt.getDec();
+      var classification = wwtlib.Classification.solarSystem;
+      var constellation = wwtlib.Place._constellation;
+      var imageType = wwtlib.ImageSetType.sky;
+      //var imageType = wwtlib.ImageSetType.solarSystem;
+      var scale = wwt.settings.get_solarSystemScale();
+      var zoom; //= (.02 * scale + .08) / msg['zoom'];
+      // if imageType == wwtlib.ImageSetType.solarSystem, we need the equation above
+      // else, zoom is pre-set in gotoTarget if imageType == wwtlib.ImageSetType.sky
+
+      var place = wwtlib.Place.create(object, ra, dec, classification, 
+                                      constellation, imageType, zoom);
+      place.set_target(wwtlib.Planets.getPlanetIDFromName(object));
+
+      if (object != 'Sun') {
+        wwtlib.WWTControl.singleton.gotoTarget(place, false, msg['inst'], true);
+      }
+      else {
+        wwt.gotoRaDecZoom(ra, dec, .00221*scale + .00552, msg['inst']);
+      }
+
       break;
 
     case 'image_layer_create':

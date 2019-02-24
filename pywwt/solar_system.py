@@ -65,7 +65,7 @@ class SolarSystem(HasTraits):
         else:
             raise ValueError('scale takes integers from 1-100')
 
-    def track_object(self, obj):
+    def track_object(self, obj, instant=False):
         """
         Focus the viewer on a particular object while in solar system mode.
         Available objects include the Sun, the planets, the Moon, Jupiter's
@@ -76,17 +76,40 @@ class SolarSystem(HasTraits):
         obj : `str`
             The desired solar system object.
         """
-        obj = obj.lower()
-        mappings = {'sun': 0, 'mercury': 1, 'venus': 2, 'mars': 3, 'jupiter': 4,
-                    'saturn': 5, 'uranus': 6, 'neptune': 7, 'pluto': 8,
-                    'moon': 9, 'io': 10, 'europa': 11, 'ganymede': 12,
-                    'callisto': 13, 'ioshadow': 14, 'europashadow': 15,
-                    'ganymedeshadow': 16, 'callistoshadow': 17,
-                    'suneclipsed': 18, 'earth': 19}
+        obj = (obj.lower()).capitalize()
 
-        if obj in mappings:
-            self.base_widget._send_msg(event='track_object', code=mappings[obj])
-            self._tracked_obj_id = mappings[obj]
+        # find what type of body obj is for proper scaling in viewer
+        #sun = 1; gas = 20; rock = 200 # if imageSetType == solarSystem
+
+        '''mappings = {'Sun': 0, 'Mercury': 1, 'Venus': 2, 'Mars': 3, 'Jupiter': 4,
+                    'Saturn': 5, 'Uranus': 6, 'Neptune': 7, 'Pluto': 8,
+                    'Moon': 9, 'io': 10, 'Europa': 11, 'Ganymede': 12,
+                    'Callisto': 13, 'Ioshadow': 14, 'Europashadow': 15,
+                    'Ganymedeshadow': 16, 'Callistoshadow': 17,
+                    'Suneclipsed': 18, 'Earth': 19}'''
+
+        '''zooms = {'Sun': sun, 'Mercury': rock, 'Venus': rock, 'Mars': rock,
+                 'Jupiter': gas, 'Saturn': gas, 'Uranus': gas, 'Neptune': gas,
+                 'Pluto': rock, 'Moon': rock, 'Io': rock, 'Europa': rock,
+                 'Ganymede': rock, 'Callisto': rock, 'Ioshadow': rock,
+                 'Europashadow': rock, 'Ganymedeshadow': rock,
+                 'Callistoshadow': rock, 'Suneclipsed': sun, 'Earth': rock}'''
+
+        available = ['Sky', 'Sun', 'Mercury', 'Venus', 'Earth', 'Moon', 'Mars',
+                     'Jupiter', 'Callisto', 'Europa', 'Ganymede', 'Io',
+                     'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Callistoshadow',
+                     'Europashadow', 'Ganymedeshadow', 'Ioshadow',
+                     'Suneclipsed']
+
+        if obj in available:
+            self.base_widget._send_msg(event='track_and_zoom',
+                                       obj=obj, inst=instant)
+
+            # if imageSetType == solarSystem
+            #self.base_widget._send_msg(event='track_and_zoom', obj=obj, zoom=zooms[obj], inst=instant)
+
+            # old
+            #self.base_widget._send_msg(event='track_object', code=mappings[obj])
         else:
             raise ValueError('the given object cannot be tracked')
 
