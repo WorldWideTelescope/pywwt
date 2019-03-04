@@ -19,6 +19,9 @@ from astropy.io import fits
 from matplotlib.pyplot import cm
 from matplotlib.colors import Colormap
 from astropy import units as u
+from astropy.time import Time
+
+from datetime import datetime
 
 from traitlets import HasTraits, validate, observe
 from .traits import Any, Unicode, Float, Color, Bool, to_hex
@@ -271,6 +274,11 @@ class TableLayer(HasTraits):
     far_side_visible = Bool(False, help='Whether markers on the far side are '
                             'visible').tag(wwt='showFarSide')
 
+    time_att = Unicode(help='The column to use for time').tag(wwt='startDateColumn')
+    time_series = Bool(False, help='Whether the layer contains time series '
+                       'elements').tag(wwt='timeSeries')
+    #decay = Float(16).tag(wwt='decay')
+
     # TODO: support:
     # xAxisColumn
     # yAxisColumn
@@ -305,6 +313,9 @@ class TableLayer(HasTraits):
         self._on_trait_change({'name': 'far_side_visible', 'new': self.far_side_visible})
         self._on_trait_change({'name': 'size_att', 'new': self.size_att})
         self._on_trait_change({'name': 'cmap_att', 'new': self.cmap_att})
+        self._on_trait_change({'name': 'time_att', 'new': self.time_att})
+        self._on_trait_change({'name': 'time_series', 'new': self.time_series})
+        self._on_trait_change({'name': 'decay', 'new': self.decay})
 
         self.observe(self._on_trait_change, type='change')
 

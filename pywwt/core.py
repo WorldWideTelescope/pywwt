@@ -502,7 +502,7 @@ class BaseWWTWidget(HasTraits):
     @property
     def instruments(self):
         """
-        Instruments available for use in `add_fov`
+        A list of instruments available for use in `add_fov`.
         """
         return self._instruments
 

@@ -23,7 +23,7 @@ var ReferenceFramesRadius = {
 };
 
 function wwt_apply_json_message(wwt, msg) {
-
+console.log(JSON.stringify(msg))
   if (!wwt.hasOwnProperty('annotations')) {
     wwt.annotations = {};
     wwt.layers = {};
@@ -165,11 +165,12 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'set_datetime':
-
-      var date = new Date(msg['year'], msg['month'], msg['day'],
+      // for whatever reason, Date's month argument begins from 0 (i.e. Feb. is 1)
+      // so we make sure to subtract 1 from msg['month']
+      var date = new Date(msg['year'], msg['month'] - 1, msg['day'],
                           msg['hour'], msg['minute'], msg['second'],
                           msg['millisecond']);
-
+console.log(date);
       stc = wwtlib.SpaceTimeController;
       stc.set_timeRate(1);
       stc.set_now(date);
@@ -178,7 +179,7 @@ function wwt_apply_json_message(wwt, msg) {
     case 'set_viewer_mode':
       // We need to set both the backround and foreground layers
       // otherwise when changing to planet view, there are weird
-      // artifacts due to the fact one of the layes is the sky.
+      // artifacts due to the fact one of the layers is the sky.
       wwt.setBackgroundImageByName(msg['mode']);
       wwt.setForegroundImageByName(msg['mode']);
       break;
@@ -250,7 +251,7 @@ function wwt_apply_json_message(wwt, msg) {
       // Get reference frame
       frame = msg['frame']
 
-      layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
+      layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, 'PyWWT Layer', csv);
       layer.set_referenceFrame(frame);
 
       // Override any guesses
@@ -280,6 +281,7 @@ function wwt_apply_json_message(wwt, msg) {
       layer.set_altUnit(1);
 
       wwt.layers[msg['id']] = layer;
+console.log(msg['event']);
       break;
 
     case 'table_layer_update':
@@ -293,6 +295,8 @@ function wwt_apply_json_message(wwt, msg) {
       // takes care of cache invalidation.
       layer.upadteData(csv, true, true, true)
 
+console.log(msg['event']);
+console.log(JSON.stringify(layer, null, 2));
       break;
 
     case 'table_layer_set':
@@ -318,15 +322,20 @@ function wwt_apply_json_message(wwt, msg) {
       } else {
         value = msg['value']
       }
-
       layer["set_" + name](value);
+<<<<<<< Updated upstream
+console.log(msg['event'] + " || " + name + " || " + value);
+=======
+console.log(layer.get_startTime());
 
+>>>>>>> Stashed changes
       break;
 
     case 'table_layer_remove':
 
       var layer = wwt.layers[msg['id']];
       wwtlib.LayerManager.deleteLayerByID(layer.id, true, true);
+console.log(msg['event']);
       break;
 
   }
