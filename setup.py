@@ -105,6 +105,7 @@ setup_args = dict(
         'ipywidgets>=7.0.0',
         'ipyevents',
         'traitlets',
+        'reproject>=0.4',
         'qtpy',
         'flask',
         'flask-cors',
