@@ -190,7 +190,7 @@ function wwt_apply_json_message(wwt, msg) {
     case 'image_layer_create':
 
       layer = wwt.loadFits(msg['url']);
-      layer._stretch_version = 0
+      layer._stretch_version = 0;
 
       wwt.layers[msg['id']] = layer;
       break;
@@ -218,6 +218,8 @@ function wwt_apply_json_message(wwt, msg) {
 
         if (msg['version'] > layer._stretch_version) {
           layer.setImageScale(msg['stretch'], msg['vmin'], msg['vmax']);
+          layer._stretch_version = msg['version'];
+          layer.getFitsImage().transparentBlack = false;
         }
 
       }

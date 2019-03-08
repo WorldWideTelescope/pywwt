@@ -573,11 +573,8 @@ class ImageLayer(HasTraits):
         # Determine initial stretch parameters
         data = fits.getdata(self._sanitized_image)
 
-        data_min = np.nanmin(data)
-        data_max = np.nanmax(data)
-        data_range = data_max - data_min
-        self.vmin = data_min - data_range * 0.01
-        self.vmax = data_max + data_range * 0.01
+        self.vmin = np.nanpercentile(data, 0.5)
+        self.vmax = np.nanpercentile(data, 99.5)
 
     @validate('stretch')
     def _check_stretch(self, proposal):
