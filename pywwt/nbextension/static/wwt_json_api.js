@@ -187,6 +187,59 @@ function wwt_apply_json_message(wwt, msg) {
       wwtlib.WWTControl.singleton.renderContext.set_solarSystemTrack(msg['code']);
       break;
 
+    case 'image_layer_create':
+
+      layer = wwt.loadFits(msg['url']);
+      layer._stretch_version = 0
+
+      wwt.layers[msg['id']] = layer;
+      break;
+
+    case 'image_layer_stretch':
+
+      var layer = wwt.layers[msg['id']];
+
+      if (layer.get_imageSet() == null) {
+
+        // When the image layer is created, the image is not immediately available.
+        // If the stretch is modified before the image layer is available, we
+        // call the wwt_apply_json_message function again at some small time
+        // interval in the future.
+
+        setTimeout(function(){ wwt_apply_json_message(wwt, msg); }, 200);
+
+      } else {
+
+        // Once we get here, the image has downloaded. If we are in a deferred
+        // call, we want to only apply the call if the version of the call
+        // is more recent than the currently set version. We do this check
+        // because there is no guarantee that the messages arrive in the right
+        // order.
+
+        if (msg['version'] > layer._stretch_version) {
+          layer.setImageScale(msg['stretch'], msg['vmin'], msg['vmax']);
+        }
+
+      }
+      break;
+
+    case 'image_layer_set':
+
+      var layer = wwt.layers[msg['id']];
+      var name = msg['setting'];
+
+      layer["set_" + name](msg['value']);
+
+      break;
+
+    case 'image_layer_remove':
+
+      // TODO: could combine with table_layer_remove
+
+      var layer = wwt.layers[msg['id']];
+      wwtlib.LayerManager.deleteLayerByID(layer.id, true, true);
+      break;
+
     case 'table_layer_create':
 
       // Decode table from base64

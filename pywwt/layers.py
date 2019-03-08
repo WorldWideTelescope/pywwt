@@ -1,5 +1,6 @@
 import sys
 import uuid
+import tempfile
 
 if sys.version_info[0] == 2:  # noqa
     from io import BytesIO as StringIO
@@ -10,12 +11,14 @@ import warnings
 from base64 import b64encode
 
 import numpy as np
+from astropy.io import fits
 from matplotlib.pyplot import cm
 from matplotlib.colors import Colormap
 from astropy import units as u
 
 from traitlets import HasTraits, validate, observe
 from .traits import Any, Unicode, Float, Color, Bool, to_hex
+from .utils import sanitize_image
 
 __all__ = ['LayerManager', 'TableLayer']
 
@@ -44,6 +47,8 @@ VALID_ALT_TYPES = ['depth', 'altitude', 'distance', 'seaLevel', 'terrain']
 VALID_MARKER_TYPES = ['gaussian', 'point', 'circle', 'square', 'pushpin']
 
 VALID_MARKER_SCALES = ['screen', 'world']
+
+VALID_STRETCHES = ['linear', 'log', 'power', 'sqrt', 'histeq']
 
 # The following are columns that we add dynamically and internally, so we need
 # to make sure they have unique names that won't clash with existing columns
@@ -97,6 +102,14 @@ class LayerManager(object):
     def __init__(self, parent=None):
         self._layers = []
         self._parent = parent
+
+    def add_image_layer(self, image=None, **kwargs):
+        """
+        Add an image layer to the current view
+        """
+        layer = ImageLayer(self._parent, image=image, **kwargs)
+        self._add_layer(layer)
+        return layer
 
     def add_data_layer(self, table=None, frame='Sky', **kwargs):
         """
@@ -502,6 +515,117 @@ class TableLayer(HasTraits):
 
     def __str__(self):
         return 'TableLayer with {0} markers'.format(len(self.table))
+
+    def __repr__(self):
+        return '<{0}>'.format(str(self))
+
+
+class ImageLayer(HasTraits):
+    """
+    An image layer.
+    """
+
+    vmin = Float(None, allow_none=True)
+    vmax = Float(None, allow_none=True)
+    stretch = Unicode('linear')
+    opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
+
+    def __init__(self, parent=None, image=None, **kwargs):
+
+        self._image = image
+
+        self.parent = parent
+        self.id = str(uuid.uuid4())
+
+        # Attribute to keep track of the manager, so that we can notify the
+        # manager if a layer is removed.
+        self._manager = None
+        self._removed = False
+
+        # Transform the image so that it is always acceptable to WWT (Equatorial,
+        # TAN projection, double values) and write out to a temporary file
+        self._sanitized_image = tempfile.mktemp()
+        sanitize_image(image, self._sanitized_image)
+
+        # The first thing we need to do is make sure the image is being served.
+        # For now we assume that image is a filename, but we could do more
+        # detailed checks and reproject on-the-fly for example.
+
+        self._image_url = self.parent._serve_file(self._sanitized_image, extension='.fits')
+
+        # Because of the way the image loading works in WWT, we may end up with
+        # messages being applied out of order (see notes in image_layer_stretch
+        # in wwt_json_api.js)
+        self._stretch_version = 0
+
+        self._initialize_layer()
+
+        # Force defaults
+        self._on_trait_change({'name': 'opacity', 'new': self.opacity})
+
+        self.observe(self._on_trait_change, type='change')
+
+        if any(key not in self.trait_names() for key in kwargs):
+            raise KeyError('a key doesn\'t match any layer trait name')
+
+        super(ImageLayer, self).__init__(**kwargs)
+
+        # Determine initial stretch parameters
+        data = fits.getdata(self._sanitized_image)
+
+        data_min = np.nanmin(data)
+        data_max = np.nanmax(data)
+        data_range = data_max - data_min
+        self.vmin = data_min - data_range * 0.01
+        self.vmax = data_max + data_range * 0.01
+
+    @validate('stretch')
+    def _check_stretch(self, proposal):
+        if proposal['value'] in VALID_STRETCHES:
+            return proposal['value']
+        else:
+            raise ValueError('stretch should be one of {0}'.format('/'.join(str(x) for x in VALID_STRETCHES)))
+
+    def _initialize_layer(self):
+        self.parent._send_msg(event='image_layer_create',
+                              id=self.id, url=self._image_url)
+
+    def remove(self):
+        """
+        Remove the layer.
+        """
+        if self._removed:
+            return
+        self.parent._send_msg(event='image_layer_remove', id=self.id)
+        self._removed = True
+        if self._manager is not None:
+            self._manager.remove_layer(self)
+
+    def _on_trait_change(self, changed):
+
+        if changed['name'] in ('stretch', 'vmin', 'vmax'):
+            if self.vmin is not None and self.vmax is not None:
+                stretch_id = VALID_STRETCHES.index(self.stretch)
+                self._stretch_version += 1
+                self.parent._send_msg(event='image_layer_stretch', id=self.id,
+                                      stretch=stretch_id,
+                                      vmin=self.vmin, vmax=self.vmax,
+                                      version=self._stretch_version)
+
+        # This method gets called anytime a trait gets changed. Since this class
+        # gets inherited by the Jupyter widgets class which adds some traits of
+        # its own, we only want to react to changes in traits that have the wwt
+        # metadata attribute (which indicates the name of the corresponding WWT
+        # setting).
+        wwt_name = self.trait_metadata(changed['name'], 'wwt')
+        if wwt_name is not None:
+            self.parent._send_msg(event='image_layer_set',
+                                  id=self.id,
+                                  setting=wwt_name,
+                                  value=changed['new'])
+
+    def __str__(self):
+        return 'ImageLayer'
 
     def __repr__(self):
         return '<{0}>'.format(str(self))

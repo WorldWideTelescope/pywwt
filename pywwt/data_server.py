@@ -72,7 +72,7 @@ def get_data_server(verbose=True):
                     pass
             raise Exception("Could not start up data server")
 
-        def serve_file(self, filename, real_name=True, extension=''):
+        def serve_file(self, filename, real_name=False, extension=''):
             with open(filename, 'rb') as f:
                 content = f.read()
             if real_name:
