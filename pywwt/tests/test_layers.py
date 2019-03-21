@@ -1,6 +1,9 @@
 import os
 import pytest
 
+import numpy as np
+
+from astropy.wcs import WCS
 from astropy.table import Table
 from astropy import units as u
 from astropy.coordinates import SkyCoord
@@ -306,3 +309,77 @@ def test_layers_image(tmpdir, wwt_qt_client):
     # OpenGL features that aren't available there.
     if os.environ.get('CI', 'false').lower() == 'false':
         assert_widget_image(tmpdir, wwt, 'sky_layers.png')
+
+
+def test_image_layer_equ(tmpdir, wwt_qt_client):
+
+    # A series of tests that excercise the image layer functionality and compare
+    # the results with a set of baseline images.
+
+    wwt = wwt_qt_client
+
+    wwt.foreground = 'Black Sky Background'
+    wwt.background = 'Black Sky Background'
+
+    wwt.center_on_coordinates(SkyCoord(30 * u.deg, 40 * u.deg))
+
+    array = np.arange(10000).reshape((100, 100))
+    wcs = WCS()
+    wcs.wcs.ctype = 'RA---TAN', 'DEC--TAN'
+    # wcs.wcs.ctype = 'GLON-CAR', 'GLAT-CAR'
+    wcs.wcs.crval = 30, 40
+    wcs.wcs.crpix = 50.5, 50.5
+    wcs.wcs.cdelt = -0.1, 0.1
+
+    wwt.layers.add_image_layer(image=(array, wcs))
+
+    wwt.wait(2)
+
+    # For now this test doesn't work in CI, seemingly because of some
+    # OpenGL features that aren't available there.
+    if os.environ.get('CI', 'false').lower() == 'false':
+        assert_widget_image(tmpdir, wwt, 'image_layer_equ.png')
+
+
+def test_image_layer_gal(tmpdir, wwt_qt_client):
+
+    # A series of tests that excercise the image layer functionality and compare
+    # the results with a set of baseline images.
+
+    wwt = wwt_qt_client
+
+    wwt.foreground = 'Black Sky Background'
+    wwt.background = 'Black Sky Background'
+
+    array = np.arange(10000).reshape((100, 100))
+    wcs = WCS()
+    wcs.wcs.ctype = 'GLON-CAR', 'GLAT-CAR'
+    wcs.wcs.crpix = 50.5, 50.5
+    wcs.wcs.cdelt = -0.03, 0.03
+
+    wcs.wcs.crval = 33, 43
+    wwt.layers.add_image_layer(image=(array, wcs))
+
+    wcs.wcs.crval = 27, 43
+    layer2 = wwt.layers.add_image_layer(image=(array, wcs))
+    layer2.vmin = -5000
+    layer2.vmax = 15000
+
+    wcs.wcs.crval = 27, 37
+    layer3 = wwt.layers.add_image_layer(image=(array, wcs))
+    layer3.stretch = 'log'
+
+    wcs.wcs.crval = 33, 37
+    layer4 = wwt.layers.add_image_layer(image=(array, wcs))
+    layer4.opacity = 0.5
+
+    wwt.wait(2)
+
+    wwt.center_on_coordinates(SkyCoord(30 * u.deg, 40 * u.deg, frame='galactic'), fov=14 * u.deg)
+
+    wwt.wait(2)
+
+    # For now this test doesn't work in CI, seemingly because of some
+    # OpenGL features that aren't available there.
+    if os.environ.get('CI', 'false').lower() == 'false':
+        assert_widget_image(tmpdir, wwt, 'image_layer_gal.png')
