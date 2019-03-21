@@ -35,7 +35,7 @@ Assuming that you already have either the Qt or Jupyter version of pywwt open
 as the ``wwt`` variable, you can then do::
 
     >>> wwt.layers.add_table_layer(table=table, frame='Sky',
-    ...                           lon_att='ra', lat_att='dec')
+    ...                            lon_att='ra', lat_att='dec')
 
 .. image:: images/data_layers_kepler.png
    :align: center
@@ -61,7 +61,7 @@ dataset that includes all recorded earthquakes in 2010::
 We can then add the data layer using::
 
     >>> layer = wwt.layers.add_table_layer(table=table, frame='Earth',
-    ...                                   lon_att='longitude', lat_att='latitude')
+    ...                                    lon_att='longitude', lat_att='latitude')
 
 .. image:: images/data_layers_earthquakes.png
    :align: center
