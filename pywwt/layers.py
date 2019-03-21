@@ -236,6 +236,11 @@ class TableLayer(HasTraits):
     A layer where the data is stored in an :class:`~astropy.table.Table`
     """
 
+    coord_type = Unicode('spherical', help='Whether to give the coordinates '
+                         'in spherical or rectangular coordinates').tag(wwt='coordinatesType')
+
+    # Attributes for spherical coordinates
+
     lon_att = Unicode(help='The column to use for the longitude').tag(wwt='lngColumn')
     lon_unit = Any(help='The units to use for longitude').tag(wwt='raUnits')
     lat_att = Unicode(help='The column to use for the latitude').tag(wwt='latColumn')
@@ -244,7 +249,12 @@ class TableLayer(HasTraits):
     alt_unit = Any(help='The units to use for the altitude').tag(wwt='altUnit')
     alt_type = Unicode(help='The type of altitude').tag(wwt='altType')
 
-    size_scale = Float(10, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
+    # Attributes for cartesian coordinates
+
+    x_att = Unicode(help='The column to use for the x coordinate').tag(wwt='xAxisColumn')
+    y_att = Unicode(help='The column to use for the y coordinate').tag(wwt='yAxisColumn')
+    z_att = Unicode(help='The column to use for the z coordinate').tag(wwt='zAxisColumn')
+    xyz_unit = Any(help='The units to use for the x/y/z positions').tag(wwt='cartesianScale')
 
     # NOTE: we deliberately don't link size_att to sizeColumn because we need to
     # compute the sizes ourselves based on the min/max and then use the
@@ -261,6 +271,9 @@ class TableLayer(HasTraits):
     cmap_vmax = Float(None, allow_none=True)
     cmap = Any(cm.viridis, help='The Matplotlib colormap')
 
+    # Visual attributes
+
+    size_scale = Float(10, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
     color = Color('white', help='The color of the markers').tag(wwt='color')
     opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
 
@@ -270,14 +283,6 @@ class TableLayer(HasTraits):
 
     far_side_visible = Bool(False, help='Whether markers on the far side are '
                             'visible').tag(wwt='showFarSide')
-
-    # TODO: support:
-    # xAxisColumn
-    # yAxisColumn
-    # zAxisColumn
-    # xAxisReverse
-    # yAxisReverse
-    # zAxisReverse
 
     def __init__(self, parent=None, table=None, frame=None, **kwargs):
 
@@ -321,6 +326,15 @@ class TableLayer(HasTraits):
         if 'lat_att' not in kwargs:
             self.lat_att = lat_guess or self.table.colnames[1]
 
+    @validate('coord_type')
+    def _check_coord_type(self, proposal):
+        if proposal['value'] in ('spherical', 'rectangular'):
+            return proposal['value']
+        else:
+            raise ValueError('coord_type should be spherical or rectangular')
+
+    # Attributes for spherical coordinates
+
     @validate('lon_unit')
     def _check_lon_unit(self, proposal):
         # Pass the proposal to Unit - this allows us to validate the unit,
@@ -351,6 +365,66 @@ class TableLayer(HasTraits):
         else:
             raise ValueError('alt_type should be one of {0}'.format('/'.join(str(x) for x in VALID_ALT_TYPES)))
 
+
+    @observe('alt_att')
+    def _on_alt_att_change(self, *value):
+        # Check if we can set the unit of the altitude automatically
+        if len(self.alt_att) == 0:
+            return
+        column = self.table[self.alt_att]
+        unit = pick_unit_if_available(column.unit, VALID_ALT_UNITS)
+        if unit in VALID_ALT_UNITS:
+            self.alt_unit = unit
+        elif unit is not None:
+            warnings.warn('Column {0} has units of {1} but this is not a valid '
+                          'unit of altitude - set the unit directly with '
+                          'alt_unit'.format(self.alt_att, unit), UserWarning)
+
+    @observe('lon_att')
+    def _on_lon_att_change(self, *value):
+        # Check if we can set the unit of the longitude automatically
+        if len(self.lon_att) == 0:
+            return
+        column = self.table[self.lon_att]
+        unit = pick_unit_if_available(column.unit, VALID_LON_UNITS)
+        if unit in VALID_LON_UNITS:
+            self.lon_unit = unit
+        elif unit is not None:
+            warnings.warn('Column {0} has units of {1} but this is not a valid '
+                          'unit of longitude - set the unit directly with '
+                          'lon_unit'.format(self.lon_att, unit), UserWarning)
+
+    # Attributes for cartesian coordinates
+
+    @observe('x_att', 'y_att', 'z_att')
+    def _on_xyz_att_change(self, *value):
+        # Check if we can set the unit of the x/y/z positions automatically
+        for att in (self.x_att, self.y_att, self.z_att):
+            if len(att) == 0:
+                continue
+            column = self.table[att]
+            unit = pick_unit_if_available(column.unit, VALID_ALT_UNITS)
+            if unit in VALID_ALT_UNITS:
+                self.xyz_unit = unit
+                return
+            elif unit is not None:
+                warnings.warn('Column {0} has units of {1} but this is not a valid '
+                              'unit of distance - set the unit directly with '
+                              'xyz_unit'.format(self.alt_att, unit), UserWarning)
+
+    @validate('xyz_unit')
+    def _check_xyz_unit(self, proposal):
+        # Pass the proposal to Unit - this allows us to validate the unit,
+        # and allows strings to be passed.
+        unit = u.Unit(proposal['value'])
+        unit = pick_unit_if_available(unit, VALID_ALT_UNITS)
+        if unit in VALID_ALT_UNITS:
+            return unit
+        else:
+            raise ValueError('xyz_unit should be one of {0}'.format('/'.join(sorted(str(x) for x in VALID_ALT_UNITS))))
+
+    # Visual attributes
+
     @validate('marker_type')
     def _check_marker_type(self, proposal):
         if proposal['value'] in VALID_MARKER_TYPES:
@@ -373,34 +447,6 @@ class TableLayer(HasTraits):
             raise TypeError('cmap should be set to a Matplotlib colormap')
         else:
             return proposal['value']
-
-    @observe('alt_att')
-    def _on_alt_att_change(self, *value):
-        # Check if we can set the unit of the altitude automatically
-        if len(self.alt_att) == 0:
-            return
-        column = self.table[self.alt_att]
-        unit = pick_unit_if_available(column.unit, VALID_ALT_UNITS)
-        if unit in VALID_ALT_UNITS:
-            self.alt_unit = unit
-        elif unit is not None:
-            warnings.warn('Column {0} has units of {1} but this is not a valid '
-                          'unit of altitude - set the unit directly with '
-                          'alt_unit'.format(self.alt_att, unit), UserWarning)
-
-    @observe('lon_att')
-    def _on_lon_att_change(self, *value):
-        # Check if we can set the unit of the altitude automatically
-        if len(self.lon_att) == 0:
-            return
-        column = self.table[self.lon_att]
-        unit = pick_unit_if_available(column.unit, VALID_LON_UNITS)
-        if unit in VALID_LON_UNITS:
-            self.lon_unit = unit
-        elif unit is not None:
-            warnings.warn('Column {0} has units of {1} but this is not a valid '
-                          'unit of longitude - set the unit directly with '
-                          'lon_unit'.format(self.lon_att, unit), UserWarning)
 
     @observe('size_att')
     def _on_size_att_change(self, *value):
@@ -569,6 +615,8 @@ class TableLayer(HasTraits):
                 value = VALID_ALT_UNITS[self._check_alt_unit({'value': value})]
             elif changed['name'] == 'lon_unit':
                 value = VALID_LON_UNITS[self._check_lon_unit({'value': value})]
+            elif changed['name'] == 'xyz_unit':
+                value = VALID_ALT_UNITS[self._check_xyz_unit({'value': value})]
             self.parent._send_msg(event='table_layer_set',
                                   id=self.id,
                                   setting=wwt_name,

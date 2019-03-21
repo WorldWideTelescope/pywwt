@@ -261,6 +261,9 @@ function wwt_apply_json_message(wwt, msg) {
       layer.set_colorMapColumn(-1);
       layer.set_startDateColumn(-1);
       layer.set_endDateColumn(-1);
+      layer.set_xAxisColumn(-1);
+      layer.set_yAxisColumn(-1);
+      layer.set_zAxisColumn(-1);
 
       // FIXME: at the moment WWT incorrectly sets the mean radius of the object
       // in the frame to that of the Earth, so we need to override this here.
@@ -315,6 +318,10 @@ function wwt_apply_json_message(wwt, msg) {
         value = wwtlib.PlotTypes[msg['value']];
       } else if(name == 'markerScale') {
         value = wwtlib.MarkerScales[msg['value']];
+      } else if(name == 'coordinatesType') {
+        value = wwtlib.CoordinatesTypes[msg['value']];
+      } else if(name == 'cartesianScale') {
+        value = wwtlib.AltUnits[msg['value']];
       } else {
         value = msg['value']
       }
