@@ -84,10 +84,6 @@ function wwt_apply_json_message(wwt, msg) {
       wwt.gotoRaDecZoom(msg['ra'], msg['dec'], msg['fov'], msg['instant']);
       break;
 
-    case 'load_fits':
-      wwt.loadFits(msg['url']);
-      break;
-
     case 'setting_set':
       var name = msg['setting'];
       wwt.settings["set_" + name](msg['value']);

@@ -517,27 +517,6 @@ class BaseWWTWidget(HasTraits):
         collection = CircleCollection(self, points, **kwargs)
         return collection
 
-    def load_fits_data(self, filename):
-        """
-        Load a FITS file.
-
-        Parameters
-        ----------
-        filename : str
-            The filename of the FITS file to display.
-        """
-
-        if not os.path.exists(filename):
-            raise Exception("File {0} does not exist".format(filename))
-        from astropy.wcs import WCS
-        wcs = WCS(filename)
-        projection = wcs.celestial.wcs.ctype[0][4:]
-        if projection != '-TAN':
-            raise ValueError("Only -TAN FITS files are supported at the moment")
-
-        url = self._serve_file(filename, extension='.fits')
-        self._send_msg(event='load_fits', url=url)
-
     def reset(self):
         """
         Reset WWT to initial state.
