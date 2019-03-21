@@ -1,5 +1,6 @@
 import sys
 import uuid
+import tempfile
 
 if sys.version_info[0] == 2:  # noqa
     from io import BytesIO as StringIO
@@ -10,14 +11,16 @@ import warnings
 from base64 import b64encode
 
 import numpy as np
+from astropy.io import fits
 from matplotlib.pyplot import cm
 from matplotlib.colors import Colormap
 from astropy import units as u
 
 from traitlets import HasTraits, validate, observe
 from .traits import Any, Unicode, Float, Color, Bool, to_hex
+from .utils import sanitize_image
 
-__all__ = ['LayerManager', 'TableLayer']
+__all__ = ['LayerManager', 'TableLayer', 'ImageLayer']
 
 VALID_FRAMES = ['sky', 'ecliptic', 'galactic', 'sun', 'mercury', 'venus',
                 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
@@ -44,6 +47,8 @@ VALID_ALT_TYPES = ['depth', 'altitude', 'distance', 'seaLevel', 'terrain']
 VALID_MARKER_TYPES = ['gaussian', 'point', 'circle', 'square', 'pushpin']
 
 VALID_MARKER_SCALES = ['screen', 'world']
+
+VALID_STRETCHES = ['linear', 'log', 'power', 'sqrt', 'histeq']
 
 # The following are columns that we add dynamically and internally, so we need
 # to make sure they have unique names that won't clash with existing columns
@@ -98,12 +103,48 @@ class LayerManager(object):
         self._layers = []
         self._parent = parent
 
-    def add_data_layer(self, table=None, frame='Sky', **kwargs):
+    def add_image_layer(self, image=None, **kwargs):
+        """
+        Add an image layer to the current view
+
+        Parameters
+        ----------
+        image : str or :class:`~astropy.io.fits.ImageHDU` or tuple
+            The image to show, which should be given either as a filename,
+            an :class:`~astropy.io.fits.ImageHDU` object, or a tuple of the
+            form ``(array, wcs)`` where ``array`` is a Numpy array and ``wcs``
+            is an astropy :class:`~astropy.wcs.WCS` object
+        kwargs
+            Additional keyword arguments can be used to set properties on the
+            image layer.
+
+        Returns
+        -------
+        layer : :class:`~pywwt.layers.ImageLayer`
+        """
+        layer = ImageLayer(self._parent, image=image, **kwargs)
+        self._add_layer(layer)
+        return layer
+
+    def add_table_layer(self, table=None, frame='Sky', **kwargs):
         """
         Add a data layer to the current view
 
         Parameters
         ----------
+        table : :class:`~astropy.table.Table`
+            The table containing the data to show.
+        frame : str
+            The reference frame to use for the data. This should be either
+            ``'Sky'``, ``'Ecliptic'``, ``Galactic``, or the name of a planet
+            or a natural satellite in the solar system.
+        kwargs
+            Additional keyword arguments can be used to set properties on the
+            table layer.
+
+        Returns
+        -------
+        layer : :class:`~pywwt.layers.TableLayer`
         """
 
         # Validate frame
@@ -119,6 +160,13 @@ class LayerManager(object):
             raise ValueError("The table argument is required")
         self._add_layer(layer)
         return layer
+
+    def add_data_layer(self, *args, **kwargs):
+        """
+        Deprecated, use ``add_table_layer`` instead.
+        """
+        warnings.warn('add_data_layer has been deprecated, use add_table_layer '
+                      'instead', UserWarning)
 
     def _add_layer(self, layer):
         if layer in self._layers:
@@ -502,6 +550,114 @@ class TableLayer(HasTraits):
 
     def __str__(self):
         return 'TableLayer with {0} markers'.format(len(self.table))
+
+    def __repr__(self):
+        return '<{0}>'.format(str(self))
+
+
+class ImageLayer(HasTraits):
+    """
+    An image layer.
+    """
+
+    vmin = Float(None, allow_none=True)
+    vmax = Float(None, allow_none=True)
+    stretch = Unicode('linear')
+    opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
+
+    def __init__(self, parent=None, image=None, **kwargs):
+
+        self._image = image
+
+        self.parent = parent
+        self.id = str(uuid.uuid4())
+
+        # Attribute to keep track of the manager, so that we can notify the
+        # manager if a layer is removed.
+        self._manager = None
+        self._removed = False
+
+        # Transform the image so that it is always acceptable to WWT (Equatorial,
+        # TAN projection, double values) and write out to a temporary file
+        self._sanitized_image = tempfile.mktemp()
+        sanitize_image(image, self._sanitized_image)
+
+        # The first thing we need to do is make sure the image is being served.
+        # For now we assume that image is a filename, but we could do more
+        # detailed checks and reproject on-the-fly for example.
+
+        self._image_url = self.parent._serve_file(self._sanitized_image, extension='.fits')
+
+        # Because of the way the image loading works in WWT, we may end up with
+        # messages being applied out of order (see notes in image_layer_stretch
+        # in wwt_json_api.js)
+        self._stretch_version = 0
+
+        self._initialize_layer()
+
+        # Force defaults
+        self._on_trait_change({'name': 'opacity', 'new': self.opacity})
+
+        self.observe(self._on_trait_change, type='change')
+
+        if any(key not in self.trait_names() for key in kwargs):
+            raise KeyError('a key doesn\'t match any layer trait name')
+
+        super(ImageLayer, self).__init__(**kwargs)
+
+        # Determine initial stretch parameters
+        data = fits.getdata(self._sanitized_image)
+
+        self.vmin = np.nanpercentile(data, 0.5)
+        self.vmax = np.nanpercentile(data, 99.5)
+
+    @validate('stretch')
+    def _check_stretch(self, proposal):
+        if proposal['value'] in VALID_STRETCHES:
+            return proposal['value']
+        else:
+            raise ValueError('stretch should be one of {0}'.format('/'.join(str(x) for x in VALID_STRETCHES)))
+
+    def _initialize_layer(self):
+        self.parent._send_msg(event='image_layer_create',
+                              id=self.id, url=self._image_url)
+
+    def remove(self):
+        """
+        Remove the layer.
+        """
+        if self._removed:
+            return
+        self.parent._send_msg(event='image_layer_remove', id=self.id)
+        self._removed = True
+        if self._manager is not None:
+            self._manager.remove_layer(self)
+
+    def _on_trait_change(self, changed):
+
+        if changed['name'] in ('stretch', 'vmin', 'vmax'):
+            if self.vmin is not None and self.vmax is not None:
+                stretch_id = VALID_STRETCHES.index(self.stretch)
+                self._stretch_version += 1
+                self.parent._send_msg(event='image_layer_stretch', id=self.id,
+                                      stretch=stretch_id,
+                                      vmin=self.vmin, vmax=self.vmax,
+                                      version=self._stretch_version)
+
+        # This method gets called anytime a trait gets changed. Since this class
+        # gets inherited by the Jupyter widgets class which adds some traits of
+        # its own, we only want to react to changes in traits that have the wwt
+        # metadata attribute (which indicates the name of the corresponding WWT
+        # setting).
+        wwt_name = self.trait_metadata(changed['name'], 'wwt')
+        if wwt_name is not None:
+            self.parent._send_msg(event='image_layer_set',
+                                  id=self.id,
+                                  setting=wwt_name,
+                                  value=changed['new'])
+
+    def __str__(self):
+        return 'ImageLayer'
 
     def __repr__(self):
         return '<{0}>'.format(str(self))

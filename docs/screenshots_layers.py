@@ -9,7 +9,7 @@ wwt = WWTQtClient(size=(600,400), block_until_ready=True)
 OEC = 'https://worldwidetelescope.github.io/pywwt/data/open_exoplanet_catalogue.csv'
 table = Table.read(OEC, delimiter=',', format='ascii.basic')
 
-layer = wwt.layers.add_data_layer(table=table, frame='Sky',
+layer = wwt.layers.add_table_layer(table=table, frame='Sky',
                                   lon_att='ra', lat_att='dec', lon_unit='deg')
 
 layer.size_scale = 50
@@ -35,7 +35,7 @@ wwt.wait(10)
 EARTHQUAKES = 'https://worldwidetelescope.github.io/pywwt/data/earthquakes_2010.csv'
 table = Table.read(EARTHQUAKES, delimiter=',', format='ascii.basic')
 
-layer = wwt.layers.add_data_layer(table=table, frame='Earth',
+layer = wwt.layers.add_table_layer(table=table, frame='Earth',
                                   lon_att='longitude', lat_att='latitude')
 
 wwt.wait(3)

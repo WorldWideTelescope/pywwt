@@ -199,18 +199,8 @@ class WWTQtClient(BaseWWTWidget):
         msg = json.dumps(kwargs)
         return self.widget._run_js("wwt_apply_json_message(wwt, {0});".format(msg), asynchronous=asynchronous)
 
-    def load_fits_data(self, filename):
-        """
-        Load a FITS file.
-
-        Parameters
-        ----------
-        filename : str
-            The filename of the FITS file to display.
-        """
-        self._validate_fits_data(filename)
-        url = self._data_server.serve_file(filename, extension='.fits')
-        self._send_msg(event='load_fits', url=url)
+    def _serve_file(self, filename, extension=''):
+        return self._data_server.serve_file(filename, extension=extension)
 
     def render(self, filename):
         """

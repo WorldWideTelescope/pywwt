@@ -14,7 +14,7 @@ environment:
 
       CONDA_CHANNELS: "astrofrog/label/dev conda-forge"
       CONDA_DEPENDENCIES: "astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest pytest-cov requests matplotlib flask flask-cors pyopengl"
-      PIP_DEPENDENCIES: "pytest-faulthandler codecov"
+      PIP_DEPENDENCIES: "pytest-faulthandler codecov reproject"
 
   matrix:
       - PYTHON_VERSION: "2.7"

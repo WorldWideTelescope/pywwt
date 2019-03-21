@@ -6,18 +6,20 @@ Adding data layers
 While annotations (see :ref:`annotations`) can be used to show specific points
 of interest on the sky, data layers are a more general and efficient way of
 showing point-based data anywhere in 3D space, including but not limited to
-positions on the sky and on/around celestial bodies.
+positions on the sky and on/around celestial bodies. In addition, layers can be
+used to show image-based data on the celestial sphere.
 
-The main layer type at the moment is :class:`~pywwt.layers.TableLayer`. This
-layer type can be created using an `astropy
-<http://docs.astropy.org/en/stable/table/index.html>`_
+The main layer type for point-data at the moment is
+:class:`~pywwt.layers.TableLayer`. This layer type can be created using an
+`astropy <http://docs.astropy.org/en/stable/table/index.html>`_
 :class:`~astropy.table.Table` as well as a coordinate frame, which can be e.g.
-``'Sky'`` or the name of one of the planets or satellites.
+``'Sky'`` or the name of one of the planets or satellites. The main layer type
+for images is :class:`~pywwt.layers.ImageLayer`.
 
 .. TODO: give a more exhaustive list of what can be used as a frame
 
-Loading the data
-----------------
+Loading point data
+------------------
 
 To start off, let's look at how to show a simple set positions on the sky. We'll
 use the `Open Exoplanet Catalogue <http://openexoplanetcatalogue.com>`_ as a
@@ -32,8 +34,8 @@ comma-separated values (CSV) file of the data::
 Assuming that you already have either the Qt or Jupyter version of pywwt open
 as the ``wwt`` variable, you can then do::
 
-    >>> wwt.layers.add_data_layer(table=table, frame='Sky',
-    ...                           lon_att='ra', lat_att='dec')
+    >>> wwt.layers.add_table_layer(table=table, frame='Sky',
+    ...                            lon_att='ra', lat_att='dec')
 
 .. image:: images/data_layers_kepler.png
    :align: center
@@ -58,14 +60,15 @@ dataset that includes all recorded earthquakes in 2010::
 
 We can then add the data layer using::
 
-    >>> layer = wwt.layers.add_data_layer(table=table, frame='Earth',
-    ...                                   lon_att='longitude', lat_att='latitude')
+    >>> layer = wwt.layers.add_table_layer(table=table, frame='Earth',
+    ...                                    lon_att='longitude', lat_att='latitude')
 
 .. image:: images/data_layers_earthquakes.png
    :align: center
 
 Note that ``lon_att`` and ``lat_att`` don't need to be specified in
-``add_data_layer`` - they can also be set afterwards using e.g.::
+:class:`~pywwt.layers.LayerManager.add_table_layer` - they can also be set
+afterwards using e.g.::
 
     >>> layer.lon_att = 'longitude'
 
@@ -152,6 +155,25 @@ Finally, if you want to show all markers even if they are on the far side of
 a celestial object, you can use::
 
     >>> layer.far_side_visible = True
+
+Image layers
+------------
+
+Image layers are added in a similar way to point data, using
+:class:`~pywwt.layers.LayerManager.add_image_layer`::
+
+    >>> layer = wwt.layers.add_image_layer(image='my_image.fits')
+
+Here, the ``image`` input can be either a filename, an
+:class:`~astropy.io.fits.ImageHDU` object, or a tuple of the form
+``(array, wcs)`` where ``array`` is a 2-d Numpy array, and ``wcs`` is an
+astropy :class:`~astropy.wcs.WCS` object. Once the image has loaded,
+you can modify the limits, stretch, and opacity using::
+
+    >>> layer.vmin = -10
+    >>> layer.vmax = 20
+    >>> layer.stretch = 'log'
+    >>> layer.opacity = 0.5
 
 Listing layers and removing layers
 ----------------------------------

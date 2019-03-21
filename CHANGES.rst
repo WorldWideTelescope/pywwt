@@ -1,8 +1,12 @@
 0.6.0 (unreleased)
 ------------------
 
-- Implement support for color-coloding and scaling points in layers according
+- Implement support for color-coding and scaling points in layers according
   to table attributes. [#183]
+
+- Removed ``load_fits_data`` and added ``layers.add_image_layer`` instead,
+  which provides control over the image stretch, and renamed
+  ``layers.add_data_layer`` to ``layers.add_table_layer``. [#188]
 
 0.5.3 (2019-01-16)
 ------------------
