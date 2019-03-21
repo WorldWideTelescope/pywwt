@@ -20,7 +20,7 @@ from traitlets import HasTraits, validate, observe
 from .traits import Any, Unicode, Float, Color, Bool, to_hex
 from .utils import sanitize_image
 
-__all__ = ['LayerManager', 'TableLayer']
+__all__ = ['LayerManager', 'TableLayer', 'ImageLayer']
 
 VALID_FRAMES = ['sky', 'ecliptic', 'galactic', 'sun', 'mercury', 'venus',
                 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
@@ -106,17 +106,45 @@ class LayerManager(object):
     def add_image_layer(self, image=None, **kwargs):
         """
         Add an image layer to the current view
+
+        Parameters
+        ----------
+        image : str or :class:`~astropy.io.fits.ImageHDU` or tuple
+            The image to show, which should be given either as a filename,
+            an :class:`~astropy.io.fits.ImageHDU` object, or a tuple of the
+            form ``(array, wcs)`` where ``array`` is a Numpy array and ``wcs``
+            is an astropy :class:`~astropy.wcs.WCS` object
+        kwargs
+            Additional keyword arguments can be used to set properties on the
+            image layer.
+
+        Returns
+        -------
+        layer : :class:`~pywwt.layers.ImageLayer`
         """
         layer = ImageLayer(self._parent, image=image, **kwargs)
         self._add_layer(layer)
         return layer
 
-    def add_data_layer(self, table=None, frame='Sky', **kwargs):
+    def add_table_layer(self, table=None, frame='Sky', **kwargs):
         """
         Add a data layer to the current view
 
         Parameters
         ----------
+        table : :class:`~astropy.table.Table`
+            The table containing the data to show.
+        frame : str
+            The reference frame to use for the data. This should be either
+            ``'Sky'``, ``'Ecliptic'``, ``Galactic``, or the name of a planet
+            or a natural satellite in the solar system.
+        kwargs
+            Additional keyword arguments can be used to set properties on the
+            table layer.
+
+        Returns
+        -------
+        layer : :class:`~pywwt.layers.TableLayer`
         """
 
         # Validate frame
@@ -132,6 +160,13 @@ class LayerManager(object):
             raise ValueError("The table argument is required")
         self._add_layer(layer)
         return layer
+
+    def add_data_layer(self, *args, **kwargs):
+        """
+        Deprecated, use ``add_table_layer`` instead.
+        """
+        warnings.warn('add_data_layer has been deprecated, use add_table_layer '
+                      'instead', UserWarning)
 
     def _add_layer(self, layer):
         if layer in self._layers:
