@@ -46,6 +46,9 @@
 - Implement support for color-coding and scaling points in layers according
   to table attributes. [#183]
 
+- Edited solar system ``track_object`` attribute so the viewer automatically
+  zooms to a field of view where the object is actually visible [#187]
+
 - Removed ``load_fits_data`` and added ``layers.add_image_layer`` instead,
   which provides control over the image stretch, and renamed
   ``layers.add_data_layer`` to ``layers.add_table_layer``. [#188, #201]

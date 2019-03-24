@@ -3,6 +3,12 @@ from traitlets import HasTraits, validate
 
 from .traits import Bool, Int
 
+AVAILABLE_OBJECTS = ['Sky', 'Sun', 'Mercury', 'Venus', 'Earth', 'Moon', 'Mars',
+                     'Jupiter', 'Callisto', 'Europa', 'Ganymede', 'Io',
+                     'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Callistoshadow',
+                     'Europashadow', 'Ganymedeshadow', 'Ioshadow',
+                     'Suneclipsed']
+
 __all__ = ['SolarSystem']
 
 
@@ -78,38 +84,9 @@ class SolarSystem(HasTraits):
         """
         obj = (obj.lower()).capitalize()
 
-        # find what type of body obj is for proper scaling in viewer
-        #sun = 1; gas = 20; rock = 200 # if imageSetType == solarSystem
-
-        '''mappings = {'Sun': 0, 'Mercury': 1, 'Venus': 2, 'Mars': 3, 'Jupiter': 4,
-                    'Saturn': 5, 'Uranus': 6, 'Neptune': 7, 'Pluto': 8,
-                    'Moon': 9, 'io': 10, 'Europa': 11, 'Ganymede': 12,
-                    'Callisto': 13, 'Ioshadow': 14, 'Europashadow': 15,
-                    'Ganymedeshadow': 16, 'Callistoshadow': 17,
-                    'Suneclipsed': 18, 'Earth': 19}'''
-
-        '''zooms = {'Sun': sun, 'Mercury': rock, 'Venus': rock, 'Mars': rock,
-                 'Jupiter': gas, 'Saturn': gas, 'Uranus': gas, 'Neptune': gas,
-                 'Pluto': rock, 'Moon': rock, 'Io': rock, 'Europa': rock,
-                 'Ganymede': rock, 'Callisto': rock, 'Ioshadow': rock,
-                 'Europashadow': rock, 'Ganymedeshadow': rock,
-                 'Callistoshadow': rock, 'Suneclipsed': sun, 'Earth': rock}'''
-
-        available = ['Sky', 'Sun', 'Mercury', 'Venus', 'Earth', 'Moon', 'Mars',
-                     'Jupiter', 'Callisto', 'Europa', 'Ganymede', 'Io',
-                     'Saturn', 'Uranus', 'Neptune', 'Pluto', 'Callistoshadow',
-                     'Europashadow', 'Ganymedeshadow', 'Ioshadow',
-                     'Suneclipsed']
-
-        if obj in available:
+        if obj in AVAILABLE_OBJECTS:
             self.base_widget._send_msg(event='track_and_zoom',
                                        obj=obj, inst=instant)
-
-            # if imageSetType == solarSystem
-            #self.base_widget._send_msg(event='track_and_zoom', obj=obj, zoom=zooms[obj], inst=instant)
-
-            # old
-            #self.base_widget._send_msg(event='track_object', code=mappings[obj])
         else:
             raise ValueError('the given object cannot be tracked')
 

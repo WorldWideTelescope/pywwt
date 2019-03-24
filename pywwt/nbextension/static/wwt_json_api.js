@@ -184,33 +184,36 @@ function wwt_apply_json_message(wwt, msg) {
       wwt.setBackgroundImageByName(msg['mode']);
       wwt.setForegroundImageByName(msg['mode']);
       break;
-/*
-    case 'track_object':
-      wwtlib.WWTControl.singleton.renderContext.set_solarSystemTrack(msg['code']);
-      break;
-*/
+
     case 'track_and_zoom':
+
       var object = msg['obj'];
+      var instant = msg['inst'];
+
+      // Collect the arguments necessary to create a Place object
       var ra = wwt.getRA();
       var dec = wwt.getDec();
       var classification = wwtlib.Classification.solarSystem;
-      var constellation = wwtlib.Place._constellation;
+      var constellation;
       var imageType = wwtlib.ImageSetType.sky;
       //var imageType = wwtlib.ImageSetType.solarSystem;
       var scale = wwt.settings.get_solarSystemScale();
       var zoom; //= (.02 * scale + .08) / msg['zoom'];
-      // if imageType == wwtlib.ImageSetType.solarSystem, we need the equation above
-      // else, zoom is pre-set in gotoTarget if imageType == wwtlib.ImageSetType.sky
+      // if imageType == wwtlib.ImageSetType.solarSystem, use the equation
+      // elif imageType == wwtlib.ImageSetType.sky, gotoTarget pre-sets zoom
 
-      var place = wwtlib.Place.create(object, ra, dec, classification, 
+      // Create the Place object and focus it on the object in question
+      var place = wwtlib.Place.create(object, ra * 15, dec, classification,
                                       constellation, imageType, zoom);
       place.set_target(wwtlib.Planets.getPlanetIDFromName(object));
 
+      // Go to the place that was created (if not the Sun)
+      // Else, use the standard, Sun-centered method of centering on coords
       if (object != 'Sun') {
-        wwtlib.WWTControl.singleton.gotoTarget(place, false, msg['inst'], true);
+        wwtlib.WWTControl.singleton.gotoTarget(place, false, instant, true);
       }
       else {
-        wwt.gotoRaDecZoom(ra, dec, .00221*scale + .00552, msg['inst']);
+        wwt.gotoRaDecZoom(ra * 15, dec, .00221*scale + .00552, msg['inst']);
       }
 
       break;
