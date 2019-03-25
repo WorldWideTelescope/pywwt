@@ -77,6 +77,22 @@ altitude or a radius. This can be provided using the ``alt_att`` column::
 
     >>> layer.alt_att = 'depth'
 
+Using cartesian coordinates
+---------------------------
+
+In some cases, you may instead want to load data in cartesian coordinates. In
+this case, you will need to set ``coord_type='rectangular'`` and use ``x_att``,
+``y_att``, and ``z_att`` to set the columns to use for the x/y/z positions::
+
+    >>> layer.coord_type = 'rectangular'
+    >>> layer.x_att = 'x_kpc'
+    >>> layer.y_att = 'y_kpc'
+    >>> layer.z_att = 'z_kpc'
+
+and the unit for the coordinates can be set with::
+
+    >>> layer.xyz_unit = 'rectangular'
+
 Data settings
 -------------
 
