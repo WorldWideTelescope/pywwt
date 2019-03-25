@@ -5,6 +5,7 @@
 
 
 var ReferenceFramesRadius = {
+  Sky: 149500000000,
   Sun: 696000000,
   Mercury: 2439700,
   Venus: 6051800,
