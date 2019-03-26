@@ -190,24 +190,28 @@ function wwt_apply_json_message(wwt, msg) {
       var object = msg['obj'];
       var instant = msg['inst'];
 
-      // Collect the arguments necessary to create a Place object
+      // First, collect the arguments necessary to create a Place object
+
+      // (record current ra/dec so they're preserved if the object is the Sun)
       var ra = wwt.getRA();
       var dec = wwt.getDec();
+      // (create other args for Place.create(), keeping unecessary ones blank)
       var classification = wwtlib.Classification.solarSystem;
       var constellation;
       var imageType = wwtlib.ImageSetType.sky;
-      //var imageType = wwtlib.ImageSetType.solarSystem;
       var scale = wwt.settings.get_solarSystemScale();
-      var zoom; //= (.02 * scale + .08) / msg['zoom'];
-      // if imageType == wwtlib.ImageSetType.solarSystem, use the equation
-      // elif imageType == wwtlib.ImageSetType.sky, gotoTarget pre-sets zoom
+      var zoom;
 
-      // Create the Place object and focus it on the object in question
+      // (when #177 is solved, try imageType = wwtlib.ImageSetType.solarSystem
+      // and zoom = (.02 * scale + .08) / msg['zoom'] for more flexibility in
+      // assigning ra/dec to non-Sun objects)
+
+      // Next, create the Place object and focus it on the object in question
       var place = wwtlib.Place.create(object, ra * 15, dec, classification,
                                       constellation, imageType, zoom);
       place.set_target(wwtlib.Planets.getPlanetIDFromName(object));
 
-      // Go to the place that was created (if not the Sun)
+      // Finally, if not the Sun, go to the place that was created
       // Else, use the standard, Sun-centered method of centering on coords
       if (object != 'Sun') {
         wwtlib.WWTControl.singleton.gotoTarget(place, false, instant, true);
