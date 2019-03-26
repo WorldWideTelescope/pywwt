@@ -74,7 +74,12 @@ In addition, if you want to use the Qt widget, you will need:
 
 * `PySide <https://wiki.qt.io/PySide>`__ or `PyQt
   <https://riverbankcomputing.com/software/pyqt/intro>`__ (both PyQt4 and PyQt5 are supported)
-* `QtPy <https://pypi.org/project/QtPy/>`__ 1.2 or higher
+* `QtPy <https://pypi.org/project/QtPy/>`__ 1.2 or later
+
+For the Jupyter widget, you will need:
+
+* `Jupyter <https://jupyter.org/>`__ 1.0.0 or later
+* `notebook <https://jupyter-notebook.readthedocs.io/en/stable/>`__ 5.0.0 or later
 
 Installing the developer version
 --------------------------------
