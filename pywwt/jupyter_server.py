@@ -1,5 +1,6 @@
 import os
 import json
+import mimetypes
 from hashlib import md5
 from tornado import web
 from notebook.utils import url_path_join
@@ -32,6 +33,9 @@ class WWTFileHandler(IPythonHandler):
                 path = config['paths'][filename]
             else:
                 raise web.HTTPError(404)
+
+        # Do our best to set an appropriate Content-Type.
+        self.set_header('Content-Type', mimetypes.guess_type(filename)[0])
 
         with open(path, 'rb') as f:
             content = f.read()
