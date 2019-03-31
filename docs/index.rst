@@ -6,7 +6,7 @@ About
 
 `WorldWide Telescope <http://worldwidetelescope.org/home>`_ is a free and
 powerful visualization engine developed by the `American Astronomical Society
-<https://aas.org'>`_ that can display astronomical and planetary data. The two
+<https://aas.org>`_ that can display astronomical and planetary data. The two
 main versions of WorldWide Telescope are the cross-platform HTML/WebGL-based
 “web client”, and a Windows desktop application. Both versions can access a
 large (multi-terabyte) collection of astronomical survey data stored in the
@@ -14,7 +14,7 @@ cloud. WorldWide Telescope is designed to be useful to a wide audience,
 including researchers, educators, and the general public.
 
 The pywwt package allows you to embed the WorldWide Telescope interface in a
-`Jupyter <http://jupyter.org>`_ notebook, control it, and display arbitrary
+`Jupyter <https://jupyter.org>`_ notebook, control it, and display arbitrary
 astronomical and planetary data sets in it. It also provides:
 
 * A standalone Qt viewer/widget
