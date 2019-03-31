@@ -13,8 +13,8 @@ the notebook appears).
 Installing pywwt with conda (recommended)
 -----------------------------------------
 
-If you use the `Anaconda Distribution <https://www.anaconda.com/download/#macos>`_
-(or `Miniconda <https://conda.io/miniconda.html>`_), you can install the latest
+If you use the `Anaconda Distribution <https://www.anaconda.com/distribution/#macos>`_
+(or `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_), you can install the latest
 release of pywwt using::
 
     conda install -c wwt pywwt
