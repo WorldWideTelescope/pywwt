@@ -37,7 +37,7 @@ env:
     - PYTHON_VERSION=3.6 JUPYTERLAB_LAUNCHER_VERSION=0.13.0
 
     - PYTHON_VERSION=3.6 NOTEBOOK_VERSION=5.0.0
-    - PYTHON_VERSION=3.6 NOTEBOOK_VERSION=5.7.6
+    - PYTHON_VERSION=3.6 NOTEBOOK_VERSION=5.7.5
 
 install:
   - git clone git://github.com/astropy/ci-helpers.git
