@@ -280,10 +280,13 @@ class TableLayer(HasTraits):
     # zAxisReverse
 
     def __init__(self, parent=None, table=None, frame=None, **kwargs):
-
-        # TODO: need to validate reference frame
+        
         self.table = table
-        self.frame = frame
+
+        # Validate frame
+        if frame.lower() not in VALID_FRAMES:
+            raise ValueError('frame should be one of {0}'.format('/'.join(sorted(str(x) for x in VALID_FRAMES))))
+        self.frame = frame.capitalize()
 
         self.parent = parent
         self.id = str(uuid.uuid4())
