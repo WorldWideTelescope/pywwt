@@ -42,6 +42,19 @@ class Annotation(HasTraits):
         self.parent = parent
         self.observe(self._on_trait_change, type='change')
         self.id = str(uuid.uuid4())
+
+        # Check that all kwargs are valid
+        mismatch = [key for key in kwargs if key not in self.trait_names()]
+        if not mismatch:
+            self.parent._send_msg(event='annotation_create',
+                                  id=self.id, shape=self.shape)
+            super(Annotation, self).__init__(**kwargs)            
+        else:
+            raise KeyError('Key{0} {1} do{2}n\'t match any annotation traits'
+                           .format('s' if len(mismatch) > 1 else '',
+                                   mismatch,
+                                   '' if len(mismatch) > 1 else 'es'))
+        
         if all(key in self.trait_names() for key in kwargs):
             self.parent._send_msg(event='annotation_create',
                                   id=self.id, shape=self.shape)

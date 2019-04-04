@@ -311,8 +311,13 @@ class TableLayer(HasTraits):
 
         self.observe(self._on_trait_change, type='change')
 
-        if any(key not in self.trait_names() for key in kwargs):
-            raise KeyError('a key doesn\'t match any layer trait name')
+        # Check that all kwargs are valid
+        mismatch = [key for key in kwargs if key not in self.trait_names()]
+        if mismatch:
+            raise KeyError('Key{0} {1} do{2}n\'t match any layer trait name'
+                           .format('s' if len(mismatch) > 1 else '',
+                                   mismatch,
+                                   '' if len(mismatch) > 1 else 'es'))
 
         super(TableLayer, self).__init__(**kwargs)
 
@@ -665,8 +670,13 @@ class ImageLayer(HasTraits):
 
         self._initialize_layer()
 
-        if any(key not in self.trait_names() for key in kwargs):
-            raise KeyError('a key doesn\'t match any layer trait name')
+        # Check that all kwargs are valid
+        mismatch = [key for key in kwargs if key not in self.trait_names()]
+        if mismatch:
+            raise KeyError('Key{0} {1} do{2}n\'t match any layer trait name'
+                           .format('s' if len(mismatch) > 1 else '',
+                                   mismatch,
+                                   '' if len(mismatch) > 1 else 'es'))
 
         super(ImageLayer, self).__init__(**kwargs)
 
