@@ -29,7 +29,7 @@ script:
   - pip install numpy pyopengl
   - pip install "PyQt5<$PYQT5_VERSION"
   - pip install -e .[test]
-  - pytest pywwt --cov pywwt
+  - pytest pywwt --cov pywwt -vs
 
 after_success:
   - codecov

@@ -75,23 +75,35 @@ with open('actual.png', 'wb') as f:
 ################################################################################
 """
 
+ALL_FRAMEWORKS = set(['webengine', 'webengine_osx', 'webkit', 'webkit_win'])
+
 
 def assert_widget_image(tmpdir, widget, filename):
     actual = tmpdir.join(filename).strpath
     widget.render(actual)
-    framework = 'webengine' if WEBENGINE else 'webkit'
-    if sys.platform.startswith('win') and not WEBENGINE:
-        framework += '_win'
-    elif sys.platform.startswith('darwin'):
-        framework += '_osx'
-    expected = os.path.join(DATA, framework, filename)
-    try:
-        msg = compare_images(expected, actual, tol=1.5)
-    except Exception:
-        msg = 'Image comparison failed:'
-        print_exc()
 
-    if msg is not None:
+    expected_framework = 'webengine' if WEBENGINE else 'webkit'
+    if sys.platform.startswith('win') and not WEBENGINE:
+        expected_framework += '_win'
+    elif sys.platform.startswith('darwin'):
+        expected_framework += '_osx'
+
+    for framework in [expected_framework] + sorted(ALL_FRAMEWORKS - set([expected_framework])):
+        expected = os.path.join(DATA, framework, filename)
+        try:
+            msg = compare_images(expected, actual, tol=1.5)
+        except Exception:
+            msg = 'Image comparison failed:'
+            print_exc()
+        if msg is None:
+            break
+
+    if msg is None:
+
+        if framework != expected_framework:
+            print("NOTE: Image {0} did not match expected framework {1} but matched {2}".format(filename, expected_framework, framework))
+
+    else:
 
         from base64 import b64encode
 
@@ -119,14 +131,14 @@ def test_full(tmpdir, capsys, wwt_qt_client):
     # on all platforms.
     wwt.crosshairs = False
 
-    wwt.wait(20)
+    wwt.wait(10)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step0.png')
 
     gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='galactic')
     wwt.center_on_coordinates(gc, 60 * u.deg)
 
-    wwt.wait(20)
+    wwt.wait(10)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step1.png')
 
@@ -137,7 +149,7 @@ def test_full(tmpdir, capsys, wwt_qt_client):
     wwt.constellation_boundaries = True
     wwt.constellation_figures = True
 
-    wwt.wait(20)
+    wwt.wait(10)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step2.png')
 
@@ -147,13 +159,13 @@ def test_full(tmpdir, capsys, wwt_qt_client):
     wwt.ecliptic = True
     wwt.grid = True
 
-    wwt.wait(20)
+    wwt.wait(10)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step3.png')
 
     wwt.foreground = 'SFD Dust Map (Infrared)'
 
-    wwt.wait(20)
+    wwt.wait(10)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step4.png')
 
@@ -204,6 +216,6 @@ def test_full(tmpdir, capsys, wwt_qt_client):
     polyline.color = 'green'
     polyline.width = 3 * u.pixel
 
-    wwt.wait(20)
+    wwt.wait(10)
 
     assert_widget_image(tmpdir, wwt, 'test_full_step5.png')
