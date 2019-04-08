@@ -94,7 +94,7 @@ def assert_widget_image(tmpdir, widget, filename):
 
     for framework in ([expected_framework] +
                       sorted(ALL_FRAMEWORKS - set([expected_framework])) +
-                      [expected_framework]:
+                      [expected_framework]):
         expected = os.path.join(DATA, framework, filename)
         try:
             msg = compare_images(expected, actual, tol=1.5)
