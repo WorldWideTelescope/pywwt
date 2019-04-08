@@ -115,6 +115,7 @@ setup_args = dict(
         'test': [
             'pytest',
             'pytest-cov',
+            'pytest-faulthandler'
         ],
         'docs': [
             'sphinx>=1.6',
