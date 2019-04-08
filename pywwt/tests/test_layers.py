@@ -311,12 +311,17 @@ def test_layers_image(tmpdir, wwt_qt_client):
         assert_widget_image(tmpdir, wwt, 'sky_layers.png')
 
 
-def test_image_layer_equ(tmpdir, wwt_qt_client):
+def test_image_layer_equ(tmpdir, wwt_qt_client_isolated):
 
     # A series of tests that excercise the image layer functionality and compare
     # the results with a set of baseline images.
 
-    wwt = wwt_qt_client
+    # NOTE: due to an unknown issue, we need to run this using an isolated
+    # Qt client and we can't re-use the usual wwt_qt_client fixture, as loading
+    # the image layer appears to have some kind of irreversible impact on the
+    # state of the Qt widget.
+
+    wwt = wwt_qt_client_isolated
 
     wwt.foreground = 'Black Sky Background'
     wwt.background = 'Black Sky Background'
@@ -341,12 +346,17 @@ def test_image_layer_equ(tmpdir, wwt_qt_client):
         assert_widget_image(tmpdir, wwt, 'image_layer_equ.png')
 
 
-def test_image_layer_gal(tmpdir, wwt_qt_client):
+def test_image_layer_gal(tmpdir, wwt_qt_client_isolated):
 
     # A series of tests that excercise the image layer functionality and compare
     # the results with a set of baseline images.
 
-    wwt = wwt_qt_client
+    # NOTE: due to an unknown issue, we need to run this using an isolated
+    # Qt client and we can't re-use the usual wwt_qt_client fixture, as loading
+    # the image layer appears to have some kind of irreversible impact on the
+    # state of the Qt widget.
+
+    wwt = wwt_qt_client_isolated
 
     wwt.foreground = 'Black Sky Background'
     wwt.background = 'Black Sky Background'

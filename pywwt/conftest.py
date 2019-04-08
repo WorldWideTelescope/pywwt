@@ -97,6 +97,13 @@ def wwt_qt_client():
     return wwt
 
 
+@pytest.fixture(scope='function')
+def wwt_qt_client_isolated():
+    from .qt import WWTQtClient
+    wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
+    return wwt
+
+
 @pytest.fixture(autouse=True)
 def reset_state(wwt_qt_client):
     wwt_qt_client.reset()
