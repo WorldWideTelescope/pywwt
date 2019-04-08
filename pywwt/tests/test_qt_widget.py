@@ -88,7 +88,13 @@ def assert_widget_image(tmpdir, widget, filename):
     elif sys.platform.startswith('darwin'):
         expected_framework += '_osx'
 
-    for framework in [expected_framework] + sorted(ALL_FRAMEWORKS - set([expected_framework])):
+    # NOTE: we now try with the expected framework but also with the other ones
+    # just in case. We end with the expected framework so that the error
+    # will refer to this later.
+
+    for framework in ([expected_framework] +
+                      sorted(ALL_FRAMEWORKS - set([expected_framework])) +
+                      [expected_framework]:
         expected = os.path.join(DATA, framework, filename)
         try:
             msg = compare_images(expected, actual, tol=1.5)
