@@ -167,6 +167,7 @@ class LayerManager(object):
         """
         warnings.warn('add_data_layer has been deprecated, use add_table_layer '
                       'instead', UserWarning)
+        return self.add_table_layer(*args, **kwargs)
 
     def _add_layer(self, layer):
         if layer in self._layers:
