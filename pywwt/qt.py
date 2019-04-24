@@ -123,7 +123,7 @@ class WWTQtWidget(QtWidgets.QWidget):
 
         super(WWTQtWidget, self).__init__(parent=parent)
 
-        self.web = QWebEngineView()
+        self.web = WWTWebEngineView()
         self.page = WWTQWebEnginePage()
         self.page.setView(self.web)
         self.web.setPage(self.page)
