@@ -30,6 +30,25 @@ with open(WWT_HTML_FILE) as f:
     WWT_HTML = f.read()
 
 
+class WWTWebEngineView(QWebEngineView):
+
+    # Pass drag and drop events back up to the parent
+    # as this is needed for cases where applications
+    # embed a PyWWT Qt widget.
+
+    def dragEnterEvent(self, event):
+        return self.parent().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        return self.parent().dragMoveEvent(event)
+
+    def dragLeaveEvent(self, event):
+        return self.parent().dragLeaveEvent(event)
+
+    def dropEvent(self, event):
+        return self.parent().dropEvent(event)
+
+
 class WWTQWebEnginePage(QWebEnginePage):
     """
     Subclass of QWebEnginePage that can check when WWT is ready for
@@ -139,6 +158,18 @@ class WWTQtWidget(QtWidgets.QWidget):
         else:
             logger.debug('Caching javascript: %s' % js)
             self._js_queue += js + '\n'
+
+    def dragEnterEvent(self, event):
+        return self.parent().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        return self.parent().dragMoveEvent(event)
+
+    def dragLeaveEvent(self, event):
+        return self.parent().dragLeaveEvent(event)
+
+    def dropEvent(self, event):
+        return self.parent().dropEvent(event)
 
 
 class WWTQtClient(BaseWWTWidget):
