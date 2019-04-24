@@ -212,6 +212,25 @@ class TestLayers:
         assert layer.lat_att == 'b'
         assert layer.alt_att == ''
 
+    def test_deprecated_api_call(self, capsys):
+        """For the time being, test that the deprecated name for this function still
+        works, but issues a warning
+
+        """
+        import warnings
+
+        assert len(self.client.layers) == 0
+        assert str(self.client.layers) == 'Layer manager with no layers'
+
+        with warnings.catch_warnings(record=True) as w:
+            layer1 = self.client.layers.add_data_layer(table=self.table)
+
+        assert len(self.client.layers) == 1
+        assert str(self.client.layers) == ('Layer manager with 1 layers:\n\n'
+                                           '  [0]: TableLayer with 3 markers\n')
+        assert len(w) == 1
+        assert issubclass(w[-1].category, DeprecationWarning)
+
 
 CASES = [[('flux', 'dec', 'ra'), ('ra', 'dec')],
          [('mass', 'lat', 'lon'), ('lon', 'lat')],
