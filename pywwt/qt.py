@@ -37,16 +37,28 @@ class WWTWebEngineView(QWebEngineView):
     # embed a PyWWT Qt widget.
 
     def dragEnterEvent(self, event):
-        return self.parent().dragEnterEvent(event)
+        if self.parent() is None:
+            super(WWTWebEngineView, self).dragEnterEvent(event)
+        else:
+            return self.parent().dragEnterEvent(event)
 
     def dragMoveEvent(self, event):
-        return self.parent().dragMoveEvent(event)
+        if self.parent() is None:
+            super(WWTWebEngineView, self).dragMoveEvent(event)
+        else:
+            return self.parent().dragMoveEvent(event)
 
     def dragLeaveEvent(self, event):
-        return self.parent().dragLeaveEvent(event)
+        if self.parent() is None:
+            super(WWTWebEngineView, self).dragLeaveEvent(event)
+        else:
+            return self.parent().dragLeaveEvent(event)
 
     def dropEvent(self, event):
-        return self.parent().dropEvent(event)
+        if self.parent() is None:
+            super(WWTWebEngineView, self).dropEvent(event)
+        else:
+            return self.parent().dropEvent(event)
 
 
 class WWTQWebEnginePage(QWebEnginePage):
@@ -160,16 +172,28 @@ class WWTQtWidget(QtWidgets.QWidget):
             self._js_queue += js + '\n'
 
     def dragEnterEvent(self, event):
-        return self.parent().dragEnterEvent(event)
+        if self.parent() is None:
+            super(WWTQtWidget, self).dragEnterEvent(event)
+        else:
+            return self.parent().dragEnterEvent(event)
 
     def dragMoveEvent(self, event):
-        return self.parent().dragMoveEvent(event)
+        if self.parent() is None:
+            super(WWTQtWidget, self).dragMoveEvent(event)
+        else:
+            return self.parent().dragMoveEvent(event)
 
     def dragLeaveEvent(self, event):
-        return self.parent().dragLeaveEvent(event)
+        if self.parent() is None:
+            super(WWTQtWidget, self).dragLeaveEvent(event)
+        else:
+            return self.parent().dragLeaveEvent(event)
 
     def dropEvent(self, event):
-        return self.parent().dropEvent(event)
+        if self.parent() is None:
+            super(WWTQtWidget, self).dropEvent(event)
+        else:
+            return self.parent().dropEvent(event)
 
 
 class WWTQtClient(BaseWWTWidget):
