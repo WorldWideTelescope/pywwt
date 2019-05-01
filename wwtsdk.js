@@ -10862,7 +10862,7 @@ window.wwtlib = function(){
     preDraw: function(renderContext, opacity) {
       return true;
     },
-    upadteData: function(data, purgeOld, purgeAll, hasHeader) {
+    updateData: function(data, purgeOld, purgeAll, hasHeader) {
       return true;
     },
     canCopyToClipboard: function() {
@@ -17041,7 +17041,7 @@ window.wwtlib = function(){
     temp.viewCamera.target = 65536;
     return temp;
   };
-  RenderContext._getTilesYForLevel = function(layer, level) {
+  RenderContext.getTilesYForLevel = function(layer, level) {
     var maxY = 1;
     switch (layer.get_projection()) {
       case 0:
@@ -17065,7 +17065,7 @@ window.wwtlib = function(){
     }
     return maxY;
   };
-  RenderContext._getTilesXForLevel = function(layer, level) {
+  RenderContext.getTilesXForLevel = function(layer, level) {
     var maxX = 1;
     switch (layer.get_projection()) {
       case 6:
@@ -17232,9 +17232,44 @@ window.wwtlib = function(){
       this._foregroundImageset = value;
       return value;
     },
+    getAltitudeForLatLongForPlanet: function(planetID, viewLat, viewLong) {
+      var layer = WWTControl.singleton.getImagesetByName(Planets.getNameFrom3dId(planetID));
+      if (layer == null) {
+        return 0;
+      }
+      var maxX = RenderContext.getTilesXForLevel(layer, layer.get_baseLevel());
+      var maxY = RenderContext.getTilesYForLevel(layer, layer.get_baseLevel());
+      for (var x = 0; x < maxX; x++) {
+        for (var y = 0; y < maxY; y++) {
+          var tile = TileCache.getTile(layer.get_baseLevel(), x, y, layer, null);
+          if (tile != null) {
+            if (tile.isPointInTile(viewLat, viewLong)) {
+              return tile.getSurfacePointAltitude(viewLat, viewLong, true);
+            }
+          }
+        }
+      }
+      return 0;
+    },
+    getEarthAltitude: function(ViewLat, ViewLong, meters) {
+      if (WWTControl.singleton.get_solarSystemMode()) {
+        var pnt = Coordinates.geoTo3dDouble(ViewLat, ViewLong + 90);
+        var EarthMat = Planets.earthMatrixInv;
+        pnt = Vector3d._transformCoordinate(pnt, EarthMat);
+        pnt.normalize();
+        var point = Coordinates.cartesianToLatLng(pnt);
+        return this.getAltitudeForLatLongForPlanet(this.viewCamera.target, point.y, point.x);
+      }
+      else if (!this.get_backgroundImageset().get_dataSetType()) {
+        return (meters) ? this.getMetersAltitudeForLatLong(ViewLat, ViewLong) : this.getScaledAltitudeForLatLong(ViewLat, ViewLong);
+      }
+      else {
+        return 0;
+      }
+    },
     drawImageSet: function(imageset, opacity) {
-      var maxX = RenderContext._getTilesXForLevel(imageset, imageset.get_baseLevel());
-      var maxY = RenderContext._getTilesYForLevel(imageset, imageset.get_baseLevel());
+      var maxX = RenderContext.getTilesXForLevel(imageset, imageset.get_baseLevel());
+      var maxY = RenderContext.getTilesYForLevel(imageset, imageset.get_baseLevel());
       for (var x = 0; x < maxX; x++) {
         for (var y = 0; y < maxY; y++) {
           var tile = TileCache.getTile(imageset.get_baseLevel(), x, y, imageset, null);
@@ -17244,22 +17279,36 @@ window.wwtlib = function(){
         }
       }
     },
-    getScaledAltitudeForLatLong: function(viewLat, viewLong) {
+    _getTileAtLatLong: function(viewLat, viewLong) {
       var layer = this.get_backgroundImageset();
       if (layer == null) {
-        return 0;
+        return null;
       }
-      var maxX = RenderContext._getTilesXForLevel(layer, layer.get_baseLevel());
-      var maxY = RenderContext._getTilesYForLevel(layer, layer.get_baseLevel());
+      var maxX = RenderContext.getTilesXForLevel(layer, layer.get_baseLevel());
+      var maxY = RenderContext.getTilesYForLevel(layer, layer.get_baseLevel());
       for (var x = 0; x < maxX; x++) {
         for (var y = 0; y < maxY; y++) {
           var tile = TileCache.getTile(layer.get_baseLevel(), x, y, layer, null);
           if (tile != null) {
             if (tile.isPointInTile(viewLat, viewLong)) {
-              return tile.getSurfacePointAltitude(viewLat, viewLong, false);
+              return tile;
             }
           }
         }
+      }
+      return null;
+    },
+    getScaledAltitudeForLatLong: function(viewLat, viewLong) {
+      var tile = this._getTileAtLatLong(viewLat, viewLong);
+      if (tile != null) {
+        return tile.getSurfacePointAltitude(viewLat, viewLong, false);
+      }
+      return 0;
+    },
+    getMetersAltitudeForLatLong: function(viewLat, viewLong) {
+      var tile = this._getTileAtLatLong(viewLat, viewLong);
+      if (tile != null) {
+        return tile.getSurfacePointAltitude(viewLat, viewLong, true);
       }
       return 0;
     },
@@ -17987,6 +18036,12 @@ window.wwtlib = function(){
     remove_tourReady: function(value) {
       this.__tourReady = ss.bindSub(this.__tourReady, value);
     },
+    add_tourError: function(value) {
+      this.__tourError = ss.bindAdd(this.__tourError, value);
+    },
+    remove_tourError: function(value) {
+      this.__tourError = ss.bindSub(this.__tourError, value);
+    },
     add_tourPaused: function(value) {
       this.__tourPaused = ss.bindAdd(this.__tourPaused, value);
     },
@@ -18041,6 +18096,11 @@ window.wwtlib = function(){
     _fireTourReady: function() {
       if (this.__tourReady != null) {
         this.__tourReady(this, new ss.EventArgs());
+      }
+    },
+    _fireTourError: function(ex) {
+      if (this.__tourError != null) {
+        this.__tourError(ex, new ss.EventArgs());
       }
     },
     _fireTourPaused: function() {
@@ -21655,15 +21715,20 @@ window.wwtlib = function(){
     _loadXmlDocument: function() {
       var $this = this;
 
-      var master = this._cabinet.get_masterFile();
-      var doc = new FileReader();
-      doc.onloadend = function(ee) {
-        var data = ss.safeCast(doc.result, String);
-        var xParser = new DOMParser();
-        $this.fromXml(xParser.parseFromString(data, 'text/xml'));
-        $this._callMe();
-      };
-      doc.readAsText(this._cabinet.getFileBlob(master));
+      try {
+        var master = this._cabinet.get_masterFile();
+        var doc = new FileReader();
+        doc.onloadend = function(ee) {
+          var data = ss.safeCast(doc.result, String);
+          var xParser = new DOMParser();
+          $this.fromXml(xParser.parseFromString(data, 'text/xml'));
+          $this._callMe();
+        };
+        doc.readAsText(this._cabinet.getFileBlob(master));
+      }
+      catch (ex) {
+        WWTControl.scriptInterface._fireTourError(ex);
+      }
     },
     fromXml: function(doc) {
       var root = Util.selectSingleNode(doc, 'Tour');
@@ -25348,276 +25413,282 @@ window.wwtlib = function(){
     return writer.body;
   };
   TourStop._fromXml = function(owner, tourStop) {
-    var newTourStop = new TourStop();
-    newTourStop._owner = owner;
-    newTourStop.set_id(tourStop.attributes.getNamedItem('Id').nodeValue);
-    newTourStop.set_name(tourStop.attributes.getNamedItem('Name').nodeValue);
-    newTourStop.set_description(tourStop.attributes.getNamedItem('Description').nodeValue);
-    newTourStop._thumbnailString = tourStop.attributes.getNamedItem('Thumbnail').nodeValue;
-    newTourStop._duration = Util.parseTimeSpan(tourStop.attributes.getNamedItem('Duration').nodeValue);
-    if (tourStop.attributes.getNamedItem('Master') != null) {
-      newTourStop._masterSlide = ss.boolean(tourStop.attributes.getNamedItem('Master').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('NextSlide') != null) {
-      newTourStop._nextSlide = tourStop.attributes.getNamedItem('NextSlide').nodeValue;
-    }
-    if (tourStop.attributes.getNamedItem('InterpolationType') != null) {
-      newTourStop.set_interpolationType(Enums.parse('InterpolationType', tourStop.attributes.getNamedItem('InterpolationType').nodeValue));
-    }
-    newTourStop._fadeInOverlays = true;
-    if (tourStop.attributes.getNamedItem('FadeInOverlays') != null) {
-      newTourStop._fadeInOverlays = ss.boolean(tourStop.attributes.getNamedItem('FadeInOverlays').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('Transition') != null) {
-      newTourStop._transition = Enums.parse('TransitionType', tourStop.attributes.getNamedItem('Transition').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('HasLocation') != null) {
-      newTourStop._hasLocation = ss.boolean(tourStop.attributes.getNamedItem('HasLocation').nodeValue);
-    }
-    if (newTourStop._hasLocation) {
-      if (tourStop.attributes.getNamedItem('LocationAltitude') != null) {
-        newTourStop._locationAltitude = parseFloat(tourStop.attributes.getNamedItem('LocationAltitude').nodeValue);
+    try {
+      var newTourStop = new TourStop();
+      newTourStop._owner = owner;
+      newTourStop.set_id(tourStop.attributes.getNamedItem('Id').nodeValue);
+      newTourStop.set_name(tourStop.attributes.getNamedItem('Name').nodeValue);
+      newTourStop.set_description(tourStop.attributes.getNamedItem('Description').nodeValue);
+      newTourStop._thumbnailString = tourStop.attributes.getNamedItem('Thumbnail').nodeValue;
+      newTourStop._duration = Util.parseTimeSpan(tourStop.attributes.getNamedItem('Duration').nodeValue);
+      if (tourStop.attributes.getNamedItem('Master') != null) {
+        newTourStop._masterSlide = ss.boolean(tourStop.attributes.getNamedItem('Master').nodeValue);
       }
-      if (tourStop.attributes.getNamedItem('LocationLat') != null) {
-        newTourStop._locationLat = parseFloat(tourStop.attributes.getNamedItem('LocationLat').nodeValue);
+      if (tourStop.attributes.getNamedItem('NextSlide') != null) {
+        newTourStop._nextSlide = tourStop.attributes.getNamedItem('NextSlide').nodeValue;
       }
-      if (tourStop.attributes.getNamedItem('LocationLng') != null) {
-        newTourStop._locationLng = parseFloat(tourStop.attributes.getNamedItem('LocationLng').nodeValue);
+      if (tourStop.attributes.getNamedItem('InterpolationType') != null) {
+        newTourStop.set_interpolationType(Enums.parse('InterpolationType', tourStop.attributes.getNamedItem('InterpolationType').nodeValue));
       }
-    }
-    if (tourStop.attributes.getNamedItem('HasTime') != null) {
-      newTourStop._hasTime = ss.boolean(tourStop.attributes.getNamedItem('HasTime').nodeValue);
-      if (newTourStop._hasTime) {
-        if (tourStop.attributes.getNamedItem('StartTime') != null) {
-          newTourStop._startTime = ss.date(tourStop.attributes.getNamedItem('StartTime').nodeValue + ' UTC');
+      newTourStop._fadeInOverlays = true;
+      if (tourStop.attributes.getNamedItem('FadeInOverlays') != null) {
+        newTourStop._fadeInOverlays = ss.boolean(tourStop.attributes.getNamedItem('FadeInOverlays').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('Transition') != null) {
+        newTourStop._transition = Enums.parse('TransitionType', tourStop.attributes.getNamedItem('Transition').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('HasLocation') != null) {
+        newTourStop._hasLocation = ss.boolean(tourStop.attributes.getNamedItem('HasLocation').nodeValue);
+      }
+      if (newTourStop._hasLocation) {
+        if (tourStop.attributes.getNamedItem('LocationAltitude') != null) {
+          newTourStop._locationAltitude = parseFloat(tourStop.attributes.getNamedItem('LocationAltitude').nodeValue);
         }
-        if (tourStop.attributes.getNamedItem('EndTime') != null) {
-          newTourStop._endTime = ss.date(tourStop.attributes.getNamedItem('EndTime').nodeValue + ' UTC');
+        if (tourStop.attributes.getNamedItem('LocationLat') != null) {
+          newTourStop._locationLat = parseFloat(tourStop.attributes.getNamedItem('LocationLat').nodeValue);
+        }
+        if (tourStop.attributes.getNamedItem('LocationLng') != null) {
+          newTourStop._locationLng = parseFloat(tourStop.attributes.getNamedItem('LocationLng').nodeValue);
         }
       }
-    }
-    if (tourStop.attributes.getNamedItem('ActualPlanetScale') != null) {
-      newTourStop._actualPlanetScale = ss.boolean(tourStop.attributes.getNamedItem('ActualPlanetScale').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowClouds') != null) {
-      newTourStop._showClouds = ss.boolean(tourStop.attributes.getNamedItem('ShowClouds').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowConstellationBoundries') != null) {
-      newTourStop._showConstellationBoundries = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellationBoundries').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowConstellationFigures') != null) {
-      newTourStop._showConstellationFigures = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellationFigures').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowConstellationSelection') != null) {
-      newTourStop._showConstellationSelection = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellationSelection').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowEcliptic') != null) {
-      newTourStop._showEcliptic = ss.boolean(tourStop.attributes.getNamedItem('ShowEcliptic').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowElevationModel') != null) {
-      newTourStop._showElevationModel = ss.boolean(tourStop.attributes.getNamedItem('ShowElevationModel').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowFieldOfView') != null) {
-      newTourStop._showFieldOfView = ss.boolean(tourStop.attributes.getNamedItem('ShowFieldOfView').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowGrid') != null) {
-      newTourStop._showGrid = ss.boolean(tourStop.attributes.getNamedItem('ShowGrid').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowHorizon') != null) {
-      newTourStop._showHorizon = ss.boolean(tourStop.attributes.getNamedItem('ShowHorizon').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowHorizonPanorama') != null) {
-      newTourStop._showHorizonPanorama = ss.boolean(tourStop.attributes.getNamedItem('ShowHorizonPanorama').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowMoonsAsPointSource') != null) {
-      newTourStop._showMoonsAsPointSource = ss.boolean(tourStop.attributes.getNamedItem('ShowMoonsAsPointSource').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowSolarSystem') != null) {
-      newTourStop._showSolarSystem = ss.boolean(tourStop.attributes.getNamedItem('ShowSolarSystem').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('FovTelescope') != null) {
-      newTourStop._fovTelescope = parseInt(tourStop.attributes.getNamedItem('FovTelescope').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('FovEyepiece') != null) {
-      newTourStop._fovEyepiece = parseInt(tourStop.attributes.getNamedItem('FovEyepiece').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('FovCamera') != null) {
-      newTourStop._fovCamera = parseInt(tourStop.attributes.getNamedItem('FovCamera').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('LocalHorizonMode') != null) {
-      newTourStop._localHorizonMode = ss.boolean(tourStop.attributes.getNamedItem('LocalHorizonMode').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('GalacticMode') != null) {
-      newTourStop._galacticMode = ss.boolean(tourStop.attributes.getNamedItem('GalacticMode').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemStars') != null) {
-      newTourStop._solarSystemStars = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemStars').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemMilkyWay') != null) {
-      newTourStop._solarSystemMilkyWay = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemMilkyWay').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemCosmos') != null) {
-      newTourStop._solarSystemCosmos = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemCosmos').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemOrbits') != null) {
-      newTourStop._solarSystemOrbits = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemOrbits').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemOverlays') != null) {
-      newTourStop._solarSystemOverlays = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemOverlays').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemLighting') != null) {
-      newTourStop._solarSystemLighting = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemLighting').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemScale') != null) {
-      newTourStop._solarSystemScale = parseInt(tourStop.attributes.getNamedItem('SolarSystemScale').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemMultiRes') != null) {
-      newTourStop._solarSystemMultiRes = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemMultiRes').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowEquatorialGridText') != null) {
-      newTourStop._showEquatorialGridText = ss.boolean(tourStop.attributes.getNamedItem('ShowEquatorialGridText').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowGalacticGrid') != null) {
-      newTourStop._showGalacticGrid = ss.boolean(tourStop.attributes.getNamedItem('ShowGalacticGrid').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowGalacticGridText') != null) {
-      newTourStop._showGalacticGridText = ss.boolean(tourStop.attributes.getNamedItem('ShowGalacticGridText').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowEclipticGrid') != null) {
-      newTourStop._showEclipticGrid = ss.boolean(tourStop.attributes.getNamedItem('ShowEclipticGrid').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowEclipticGridText') != null) {
-      newTourStop._showEclipticGridText = ss.boolean(tourStop.attributes.getNamedItem('ShowEclipticGridText').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowEclipticOverviewText') != null) {
-      newTourStop._showEclipticOverviewText = ss.boolean(tourStop.attributes.getNamedItem('ShowEclipticOverviewText').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowAltAzGrid') != null) {
-      newTourStop._showAltAzGrid = ss.boolean(tourStop.attributes.getNamedItem('ShowAltAzGrid').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowAltAzGridText') != null) {
-      newTourStop._showAltAzGridText = ss.boolean(tourStop.attributes.getNamedItem('ShowAltAzGridText').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowPrecessionChart') != null) {
-      newTourStop._showPrecessionChart = ss.boolean(tourStop.attributes.getNamedItem('ShowPrecessionChart').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowConstellationPictures') != null) {
-      newTourStop._showConstellationPictures = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellationPictures').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowConstellationLabels') != null) {
-      newTourStop._showConstellationLabels = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellationLabels').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemCMB') != null) {
-      newTourStop._solarSystemCMB = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemCMB').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemMinorPlanets') != null) {
-      newTourStop._solarSystemMinorPlanets = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemMinorPlanets').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemPlanets') != null) {
-      newTourStop._solarSystemPlanets = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemPlanets').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowEarthSky') != null) {
-      newTourStop._showEarthSky = ss.boolean(tourStop.attributes.getNamedItem('ShowEarthSky').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('SolarSystemMinorOrbits') != null) {
-      newTourStop._solarSystemMinorOrbits = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemMinorOrbits').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowSkyOverlays') != null) {
-      newTourStop._showSkyOverlays = ss.boolean(tourStop.attributes.getNamedItem('ShowSkyOverlays').nodeValue);
-    }
-    else {
-      newTourStop._showSkyOverlays = true;
-    }
-    if (tourStop.attributes.getNamedItem('ShowConstellations') != null) {
-      newTourStop._showConstellations = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellations').nodeValue);
-    }
-    else {
-      newTourStop._showConstellations = true;
-    }
-    if (tourStop.attributes.getNamedItem('ShowSkyNode') != null) {
-      newTourStop._showSkyNode = ss.boolean(tourStop.attributes.getNamedItem('ShowSkyNode').nodeValue);
-    }
-    else {
-      newTourStop._showSkyNode = true;
-    }
-    if (tourStop.attributes.getNamedItem('ShowSkyGrids') != null) {
-      newTourStop._showSkyGrids = ss.boolean(tourStop.attributes.getNamedItem('ShowSkyGrids').nodeValue);
-    }
-    else {
-      newTourStop._showSkyGrids = true;
-    }
-    if (tourStop.attributes.getNamedItem('ShowSkyOverlaysIn3d') != null) {
-      newTourStop._showSkyOverlaysIn3d = ss.boolean(tourStop.attributes.getNamedItem('ShowSkyOverlaysIn3d').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('EarthCutawayView') != null) {
-      newTourStop._earthCutawayView = ss.boolean(tourStop.attributes.getNamedItem('EarthCutawayView').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ShowISSModel') != null) {
-      newTourStop._showISSModel = ss.boolean(tourStop.attributes.getNamedItem('ShowISSModel').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('MilkyWayModel') != null) {
-      newTourStop._milkyWayModel = ss.boolean(tourStop.attributes.getNamedItem('MilkyWayModel').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('ConstellationBoundariesFilter') != null) {
-      newTourStop._constellationBoundariesFilter = ConstellationFilter.parse(tourStop.attributes.getNamedItem('ConstellationBoundariesFilter').nodeValue);
-    }
-    else {
-      newTourStop._constellationBoundariesFilter = ConstellationFilter.get_allConstellation();
-    }
-    if (tourStop.attributes.getNamedItem('ConstellationBoundariesFilter') != null) {
-      newTourStop._constellationFiguresFilter = ConstellationFilter.parse(tourStop.attributes.getNamedItem('ConstellationBoundariesFilter').nodeValue);
-    }
-    else {
-      newTourStop._constellationFiguresFilter = new ConstellationFilter();
-    }
-    if (tourStop.attributes.getNamedItem('ConstellationNamesFilter') != null) {
-      newTourStop._constellationNamesFilter = ConstellationFilter.parse(tourStop.attributes.getNamedItem('ConstellationNamesFilter').nodeValue);
-    }
-    else {
-      newTourStop._constellationNamesFilter = new ConstellationFilter();
-    }
-    if (tourStop.attributes.getNamedItem('ConstellationArtFilter') != null) {
-      newTourStop._constellationArtFilter = ConstellationFilter.parse(tourStop.attributes.getNamedItem('ConstellationArtFilter').nodeValue);
-    }
-    else {
-      newTourStop._constellationArtFilter = new ConstellationFilter();
-    }
-    if (tourStop.attributes.getNamedItem('MinorPlanetsFilter') != null) {
-      newTourStop._minorPlanetsFilter = parseInt(tourStop.attributes.getNamedItem('MinorPlanetsFilter').nodeValue);
-    }
-    if (tourStop.attributes.getNamedItem('PlanetOrbitsFilter') != null) {
-      newTourStop._planetOrbitsFilter = parseInt(tourStop.attributes.getNamedItem('PlanetOrbitsFilter').nodeValue);
-    }
-    var place = Util.selectSingleNode(tourStop, 'Place');
-    newTourStop._target = Place._fromXml(place);
-    var endTarget = Util.selectSingleNode(tourStop, 'EndTarget');
-    if (endTarget != null) {
-      newTourStop._endTarget = Place._fromXml(endTarget);
-    }
-    var overlays = Util.selectSingleNode(tourStop, 'Overlays');
-    var $enum1 = ss.enumerate(overlays.childNodes);
-    while ($enum1.moveNext()) {
-      var overlay = $enum1.current;
-      if (overlay.nodeName === 'Overlay') {
-        newTourStop.addOverlay(Overlay._fromXml(newTourStop, overlay));
+      if (tourStop.attributes.getNamedItem('HasTime') != null) {
+        newTourStop._hasTime = ss.boolean(tourStop.attributes.getNamedItem('HasTime').nodeValue);
+        if (newTourStop._hasTime) {
+          if (tourStop.attributes.getNamedItem('StartTime') != null) {
+            newTourStop._startTime = ss.date(tourStop.attributes.getNamedItem('StartTime').nodeValue + ' UTC');
+          }
+          if (tourStop.attributes.getNamedItem('EndTime') != null) {
+            newTourStop._endTime = ss.date(tourStop.attributes.getNamedItem('EndTime').nodeValue + ' UTC');
+          }
+        }
       }
+      if (tourStop.attributes.getNamedItem('ActualPlanetScale') != null) {
+        newTourStop._actualPlanetScale = ss.boolean(tourStop.attributes.getNamedItem('ActualPlanetScale').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowClouds') != null) {
+        newTourStop._showClouds = ss.boolean(tourStop.attributes.getNamedItem('ShowClouds').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowConstellationBoundries') != null) {
+        newTourStop._showConstellationBoundries = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellationBoundries').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowConstellationFigures') != null) {
+        newTourStop._showConstellationFigures = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellationFigures').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowConstellationSelection') != null) {
+        newTourStop._showConstellationSelection = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellationSelection').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowEcliptic') != null) {
+        newTourStop._showEcliptic = ss.boolean(tourStop.attributes.getNamedItem('ShowEcliptic').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowElevationModel') != null) {
+        newTourStop._showElevationModel = ss.boolean(tourStop.attributes.getNamedItem('ShowElevationModel').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowFieldOfView') != null) {
+        newTourStop._showFieldOfView = ss.boolean(tourStop.attributes.getNamedItem('ShowFieldOfView').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowGrid') != null) {
+        newTourStop._showGrid = ss.boolean(tourStop.attributes.getNamedItem('ShowGrid').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowHorizon') != null) {
+        newTourStop._showHorizon = ss.boolean(tourStop.attributes.getNamedItem('ShowHorizon').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowHorizonPanorama') != null) {
+        newTourStop._showHorizonPanorama = ss.boolean(tourStop.attributes.getNamedItem('ShowHorizonPanorama').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowMoonsAsPointSource') != null) {
+        newTourStop._showMoonsAsPointSource = ss.boolean(tourStop.attributes.getNamedItem('ShowMoonsAsPointSource').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowSolarSystem') != null) {
+        newTourStop._showSolarSystem = ss.boolean(tourStop.attributes.getNamedItem('ShowSolarSystem').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('FovTelescope') != null) {
+        newTourStop._fovTelescope = parseInt(tourStop.attributes.getNamedItem('FovTelescope').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('FovEyepiece') != null) {
+        newTourStop._fovEyepiece = parseInt(tourStop.attributes.getNamedItem('FovEyepiece').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('FovCamera') != null) {
+        newTourStop._fovCamera = parseInt(tourStop.attributes.getNamedItem('FovCamera').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('LocalHorizonMode') != null) {
+        newTourStop._localHorizonMode = ss.boolean(tourStop.attributes.getNamedItem('LocalHorizonMode').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('GalacticMode') != null) {
+        newTourStop._galacticMode = ss.boolean(tourStop.attributes.getNamedItem('GalacticMode').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemStars') != null) {
+        newTourStop._solarSystemStars = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemStars').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemMilkyWay') != null) {
+        newTourStop._solarSystemMilkyWay = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemMilkyWay').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemCosmos') != null) {
+        newTourStop._solarSystemCosmos = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemCosmos').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemOrbits') != null) {
+        newTourStop._solarSystemOrbits = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemOrbits').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemOverlays') != null) {
+        newTourStop._solarSystemOverlays = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemOverlays').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemLighting') != null) {
+        newTourStop._solarSystemLighting = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemLighting').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemScale') != null) {
+        newTourStop._solarSystemScale = parseInt(tourStop.attributes.getNamedItem('SolarSystemScale').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemMultiRes') != null) {
+        newTourStop._solarSystemMultiRes = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemMultiRes').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowEquatorialGridText') != null) {
+        newTourStop._showEquatorialGridText = ss.boolean(tourStop.attributes.getNamedItem('ShowEquatorialGridText').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowGalacticGrid') != null) {
+        newTourStop._showGalacticGrid = ss.boolean(tourStop.attributes.getNamedItem('ShowGalacticGrid').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowGalacticGridText') != null) {
+        newTourStop._showGalacticGridText = ss.boolean(tourStop.attributes.getNamedItem('ShowGalacticGridText').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowEclipticGrid') != null) {
+        newTourStop._showEclipticGrid = ss.boolean(tourStop.attributes.getNamedItem('ShowEclipticGrid').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowEclipticGridText') != null) {
+        newTourStop._showEclipticGridText = ss.boolean(tourStop.attributes.getNamedItem('ShowEclipticGridText').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowEclipticOverviewText') != null) {
+        newTourStop._showEclipticOverviewText = ss.boolean(tourStop.attributes.getNamedItem('ShowEclipticOverviewText').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowAltAzGrid') != null) {
+        newTourStop._showAltAzGrid = ss.boolean(tourStop.attributes.getNamedItem('ShowAltAzGrid').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowAltAzGridText') != null) {
+        newTourStop._showAltAzGridText = ss.boolean(tourStop.attributes.getNamedItem('ShowAltAzGridText').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowPrecessionChart') != null) {
+        newTourStop._showPrecessionChart = ss.boolean(tourStop.attributes.getNamedItem('ShowPrecessionChart').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowConstellationPictures') != null) {
+        newTourStop._showConstellationPictures = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellationPictures').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowConstellationLabels') != null) {
+        newTourStop._showConstellationLabels = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellationLabels').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemCMB') != null) {
+        newTourStop._solarSystemCMB = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemCMB').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemMinorPlanets') != null) {
+        newTourStop._solarSystemMinorPlanets = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemMinorPlanets').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemPlanets') != null) {
+        newTourStop._solarSystemPlanets = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemPlanets').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowEarthSky') != null) {
+        newTourStop._showEarthSky = ss.boolean(tourStop.attributes.getNamedItem('ShowEarthSky').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('SolarSystemMinorOrbits') != null) {
+        newTourStop._solarSystemMinorOrbits = ss.boolean(tourStop.attributes.getNamedItem('SolarSystemMinorOrbits').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowSkyOverlays') != null) {
+        newTourStop._showSkyOverlays = ss.boolean(tourStop.attributes.getNamedItem('ShowSkyOverlays').nodeValue);
+      }
+      else {
+        newTourStop._showSkyOverlays = true;
+      }
+      if (tourStop.attributes.getNamedItem('ShowConstellations') != null) {
+        newTourStop._showConstellations = ss.boolean(tourStop.attributes.getNamedItem('ShowConstellations').nodeValue);
+      }
+      else {
+        newTourStop._showConstellations = true;
+      }
+      if (tourStop.attributes.getNamedItem('ShowSkyNode') != null) {
+        newTourStop._showSkyNode = ss.boolean(tourStop.attributes.getNamedItem('ShowSkyNode').nodeValue);
+      }
+      else {
+        newTourStop._showSkyNode = true;
+      }
+      if (tourStop.attributes.getNamedItem('ShowSkyGrids') != null) {
+        newTourStop._showSkyGrids = ss.boolean(tourStop.attributes.getNamedItem('ShowSkyGrids').nodeValue);
+      }
+      else {
+        newTourStop._showSkyGrids = true;
+      }
+      if (tourStop.attributes.getNamedItem('ShowSkyOverlaysIn3d') != null) {
+        newTourStop._showSkyOverlaysIn3d = ss.boolean(tourStop.attributes.getNamedItem('ShowSkyOverlaysIn3d').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('EarthCutawayView') != null) {
+        newTourStop._earthCutawayView = ss.boolean(tourStop.attributes.getNamedItem('EarthCutawayView').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ShowISSModel') != null) {
+        newTourStop._showISSModel = ss.boolean(tourStop.attributes.getNamedItem('ShowISSModel').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('MilkyWayModel') != null) {
+        newTourStop._milkyWayModel = ss.boolean(tourStop.attributes.getNamedItem('MilkyWayModel').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('ConstellationBoundariesFilter') != null) {
+        newTourStop._constellationBoundariesFilter = ConstellationFilter.parse(tourStop.attributes.getNamedItem('ConstellationBoundariesFilter').nodeValue);
+      }
+      else {
+        newTourStop._constellationBoundariesFilter = ConstellationFilter.get_allConstellation();
+      }
+      if (tourStop.attributes.getNamedItem('ConstellationBoundariesFilter') != null) {
+        newTourStop._constellationFiguresFilter = ConstellationFilter.parse(tourStop.attributes.getNamedItem('ConstellationBoundariesFilter').nodeValue);
+      }
+      else {
+        newTourStop._constellationFiguresFilter = new ConstellationFilter();
+      }
+      if (tourStop.attributes.getNamedItem('ConstellationNamesFilter') != null) {
+        newTourStop._constellationNamesFilter = ConstellationFilter.parse(tourStop.attributes.getNamedItem('ConstellationNamesFilter').nodeValue);
+      }
+      else {
+        newTourStop._constellationNamesFilter = new ConstellationFilter();
+      }
+      if (tourStop.attributes.getNamedItem('ConstellationArtFilter') != null) {
+        newTourStop._constellationArtFilter = ConstellationFilter.parse(tourStop.attributes.getNamedItem('ConstellationArtFilter').nodeValue);
+      }
+      else {
+        newTourStop._constellationArtFilter = new ConstellationFilter();
+      }
+      if (tourStop.attributes.getNamedItem('MinorPlanetsFilter') != null) {
+        newTourStop._minorPlanetsFilter = parseInt(tourStop.attributes.getNamedItem('MinorPlanetsFilter').nodeValue);
+      }
+      if (tourStop.attributes.getNamedItem('PlanetOrbitsFilter') != null) {
+        newTourStop._planetOrbitsFilter = parseInt(tourStop.attributes.getNamedItem('PlanetOrbitsFilter').nodeValue);
+      }
+      var place = Util.selectSingleNode(tourStop, 'Place');
+      newTourStop._target = Place._fromXml(place);
+      var endTarget = Util.selectSingleNode(tourStop, 'EndTarget');
+      if (endTarget != null) {
+        newTourStop._endTarget = Place._fromXml(endTarget);
+      }
+      var overlays = Util.selectSingleNode(tourStop, 'Overlays');
+      var $enum1 = ss.enumerate(overlays.childNodes);
+      while ($enum1.moveNext()) {
+        var overlay = $enum1.current;
+        if (overlay.nodeName === 'Overlay') {
+          newTourStop.addOverlay(Overlay._fromXml(newTourStop, overlay));
+        }
+      }
+      var musicNode = Util.selectSingleNode(tourStop, 'MusicTrack');
+      if (musicNode != null) {
+        newTourStop._musicTrack = Overlay._fromXml(newTourStop, Util.selectSingleNode(musicNode, 'Overlay'));
+      }
+      var voiceNode = Util.selectSingleNode(tourStop, 'VoiceTrack');
+      if (voiceNode != null) {
+        newTourStop._voiceTrack = Overlay._fromXml(newTourStop, Util.selectSingleNode(voiceNode, 'Overlay'));
+      }
+      var layerNode = Util.selectSingleNode(tourStop, 'VisibleLayers');
+      if (layerNode != null) {
+        newTourStop._loadLayerList(layerNode);
+      }
+      newTourStop._thumbnail = owner.getCachedTexture(ss.format('{0}.thumb.png', newTourStop._id), function() {
+        var c = 0;
+      });
+      return newTourStop;
     }
-    var musicNode = Util.selectSingleNode(tourStop, 'MusicTrack');
-    if (musicNode != null) {
-      newTourStop._musicTrack = Overlay._fromXml(newTourStop, Util.selectSingleNode(musicNode, 'Overlay'));
+    catch (ex) {
+      WWTControl.scriptInterface._fireTourError(ex);
+      return null;
     }
-    var voiceNode = Util.selectSingleNode(tourStop, 'VoiceTrack');
-    if (voiceNode != null) {
-      newTourStop._voiceTrack = Overlay._fromXml(newTourStop, Util.selectSingleNode(voiceNode, 'Overlay'));
-    }
-    var layerNode = Util.selectSingleNode(tourStop, 'VisibleLayers');
-    if (layerNode != null) {
-      newTourStop._loadLayerList(layerNode);
-    }
-    newTourStop._thumbnail = owner.getCachedTexture(ss.format('{0}.thumb.png', newTourStop._id), function() {
-      var c = 0;
-    });
-    return newTourStop;
   };
   var TourStop$ = {
     get_keyFramed: function() {
@@ -38679,13 +38750,13 @@ window.wwtlib = function(){
     dynamicUpdate: function() {
       var data = SpreadSheetLayer._getDatafromFeed$1(this.get_dataSourceUrl());
       if (data != null) {
-        this.upadteData(data, false, true, true);
+        this.updateData(data, false, true, true);
         this.guessHeaderAssignments();
         return true;
       }
       return false;
     },
-    upadteData: function(data, purgeOld, purgeAll, hasHeader) {
+    updateData: function(data, purgeOld, purgeAll, hasHeader) {
       this.loadFromString(ss.safeCast(data, String), true, purgeOld, purgeAll, hasHeader);
       this.computeDateDomainRange(-1, -1);
       this._dataDirty$1 = true;
@@ -38795,7 +38866,7 @@ window.wwtlib = function(){
         var row = $enum1.current;
         try {
           if (columnStart > -1) {
-            var sucsess = false;
+            var sucsess = true;
             var dateTimeStart = new Date('12/31/2100');
             try {
               dateTimeStart = new Date(row[columnStart]);
@@ -38832,7 +38903,7 @@ window.wwtlib = function(){
         var row = $enum1.current;
         try {
           if (column > -1) {
-            var sucsess = false;
+            var sucsess = true;
             try {
               var val = parseFloat(row[column]);
               if (sucsess && val > max) {
@@ -39893,7 +39964,6 @@ window.wwtlib = function(){
           default:
             break;
         }
-        this.pointList.draw(renderContext, opacity * this.get_opacity(), false);
       }
       if (this.lineList != null) {
         this.lineList.sky = this.get_astronomical();
