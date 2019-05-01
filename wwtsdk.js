@@ -10865,6 +10865,9 @@ window.wwtlib = function(){
     updateData: function(data, purgeOld, purgeAll, hasHeader) {
       return true;
     },
+    upadteData: function(data, purgeOld, purgeAll, hasHeader) {  // back-compat
+      return this.updateData(data, purgeOld, purgeAll, hasHeader);
+    },
     canCopyToClipboard: function() {
       return false;
     },
@@ -38762,6 +38765,9 @@ window.wwtlib = function(){
       this._dataDirty$1 = true;
       this.dirty = true;
       return true;
+    },
+    upadteData: function(data, purgeOld, purgeAll, hasHeader) {  // back-compat
+      return this.updateData(data, purgeOld, purgeAll, hasHeader);
     },
     loadData: function(tourDoc, filename) {
       var $this = this;
