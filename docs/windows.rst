@@ -7,7 +7,7 @@ About
 The **pywwt.windows** sub-package includes a Python interface for the Microsoft
 `WorldWide Telescope <http://www.worldwidetelescope.org/home>`_
 (WWT) Windows client, using the
-`Layer Control API (LCAPI) <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#load>`_.
+`Layer Control API (LCAPI) <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#load>`_.
 The LCAPI provides an interface to WWT's Layer Manager by sending data and
 information in the form of strings over HTTP. ``pywwt`` simply provides a Python
 interface to make these calls, enabling the control of WWT from scripts or an
@@ -105,7 +105,7 @@ to control the fading in and out of data::
 :meth:`~pywwt.windows.WWTWindowsClient.load` returns a
 :class:`~pywwt.windows.WWTLayer` instance.
 
-`LCAPI Reference: Load <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#load>`_
+`LCAPI Reference: Load <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#load>`_
 
 new_layer
 +++++++++
@@ -123,7 +123,7 @@ the names of the data arrays that will be loaded into the
 :meth:`~pywwt.windows.WWTWindowsClient.new_layer` also takes the same keyword
 arguments as :meth:`~pywwt.windows.WWTWindowsClient.load`.
 
-`LCAPI Reference: New <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#new>`_
+`LCAPI Reference: New <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#new>`_
 
 new_layer_group
 +++++++++++++++
@@ -138,7 +138,7 @@ that are sub-sets of other groups::
 The first argument is the reference ``frame`` for the group and the second is
 the ``name`` of the group.
 
-`LCAPI Reference: Group <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#group>`_
+`LCAPI Reference: Group <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#group>`_
 
 get_existing_layer
 ++++++++++++++++++
@@ -177,7 +177,7 @@ be cleared from the layer. Setting ``no_purge`` to `True` will prevent data
 that has already occurred from being deleted from the layer, which would happen
 by default. ``show`` controls whether the layer is shown or hidden.
 
-`LCAPI Reference: Update <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#update>`_
+`LCAPI Reference: Update <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#update>`_
 
 activate
 ++++++++
@@ -187,11 +187,11 @@ layer in the layer manager::
 
     layer.activate()
 
-`LCAPI Reference: Activate <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#activate>`_
+`LCAPI Reference: Activate <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#activate>`_
 
 There are a number of properties associated with each layer, and there are
 methods for getting and setting these properties. There is a `list of properties
-<https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#table-of-properties>`_
+<https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#table-of-properties>`_
 for layers at the WWT website.
 
 get_property
@@ -202,7 +202,7 @@ given its ``property_name``::
 
     prop = layer.get_property("CoordinatesType")
 
-`LCAPI Reference: Getprop <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#getprop>`_
+`LCAPI Reference: Getprop <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#getprop>`_
 
 get_properties
 ++++++++++++++
@@ -212,7 +212,7 @@ a layer in a Python dict::
 
     prop_dict = layer.get_properties()
 
-`LCAPI Reference: Getprops <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#getprops>`_
+`LCAPI Reference: Getprops <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#getprops>`_
 
 set_property
 ++++++++++++
@@ -224,7 +224,7 @@ set_property
 
 The ``property_name`` and ``property_value`` must both be strings.
 
-`LCAPI Reference: Setprop <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#setprop>`_
+`LCAPI Reference: Setprop <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#setprop>`_
 
 set_properties
 ++++++++++++++
@@ -245,7 +245,7 @@ pairs::
 
 Each name and value must be a string.
 
-`LCAPI Reference: Setprops <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#setprops>`_
+`LCAPI Reference: Setprops <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#setprops>`_
 
 delete
 ++++++
@@ -260,7 +260,7 @@ message::
 
     WWTException: This layer has been deleted!
 
-`LCAPI Reference: Delete <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#delete>`_
+`LCAPI Reference: Delete <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#delete>`_
 
 Other Commands
 ~~~~~~~~~~~~~~
@@ -276,7 +276,7 @@ Earth, Planet, Sky, Panorama, SolarSystem::
 
     wwt.change_mode("SolarSystem")
 
-`LCAPI Reference: Mode <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#mode>`_
+`LCAPI Reference: Mode <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#mode>`_
 
 get_frame_list
 ++++++++++++++
@@ -298,7 +298,7 @@ returns something like::
      'Venus': {'Enabled': 'True'},
      'Ymir': {'Enabled': 'True'}}
 
-`LCAPI Reference: LayerList <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#layerlist>`_
+`LCAPI Reference: LayerList <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#layerlist>`_
 
 get_layer_list
 ++++++++++++++
@@ -327,7 +327,7 @@ returns something like::
       'Type': 'SkyOverlays',
       'Version': '2'}}
 
-`LCAPI Reference: LayerList <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#layerlist>`_
+`LCAPI Reference: LayerList <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#layerlist>`_
 
 get_state
 +++++++++
@@ -351,7 +351,7 @@ returns something along the lines of::
     'timerate': '1',
     'zoom': '600000000000'}
 
-`LCAPI Reference: State <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#state>`_
+`LCAPI Reference: State <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#state>`_
 
 move_view
 +++++++++
@@ -375,7 +375,7 @@ where the parameter may be one of:
 - ``"TiltDown"``: Angle the view down 0.2 of one radian.
 - ``"Finder"``: Currently unimplemented.
 
-`LCAPI Reference: Move <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#move>`_
+`LCAPI Reference: Move <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#move>`_
 
 ui_settings
 +++++++++++
@@ -388,7 +388,7 @@ settings without altering the layer data::
     wwt.ui_settings("ShowConstellationBoundries", "True")
 
 To see the list of possible settings see the `LCAPI section on uisettings
-<https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#uisettings>`_.
+<https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#uisettings>`_.
 
 Standard Keyword Arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -429,7 +429,7 @@ which would rotate the view clockwise, set the current date and time to 1/1/2000
 at 12:00:00 AM UTC, and increase the rate of the passage of time by a factor of
 100.
 
-`LCAPI Reference: General Parameters <https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#general-parameters>`_
+`LCAPI Reference: General Parameters <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#general-parameters>`_
 
 Data Utilities
 ~~~~~~~~~~~~~~
