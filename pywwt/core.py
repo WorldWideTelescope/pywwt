@@ -136,6 +136,12 @@ class BaseWWTWidget(HasTraits):
                         self._send_msg(event='get_dec', asynchronous=False),
                         unit=(u.hourangle, u.deg))
 
+    def get_fov(self):
+        """
+        Return the view's current field of view in degrees
+        """
+        return self._send_msg(event='get_fov', asynchronous=False) * u.deg
+
     def load_tour(self, url):
         """
         Load and begin playing a tour based on the URL to a .wtt file from
