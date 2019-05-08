@@ -32,8 +32,9 @@ You can also install the latest release of pywwt using `pip
 
     pip install pywwt
 
-If you want to use the Qt widget, you will need to install
-`PyQt <https://riverbankcomputing.com/software/pyqt/intro>`_ or
+If you want to use the Qt widget, you will need to install `PyQt
+<https://riverbankcomputing.com/software/pyqt/intro>`_ and `PyQtWebEngine
+<https://riverbankcomputing.com/software/pyqtwebengine/intro>`_, or
 `PySide <https://wiki.qt.io/PySide>`_ separately.
 
 If you want to use WWT inside Jupyter Lab, see `Using Jupyter Lab`_.
@@ -73,7 +74,9 @@ if using pip). For the record, these dependencies are as follows:
 In addition, if you want to use the Qt widget, you will need:
 
 * `PySide <https://wiki.qt.io/PySide>`__ or `PyQt
-  <https://riverbankcomputing.com/software/pyqt/intro>`__ (both PyQt4 and PyQt5 are supported)
+  <https://riverbankcomputing.com/software/pyqt/intro>`__ and `PyQtWebEngine
+  <https://riverbankcomputing.com/software/pyqtwebengine/intro>`__ (both PyQt4
+  and PyQt5 are supported)
 * `QtPy <https://pypi.org/project/QtPy/>`__ 1.2 or later
 
 For the Jupyter widget, you will need:
