@@ -9,7 +9,7 @@ from .traits import (Color, ColorWithOpacity, Bool,
                      Float, Unicode, AstropyQuantity)
 
 # The WWT web control API is described here:
-# https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
+# https://worldwidetelescope.gitbook.io/html5-control-reference/
 
 __all__ = ['Annotation', 'Circle', 'Polygon', 'Line', 'FieldOfView']
 

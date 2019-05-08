@@ -35,7 +35,7 @@ class WWTLayer(object):
         """
         Set a single property. For a list of properties see:
 
-        https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#table-of-properties
+        https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#table-of-properties
 
         Parameters
         ----------
@@ -62,7 +62,7 @@ class WWTLayer(object):
         Set the properties of the layer. For a list of properties
         see:
 
-        https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#table-of-properties
+        https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#table-of-properties
 
         Parameters
         ----------
@@ -88,7 +88,7 @@ class WWTLayer(object):
         """
         Return a property. For a list of properties see:
 
-        https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#table-of-properties
+        https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#table-of-properties
 
         Parameters
         ----------
@@ -109,7 +109,7 @@ class WWTLayer(object):
         Return all the properties of the layer. For a list of properties
         see:
 
-        https://worldwidetelescope.gitbooks.io/worldwide-telescope-layer-control-api/content/lcapicommands.html#table-of-properties
+        https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#table-of-properties
 
         Returns
         -------

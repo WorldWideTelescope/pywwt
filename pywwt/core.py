@@ -14,7 +14,7 @@ from .layers import LayerManager
 from .instruments import Instruments
 
 # The WWT web control API is described here:
-# https://worldwidetelescope.gitbooks.io/worldwide-telescope-web-control-script-reference/content/
+# https://worldwidetelescope.gitbook.io/html5-control-reference/
 
 DEFAULT_SURVEYS_URL = 'https://WorldWideTelescope.github.io/pywwt/surveys.xml'
 
