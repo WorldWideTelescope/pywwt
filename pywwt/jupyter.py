@@ -7,7 +7,7 @@ import sys
 PY2 = sys.version_info[0] == 2
 
 import ipywidgets as widgets
-from traitlets import Unicode, default, link
+from traitlets import Unicode, Float, default, link
 
 if not PY2:
     from ipyevents import Event as DOMListener
@@ -33,6 +33,9 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     _model_module = Unicode('pywwt').tag(sync=True)
     _view_module_version = Unicode('0.6.0').tag(sync=True)
     _model_module_version = Unicode('0.6.0').tag(sync=True)
+    _ra = Float(0.0).tag(sync=True)
+    _dec = Float(0.0).tag(sync=True)
+    _fov = Float(60.0).tag(sync=True)
 
     def __init__(self):
         widgets.DOMWidget.__init__(self)
