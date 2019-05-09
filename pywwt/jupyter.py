@@ -56,6 +56,16 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     def _serve_file(self, filename, extension=''):
         return serve_file(filename, extension=extension)
 
+    def _get_view_data(self, field):
+        if (field == 'ra'):
+            return self._ra
+        elif (field == 'dec'):
+            return self._dec
+        elif (field == 'fov'):
+            return self._fov
+        else:
+            raise ValueError("'field' should be one of: 'ra', 'dec', or 'fov'")
+
     @property
     def layer_controls(self):
         if self._controls is None:
