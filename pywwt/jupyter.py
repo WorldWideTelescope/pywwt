@@ -57,11 +57,11 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         return serve_file(filename, extension=extension)
 
     def _get_view_data(self, field):
-        if (field == 'ra'):
+        if field == 'ra':
             return self._ra
-        elif (field == 'dec'):
+        elif field == 'dec':
             return self._dec
-        elif (field == 'fov'):
+        elif field == 'fov':
             return self._fov
         else:
             raise ValueError("'field' should be one of: 'ra', 'dec', or 'fov'")
