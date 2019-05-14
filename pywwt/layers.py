@@ -412,7 +412,7 @@ class TableLayer(HasTraits):
 
         # Update the size column in the table
 
-        if len(self.size_att) == 0 or self.size_vmin is None or self.size_vmax is None:
+        if self._uniform_size():
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='sizeColumn', value=-1)
             return
@@ -460,7 +460,7 @@ class TableLayer(HasTraits):
 
         # Update the cmap column in the table
 
-        if len(self.cmap_att) == 0 or self.cmap_vmin is None or self.cmap_vmax is None:
+        if self._uniform_color():
 
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='colorMapColumn', value=-1)
@@ -498,6 +498,12 @@ class TableLayer(HasTraits):
         csv = csv_table_win_newline(self.table)
 
         return b64encode(csv.encode('ascii', errors='replace')).decode('ascii')
+
+    def _uniform_color(self):
+        return not self.cmap_att or self.cmap_vmin is None or self.cmap_vmax is None
+
+    def _uniform_size(self):
+        return not self.size_att or self.size_vmin is None or self.size_vmax is None
 
     def _initialize_layer(self):
         self.parent._send_msg(event='table_layer_create',
@@ -554,6 +560,35 @@ class TableLayer(HasTraits):
                                   id=self.id,
                                   setting=wwt_name,
                                   value=value)
+
+    def _serialize_state(self):
+        state = {'id' : self.id,
+                 'settings' : []}
+
+        for trait in self.class_own_traits().values():
+            wwt_name = trait.metadata.get('wwt')
+            if wwt_name:
+                state['settings'].append({'name': wwt_name, 'value': trait.get(self)})
+
+        if self._uniform_color():
+            state['settings'].append({'name': '_colorMap', 'value': 0})
+            state['settings'].append({'name': 'colorMapColumn', 'value': -1})
+        else:
+            state['settings'].append({'name': '_colorMap', 'value': 3})
+            state['settings'].append({'name':'colorMapColumn', 'value': CMAP_COLUMN_NAME})
+
+        if self._uniform_size():
+            state['settings'].append({'name': 'sizeColumn', 'value': -1})
+        else:
+            state['settings'].append({'name': 'sizeColumn', 'value': SIZE_COLUMN_NAME})
+            state['settings'].append({'name': 'pointScaleType', 'value': 0})
+
+        return state
+
+    def _save_table_as_csv(self, file_name):
+        table_str = csv_table_win_newline(self.table)
+        with open(file_name, 'wb') as file: # binary mode to preserve windows line endings
+            file.write(table_str.encode('ascii', errors='replace'))
 
     def __str__(self):
         return 'TableLayer with {0} markers'.format(len(self.table))
