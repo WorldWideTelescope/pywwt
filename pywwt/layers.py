@@ -563,6 +563,7 @@ class TableLayer(HasTraits):
 
     def _serialize_state(self):
         state = {'id' : self.id,
+                 'layer_type' : 'table',
                  'settings' : []}
 
         for trait in self.class_own_traits().values():
