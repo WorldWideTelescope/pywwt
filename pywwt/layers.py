@@ -219,6 +219,17 @@ class LayerManager(object):
 
     __repr__ = __str__
 
+    def _serialize_state(self):
+        layer_states = []
+        for layer in self._layers:
+            layer_states.append(layer._serialize_state())
+
+        return layer_states
+
+    def _save_all_data_for_serialization (self, dir):
+        for layer in self._layers:
+            layer._save_data_for_serialization(dir)
+
 
 class TableLayer(HasTraits):
     """
