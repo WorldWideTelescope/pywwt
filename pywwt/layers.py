@@ -1,6 +1,8 @@
 import sys
 import uuid
 import tempfile
+from os import path
+import shutil
 
 import re
 
@@ -586,9 +588,10 @@ class TableLayer(HasTraits):
 
         return state
 
-    def _save_table_as_csv(self, file_name):
+    def _save_data_for_serialization(self, dir):
+        file_path = path.join(dir,"{0}.csv".format(self.id))
         table_str = csv_table_win_newline(self.table)
-        with open(file_name, 'wb') as file: # binary mode to preserve windows line endings
+        with open(file_path, 'wb') as file: # binary mode to preserve windows line endings
             file.write(table_str.encode('ascii', errors='replace'))
 
     def __str__(self):
@@ -606,7 +609,7 @@ class ImageLayer(HasTraits):
     vmin = Float(None, allow_none=True)
     vmax = Float(None, allow_none=True)
     stretch = Unicode('linear')
-    opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
+    opacity = Float(1, help='The opacity of the image').tag(wwt='opacity')
 
     def __init__(self, parent=None, image=None, **kwargs):
 
@@ -698,6 +701,28 @@ class ImageLayer(HasTraits):
                                   id=self.id,
                                   setting=wwt_name,
                                   value=changed['new'])
+
+    def _serialize_state(self):
+        state = {'id' : self.id,
+                 'layer_type' : 'image',
+                 'settings' : []}
+
+        #A bit overkill for just the opacity, but more future-proof in case we add more wwt traits
+        for trait in self.class_own_traits().values():
+            wwt_name = trait.metadata.get('wwt')
+            if wwt_name:
+                state['settings'].append({'name': wwt_name, 'value': trait.get(self)})
+
+        if self.vmin is not None and self.vmax is not None:
+            state['stretch_info'] = {'vmin' : self.vmin,
+                                'vmax' : self.vmax,
+                                'stretch':VALID_STRETCHES.index(self.stretch)}
+
+        return state
+
+    def _save_data_for_serialization(self, dir):
+        file_path = path.join(dir,"{0}.fits".format(self.id))
+        shutil.copyfile(self._sanitized_image,file_path)
 
     def __str__(self):
         return 'ImageLayer'
