@@ -575,9 +575,9 @@ class TableLayer(HasTraits):
                                   value=value)
 
     def _serialize_state(self):
-        state = {'id' : self.id,
-                 'layer_type' : 'table',
-                 'settings' : []}
+        state = {'id': self.id,
+                 'layer_type': 'table',
+                 'settings': []}
 
         for trait in self.class_own_traits().values():
             wwt_name = trait.metadata.get('wwt')
@@ -714,9 +714,9 @@ class ImageLayer(HasTraits):
                                   value=changed['new'])
 
     def _serialize_state(self):
-        state = {'id' : self.id,
-                 'layer_type' : 'image',
-                 'settings' : []}
+        state = {'id': self.id,
+                 'layer_type': 'image',
+                 'settings': []}
 
         #A bit overkill for just the opacity, but more future-proof in case we add more wwt traits
         for trait in self.class_own_traits().values():
@@ -725,9 +725,9 @@ class ImageLayer(HasTraits):
                 state['settings'].append({'name': wwt_name, 'value': trait.get(self)})
 
         if self.vmin is not None and self.vmax is not None:
-            state['stretch_info'] = {'vmin' : self.vmin,
-                                'vmax' : self.vmax,
-                                'stretch':VALID_STRETCHES.index(self.stretch)}
+            state['stretch_info'] = {'vmin': self.vmin,
+                                     'vmax': self.vmax,
+                                     'stretch':VALID_STRETCHES.index(self.stretch)}
 
         return state
 
