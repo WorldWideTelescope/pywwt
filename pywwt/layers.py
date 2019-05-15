@@ -97,7 +97,7 @@ def pick_unit_if_available(unit, valid_units):
 
 def csv_table_win_newline(table):
     '''
-    Helper funcion to get Astropy tables as ASCII CSV with Windows line endings
+    Helper function to get Astropy tables as ASCII CSV with Windows line endings
     '''
     s = StringIO()
     table.write(s, format='ascii.basic', delimiter=',', comment=False)
