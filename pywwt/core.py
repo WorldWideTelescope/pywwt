@@ -13,6 +13,8 @@ from .solar_system import SolarSystem
 from .layers import LayerManager
 from .instruments import Instruments
 
+import json
+
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbook.io/html5-control-reference/
 
@@ -44,6 +46,7 @@ class BaseWWTWidget(HasTraits):
         self._instruments = Instruments()
         self.current_mode = 'sky'
         self._paused = False
+        self._last_sent_mode_str = 'sky'
         self.layers = LayerManager(parent=self)
 
         # NOTE: we deliberately don't force _on_trait_change to be called here
@@ -320,6 +323,7 @@ class BaseWWTWidget(HasTraits):
             elif mode == 'mars':
                 mode = 'Visible Imagery'
             self._send_msg(event='set_viewer_mode', mode=mode)
+            self._last_sent_mode_str = mode
             if mode == 'sky' or mode == 'panorama':
                 self.current_mode = mode
             else:
@@ -327,6 +331,7 @@ class BaseWWTWidget(HasTraits):
         elif mode in VIEW_MODES_3D:
             self._send_msg(event='set_viewer_mode', mode=solar_system_mode)
             self.current_mode = mode
+            self._last_sent_mode_str=solar_system_mode
         else:
             raise ValueError('mode should be one of {0}'.format('/'.join(VIEW_MODES_2D + VIEW_MODES_3D)))
 
@@ -554,3 +559,37 @@ class BaseWWTWidget(HasTraits):
         for trait_name, trait in self.traits().items():
             if trait.metadata.get('wwt_reset'):
                 setattr(self, trait_name, trait.default_value)
+
+    def _serialize_to_json(self, file, title=None, width=None, height=None):
+        state = dict()
+        state['html_settings'] = {'title': title,
+                                  'width': width,
+                                  'height': height}
+
+        state['wwt_settings'] = []
+        for trait in self.traits().values():
+            wwt_name = trait.metadata.get('wwt')
+            if wwt_name:
+                trait_val = trait.get(self)
+                if isinstance(trait_val, u.Quantity):
+                    trait_val = trait_val.value
+                state['wwt_settings'].append({'name': wwt_name, 'value': trait_val})
+
+        center = self.get_center()
+        fov = self.get_fov()
+        state['view_settings'] = {'mode': self._last_sent_mode_str,
+                                  'ra': center.icrs.ra.deg,
+                                  'dec': center.icrs.dec.deg,
+                                  'fov': fov.to_value(u.deg)}
+
+        state['foreground_settings'] = {'foreground': self.foreground,
+                                        'background': self.background,
+                                        'foreground_alpha': self.foreground_opacity*100}
+
+        state['layers'] = self.layers._serialize_state()
+
+        with open(file,'w') as file_obj:
+            json.dump(state,file_obj)
+
+    def _save_added_data(self, dir):
+        self.layers._save_all_data_for_serialization(dir)
