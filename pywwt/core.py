@@ -563,7 +563,24 @@ class BaseWWTWidget(HasTraits):
             if trait.metadata.get('wwt_reset'):
                 setattr(self, trait_name, trait.default_value)
 
-    def save_as_html_bundle(self, dest, title=None, width=None, height=None):
+    def save_as_html_bundle(self, dest, title=None, maxWidth=None, maxHeight=None):
+        """
+         Save the current view as a web page with supporting files
+
+        Parameters
+        ----------
+        dest : `str`
+            The path to output the bundle to. The path must represent a 
+            directory (which will be created if it does not exist) or a zip file.
+        title : `str`, optional
+            The desired title for the HTML page. If blank, a generic title will be used.
+        maxWidth : `int`, optional
+            The maximum width of the WWT viewport on the exported HTML page in pixels.
+            If left blank, the WWT viewport will fill the enitre width of the browser.
+        maxHeight : `int`, optional
+            The maximum height of the WWT viewport on the exported HTML page in pixels.
+            If left blank, the WWT viewport will fill the enitre height of the browser.
+        """
         destRoot, destExtension = os.path.splitext(dest)
         if (destExtension  and destExtension != ".zip"):
             raise ValueError("'dest' must be either a directory or a .zip file")
@@ -578,10 +595,10 @@ class BaseWWTWidget(HasTraits):
         nbextenDir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
         shutil.copy(os.path.join(nbextenDir, 'wwt_json_api.js'), figureDir)
         figSrcDir = os.path.join(nbextenDir, 'interactive_figure')
-        shutil.copy(os.path.join(figSrcDir, "interactive_figure.html"), os.path.join(figureDir,"index.html"))
+        shutil.copy(os.path.join(figSrcDir, "index.html"), figureDir)
         shutil.copy(os.path.join(figSrcDir, "interactive_figure.js"), figureDir)
 
-        self._serialize_to_json(os.path.join(figureDir,'wwt_figure.json'), title, width, height)
+        self._serialize_to_json(os.path.join(figureDir,'wwt_figure.json'), title, maxWidth, maxHeight)
 
         if len(self.layers) > 0:
             dataDir = os.path.join(figureDir,'data')
@@ -593,11 +610,11 @@ class BaseWWTWidget(HasTraits):
             shutil.make_archive(destRoot, 'zip', root_dir=figureDir)
 
 
-    def _serialize_to_json(self, file, title, width, height):
+    def _serialize_to_json(self, file, title, maxWidth, maxHeight):
         state = dict()
         state['html_settings'] = {'title': title,
-                                  'width': width,
-                                  'height': height}
+                                  'max_width': maxWidth,
+                                  'max_height': maxHeight}
 
         state['wwt_settings'] = []
         for trait in self.traits().values():

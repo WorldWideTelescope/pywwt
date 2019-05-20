@@ -219,8 +219,8 @@ function setHmtlSettings() {
     var title = figHtmlSettings['title'] ? figHtmlSettings['title'] : "WWT Interactive Figure";
     $(document).attr("title", title);
 
-    var settingsHeight = figHtmlSettings['height'];
-    var settingsWidth = figHtmlSettings['width'];
+    var settingsHeight = figHtmlSettings['max_height'];
+    var settingsWidth = figHtmlSettings['max_width'];
     var htmlHeight = $("html").height();
     var htmlWidth = $("html").width();
     var newHeight = settingsHeight ? Math.min(settingsHeight, htmlHeight) : htmlHeight;
