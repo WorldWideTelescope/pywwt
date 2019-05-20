@@ -14,6 +14,9 @@ from .layers import LayerManager
 from .instruments import Instruments
 
 import json
+import os
+import shutil
+import tempfile
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbook.io/html5-control-reference/
@@ -560,7 +563,37 @@ class BaseWWTWidget(HasTraits):
             if trait.metadata.get('wwt_reset'):
                 setattr(self, trait_name, trait.default_value)
 
-    def _serialize_to_json(self, file, title=None, width=None, height=None):
+    def save_as_html_bundle(self, dest, title=None, width=None, height=None):
+        destRoot, destExtension = os.path.splitext(dest)
+        if (destExtension  and destExtension != ".zip"):
+            raise ValueError("'dest' must be either a directory or a .zip file")
+
+        isCompressed = destExtension == '.zip'
+        if isCompressed:
+            figureDir = tempfile.mkdtemp()
+        else:
+            if not os.path.exists(dest):
+                os.mkdir(dest)
+            figureDir = dest
+        nbextenDir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
+        shutil.copy(os.path.join(nbextenDir, 'wwt_json_api.js'), figureDir)
+        figSrcDir = os.path.join(nbextenDir, 'interactive_figure')
+        shutil.copy(os.path.join(figSrcDir, "interactive_figure.html"), os.path.join(figureDir,"index.html"))
+        shutil.copy(os.path.join(figSrcDir, "interactive_figure.js"), figureDir)
+
+        self._serialize_to_json(os.path.join(figureDir,'wwt_figure.json'), title, width, height)
+
+        if len(self.layers) > 0:
+            dataDir = os.path.join(figureDir,'data')
+            if not os.path.exists(dataDir):
+                os.mkdir(dataDir)
+            self._save_added_data(dataDir)
+
+        if isCompressed:
+            shutil.make_archive(destRoot, 'zip', root_dir=figureDir)
+
+
+    def _serialize_to_json(self, file, title, width, height):
         state = dict()
         state['html_settings'] = {'title': title,
                                   'width': width,
