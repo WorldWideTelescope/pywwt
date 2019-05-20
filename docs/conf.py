@@ -201,3 +201,22 @@ nitpick_ignore = [('py:class', 'ipywidgets.widgets.domwidget.DOMWidget')]
 default_role = 'obj'
 
 html_logo = 'images/logo.png'
+
+
+# When checking links, the webserver for GitBook.io can currently return more
+# than 100 HTTP headers sometimes ("Link:" headers giving hints about
+# fragmented JavaScript files to load), which Python's HTTP libraries reject
+# by default. Here's a hack to make the problem go away. Credit:
+# https://stackoverflow.com/a/38815673/3760486 .
+
+try:
+    import http.client  # Python 3
+    http.client._MAXHEADERS = 1000
+except ImportError:
+    pass
+
+try:
+    import httplib  # Python 2
+    httplib._MAXHEADERS = 1000
+except ImportError:
+    pass
