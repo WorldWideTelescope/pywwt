@@ -46,7 +46,7 @@ class BaseWWTWidget(HasTraits):
         self._instruments = Instruments()
         self.current_mode = 'sky'
         self._paused = False
-        self._last_sent_mode_str = 'sky'
+        self._last_sent_view_mode = 'sky'
         self.layers = LayerManager(parent=self)
 
         # NOTE: we deliberately don't force _on_trait_change to be called here
@@ -323,7 +323,7 @@ class BaseWWTWidget(HasTraits):
             elif mode == 'mars':
                 mode = 'Visible Imagery'
             self._send_msg(event='set_viewer_mode', mode=mode)
-            self._last_sent_mode_str = mode
+            self._last_sent_view_mode = mode
             if mode == 'sky' or mode == 'panorama':
                 self.current_mode = mode
             else:
@@ -331,7 +331,7 @@ class BaseWWTWidget(HasTraits):
         elif mode in VIEW_MODES_3D:
             self._send_msg(event='set_viewer_mode', mode=solar_system_mode)
             self.current_mode = mode
-            self._last_sent_mode_str=solar_system_mode
+            self._last_sent_view_mode=solar_system_mode
         else:
             raise ValueError('mode should be one of {0}'.format('/'.join(VIEW_MODES_2D + VIEW_MODES_3D)))
 
@@ -577,7 +577,7 @@ class BaseWWTWidget(HasTraits):
 
         center = self.get_center()
         fov = self.get_fov()
-        state['view_settings'] = {'mode': self._last_sent_mode_str,
+        state['view_settings'] = {'mode': self._last_sent_view_mode,
                                   'ra': center.icrs.ra.deg,
                                   'dec': center.icrs.dec.deg,
                                   'fov': fov.to_value(u.deg)}
