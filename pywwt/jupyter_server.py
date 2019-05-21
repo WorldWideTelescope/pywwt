@@ -73,5 +73,9 @@ def load_jupyter_server_extension(nb_server_app):
         with open(CONFIG, 'w') as f:
             json.dump(config, f)
 
+    mimetypes.add_type('image/fits','.fits')
+    mimetypes.add_type('image/fits','.fts')
+    mimetypes.add_type('image/fits','.fit')
+
     route_pattern = url_path_join(web_app.settings['base_url'], '/wwt/(.*)')
     web_app.add_handlers(host_pattern, [(route_pattern, WWTFileHandler)])
