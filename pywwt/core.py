@@ -334,7 +334,7 @@ class BaseWWTWidget(HasTraits):
         elif mode in VIEW_MODES_3D:
             self._send_msg(event='set_viewer_mode', mode=solar_system_mode)
             self.current_mode = mode
-            self._last_sent_view_mode=solar_system_mode
+            self._last_sent_view_mode = solar_system_mode
         else:
             raise ValueError('mode should be one of {0}'.format('/'.join(VIEW_MODES_2D + VIEW_MODES_3D)))
 
@@ -643,6 +643,9 @@ class BaseWWTWidget(HasTraits):
                                         'foreground_alpha': self.foreground_opacity*100}
 
         state['layers'] = self.layers._serialize_state()
+        
+        if self.current_mode in VIEW_MODES_3D:
+            self.solar_system._add_settings_to_serialization(state)
 
         with open(file,'w') as file_obj:
             json.dump(state,file_obj)

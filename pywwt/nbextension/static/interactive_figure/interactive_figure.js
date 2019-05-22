@@ -123,7 +123,6 @@ function loadWwtFigure() {
         event: 'set_viewer_mode',
         mode: viewSettings['mode']
     });
-    wwt.gotoRaDecZoom(viewSettings['ra'], viewSettings['dec'], viewSettings['fov'], true);
 
     if (viewSettings['mode'] == 'sky') {
         var foregroundState = wwtIntialState['foreground_settings'];
@@ -149,6 +148,17 @@ function loadWwtFigure() {
             loadTableLayer(layerInfo);
         }
     });
+
+    if (!viewSettings['tracked_object_id']) { //Not tracking or trivially track sun (id=0)
+        wwt.gotoRaDecZoom(viewSettings['ra'], viewSettings['dec'], viewSettings['fov'], true);
+    }
+    else {
+        var targetCamera = wwtlib.CameraParameters.create(0, 0, viewSettings['fov'] * 6, 0, 0, wwtlib.WWTControl.singleton.renderContext.viewCamera.opacity);
+        targetCamera.target = viewSettings['tracked_object_id'];
+        targetCamera.set_RA(viewSettings['ra'] / 15.); //convert from degrees to hrs
+        targetCamera.set_dec(viewSettings['dec']);
+        wwtlib.WWTControl.singleton.gotoTarget3(targetCamera, false, true);
+    }
 }
 
 
