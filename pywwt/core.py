@@ -593,7 +593,7 @@ class BaseWWTWidget(HasTraits):
             figureDir = tempfile.mkdtemp()
         else:
             if not os.path.exists(dest):
-                os.mkdir(dest)
+                os.makedirs(os.path.abspath(dest))
             figureDir = dest
         nbextenDir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
         shutil.copy(os.path.join(nbextenDir, 'wwt_json_api.js'), figureDir)
@@ -610,6 +610,9 @@ class BaseWWTWidget(HasTraits):
             self._save_added_data(dataDir)
 
         if isCompressed:
+            zipParentDir = os.path.abspath(os.path.dirname(destRoot))
+            if not os.path.exists(zipParentDir):
+                os.makedirs(zipParentDir)
             shutil.make_archive(destRoot, 'zip', root_dir=figureDir)
 
 
