@@ -580,7 +580,7 @@ class TableLayer(HasTraits):
                  'frame': self.frame,
                  'settings': []}
 
-        for trait in self.class_own_traits().values():
+        for trait in self.traits().values():
             wwt_name = trait.metadata.get('wwt')
             if wwt_name:
                 state['settings'].append({'name': wwt_name, 'value': trait.get(self)})
@@ -720,7 +720,7 @@ class ImageLayer(HasTraits):
                  'settings': []}
 
         #A bit overkill for just the opacity, but more future-proof in case we add more wwt traits
-        for trait in self.class_own_traits().values():
+        for trait in self.traits().values():
             wwt_name = trait.metadata.get('wwt')
             if wwt_name:
                 state['settings'].append({'name': wwt_name, 'value': trait.get(self)})
