@@ -565,8 +565,11 @@ class BaseWWTWidget(HasTraits):
 
     def save_as_html_bundle(self, dest, title=None, maxWidth=None, maxHeight=None):
         """
-         Save the current view as a web page with supporting files
-
+        Save the current view as a web page with supporting files.
+        
+        This feature is currently under development, so not all
+        settings/features that can be set in pyWWT will be saved
+        
         Parameters
         ----------
         dest : `str`
