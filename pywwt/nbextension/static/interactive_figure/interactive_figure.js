@@ -149,6 +149,8 @@ function loadWwtFigure() {
         }
     });
 
+    wwtIntialState['annotations'].forEach(loadAnnotation);
+
     if (!viewSettings['tracked_object_id']) { //Not tracking or trivially track sun (id=0)
         wwt.gotoRaDecZoom(viewSettings['ra'], viewSettings['dec'], viewSettings['fov'], true);
     }
@@ -214,6 +216,46 @@ function loadTableLayer(layerInfo) {
             $("#WWTErrorText").append("<p>Unable to load data for layer with ID: " + id + "</p>"); //TODO replace with something nicer
         })
         .done(onCsvLoad);
+}
+
+function loadAnnotation(annotation) {
+    var shape = annotation['shape'];
+    var id = annotation['id'];
+    wwt_apply_json_message(wwt, {
+        event: 'annotation_create',
+        shape: shape,
+        id: id
+    });
+
+    if (shape == "circle") {
+        wwt_apply_json_message(wwt, {
+            event: 'circle_set_center',
+            id: id,
+            ra: annotation['center']['ra'],
+            dec: annotation['center']['dec']
+        });
+    }
+    else {
+        annotation['points'].forEach(function (point) {
+            wwt_apply_json_message(wwt, {
+                event: shape + '_add_point',
+                id: id,
+                ra: point['ra'],
+                dec: point['dec']
+            });
+
+        });
+    }
+
+    annotation['settings'].forEach(function (setting) {
+        wwt_apply_json_message(wwt, {
+            event: 'annotation_set',
+            id: id,
+            setting: setting['name'],
+            value: setting['value']
+        });
+
+    })
 }
 
 function setHmtlSettings() {

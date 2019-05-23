@@ -51,6 +51,7 @@ class BaseWWTWidget(HasTraits):
         self._paused = False
         self._last_sent_view_mode = 'sky'
         self.layers = LayerManager(parent=self)
+        self._annotation_set = set()
 
         # NOTE: we deliberately don't force _on_trait_change to be called here
         # for the WWT settings, as the default values are hard-coded in wwt.html
@@ -146,6 +147,7 @@ class BaseWWTWidget(HasTraits):
         """
         Clears all annotations from the current view.
         """
+        self._annotation_set.clear()
         return self._send_msg(event='clear_annotations')
 
     def get_center(self):
@@ -452,9 +454,7 @@ class BaseWWTWidget(HasTraits):
             attributes to be set upon shape initialization.
         """
         # TODO: could buffer JS call here
-        circle = Circle(parent=self, **kwargs)
-        if center:
-            circle.set_center(center)
+        circle = Circle(parent=self, center=center, **kwargs)
         return circle
 
     def add_polygon(self, points=None, **kwargs):
@@ -646,6 +646,10 @@ class BaseWWTWidget(HasTraits):
         
         if self.current_mode in VIEW_MODES_3D:
             self.solar_system._add_settings_to_serialization(state)
+
+        state['annotations'] = []
+        for annot in self._annotation_set:
+            state['annotations'].append(annot._serialize_state())
 
         with open(file,'w') as file_obj:
             json.dump(state,file_obj)
