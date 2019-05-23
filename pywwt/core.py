@@ -563,7 +563,7 @@ class BaseWWTWidget(HasTraits):
             if trait.metadata.get('wwt_reset'):
                 setattr(self, trait_name, trait.default_value)
 
-    def save_as_html_bundle(self, dest, title=None, maxWidth=None, maxHeight=None):
+    def save_as_html_bundle(self, dest, title=None, max_width=None, max_height=None):
         """
         Save the current view as a web page with supporting files.
         
@@ -577,50 +577,51 @@ class BaseWWTWidget(HasTraits):
             directory (which will be created if it does not exist) or a zip file.
         title : `str`, optional
             The desired title for the HTML page. If blank, a generic title will be used.
-        maxWidth : `int`, optional
+        max_width : `int`, optional
             The maximum width of the WWT viewport on the exported HTML page in pixels.
             If left blank, the WWT viewport will fill the enitre width of the browser.
-        maxHeight : `int`, optional
+        max_height : `int`, optional
             The maximum height of the WWT viewport on the exported HTML page in pixels.
             If left blank, the WWT viewport will fill the enitre height of the browser.
         """
-        destRoot, destExtension = os.path.splitext(dest)
-        if (destExtension  and destExtension != ".zip"):
+        dest_root, dest_extension = os.path.splitext(dest)
+        if (dest_extension  and dest_extension != ".zip"):
             raise ValueError("'dest' must be either a directory or a .zip file")
 
-        isCompressed = destExtension == '.zip'
-        if isCompressed:
-            figureDir = tempfile.mkdtemp()
+        is_compressed = dest_extension == '.zip'
+        if is_compressed:
+            figure_dir = tempfile.mkdtemp()
         else:
             if not os.path.exists(dest):
                 os.makedirs(os.path.abspath(dest))
-            figureDir = dest
-        nbextenDir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
-        shutil.copy(os.path.join(nbextenDir, 'wwt_json_api.js'), figureDir)
-        figSrcDir = os.path.join(nbextenDir, 'interactive_figure')
-        shutil.copy(os.path.join(figSrcDir, "index.html"), figureDir)
-        shutil.copy(os.path.join(figSrcDir, "interactive_figure.js"), figureDir)
+            figure_dir = dest
+			
+        nbexten_dir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
+        shutil.copy(os.path.join(nbexten_dir, 'wwt_json_api.js'), figure_dir)
+        fig_src_dir = os.path.join(nbexten_dir, 'interactive_figure')
+        shutil.copy(os.path.join(fig_src_dir, "index.html"), figure_dir)
+        shutil.copy(os.path.join(fig_src_dir, "interactive_figure.js"), figure_dir)
 
-        self._serialize_to_json(os.path.join(figureDir,'wwt_figure.json'), title, maxWidth, maxHeight)
+        self._serialize_to_json(os.path.join(figure_dir,'wwt_figure.json'), title, max_width, max_height)
 
         if len(self.layers) > 0:
-            dataDir = os.path.join(figureDir,'data')
-            if not os.path.exists(dataDir):
-                os.mkdir(dataDir)
-            self._save_added_data(dataDir)
+            data_dir = os.path.join(figure_dir,'data')
+            if not os.path.exists(data_dir):
+                os.mkdir(data_dir)
+            self._save_added_data(data_dir)
 
-        if isCompressed:
-            zipParentDir = os.path.abspath(os.path.dirname(destRoot))
-            if not os.path.exists(zipParentDir):
-                os.makedirs(zipParentDir)
-            shutil.make_archive(destRoot, 'zip', root_dir=figureDir)
+        if is_compressed:
+            zip_parent_dir = os.path.abspath(os.path.dirname(dest_root))
+            if not os.path.exists(zip_parent_dir):
+                os.makedirs(zip_parent_dir)
+            shutil.make_archive(dest_root, 'zip', root_dir=figure_dir)
 
 
-    def _serialize_to_json(self, file, title, maxWidth, maxHeight):
+    def _serialize_to_json(self, file, title, max_width, max_height):
         state = dict()
         state['html_settings'] = {'title': title,
-                                  'max_width': maxWidth,
-                                  'max_height': maxHeight}
+                                  'max_width': max_width,
+                                  'max_height': max_height}
 
         state['wwt_settings'] = []
         for trait in self.traits().values():
