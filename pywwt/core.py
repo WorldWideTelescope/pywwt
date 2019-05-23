@@ -616,8 +616,7 @@ class BaseWWTWidget(HasTraits):
                 os.makedirs(zip_parent_dir)
             shutil.make_archive(dest_root, 'zip', root_dir=figure_dir)
 
-
-    def _serialize_to_json(self, file, title, max_width, max_height):
+    def _serialize_state(self, title, max_width, max_height):
         state = dict()
         state['html_settings'] = {'title': title,
                                   'max_width': max_width,
@@ -641,17 +640,20 @@ class BaseWWTWidget(HasTraits):
 
         state['foreground_settings'] = {'foreground': self.foreground,
                                         'background': self.background,
-                                        'foreground_alpha': self.foreground_opacity*100}
+                                        'foreground_alpha': self.foreground_opacity * 100}
 
         state['layers'] = self.layers._serialize_state()
-        
+
         if self.current_mode in VIEW_MODES_3D:
             self.solar_system._add_settings_to_serialization(state)
 
         state['annotations'] = []
         for annot in self._annotation_set:
             state['annotations'].append(annot._serialize_state())
+        return state
 
+    def _serialize_to_json(self, file, title, max_width, max_height):
+        state = self._serialize_state(title, max_width, max_height)
         with open(file,'w') as file_obj:
             json.dump(state,file_obj)
 
