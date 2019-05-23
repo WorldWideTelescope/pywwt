@@ -72,6 +72,10 @@ class BaseWWTWidget(HasTraits):
     def _send_msg(self, **kwargs):
         # This method should be overridden and should send the message to WWT
         pass
+    
+    def _get_view_data(self, field):
+        # This method should be overwritten to get the RA, Dec, and FoV of the current view
+        pass
 
     actual_planet_scale = Bool(False,
                                help='Whether to show planets to scale or as '
@@ -132,9 +136,15 @@ class BaseWWTWidget(HasTraits):
         """
         Return the view's current right ascension and declination in degrees.
         """
-        return SkyCoord(self._send_msg(event='get_ra', asynchronous=False),
-                        self._send_msg(event='get_dec', asynchronous=False),
+        return SkyCoord(self._get_view_data('ra'),
+                        self._get_view_data('dec'),
                         unit=(u.hourangle, u.deg))
+
+    def get_fov(self):
+        """
+        Return the view's current field of view in degrees
+        """
+        return self._get_view_data('fov') * u.deg
 
     def load_tour(self, url):
         """

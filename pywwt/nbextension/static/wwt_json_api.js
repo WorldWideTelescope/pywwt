@@ -43,6 +43,10 @@ function wwt_apply_json_message(wwt, msg) {
       return wwt.getRA();
       break;
 
+    case 'get_fov':
+      return wwt.get_fov();
+      break;
+	  
     case 'load_tour':
       wwt.loadTour(msg['url']);
       break;
