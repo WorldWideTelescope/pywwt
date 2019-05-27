@@ -11,7 +11,7 @@ from astropy.coordinates import SkyCoord
 from .test_qt_widget import assert_widget_image
 
 from ..core import BaseWWTWidget
-from ..layers import TableLayer, guess_lon_lat_columns
+from ..layers import TableLayer, guess_lon_lat_columns, csv_table_win_newline
 
 
 class TestLayers:
@@ -211,6 +211,14 @@ class TestLayers:
         assert layer.lon_unit is u.deg
         assert layer.lat_att == 'b'
         assert layer.alt_att == ''
+
+    def test_line_endings(self):
+        self.table['ra'] = [1,2,3]
+        expected_str = "flux,dec,ra\r\n"\
+                        "2,4,1\r\n"\
+                        "3,5,2\r\n"\
+                        "4,6,3\r\n"
+        assert csv_table_win_newline(self.table) == expected_str
 
     def test_deprecated_api_call(self, capsys):
         """For the time being, test that the deprecated name for this function still
