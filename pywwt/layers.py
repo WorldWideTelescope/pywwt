@@ -103,7 +103,7 @@ def csv_table_win_newline(table):
     table.write(s, format='ascii.basic', delimiter=',', comment=False)
     s.seek(0)
     #Replace single \r or \n characters with \r\n
-    return re.sub(r"(?<=[^\r\n])(\r|\n)(?=[^\r\n])", "\r\n", s.read())
+    return re.sub(r"(?<![\r\n])(\r|\n)(?![\r\n])", "\r\n", s.read())
 
 
 class LayerManager(object):
