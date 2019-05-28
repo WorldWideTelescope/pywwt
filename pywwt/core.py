@@ -532,9 +532,9 @@ class BaseWWTWidget(HasTraits):
         Reset WWT to initial state.
         """
 
-        # Remove any existing layers
-        for layer in self.layers:
-            layer.remove()
+        # Remove any existing layers (not using a for loop since we're removing elements)
+        while len(self.layers) > 0:
+            self.layers[0].remove()
 
         # Reset coordinates to initial view
         gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='icrs')
