@@ -583,7 +583,12 @@ class TableLayer(HasTraits):
         for trait in self.traits().values():
             wwt_name = trait.metadata.get('wwt')
             if wwt_name:
-                state['settings'].append({'name': wwt_name, 'value': trait.get(self)})
+                value = trait.get(self)
+                if wwt_name == 'raUnits' and value is not None:
+                    value = VALID_LON_UNITS[value]
+                elif wwt_name == 'altUnit' and value is not None:
+                    value = VALID_ALT_UNITS[value]
+                state['settings'].append({'name': wwt_name, 'value': value})
 
         if self._uniform_color():
             state['settings'].append({'name': '_colorMap', 'value': 0})
