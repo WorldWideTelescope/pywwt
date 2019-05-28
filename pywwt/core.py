@@ -540,6 +540,7 @@ class BaseWWTWidget(HasTraits):
         gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='icrs')
         self.center_on_coordinates(gc, 60 * u.deg)
 
-        # Reset traits to default values
+        # Reset only WWT traits to default values so we don't change traits we shouldn't for the jupyter widget
         for trait_name, trait in self.traits().items():
-            setattr(self, trait_name, trait.default_value)
+            if 'wwt' in trait.metadata:
+                setattr(self, trait_name, trait.default_value)
