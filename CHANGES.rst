@@ -6,7 +6,20 @@
 
 - Removed ``load_fits_data`` and added ``layers.add_image_layer`` instead,
   which provides control over the image stretch, and renamed
-  ``layers.add_data_layer`` to ``layers.add_table_layer``. [#188]
+  ``layers.add_data_layer`` to ``layers.add_table_layer``. [#188, #201]
+
+- Added support for drag and drop events in Qt widget. [#202]
+
+- Added support for ``get_center`` for the Jupyter widget, and add a new
+  ``get_fov`` method to get the current field of view. [#206]
+
+0.5.4 (unreleased)
+------------------
+
+- Fixed compatibility with notebook>=5.7.6 which requires mime
+  types for served files to be correct. [#192, #208]
+
+- Fixed display of table layers on Windows. [#207]
 
 0.5.3 (2019-01-16)
 ------------------
