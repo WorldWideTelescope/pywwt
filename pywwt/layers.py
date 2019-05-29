@@ -2,6 +2,8 @@ import sys
 import uuid
 import tempfile
 
+import re
+
 if sys.version_info[0] == 2:  # noqa
     from io import BytesIO as StringIO
 else:
@@ -92,6 +94,16 @@ def pick_unit_if_available(unit, valid_units):
         if unit == valid_unit:
             return valid_unit
     return unit
+
+def csv_table_win_newline(table):
+    '''
+    Helper function to get Astropy tables as ASCII CSV with Windows line endings
+    '''
+    s = StringIO()
+    table.write(s, format='ascii.basic', delimiter=',', comment=False)
+    s.seek(0)
+    #Replace single \r or \n characters with \r\n
+    return re.sub(r"(?<![\r\n])(\r|\n)(?![\r\n])", "\r\n", s.read())
 
 
 class LayerManager(object):
@@ -483,13 +495,7 @@ class TableLayer(HasTraits):
         # TODO: We need to make sure that the table has ra/dec columns since
         # WWT absolutely needs that upon creation.
 
-        s = StringIO()
-        self.table.write(s, format='ascii.basic', delimiter=',', comment=False)
-        s.seek(0)
-
-        # Enforce Windows line endings
-        # TODO: check if this needs to be different on Windows
-        csv = s.read().replace('\n', '\r\n')
+        csv = csv_table_win_newline(self.table)
 
         return b64encode(csv.encode('ascii', errors='replace')).decode('ascii')
 
