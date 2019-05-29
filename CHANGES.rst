@@ -1,4 +1,4 @@
-0.6.0 (unreleased)
+0.6.0 (2019-05-29)
 ------------------
 
 - Implement support for color-coding and scaling points in layers according
@@ -12,9 +12,6 @@
 
 - Added support for ``get_center`` for the Jupyter widget, and add a new
   ``get_fov`` method to get the current field of view. [#206]
-
-0.5.4 (unreleased)
-------------------
 
 - Fixed compatibility with notebook>=5.7.6 which requires mime
   types for served files to be correct. [#192, #208]
