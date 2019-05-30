@@ -597,10 +597,14 @@ class BaseWWTWidget(HasTraits):
             figure_dir = dest
 			
         nbexten_dir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
-        shutil.copy(os.path.join(nbexten_dir, 'wwt_json_api.js'), figure_dir)
         fig_src_dir = os.path.join(nbexten_dir, 'interactive_figure')
         shutil.copy(os.path.join(fig_src_dir, "index.html"), figure_dir)
-        shutil.copy(os.path.join(fig_src_dir, "interactive_figure.js"), figure_dir)
+
+        script_dir = os.path.join(figure_dir, 'scripts')
+        if not os.path.exists(script_dir):
+            os.mkdir(script_dir)
+        shutil.copy(os.path.join(nbexten_dir, 'wwt_json_api.js'), script_dir)
+        shutil.copy(os.path.join(fig_src_dir, "interactive_figure.js"), script_dir)
 
         self._serialize_to_json(os.path.join(figure_dir,'wwt_figure.json'), title, max_width, max_height)
 
