@@ -115,6 +115,7 @@ setup_args = dict(
         'test': [
             'pytest',
             'pytest-cov',
+            'pytest-remotedata>=0.3.1',
         ],
         'docs': [
             'sphinx>=1.6',
