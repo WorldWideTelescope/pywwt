@@ -155,7 +155,7 @@ function loadWwtFigure() {
         wwt.gotoRaDecZoom(viewSettings['ra'], viewSettings['dec'], viewSettings['fov'], true);
     }
     else {
-        var targetCamera = wwtlib.CameraParameters.create(0, 0, viewSettings['fov'] * 6, 0, 0, wwtlib.WWTControl.singleton.renderContext.viewCamera.opacity);
+        var targetCamera = wwtlib.CameraParameters.create(0, 0, viewSettings['fov'] * 6, 0, 0, wwtlib.WWTControl.singleton.renderContext.viewCamera.opacity); //Multiply fov by 6 to get zoom factor
         targetCamera.target = viewSettings['tracked_object_id'];
         targetCamera.set_RA(viewSettings['ra'] / 15.); //convert from degrees to hrs
         targetCamera.set_dec(viewSettings['dec']);
