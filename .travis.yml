@@ -12,8 +12,8 @@ notifications:
 env:
   global:
     - SETUP_XVFB=True
-    - CONDA_CHANNELS="astrofrog/label/dev"
-    - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest pytest-cov requests nomkl matplotlib beautifulsoup4 lxml jupyterlab flask flask-cors pyopengl"
+    - CONDA_CHANNELS="astrofrog/label/dev conda-forge"
+    - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest pytest-cov>=2.6.1 pytest-remotedata>=0.3.1 requests nomkl matplotlib beautifulsoup4 lxml jupyterlab flask flask-cors pyopengl"
     - PIP_DEPENDENCIES="sphinx-automodapi numpydoc sphinx_rtd_theme pytest-faulthandler codecov reproject"
   matrix:
     - PYTHON_VERSION=2.7

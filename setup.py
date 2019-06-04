@@ -115,7 +115,8 @@ setup_args = dict(
     extras_require = {
         'test': [
             'pytest',
-            'pytest-cov',
+            'pytest-cov>=2.6.1',
+            'pytest-remotedata>=0.3.1',
         ],
         'docs': [
             'sphinx>=1.6',

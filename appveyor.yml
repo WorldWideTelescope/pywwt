@@ -13,7 +13,7 @@ environment:
                         # to the matrix section.
 
       CONDA_CHANNELS: "astrofrog/label/dev conda-forge"
-      CONDA_DEPENDENCIES: "astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest pytest-cov requests matplotlib flask flask-cors pyopengl"
+      CONDA_DEPENDENCIES: "astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest pytest-cov>=2.6.1 pytest-remotedata>=0.3.1 requests matplotlib flask flask-cors pyopengl"
       PIP_DEPENDENCIES: "pytest-faulthandler codecov reproject"
 
   matrix:
@@ -21,7 +21,7 @@ environment:
       - PYTHON_VERSION: "3.5"
       - PYTHON_VERSION: "3.6"
         # Without the pyqt version constraint, a lib compat issue leads to import failures on qtpy:
-        CONDA_DEPENDENCIES: "astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt==5.6.0 pytest pytest-cov requests matplotlib flask flask-cors pyopengl"
+        CONDA_DEPENDENCIES: "astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt==5.6.0 pytest pytest-cov>=2.6.1 pytest-remotedata>=0.3.1 requests matplotlib flask flask-cors pyopengl"
 
 # matrix:
 #     fast_finish: true

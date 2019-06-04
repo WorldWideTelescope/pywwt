@@ -80,7 +80,7 @@ class BaseWWTWidget(HasTraits):
     actual_planet_scale = Bool(False,
                                help='Whether to show planets to scale or as '
                                     'points with a fixed size '
-                                    '(`bool`)').tag(wwt='actualPlanetScale')
+                                    '(`bool`)').tag(wwt='actualPlanetScale', wwt_reset=True)
 
     # TODO: need to add all settings as traits
     # check wwt.html for comments on settings that are disabled below
@@ -88,41 +88,41 @@ class BaseWWTWidget(HasTraits):
     constellation_boundary_color = Color('blue',
                                          help='The color of the constellation '
                                          'boundaries (`str` or '
-                                         '`tuple`)').tag(wwt='constellationBoundryColor')
+                                         '`tuple`)').tag(wwt='constellationBoundryColor', wwt_reset=True)
     constellation_figure_color = Color('red',
                                        help='The color of the constellation '
                                             'figure (`str` or '
-                                            '`tuple`)').tag(wwt='constellationFigureColor')
+                                            '`tuple`)').tag(wwt='constellationFigureColor', wwt_reset=True)
     constellation_selection_color = Color('yellow',
                                           help='The color of the constellation '
                                                'selection (`str` or '
-                                               '`tuple`)').tag(wwt='constellationSelectionColor')
+                                               '`tuple`)').tag(wwt='constellationSelectionColor', wwt_reset=True)
 
     constellation_boundaries = Bool(False,
                                     help='Whether to show boundaries for the '
                                          'selected constellations '
-                                         '(`bool`)').tag(wwt='showConstellationBoundries')
+                                         '(`bool`)').tag(wwt='showConstellationBoundries', wwt_reset=True)
     constellation_figures = Bool(False,
                                  help='Whether to show the constellations '
-                                      '(`bool`)').tag(wwt='showConstellationFigures')
+                                      '(`bool`)').tag(wwt='showConstellationFigures', wwt_reset=True)
     constellation_selection = Bool(False,
                                    help='Whether to only show boundaries for '
                                         'the selected constellation '
-                                        '(`bool`)').tag(wwt='showConstellationSelection')
-    #constellation_pictures = Bool(False, help='Whether to show pictures of the constellations\' mythological representations (`bool`)').tag(wwt='showConstellationPictures')
-    #constellation_labels = Bool(False, help='Whether to show labelss for constellations (`bool`)').tag(wwt='showConstellationLabels')
+                                        '(`bool`)').tag(wwt='showConstellationSelection', wwt_reset=True)
+    #constellation_pictures = Bool(False, help='Whether to show pictures of the constellations\' mythological representations (`bool`)').tag(wwt='showConstellationPictures', wwt_reset=True)
+    #constellation_labels = Bool(False, help='Whether to show labelss for constellations (`bool`)').tag(wwt='showConstellationLabels', wwt_reset=True)
 
     crosshairs = Bool(False, help='Whether to show crosshairs at the center of '
-                                 'the field (`bool`)').tag(wwt='showCrosshairs')
+                                 'the field (`bool`)').tag(wwt='showCrosshairs', wwt_reset=True)
     crosshairs_color = Color('white',
                              help='The color of the crosshairs '
-                                  '(`str` or `tuple`)').tag(wwt='crosshairsColor')
+                                  '(`str` or `tuple`)').tag(wwt='crosshairsColor', wwt_reset=True)
     grid = Bool(False, help='Whether to show the equatorial grid '
-                            '(`bool`)').tag(wwt='showGrid')
+                            '(`bool`)').tag(wwt='showGrid', wwt_reset=True)
     ecliptic = Bool(False, help='Whether to show the path of the ecliptic '
-                                '(`bool`)').tag(wwt='showEcliptic')
+                                '(`bool`)').tag(wwt='showEcliptic', wwt_reset=True)
     ecliptic_grid = Bool(False, help='Whether to show a grid relative to the '
-                                     'ecliptic plane (`bool`)').tag(wwt='showEclipticGrid')
+                                     'ecliptic plane (`bool`)').tag(wwt='showEclipticGrid', wwt_reset=True)
 
     # TODO: need to add more methods here.
 
@@ -236,29 +236,29 @@ class BaseWWTWidget(HasTraits):
 
     galactic_mode = Bool(False,
                          help='Whether the galactic plane should be horizontal '
-                              'in the viewer (`bool`)').tag(wwt='galacticMode')
+                              'in the viewer (`bool`)').tag(wwt='galacticMode', wwt_reset=True)
     galactic_grid = Bool(False, help='Whether to show a grid relative to the '
-                                     'galactic plane (`bool`)').tag(wwt='showGalacticGrid')
-    #galactic_text = Bool(False, help='Whether to show labels for the galactic grid\'s text (`bool`)').tag(wwt='showGalacticGridText')
+                                     'galactic plane (`bool`)').tag(wwt='showGalacticGrid', wwt_reset=True)
+    #galactic_text = Bool(False, help='Whether to show labels for the galactic grid\'s text (`bool`)').tag(wwt='showGalacticGridText', wwt_reset=True)
     alt_az_grid = Bool(False, help='Whether to show an altitude-azimuth grid '
-                                   '(`bool`)').tag(wwt='showAltAzGrid')
-    #alt_az_text = Bool(False, help='Whether to show labels for the altitude-azimuth grid\'s text (`bool`)').tag(wwt='showAltAzGridText')
+                                   '(`bool`)').tag(wwt='showAltAzGrid', wwt_reset=True)
+    #alt_az_text = Bool(False, help='Whether to show labels for the altitude-azimuth grid\'s text (`bool`)').tag(wwt='showAltAzGridText', wwt_reset=True)
 
     local_horizon_mode = Bool(False, help='Whether the view should be that of '
                                           'a local latitude, longitude, and '
-                                          'altitude (`bool`)').tag(wwt='localHorizonMode')
+                                          'altitude (`bool`)').tag(wwt='localHorizonMode', wwt_reset=True)
     location_altitude = AstropyQuantity(0 * u.m,
                                         help='The altitude of the viewing '
                                              'location in local horizon mode '
-                                             '(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude')
+                                             '(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude', wwt_reset=True)
     location_latitude = AstropyQuantity(47.633 * u.deg,
                                         help='The latitude of the viewing '
                                               'location in local horizon mode '
-                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLat')
+                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLat', wwt_reset=True)
     location_longitude = AstropyQuantity(122.133333 * u.deg,
                                          help='The longitude of the viewing '
                                               'location in local horizon mode '
-                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLng')
+                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLng', wwt_reset=True)
 
     @validate('location_altitude')
     def _validate_altitude(self, proposal):
@@ -372,7 +372,7 @@ class BaseWWTWidget(HasTraits):
         return sorted(self._available_layers)
 
     foreground = Unicode('Digitized Sky Survey (Color)',
-                         help='The layer to show in the foreground (`str`)')
+                         help='The layer to show in the foreground (`str`)').tag(wwt_reset=True)
 
     @observe('foreground')
     def _on_foreground_change(self, changed):
@@ -389,7 +389,7 @@ class BaseWWTWidget(HasTraits):
             raise TraitError('foreground is not one of the available layers')
 
     background = Unicode('Hydrogen Alpha Full Sky Map',
-                         help='The layer to show in the background (`str`)')
+                         help='The layer to show in the background (`str`)').tag(wwt_reset=True)
 
     @observe('background')
     def _on_background_change(self, changed):
@@ -406,7 +406,7 @@ class BaseWWTWidget(HasTraits):
             raise TraitError('background is not one of the available layers')
 
     foreground_opacity = Float(0.8, help='The opacity of the foreground layer '
-                                         '(`float`)')
+                                         '(`float`)').tag(wwt_reset=True)
 
     @observe('foreground_opacity')
     def _on_foreground_opacity_change(self, changed):
@@ -532,14 +532,15 @@ class BaseWWTWidget(HasTraits):
         Reset WWT to initial state.
         """
 
-        # Remove any existing layers
-        for layer in self.layers:
-            layer.remove()
+        # Remove any existing layers (not using a for loop since we're removing elements)
+        while len(self.layers) > 0:
+            self.layers[0].remove()
 
         # Reset coordinates to initial view
         gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='icrs')
         self.center_on_coordinates(gc, 60 * u.deg)
 
-        # Reset traits to default values
+        # Reset only traits with the wwt_reset tag
         for trait_name, trait in self.traits().items():
-            setattr(self, trait_name, trait.default_value)
+            if trait.metadata.get('wwt_reset'):
+                setattr(self, trait_name, trait.default_value)
