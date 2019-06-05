@@ -53,7 +53,7 @@ be generated in the center of your view::
    :align: center
 
 Once an annotation is no longer needed, it can be
-removed via its :meth:`pywwt.Circle.remove` method. The main
+removed via its :meth:`~pywwt.Annotation.remove` method. The main
 WorldWide Telescope object (``wwt`` in this case) also has a dedicated method
 for erasing every existing annotation from view called
 :meth:`~pywwt.BaseWWTWidget.clear_annotations`.
