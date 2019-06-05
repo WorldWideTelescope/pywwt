@@ -132,9 +132,9 @@ class LayerManager(object):
 
         Returns
         -------
-        layer : :class:`~pywwt.layers.ImageLayer`
+        layer : :class:`~pywwt.layers.ImageLayer` or a subclass thereof
         """
-        layer = ImageLayer(self._parent, image=image, **kwargs)
+        layer = self._parent._create_image_layer(image=image, **kwargs)
         self._add_layer(layer)
         return layer
 

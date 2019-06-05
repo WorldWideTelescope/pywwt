@@ -72,10 +72,20 @@ class BaseWWTWidget(HasTraits):
     def _send_msg(self, **kwargs):
         # This method should be overridden and should send the message to WWT
         pass
-    
+
     def _get_view_data(self, field):
         # This method should be overwritten to get the RA, Dec, and FoV of the current view
         pass
+
+    def _create_image_layer(self, **kwargs):
+        """This method can be overridden to return specialized subclasses of
+        :class:`~pywwt.layers.ImageLayer`. In particular, the Jupyter version
+        of the viewer extends ``ImageLayer`` to add methods that add
+        interactive UI controls for the layer parameters.
+
+        """
+        from .layers import ImageLayer
+        return ImageLayer(self, **kwargs)
 
     actual_planet_scale = Bool(False,
                                help='Whether to show planets to scale or as '

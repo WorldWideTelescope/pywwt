@@ -13,6 +13,7 @@ if not PY2:
     from ipyevents import Event as DOMListener
 
 from .core import BaseWWTWidget
+from .layers import ImageLayer
 from .jupyter_server import serve_file
 
 __all__ = ['WWTJupyterWidget']
@@ -66,6 +67,13 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         else:
             raise ValueError("'field' should be one of: 'ra', 'dec', or 'fov'")
 
+    def _create_image_layer(self, **kwargs):
+        """Returns a specialized subclass of ImageLayer that has some extra hooks for
+        creating UI control points.
+
+        """
+        return JupyterImageLayer(parent=self, **kwargs)
+
     @property
     def layer_controls(self):
         if self._controls is None:
@@ -79,4 +87,36 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
             link((foreground_menu, 'value'), (self, 'foreground'))
             link((background_menu, 'value'), (self, 'background'))
             self._controls = widgets.HBox([background_menu, opacity_slider, foreground_menu])
+        return self._controls
+
+
+class JupyterImageLayer(ImageLayer):
+    def __init__(self, **kwargs):
+        self._controls = None
+        super(JupyterImageLayer, self).__init__(**kwargs)
+
+    @property
+    def controls(self):
+        from .layers import VALID_STRETCHES
+
+        if self._controls is not None:
+            return self._controls
+
+        opacity = widgets.FloatSlider(
+            description = 'Opacity:',
+            value = self.opacity,
+            min = 0,
+            max = 1,
+            readout = False,
+        )
+        link((opacity, 'value'), (self, 'opacity'))
+
+        stretch = widgets.Dropdown(
+            description = 'Stretch:',
+            options = VALID_STRETCHES,
+            value = self.stretch,
+        )
+        link((stretch, 'value'), (self, 'stretch'))
+
+        self._controls = widgets.HBox([opacity, stretch])
         return self._controls
