@@ -601,8 +601,8 @@ class ImageLayer(HasTraits):
         self._stretch_version = 0
 
         data = fits.getdata(self._sanitized_image)
-        self.vmin = np.nanpercentile(data, 0.5)
-        self.vmax = np.nanpercentile(data, 99.5)
+        self._data_min, self.vmin, self.vmax, self._data_max = \
+            np.nanpercentile(data, [0, 0.5, 99.5, 100])
 
         self._initialize_layer()
 
