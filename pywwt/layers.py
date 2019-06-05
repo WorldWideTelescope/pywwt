@@ -595,28 +595,28 @@ class ImageLayer(HasTraits):
 
         self._image_url = self.parent._serve_file(self._sanitized_image, extension='.fits')
 
-        # Because of the way the image loading works in WWT, we may end up with
-        # messages being applied out of order (see notes in image_layer_stretch
-        # in wwt_json_api.js)
+        # Default the image rendering parameters. Because of the way the image
+        # loading works in WWT, we may end up with messages being applied out
+        # of order (see notes in image_layer_stretch in wwt_json_api.js)
         self._stretch_version = 0
 
+        data = fits.getdata(self._sanitized_image)
+        self.vmin = np.nanpercentile(data, 0.5)
+        self.vmax = np.nanpercentile(data, 99.5)
+
         self._initialize_layer()
-
-        # Force defaults
-        self._on_trait_change({'name': 'opacity', 'new': self.opacity})
-
-        self.observe(self._on_trait_change, type='change')
 
         if any(key not in self.trait_names() for key in kwargs):
             raise KeyError('a key doesn\'t match any layer trait name')
 
         super(ImageLayer, self).__init__(**kwargs)
 
-        # Determine initial stretch parameters
-        data = fits.getdata(self._sanitized_image)
+        # Apply settings (that the user may have overridden) and track changes
+        # automagically going forward.
+        self._on_trait_change({'name': 'vmin', 'new': self.vmin})
+        self._on_trait_change({'name': 'opacity', 'new': self.opacity})
+        self.observe(self._on_trait_change, type='change')
 
-        self.vmin = np.nanpercentile(data, 0.5)
-        self.vmax = np.nanpercentile(data, 99.5)
 
     @validate('stretch')
     def _check_stretch(self, proposal):
