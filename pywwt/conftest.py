@@ -40,7 +40,10 @@ if QT_INSTALLED and OPENGL_INSTALLED:
             return info
 
 
+_cached_opengl_renderer = ''
+
 def pytest_report_header(config):
+    global _cached_opengl_renderer
 
     lines = []
 
@@ -69,6 +72,10 @@ def pytest_report_header(config):
             lines.append("OpenGL Version: {0}".format(opengl_info['version']))
             lines.append("Shader Version: {0}".format(opengl_info['shader']))
 
+            # This is (no surprise) a hack to enable the Windows testing
+            # framework to check which renderer WebKit is using, which affets
+            # the output.
+            _cached_opengl_renderer = opengl_info['renderer']
         else:
 
             lines.append("Could not determine OpenGL version (OpenGL package required)")
