@@ -13,6 +13,7 @@ if not PY2:
     from ipyevents import Event as DOMListener
 
 from .core import BaseWWTWidget
+from .layers import ImageLayer
 from .jupyter_server import serve_file
 
 __all__ = ['WWTJupyterWidget']
@@ -66,6 +67,13 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         else:
             raise ValueError("'field' should be one of: 'ra', 'dec', or 'fov'")
 
+    def _create_image_layer(self, **kwargs):
+        """Returns a specialized subclass of ImageLayer that has some extra hooks for
+        creating UI control points.
+
+        """
+        return JupyterImageLayer(parent=self, **kwargs)
+
     @property
     def layer_controls(self):
         if self._controls is None:
@@ -80,3 +88,73 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
             link((background_menu, 'value'), (self, 'background'))
             self._controls = widgets.HBox([background_menu, opacity_slider, foreground_menu])
         return self._controls
+
+
+class JupyterImageLayer(ImageLayer):
+    def __init__(self, **kwargs):
+        self._controls = None
+        super(JupyterImageLayer, self).__init__(**kwargs)
+
+    @property
+    def controls(self):
+        from .layers import VALID_STRETCHES
+
+        if self._controls is not None:
+            return self._controls
+
+        opacity = widgets.FloatSlider(
+            description = 'Opacity:',
+            value = self.opacity,
+            min = 0,
+            max = 1,
+            readout = False,
+        )
+        link((opacity, 'value'), (self, 'opacity'))
+
+        stretch = widgets.Dropdown(
+            description = 'Stretch:',
+            options = VALID_STRETCHES,
+            value = self.stretch,
+        )
+        link((stretch, 'value'), (self, 'stretch'))
+
+        double_width = widgets.Layout(width='600px')
+
+        vrange = widgets.FloatRangeSlider(
+            description = 'Fine min/max:',
+            value = [self.vmin, self.vmax],
+            min = self._data_min,
+            max = self._data_max,
+            readout = True,
+            layout = double_width,
+        )
+
+        # Linkage must be manual since vrange uses a pair of values whereas we
+        # have two separate traitlets.
+        vrange.observe(self._vrange_slider_updated, names=['value'])
+        def update_vrange(change):
+            # Note: when this function is called, these values are indeed updated.
+            vrange.value = (self.vmin, self.vmax)
+        self.observe(update_vrange, names=['vmin', 'vmax'])
+
+        coarse_min = widgets.FloatText(
+            description = 'Coarse min:',
+            value = self._data_min,
+        )
+        link((coarse_min, 'value'), (vrange, 'min'))
+
+        coarse_max = widgets.FloatText(
+            description = 'Coarse max:',
+            value = self._data_max,
+        )
+        link((coarse_max, 'value'), (vrange, 'max'))
+
+        self._controls = widgets.VBox([
+            widgets.HBox([opacity, stretch]),
+            widgets.HBox([coarse_min, coarse_max]),
+            vrange,
+        ])
+        return self._controls
+
+    def _vrange_slider_updated(self, change):
+        self.vmin, self.vmax = change['new']
