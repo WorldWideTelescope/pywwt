@@ -89,7 +89,7 @@ def assert_widget_image(tmpdir, widget, filename):
         framework += '_osx'
     expected = os.path.join(DATA, framework, filename)
     try:
-        msg = compare_images(expected, actual, tol=1.5)
+        msg = compare_images(expected, actual, tol=1.6)
     except Exception:
         msg = 'Image comparison failed:'
         print_exc()
