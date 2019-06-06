@@ -79,8 +79,11 @@ with open('actual.png', 'wb') as f:
 def assert_widget_image(tmpdir, widget, filename):
     actual = tmpdir.join(filename).strpath
     widget.render(actual)
+
+    from ..conftest import _cached_opengl_renderer
+
     framework = 'webengine' if WEBENGINE else 'webkit'
-    if sys.platform.startswith('win') and not WEBENGINE:
+    if sys.platform.startswith('win') and not WEBENGINE and 'GDI' in _cached_opengl_renderer:
         framework += '_win'
     elif sys.platform.startswith('darwin'):
         framework += '_osx'
