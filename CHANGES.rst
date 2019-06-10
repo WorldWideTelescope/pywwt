@@ -3,6 +3,15 @@
 
 - No changes yet.
 
+0.6.1 (2019-06-10)
+------------------
+
+- Fixed issues when calling ``reset()``. [#212]
+
+- Fixed resizing issues in Jupyter Lab. [#216]
+
+- Fixed server URL when using Jupyter Lab. [#219]
+
 0.6.0 (2019-05-29)
 ------------------
 
