@@ -1,19 +1,18 @@
-var wwtIntialState;
+var wwtInitialState;
 
 var wwt;
-var wwt_ready = 0;
 
 function initialize() {
     // The true enables WebGL
-    wwt = wwtlib.WWTControl.initControlParam("WWTCanvas", true);
+    wwt = wwtlib.WWTControl.initControlParam("wwt-canvas", true);
     wwt.add_ready(loadWwtFigure);
     wwt.add_ready(keyScroll);
 }
 
 $.getJSON('wwt_figure.json')
-    .done(function (data) { wwtIntialState = data; })
+    .done(function (data) { wwtInitialState = data; })
     .error(function (err) {
-        wwtIntialState = null;
+        wwtInitialState = null;
         handleConfigLoadError();
     });
 
@@ -108,31 +107,31 @@ function keyScroll() {
 }
 
 function loadWwtFigure() {
-    if (wwtIntialState === undefined) { //JSON config file has not loaded yet, try again in 50 ms
+    if (wwtInitialState === undefined) { //JSON config file has not loaded yet, try again in 50 ms
         setTimeout(loadWwtFigure, 50);
         return;
     }
-    else if (wwtIntialState === null) { //There was an error loading the config
+    else if (wwtInitialState === null) { //There was an error loading the config
         return;
     }
     //TODO allow loading more collections
     wwt.loadImageCollection('https://WorldWideTelescope.github.io/pywwt/surveys.xml')
 
-    var viewSettings = wwtIntialState['view_settings'];
+    var viewSettings = wwtInitialState['view_settings'];
     wwt_apply_json_message(wwt, {
         event: 'set_viewer_mode',
         mode: viewSettings['mode']
     });
 
     if (viewSettings['mode'] == 'sky') {
-        var foregroundState = wwtIntialState['foreground_settings'];
+        var foregroundState = wwtInitialState['foreground_settings'];
         wwt.setForegroundImageByName(foregroundState['foreground']);
         wwt.setBackgroundImageByName(foregroundState['background']);
         wwt.setForegroundOpacity(foregroundState['foreground_alpha']);
     }
 
-    var miscSettings = wwtIntialState['wwt_settings'];
-    wwtIntialState['wwt_settings'].forEach(function (setting) {
+    var miscSettings = wwtInitialState['wwt_settings'];
+    wwtInitialState['wwt_settings'].forEach(function (setting) {
         wwt_apply_json_message(wwt, {
             event: 'setting_set',
             setting: setting['name'],
@@ -140,7 +139,7 @@ function loadWwtFigure() {
         });
     });
 
-    wwtIntialState['layers'].forEach(function (layerInfo) {
+    wwtInitialState['layers'].forEach(function (layerInfo) {
         if (layerInfo['layer_type'] == 'image') {
             loadImageLayer(layerInfo);
         }
@@ -149,7 +148,7 @@ function loadWwtFigure() {
         }
     });
 
-    wwtIntialState['annotations'].forEach(loadAnnotation);
+    wwtInitialState['annotations'].forEach(loadAnnotation);
 
     if (!viewSettings['tracked_object_id']) { //Not tracking or trivially track sun (id=0)
         wwt.gotoRaDecZoom(viewSettings['ra'], viewSettings['dec'], viewSettings['fov'], true);
@@ -213,7 +212,7 @@ function loadTableLayer(layerInfo) {
 
     $.ajax(url, datatype = "text")
         .fail(function () {
-            $("#WWTErrorText").append("<p>Unable to load data for layer with ID: " + id + "</p>"); //TODO replace with something nicer
+            $("#wwt-error-text").append("<p>Unable to load data for layer with ID: " + id + "</p>"); //TODO replace with something nicer
         })
         .done(onCsvLoad);
 }
@@ -258,15 +257,15 @@ function loadAnnotation(annotation) {
     })
 }
 
-function setHmtlSettings() {
-    if (wwtIntialState === undefined) { //JSON config file has not loaded yet, try again in 50 ms
-        setTimeout(setHmtlSettings, 50);
+function setHtmlSettings() {
+    if (wwtInitialState === undefined) { //JSON config file has not loaded yet, try again in 50 ms
+        setTimeout(setHtmlSettings, 50);
         return;
     }
-    else if (wwtIntialState === null) {
+    else if (wwtInitialState === null) {
         return;
     }
-    var figHtmlSettings = wwtIntialState['html_settings'];
+    var figHtmlSettings = wwtInitialState['html_settings'];
 
     var title = figHtmlSettings['title'] ? figHtmlSettings['title'] : "WWT Interactive Figure";
     $(document).attr("title", title);
@@ -277,12 +276,12 @@ function setHmtlSettings() {
     var htmlWidth = $("html").width();
     var newHeight = settingsHeight ? Math.min(settingsHeight, htmlHeight) : htmlHeight;
     var newWidth = settingsWidth ? Math.min(settingsWidth, htmlWidth) : htmlWidth;
-    $("#WWTCanvas").css("height", newHeight + "px");
-    $("#WWTCanvas").css("width", newWidth + "px");
+    $("#wwt-canvas").css("height", newHeight + "px");
+    $("#wwt-canvas").css("width", newWidth + "px");
 }
 
 function handleConfigLoadError() {
     //TODO replace with something a bit nicer before releasing this feature
-    $("#WWTCanvas").hide;
-    $("#WWTErrorText").append("<p>Unable to load configuration file wwt_figure.json</p>");
+    $("#wwt-canvas").hide;
+    $("#wwt-error-text").append("<p>Unable to load configuration file wwt_figure.json</p>");
 }
