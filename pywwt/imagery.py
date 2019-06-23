@@ -28,9 +28,7 @@ def get_imagery_layers(url):
     e = ElementTree()
     t = e.parse(b)
 
-    # For now only look at the ImageSets at the root of the
-    # XML since these seem to be the main surveys.
-    for survey in t.findall('ImageSet'):
+    for survey in t.iter('ImageSet'):
         name = survey.attrib['Name']
         thumbnail_url = survey.find('ThumbnailUrl').text
         if not thumbnail_url:
