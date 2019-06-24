@@ -220,3 +220,6 @@ try:
     httplib._MAXHEADERS = 1000
 except ImportError:
     pass
+
+linkcheck_retries = 5
+linkcheck_timeout = 10
