@@ -3,6 +3,11 @@
 
 - No changes yet.
 
+0.6.2 (unreleased)
+------------------
+
+- Expose all available imagery layers. [#220]
+
 0.6.1 (2019-06-10)
 ------------------
 
