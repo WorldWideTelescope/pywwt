@@ -131,13 +131,13 @@ function loadWwtFigure() {
     }
 
     var miscSettings = wwtInitialState['wwt_settings'];
-    wwtInitialState['wwt_settings'].forEach(function (setting) {
+    for (name in miscSettings) {
         wwt_apply_json_message(wwt, {
             event: 'setting_set',
-            setting: setting['name'],
-            value: setting['value']
+            setting: name,
+            value: miscSettings[name]
         });
-    });
+    }
 
     wwtInitialState['layers'].forEach(function (layerInfo) {
         if (layerInfo['layer_type'] == 'image') {
@@ -172,15 +172,15 @@ function loadImageLayer(layerInfo) {
                                stertchInfo['vmin'],
                                stertchInfo['vmax']);
         layer.getFitsImage().transparentBlack = false;
-
-        layerInfo['settings'].forEach(function (setting) {
+        var settings = layerInfo['settings'];
+        for (name in settings) {
             wwt_apply_json_message(wwt, {
                 event: 'image_layer_set',
-                setting: setting['name'],
-                value: setting['value'],
+                setting: name,
+                value: settings[name],
                 id: id
             });
-        });
+        }
     };
 
     var wwtLayer = wwt.loadFitsLayer(url, '', false, onFitsLoad);
@@ -197,17 +197,17 @@ function loadTableLayer(layerInfo) {
             id: id,
             table: btoa(data)
         });
-
-        layerInfo['settings'].forEach(function (setting) {
-            if (setting['value'] !== null) {
+        var settings = layerInfo['settings'];
+        for (name in  settings) {
+            if (settings[name] !== null) {
                 wwt_apply_json_message(wwt, {
                     event: 'table_layer_set',
-                    setting: setting['name'],
-                    value: setting['value'],
+                    setting: name,
+                    value: settings[name],
                     id: id
                 });
             }
-        });
+        }
     };
 
     $.ajax(url, datatype = "text")
@@ -245,16 +245,16 @@ function loadAnnotation(annotation) {
 
         });
     }
-
-    annotation['settings'].forEach(function (setting) {
+    var settings = annotation['settings'];
+    for (name in  settings) {
         wwt_apply_json_message(wwt, {
             event: 'annotation_set',
             id: id,
-            setting: setting['name'],
-            value: setting['value']
+            setting: name,
+            value: settings[name]
         });
 
-    })
+    }
 }
 
 function setHtmlSettings() {

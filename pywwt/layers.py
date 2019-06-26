@@ -578,7 +578,7 @@ class TableLayer(HasTraits):
         state = {'id': self.id,
                  'layer_type': 'table',
                  'frame': self.frame,
-                 'settings': []}
+                 'settings': {}}
 
         for trait in self.traits().values():
             wwt_name = trait.metadata.get('wwt')
@@ -588,20 +588,20 @@ class TableLayer(HasTraits):
                     value = VALID_LON_UNITS[value]
                 elif wwt_name == 'altUnit' and value is not None:
                     value = VALID_ALT_UNITS[value]
-                state['settings'].append({'name': wwt_name, 'value': value})
+                state['settings'][wwt_name] = value
 
         if self._uniform_color():
-            state['settings'].append({'name': '_colorMap', 'value': 0})
-            state['settings'].append({'name': 'colorMapColumn', 'value': -1})
+            state['settings']['_colorMap'] = 0
+            state['settings']['colorMapColumn'] = -1
         else:
-            state['settings'].append({'name': '_colorMap', 'value': 3})
-            state['settings'].append({'name':'colorMapColumn', 'value': CMAP_COLUMN_NAME})
+            state['settings']['_colorMap'] = 3
+            state['settings']['colorMapColumn'] = CMAP_COLUMN_NAME
 
         if self._uniform_size():
-            state['settings'].append({'name': 'sizeColumn', 'value': -1})
+            state['settings']['sizeColumn'] = -1
         else:
-            state['settings'].append({'name': 'sizeColumn', 'value': SIZE_COLUMN_NAME})
-            state['settings'].append({'name': 'pointScaleType', 'value': 0})
+            state['settings']['sizeColumn'] = SIZE_COLUMN_NAME
+            state['settings']['pointScaleType'] = 0
 
         return state
 
@@ -722,13 +722,14 @@ class ImageLayer(HasTraits):
     def _serialize_state(self):
         state = {'id': self.id,
                  'layer_type': 'image',
-                 'settings': []}
+                 'settings': {}
+                 }
 
         #A bit overkill for just the opacity, but more future-proof in case we add more wwt traits
         for trait in self.traits().values():
             wwt_name = trait.metadata.get('wwt')
             if wwt_name:
-                state['settings'].append({'name': wwt_name, 'value': trait.get(self)})
+                state['settings'][wwt_name] = trait.get(self)
 
         if self.vmin is not None and self.vmax is not None:
             state['stretch_info'] = {'vmin': self.vmin,

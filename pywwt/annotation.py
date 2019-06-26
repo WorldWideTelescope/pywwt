@@ -66,14 +66,14 @@ class Annotation(HasTraits):
     def _serialize_state(self):
         state = {'shape': self.shape,
                  'id': self.id,
-                 'settings': []}
+                 'settings': {}}
         for trait in self.traits().values():
             wwt_name = trait.metadata.get('wwt')
             if wwt_name:
                 trait_val = trait.get(self)
                 if isinstance(trait_val, u.Quantity):
                     trait_val = trait_val.value
-                state['settings'].append({'name': wwt_name, 'value': trait_val})
+                state['settings'][wwt_name] = trait_val
         return state
 
     def remove(self):
@@ -161,8 +161,7 @@ class Circle(Annotation):
 
     def _serialize_state(self):
         state = super(Circle, self)._serialize_state()
-        state['settings'].append({'name': 'skyRelative',
-                                  'value': self.radius.unit.is_equivalent(u.degree)})
+        state['settings']['skyRelative'] =  self.radius.unit.is_equivalent(u.degree)
         state['center'] = {'ra': self._center.ra.deg,
                            'dec': self._center.dec.deg}
         return state

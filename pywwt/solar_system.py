@@ -98,6 +98,6 @@ class SolarSystem(HasTraits):
                 trait_val = trait.get(self)
                 if isinstance(trait_val, u.Quantity):
                     trait_val = trait_val.value
-                wwt_state['wwt_settings'].append({'name': wwt_name, 'value': trait_val})
+                wwt_state['wwt_settings'][wwt_name] = trait_val
 
         wwt_state['view_settings']['tracked_object_id'] = self._tracked_obj_id

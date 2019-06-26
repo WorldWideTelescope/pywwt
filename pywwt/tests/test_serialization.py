@@ -30,23 +30,6 @@ class MockWWTWidget(BaseWWTWidget):
     def _serve_file(self, filename, extension=''):
         return filename
 
-
-def check_settings_list(setting_list, expected_values):
-    seen_settings = set()
-
-    # Make sure that we see each setting has the correct format and value and does not have duplicate entries
-    for setting in setting_list:
-        assert 'name' in setting
-        assert 'value' in setting
-        name = setting['name']
-        assert setting['value'] == expected_values[name], 'Value mismatch for setting: {0}'.format(name)
-        assert setting['name'] not in seen_settings, 'Duplicate found for setting: {0}'.format(name)
-        seen_settings.add(name)
-
-    # Make sure that we have all the settings we expect to see
-    for name in expected_values.keys():
-        assert name in seen_settings, "Unexpected setting found: {0}".format(name)
-
 def test_basic_serialization():
     widget = MockWWTWidget()
     test_state = widget._serialize_state('Title', 100, 200)
@@ -108,7 +91,7 @@ def test_widget_settings_serialization():
                          'galacticMode': True, 'showGrid': False, 'localHorizonMode': True, 'locationAltitude': 7,
                          'locationLat': 12., 'locationLng': -18.}
     state = widget.quick_serialize()
-    check_settings_list(state['wwt_settings'], expected_settings)
+    assert state['wwt_settings'] == expected_settings
 
 
 def test_mode_serialization():
@@ -143,13 +126,11 @@ def test_3d_serialization():
                             'solarSystemStars':True}
 
     init_state = widget.quick_serialize()
-    assert len(init_state['wwt_settings']) == len(STARDARD_WWT_SETTINGS) + len(expected_3d_settings)
-    for setting in init_state['wwt_settings']:
-        assert 'name' in setting
-        assert 'value' in setting
-        assert setting['name'] in expected_3d_settings or setting['name'] in STARDARD_WWT_SETTINGS
-        if setting['name'] in expected_3d_settings:
-            assert setting['value'] == expected_3d_settings[setting['name']], 'Mismatch for setting {0}'.format(setting['name'])
+    settings = init_state['wwt_settings']
+    assert len(settings) == len(STARDARD_WWT_SETTINGS) + len(expected_3d_settings)
+    for name, value in expected_3d_settings.items():
+        assert name in settings
+        assert value == settings[name], 'Mismatch for setting {0}'.format(name)
 
     assert 'tracked_object_id' in init_state['view_settings']
     assert init_state['view_settings']['tracked_object_id'] == 0
@@ -208,7 +189,7 @@ def test_circle_annotation_serialization():
     assert annot_state['center']['dec'] == pytest.approx(0.2)
 
     assert 'settings' in annot_state
-    check_settings_list(annot_state['settings'], expected_settings)
+    assert annot_state['settings'] == expected_settings
 
     circ.radius = 7*u.pix
     circ.fill_color = 'g'
@@ -216,7 +197,7 @@ def test_circle_annotation_serialization():
     expected_settings['skyRelative'] = False
     expected_settings['fillColor'] = '#008000'
     annot_state = widget.quick_serialize()['annotations'][0]
-    check_settings_list(annot_state['settings'], expected_settings)
+    assert annot_state['settings'] == expected_settings
 
     #Check circle annotation with no specified center
     circ.remove()
@@ -262,7 +243,7 @@ def test_poly_annotation_setting():
         assert pts[i]['dec'] == expected_decs[i], 'Dec mismatch for point {0}'.format(i)
 
     assert 'settings' in annot_state
-    check_settings_list(annot_state['settings'], expected_settings)
+    assert annot_state['settings'] == expected_settings
 
 def test_line_annotation_setting():
     widget = MockWWTWidget()
@@ -292,7 +273,7 @@ def test_line_annotation_setting():
         assert pts[i]['dec'] == expected_decs[i], 'Dec mismatch for point {0}'.format(i)
 
     assert 'settings' in annot_state
-    check_settings_list(annot_state['settings'], expected_settings)
+    assert annot_state['settings'] == expected_settings
 
 
 def test_add_remove_layer_serialization():
@@ -364,7 +345,7 @@ def test_table_setting_serialization():
                          'altUnit': None, 'altType': 'distance', 'color': '#aacc00', 'scaleFactor': 14,
                          'opacity': 0.75, 'plotType': 'square', 'markerScale': 'world', 'showFarSide': True,
                          'sizeColumn': -1, '_colorMap': 0, 'colorMapColumn': -1}
-    check_settings_list(layer_state['settings'], expected_settings)
+    assert layer_state['settings'] == expected_settings
 
     #Check when we have colormap and scaling
     layer.cmap_att = 'flux'
@@ -377,7 +358,7 @@ def test_table_setting_serialization():
     expected_settings['_colorMap'] = 3
     expected_settings['altUnit'] = 'megaParsecs'
 
-    check_settings_list(widget.quick_serialize()['layers'][0]['settings'], expected_settings)
+    assert widget.quick_serialize()['layers'][0]['settings'] == expected_settings
 
 def test_image_setting_serialization():
     widget = MockWWTWidget()
@@ -404,9 +385,7 @@ def test_image_setting_serialization():
 
     assert 'settings' in layer_state
     settings = layer_state['settings']
-    assert len(settings) == 1
-    assert settings[0]['name'] == 'opacity'
-    assert settings[0]['value'] == 0.3
+    assert settings == {'opacity': 0.3}
 
     stretches = {'linear': 0, 'log': 1, 'power': 2, 'sqrt': 3, 'histeq': 4}
     for stretch_name, stretch_id in stretches.items():

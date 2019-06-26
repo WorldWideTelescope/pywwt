@@ -626,14 +626,14 @@ class BaseWWTWidget(HasTraits):
                                   'max_width': max_width,
                                   'max_height': max_height}
 
-        state['wwt_settings'] = []
+        state['wwt_settings'] = {}
         for trait in self.traits().values():
             wwt_name = trait.metadata.get('wwt')
             if wwt_name:
                 trait_val = trait.get(self)
                 if isinstance(trait_val, u.Quantity):
                     trait_val = trait_val.value
-                state['wwt_settings'].append({'name': wwt_name, 'value': trait_val})
+                state['wwt_settings'][wwt_name] = trait_val
 
         center = self.get_center()
         fov = self.get_fov()
