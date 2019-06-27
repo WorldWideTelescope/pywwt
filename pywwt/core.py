@@ -13,6 +13,11 @@ from .solar_system import SolarSystem
 from .layers import LayerManager
 from .instruments import Instruments
 
+import json
+import os
+import shutil
+import tempfile
+
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbook.io/html5-control-reference/
 
@@ -44,7 +49,9 @@ class BaseWWTWidget(HasTraits):
         self._instruments = Instruments()
         self.current_mode = 'sky'
         self._paused = False
+        self._last_sent_view_mode = 'sky'
         self.layers = LayerManager(parent=self)
+        self._annotation_set = set()
 
         # NOTE: we deliberately don't force _on_trait_change to be called here
         # for the WWT settings, as the default values are hard-coded in wwt.html
@@ -140,6 +147,7 @@ class BaseWWTWidget(HasTraits):
         """
         Clears all annotations from the current view.
         """
+        self._annotation_set.clear()
         return self._send_msg(event='clear_annotations')
 
     def get_center(self):
@@ -320,6 +328,7 @@ class BaseWWTWidget(HasTraits):
             elif mode == 'mars':
                 mode = 'Visible Imagery'
             self._send_msg(event='set_viewer_mode', mode=mode)
+            self._last_sent_view_mode = mode
             if mode == 'sky' or mode == 'panorama':
                 self.current_mode = mode
             else:
@@ -327,6 +336,7 @@ class BaseWWTWidget(HasTraits):
         elif mode in VIEW_MODES_3D:
             self._send_msg(event='set_viewer_mode', mode=solar_system_mode)
             self.current_mode = mode
+            self._last_sent_view_mode = solar_system_mode
         else:
             raise ValueError('mode should be one of {0}'.format('/'.join(VIEW_MODES_2D + VIEW_MODES_3D)))
 
@@ -444,9 +454,7 @@ class BaseWWTWidget(HasTraits):
             attributes to be set upon shape initialization.
         """
         # TODO: could buffer JS call here
-        circle = Circle(parent=self, **kwargs)
-        if center:
-            circle.set_center(center)
+        circle = Circle(parent=self, center=center, **kwargs)
         return circle
 
     def add_polygon(self, points=None, **kwargs):
@@ -554,3 +562,104 @@ class BaseWWTWidget(HasTraits):
         for trait_name, trait in self.traits().items():
             if trait.metadata.get('wwt_reset'):
                 setattr(self, trait_name, trait.default_value)
+
+    def save_as_html_bundle(self, dest, title=None, max_width=None, max_height=None):
+        """
+        Save the current view as a web page with supporting files.
+        
+        This feature is currently under development, so not all
+        settings/features that can be set in pyWWT will be saved
+        
+        Parameters
+        ----------
+        dest : `str`
+            The path to output the bundle to. The path must represent a 
+            directory (which will be created if it does not exist) or a zip file.
+        title : `str`, optional
+            The desired title for the HTML page. If blank, a generic title will be used.
+        max_width : `int`, optional
+            The maximum width of the WWT viewport on the exported HTML page in pixels.
+            If left blank, the WWT viewport will fill the enitre width of the browser.
+        max_height : `int`, optional
+            The maximum height of the WWT viewport on the exported HTML page in pixels.
+            If left blank, the WWT viewport will fill the enitre height of the browser.
+        """
+        dest_root, dest_extension = os.path.splitext(dest)
+        if (dest_extension  and dest_extension != ".zip"):
+            raise ValueError("'dest' must be either a directory or a .zip file")
+
+        is_compressed = dest_extension == '.zip'
+        if is_compressed:
+            figure_dir = tempfile.mkdtemp()
+        else:
+            if not os.path.exists(dest):
+                os.makedirs(os.path.abspath(dest))
+            figure_dir = dest
+			
+        nbexten_dir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
+        fig_src_dir = os.path.join(nbexten_dir, 'interactive_figure')
+        shutil.copy(os.path.join(fig_src_dir, "index.html"), figure_dir)
+
+        script_dir = os.path.join(figure_dir, 'scripts')
+        if not os.path.exists(script_dir):
+            os.mkdir(script_dir)
+        shutil.copy(os.path.join(nbexten_dir, 'wwt_json_api.js'), script_dir)
+        shutil.copy(os.path.join(fig_src_dir, "interactive_figure.js"), script_dir)
+
+        self._serialize_to_json(os.path.join(figure_dir,'wwt_figure.json'), title, max_width, max_height)
+
+        if len(self.layers) > 0:
+            data_dir = os.path.join(figure_dir,'data')
+            if not os.path.exists(data_dir):
+                os.mkdir(data_dir)
+            self._save_added_data(data_dir)
+
+        if is_compressed:
+            zip_parent_dir = os.path.abspath(os.path.dirname(dest_root))
+            if not os.path.exists(zip_parent_dir):
+                os.makedirs(zip_parent_dir)
+            shutil.make_archive(dest_root, 'zip', root_dir=figure_dir)
+
+    def _serialize_state(self, title, max_width, max_height):
+        state = dict()
+        state['html_settings'] = {'title': title,
+                                  'max_width': max_width,
+                                  'max_height': max_height}
+
+        state['wwt_settings'] = {}
+        for trait in self.traits().values():
+            wwt_name = trait.metadata.get('wwt')
+            if wwt_name:
+                trait_val = trait.get(self)
+                if isinstance(trait_val, u.Quantity):
+                    trait_val = trait_val.value
+                state['wwt_settings'][wwt_name] = trait_val
+
+        center = self.get_center()
+        fov = self.get_fov()
+        state['view_settings'] = {'mode': self._last_sent_view_mode,
+                                  'ra': center.icrs.ra.deg,
+                                  'dec': center.icrs.dec.deg,
+                                  'fov': fov.to_value(u.deg)}
+
+        state['foreground_settings'] = {'foreground': self.foreground,
+                                        'background': self.background,
+                                        'foreground_alpha': self.foreground_opacity * 100}
+
+        state['layers'] = self.layers._serialize_state()
+
+        if self.current_mode in VIEW_MODES_3D:
+            self.solar_system._add_settings_to_serialization(state)
+
+        state['annotations'] = []
+        for annot in self._annotation_set:
+            state['annotations'].append(annot._serialize_state())
+        return state
+
+    def _serialize_to_json(self, file, title, max_width, max_height):
+        state = self._serialize_state(title, max_width, max_height)
+        with open(file,'w') as file_obj:
+            json.dump(state,file_obj)
+
+    def _save_added_data(self, dir):
+        self.layers._save_all_data_for_serialization(dir)

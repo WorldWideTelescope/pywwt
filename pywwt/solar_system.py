@@ -16,6 +16,7 @@ class SolarSystem(HasTraits):
         super(SolarSystem, self).__init__()
         self.base_widget = base_wwt_widget
         self.observe(self._on_trait_change, type='change')
+        self._tracked_obj_id = 0 #Default to tracking sun
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
@@ -85,5 +86,18 @@ class SolarSystem(HasTraits):
 
         if obj in mappings:
             self.base_widget._send_msg(event='track_object', code=mappings[obj])
+            self._tracked_obj_id = mappings[obj]
         else:
             raise ValueError('the given object cannot be tracked')
+
+    def _add_settings_to_serialization(self, wwt_state):
+
+        for trait in self.traits().values():
+            wwt_name = trait.metadata.get('wwt')
+            if wwt_name:
+                trait_val = trait.get(self)
+                if isinstance(trait_val, u.Quantity):
+                    trait_val = trait_val.value
+                wwt_state['wwt_settings'][wwt_name] = trait_val
+
+        wwt_state['view_settings']['tracked_object_id'] = self._tracked_obj_id

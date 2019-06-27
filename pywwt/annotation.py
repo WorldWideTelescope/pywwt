@@ -48,6 +48,7 @@ class Annotation(HasTraits):
             super(Annotation, self).__init__(**kwargs)
         else:
             raise KeyError('a key doesn\'t match any annotation trait name')
+        self.parent._annotation_set.add(self)
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
@@ -61,6 +62,26 @@ class Annotation(HasTraits):
                                   id=self.id,
                                   setting=wwt_name,
                                   value=changed['new'])
+
+    def _serialize_state(self):
+        state = {'shape': self.shape,
+                 'id': self.id,
+                 'settings': {}}
+        for trait in self.traits().values():
+            wwt_name = trait.metadata.get('wwt')
+            if wwt_name:
+                trait_val = trait.get(self)
+                if isinstance(trait_val, u.Quantity):
+                    trait_val = trait_val.value
+                state['settings'][wwt_name] = trait_val
+        return state
+
+    def remove(self):
+        """
+        Removes the specified annotation from the current view.
+        """
+        self.parent._send_msg(event='remove_annotation', id=self.id)
+        self.parent._annotation_set.discard(self)
 
 
 class Circle(Annotation):
@@ -80,12 +101,19 @@ class Circle(Annotation):
                                        '(`str` or `tuple`)').tag(wwt='fillColor')
     line_color = Color('white', help='Assigns line color for the circle '
                                      '(`str` or `tuple`)').tag(wwt='lineColor')
-    line_width = AstropyQuantity(1*u.pixel,
+    line_width = AstropyQuantity(1 * u.pixel,
                                  help='Assigns line width in pixels '
                                       '(:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
-    radius = AstropyQuantity(80*u.pixel,
+    radius = AstropyQuantity(80 * u.pixel,
                              help='Sets the radius for the circle '
                                   '(:class:`~astropy.units.Quantity`)').tag(wwt='radius')
+
+    def __init__(self, parent=None, center=None, **kwargs):
+        super(Circle, self).__init__(parent, **kwargs)
+        if center:
+            self.set_center(center)
+        else:
+            self._center = parent.get_center().icrs
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -116,12 +144,7 @@ class Circle(Annotation):
         self.parent._send_msg(event='circle_set_center', id=self.id,
                               ra=coord_icrs.ra.degree,
                               dec=coord_icrs.dec.degree)
-
-    def remove(self):
-        """
-        Removes the specified annotation from the current view.
-        """
-        self.parent._send_msg(event='remove_annotation', id=self.id)
+        self._center = coord_icrs
 
     def _on_trait_change(self, changed):
         if changed['name'] == 'radius':
@@ -135,6 +158,13 @@ class Circle(Annotation):
             changed['new'] = changed['new'].value
 
         super(Circle, self)._on_trait_change(changed)
+
+    def _serialize_state(self):
+        state = super(Circle, self)._serialize_state()
+        state['settings']['skyRelative'] =  self.radius.unit.is_equivalent(u.degree)
+        state['center'] = {'ra': self._center.ra.deg,
+                           'dec': self._center.dec.deg}
+        return state
 
 
 class Polygon(Annotation):
@@ -154,9 +184,13 @@ class Polygon(Annotation):
                                        '(`str` or `tuple`)').tag(wwt='fillColor')
     line_color = Color('white', help='Assigns line color for the polygon '
                                      '(`str` or `tuple`)').tag(wwt='lineColor')
-    line_width = AstropyQuantity(1*u.pixel,
+    line_width = AstropyQuantity(1 * u.pixel,
                                  help='Assigns line width in pixels '
                                       '(:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
+
+    def __init__(self, parent=None, **kwargs):
+        self._points = []
+        super(Polygon, self).__init__(parent, **kwargs)
 
     @validate('line_width')
     def _validate_linewidth(self, proposal):
@@ -178,27 +212,31 @@ class Polygon(Annotation):
             The coordinates of the desired point(s).
         """
         coord_icrs = coord.icrs
-        if coord_icrs.isscalar: # if coord only has one point
+        if coord_icrs.isscalar:  # if coord only has one point
             self.parent._send_msg(event='polygon_add_point', id=self.id,
                                   ra=coord_icrs.ra.degree,
                                   dec=coord_icrs.dec.degree)
+            self._points.append(coord_icrs)
         else:
             for point in coord_icrs:
                 self.parent._send_msg(event='polygon_add_point', id=self.id,
                                       ra=point.ra.degree,
                                       dec=point.dec.degree)
-
-    def remove(self):
-        """
-        Removes the specified annotation from the current view.
-        """
-        self.parent._send_msg(event='remove_annotation', id=self.id)
+                self._points.append(point)
 
     def _on_trait_change(self, changed):
         if isinstance(changed['new'], u.Quantity):
             changed['new'] = changed['new'].value
 
         super(Polygon, self)._on_trait_change(changed)
+
+    def _serialize_state(self):
+        state = super(Polygon, self)._serialize_state()
+        state['points'] = []
+        for point in self._points:
+            state['points'].append({'ra': point.ra.degree,
+                                    'dec': point.dec.degree})
+        return state
 
 
 class Line(Annotation):
@@ -214,9 +252,13 @@ class Line(Annotation):
     color = ColorWithOpacity('white',
                              help='Assigns color for the line '
                                   '(`str` or `tuple`)').tag(wwt='lineColor')
-    width = AstropyQuantity(1*u.pixel,
+    width = AstropyQuantity(1 * u.pixel,
                             help='Assigns width for the line in pixels '
                                  '(:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
+
+    def __init__(self, parent=None, **kwargs):
+        self._points = []
+        super(Line, self).__init__(parent, **kwargs)
 
     @validate('width')
     def _validate_width(self, proposal):
@@ -235,21 +277,17 @@ class Line(Annotation):
             The coordinates of the desired point(s).
         """
         coord_icrs = coord.icrs
-        if coord_icrs.isscalar: # if coord only has one point
+        if coord_icrs.isscalar:  # if coord only has one point
             self.parent._send_msg(event='line_add_point', id=self.id,
                                   ra=coord_icrs.ra.degree,
                                   dec=coord_icrs.dec.degree)
+            self._points.append(coord_icrs)
         else:
             for point in coord_icrs:
                 self.parent._send_msg(event='line_add_point', id=self.id,
                                       ra=point.ra.degree,
                                       dec=point.dec.degree)
-
-    def remove(self):
-        """
-        Removes the specified annotation from the current view.
-        """
-        self.parent._send_msg(event='remove_annotation', id=self.id)
+                self._points.append(point)
 
     def _on_trait_change(self, changed):
         if isinstance(changed['new'], u.Quantity):
@@ -257,12 +295,21 @@ class Line(Annotation):
 
         super(Line, self)._on_trait_change(changed)
 
+    def _serialize_state(self):
+        state = super(Line, self)._serialize_state()
+        state['points'] = []
+        for point in self._points:
+            state['points'].append({'ra': point.ra.degree,
+                                    'dec': point.dec.degree})
+        return state
+
 
 class FieldOfView():
     """
     A collection of polygon annotations. Takes the name of a pre-loaded
     telescope and displays its field of view.
     """
+
     # a more efficient method than CircleCollection of changing trait values?
 
     def __init__(self, parent, telescope, center, rot, **kwargs):
@@ -323,7 +370,7 @@ class FieldOfView():
                     if abs(dec) > 90:
                         if dec < -90:
                             decs[i] = -90. - (dec + 90.)
-                        else: # dec > 90
+                        else:  # dec > 90
                             decs[i] = 90. - (dec - 90.)
                         ras[i] += 180.
 
@@ -362,7 +409,7 @@ class CircleCollection():
             self.points = points
         else:
             raise IndexError('For performance reasons, only 10,000 '
-                        'annotations can be added at once for the time being.')
+                             'annotations can be added at once for the time being.')
         self.parent = parent
         self.collection = []
         self._gen_circles(self.points, **kwargs)
@@ -384,8 +431,7 @@ class CircleCollection():
 
     def _gen_circles(self, points, **kwargs):
         for elem in points:
-            circle = Circle(self.parent, **kwargs)
-            circle.set_center(elem)
+            circle = Circle(self.parent, elem, **kwargs)
             self.collection.append(circle)
 
     def add_points(self, points, **kwargs):

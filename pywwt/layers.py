@@ -1,6 +1,8 @@
 import sys
 import uuid
 import tempfile
+from os import path
+import shutil
 
 import re
 
@@ -217,6 +219,17 @@ class LayerManager(object):
 
     __repr__ = __str__
 
+    def _serialize_state(self):
+        layer_states = []
+        for layer in self._layers:
+            layer_states.append(layer._serialize_state())
+
+        return layer_states
+
+    def _save_all_data_for_serialization (self, dir):
+        for layer in self._layers:
+            layer._save_data_for_serialization(dir)
+
 
 class TableLayer(HasTraits):
     """
@@ -412,7 +425,7 @@ class TableLayer(HasTraits):
 
         # Update the size column in the table
 
-        if len(self.size_att) == 0 or self.size_vmin is None or self.size_vmax is None:
+        if self._uniform_size():
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='sizeColumn', value=-1)
             return
@@ -460,7 +473,7 @@ class TableLayer(HasTraits):
 
         # Update the cmap column in the table
 
-        if len(self.cmap_att) == 0 or self.cmap_vmin is None or self.cmap_vmax is None:
+        if self._uniform_color():
 
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='colorMapColumn', value=-1)
@@ -498,6 +511,12 @@ class TableLayer(HasTraits):
         csv = csv_table_win_newline(self.table)
 
         return b64encode(csv.encode('ascii', errors='replace')).decode('ascii')
+
+    def _uniform_color(self):
+        return not self.cmap_att or self.cmap_vmin is None or self.cmap_vmax is None
+
+    def _uniform_size(self):
+        return not self.size_att or self.size_vmin is None or self.size_vmax is None
 
     def _initialize_layer(self):
         self.parent._send_msg(event='table_layer_create',
@@ -555,6 +574,43 @@ class TableLayer(HasTraits):
                                   setting=wwt_name,
                                   value=value)
 
+    def _serialize_state(self):
+        state = {'id': self.id,
+                 'layer_type': 'table',
+                 'frame': self.frame,
+                 'settings': {}}
+
+        for trait in self.traits().values():
+            wwt_name = trait.metadata.get('wwt')
+            if wwt_name:
+                value = trait.get(self)
+                if wwt_name == 'raUnits' and value is not None:
+                    value = VALID_LON_UNITS[value]
+                elif wwt_name == 'altUnit' and value is not None:
+                    value = VALID_ALT_UNITS[value]
+                state['settings'][wwt_name] = value
+
+        if self._uniform_color():
+            state['settings']['_colorMap'] = 0
+            state['settings']['colorMapColumn'] = -1
+        else:
+            state['settings']['_colorMap'] = 3
+            state['settings']['colorMapColumn'] = CMAP_COLUMN_NAME
+
+        if self._uniform_size():
+            state['settings']['sizeColumn'] = -1
+        else:
+            state['settings']['sizeColumn'] = SIZE_COLUMN_NAME
+            state['settings']['pointScaleType'] = 0
+
+        return state
+
+    def _save_data_for_serialization(self, dir):
+        file_path = path.join(dir,"{0}.csv".format(self.id))
+        table_str = csv_table_win_newline(self.table)
+        with open(file_path, 'wb') as file: # binary mode to preserve windows line endings
+            file.write(table_str.encode('ascii', errors='replace'))
+
     def __str__(self):
         return 'TableLayer with {0} markers'.format(len(self.table))
 
@@ -570,7 +626,7 @@ class ImageLayer(HasTraits):
     vmin = Float(None, allow_none=True)
     vmax = Float(None, allow_none=True)
     stretch = Unicode('linear')
-    opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
+    opacity = Float(1, help='The opacity of the image').tag(wwt='opacity')
 
     def __init__(self, parent=None, image=None, **kwargs):
 
@@ -662,6 +718,29 @@ class ImageLayer(HasTraits):
                                   id=self.id,
                                   setting=wwt_name,
                                   value=changed['new'])
+
+    def _serialize_state(self):
+        state = {'id': self.id,
+                 'layer_type': 'image',
+                 'settings': {}
+                 }
+
+        #A bit overkill for just the opacity, but more future-proof in case we add more wwt traits
+        for trait in self.traits().values():
+            wwt_name = trait.metadata.get('wwt')
+            if wwt_name:
+                state['settings'][wwt_name] = trait.get(self)
+
+        if self.vmin is not None and self.vmax is not None:
+            state['stretch_info'] = {'vmin': self.vmin,
+                                     'vmax': self.vmax,
+                                     'stretch':VALID_STRETCHES.index(self.stretch)}
+
+        return state
+
+    def _save_data_for_serialization(self, dir):
+        file_path = path.join(dir,"{0}.fits".format(self.id))
+        shutil.copyfile(self._sanitized_image,file_path)
 
     def __str__(self):
         return 'ImageLayer'
