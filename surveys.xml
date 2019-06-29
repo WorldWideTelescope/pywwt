@@ -1,24 +1,24 @@
 <?xml version="1.0"?>
 
 
-<Folder  Name="All-Sky Surveys"  Group="Explorer"  Searchable="True" Type="Sky" Thumbnail="http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=aitoff">  
- 
+<Folder  Name="All-Sky Surveys"  Group="Explorer"  Searchable="True" Type="Sky" Thumbnail="http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=aitoff">
+
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Visible" Name="Digitized Sky Survey (Color)" AltUrl="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wtl00{Q}?g=121&amp;band=wwt_rgb" Url="http://cdn.worldwidetelescope.org/wwtweb/dss.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="12" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="True">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/thumbnails/DSS.png</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/thumbnails/DSS.png</ThumbnailUrl>
     <Credits>Copyright DSS Consortium</Credits>
     <CreditsUrl>http://gsss.stsci.edu/Acknowledgements/DataCopyrights.htm</CreditsUrl>
   </ImageSet>
 
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Radio" Name="VLSS: VLA Low-frequency Sky Survey (Radio)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000000132{Q}?g=131" AltUrl="http://www.worldwidetelescope.org/wwtweb/VLssToast.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=VLA</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=VLA</ThumbnailUrl>
     <Credits>VLSS Cohen, A. S.; Lane, W. M.; Cotton, W. D.; Kassim, N. E.; Lazio, T. J. W.; Perley, R. A.; Condon, J. J.; Erickson, W. C.; Served From NASA Skyview</Credits>
     <CreditsUrl>http://lwa.nrl.navy.mil/VLSS/</CreditsUrl>
-  </ImageSet>    
+  </ImageSet>
 
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP ILC 5-Year Cosmic Microwave Background" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_ilc_200uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_ilc_200uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_ilc_200uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
@@ -45,7 +45,7 @@
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="IRIS: Improved Reprocessing of IRAS Survey (Infrared)" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000001130{Q}?g=182"  AltUrl="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},IRIScolor_12_60_100_6" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iriscolor</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iriscolor</ThumbnailUrl>
     <Credits>Original IRAS data: NASA/JPL IPAC, IRIS Reprocessing: Canadian Institute for Theoretical Astrophysics/Institut d'Astrophysique Spatiale. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (Red is IRIS100, Green IRIS60, Blue IRIS12).</Credits>
     <CreditsUrl>http://www.cita.utoronto.ca/~mamd/IRIS/IrisOverview.html</CreditsUrl>
   </ImageSet>
@@ -66,11 +66,11 @@
     </ForegroundImageSet>
   </Place>
 
-  <Place Name="GLIMPSE" DataSetType="Sky" RA="17.75" Dec="-28.9" Constellation="SGR" Classification="Galactic" Magnitude="0" ZoomLevel="0" Rotation="0" Angle="0" Opacity="100" AngularSize="360">
+  <Place Name="GLIMPSE IRAC" DataSetType="Sky" RA="17.75" Dec="-28.9" Constellation="SGR" Classification="Galactic" Magnitude="0" ZoomLevel="0" Rotation="0" Angle="0" Opacity="100" AngularSize="360">
     <ForegroundImageSet>
 
-  <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="GLIMPSE/MIPSGAL" Url="http://www.worldwidetelescope.org/wwtweb/glimpse.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="11" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=glimpsetn</ThumbnailUrl> 
+  <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="GLIMPSE IRAC" Url="http://www.worldwidetelescope.org/wwtweb/glimpse.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="11" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=glimpsetn</ThumbnailUrl>
     <Credits>NASA/JPL-Caltech/Univ. of Wisconsin. The GLIMPSE survey was performed using the Spitzer Space Telescope.</Credits>
     <CreditsUrl>http://www.astro.wisc.edu/sirtf/</CreditsUrl>
   </ImageSet>
@@ -82,7 +82,7 @@
     <ForegroundImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="GLIMPSE/MIPSGAL" Url="http://www.worldwidetelescope.org/wwtweb/mipsgal.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="11" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=glimpsemipsgaltn	</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=glimpsemipsgaltn	</ThumbnailUrl>
     <Credits>NASA/JPL-Caltech/Univ. of Wisconsin. The GLIMPSE survey was performed using the Spitzer Space Telescope.</Credits>
     <CreditsUrl>http://www.astro.wisc.edu/sirtf/</CreditsUrl>
   </ImageSet>
@@ -93,7 +93,7 @@
     <Credits>This publication makes use of data products from the Two Micron All Sky Survey, which is a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation.</Credits>
     <CreditsUrl>http://www.ipac.caltech.edu/2mass/</CreditsUrl>
   </ImageSet>
-  
+
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="2MASS: Catalog (Synthetic, Near Infrared)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000000312{Q}?g=138" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
     <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=2mass</ThumbnailUrl>
     <Credits>Image Jina Suh from 2MASS catalog Copyright Microsoft 2007; This publication makes use of data products from the Two Micron All Sky Survey, which is a joint project of the University of Massachusetts and the Infrared Processing and Analysis Center/California Institute of Technology, funded by the National Aeronautics and Space Administration and the National Science Foundation.</Credits>
@@ -119,7 +119,7 @@
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Visible" Name="USNOB: US Naval Observatory B 1.0 (Synthetic, Optical)" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000001210{Q}?g=182"  AltUrl="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},USNOBToast_6" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=usnob</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=usnob</ThumbnailUrl>
     <Credits>Monet D.G., Levine S.E., Casian B., et al. Astron. J., 125, 984 (2003). Rendering by Jina Suh (Microsoft).</Credits>
     <CreditsUrl>http://cdsarc.u-strasbg.fr/viz-bin/Cat?I/284</CreditsUrl>
   </ImageSet>
@@ -127,32 +127,32 @@
 
 
 <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="GALEX 4 Near-UV" Url="http://www.worldwidetelescope.org/wwtweb/galex4near.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="10" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexnear</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexnear</ThumbnailUrl>
    <Credits>This is the Near UV band (1770-2730A) of the GALEX GR4 data release archived at MAST/STScI.
 TOAST-formatted mosaics were obtained using facilities of NASA's SkyView Virtual Telescope.
-</Credits> 
+</Credits>
     <CreditsUrl>http://galex.stsci.edu/GR4/</CreditsUrl>
   </ImageSet>
 
 <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="GALEX 4 Far-UV" Url="http://www.worldwidetelescope.org/wwtweb/galex4far.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="10" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexfar</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexfar</ThumbnailUrl>
    <Credits>This is the Far UV band(1350-1780A) of the GALEX GR4 data release archived at MAST/STScI.
 TOAST-formatted mosaics were obtained using facilities of NASA's SkyView Virtual Telescope.
-</Credits> 
+</Credits>
     <CreditsUrl>http://galex.stsci.edu/GR4/</CreditsUrl>
   </ImageSet>
 
 
 
 <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="GALEX (Ultraviolet)" Url="http://www.worldwidetelescope.org/wwtweb/galexTOAST.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="10" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexboth</ThumbnailUrl> 
-   <Credits>Space Telescope Science Institute. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope. The Galaxy Explorer instrument allows observations to be made in ultraviolet bands Far UV 1350-1780A and Near UV 1770-2730A. This is the GR2/3 release. </Credits> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexboth</ThumbnailUrl>
+   <Credits>Space Telescope Science Institute. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope. The Galaxy Explorer instrument allows observations to be made in ultraviolet bands Far UV 1350-1780A and Near UV 1770-2730A. This is the GR2/3 release. </Credits>
     <CreditsUrl>http://galex.stsci.edu/GR2/</CreditsUrl>
   </ImageSet>
 
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="XRay" Name="RASS: ROSAT All Sky Survey (X-ray)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000001132{Q}?g=182"  AltUrl="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},RASS3Color_3sb_3bb0.8_3hb_7" BaseTileLevel="0" TileLevels="7" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosatcolor</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosatcolor</ThumbnailUrl>
     <Credits>This is a composite of three RASS3 surveys from the ROSAT Data Archive of the Max-Planck-Institut fur extraterrestrische Physik (MPE) at Garching, Germany. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope. Red is soft band (RASS3sb), Green is broad band (RASS3bb), Blue is hard band (RASS3hb)</Credits>
     <CreditsUrl>http://www.xray.mpe.mpg.de/cgi-bin/rosat/rosat-survey</CreditsUrl>
   </ImageSet>
@@ -169,7 +169,7 @@ Credit: NASA and FERMI-LAT Team.</Credits>
   <Place Name="Big Picture" DataSetType="Sky" RA="12.390277777777778" Dec="13.27" Constellation="VIR" Classification="Stellar" Magnitude="0" ZoomLevel="0" Rotation="0" Angle="0" Opacity="100" AngularSize="360">
     <ForegroundImageSet>
       <ImageSet Generic="False" DataSetType="Sky" BandPass="Visible" Url="http://r{S:1}.ortho.tiles.virtualearth.net/tiles/wtl11{Q}?g=155&amp;band=wwt_rgb" TileLevels="13" WidthFactor="2" Sparse="False" Rotation="0" QuadTreeMap="0123" Projection="Equirectangular" Name="Big Picture (Optical)" FileType=".png" CenterY="0" CenterX="0" BottomsUp="False" StockSet="False" ElevationModel="False" OffsetX="0" OffsetY="0" BaseTileLevel="0" BaseDegreesPerTile="180">
-    <Credits>George Djorgovski, IPAC/CalTech. This single continuous digital sky image is a cut through the core of the Virgo Cluster of galaxies, derived from the Palomar-Quest digital sky survey. This image contains nearly a million faint galaxies, about half a million stars in our Milky Way and about a thousand distant quasars.</Credits> 
+    <Credits>George Djorgovski, IPAC/CalTech. This single continuous digital sky image is a cut through the core of the Virgo Cluster of galaxies, derived from the Palomar-Quest digital sky survey. This image contains nearly a million faint galaxies, about half a million stars in our Milky Way and about a thousand distant quasars.</Credits>
         <CreditsUrl>http://bigpicture.caltech.edu/</CreditsUrl>
         <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=dss</ThumbnailUrl>
       </ImageSet>
@@ -177,7 +177,7 @@ Credit: NASA and FERMI-LAT Team.</Credits>
   </Place>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Visible" Name="Black Sky Background" Url=""  BaseTileLevel="0" TileLevels="0" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl></ThumbnailUrl> 
+    <ThumbnailUrl></ThumbnailUrl>
     <Credits>Public Domain</Credits>
     <CreditsUrl></CreditsUrl>
   </ImageSet>
@@ -185,10 +185,10 @@ Credit: NASA and FERMI-LAT Team.</Credits>
 <Folder Name="More Surveys" Group="View">
 <Folder Name="Radio" Group="View">
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Radio" Name="VLSS: VLA Low-frequency Sky Survey (Radio)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000000132{Q}?g=131" AltUrl="http://www.worldwidetelescope.org/wwtweb/VLssToast.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=VLA</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=VLA</ThumbnailUrl>
     <Credits>VLSS Cohen, A. S.; Lane, W. M.; Cotton, W. D.; Kassim, N. E.; Lazio, T. J. W.; Perley, R. A.; Condon, J. J.; Erickson, W. C.; Served From NASA Skyview</Credits>
     <CreditsUrl>http://lwa.nrl.navy.mil/VLSS/</CreditsUrl>
-  </ImageSet> 
+  </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Radio" Name="VLA FIRST: Faint Images of the Radio Sky at Twenty-centimeters" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000001022{Q}?g=138" BaseTileLevel="0" TileLevels="8" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
     <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=vlafirst</ThumbnailUrl>
@@ -215,13 +215,13 @@ Credit: NASA and FERMI-LAT Team.</Credits>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Radio" Name="Bonn 1420 MHz Survey (Radio)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000001102{Q}?g=138" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=1420mhz</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=1420mhz</ThumbnailUrl>
     <Credits>Max Planck Institute for Radio Astronomy, generated by Patricia Reich and Wolfgang Reich using with the Bonn Stockert 25m telescope. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (1420MHz, Min=3000, Max=35000).</Credits>
     <CreditsUrl>http://skyview.gsfc.nasa.gov/cgi-bin/survey.pl#Bonn%201420%20MHz%20Survey</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Radio" Name="HI All-Sky Continuum Survey (Radio)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000000302{Q}?g=138" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=1420mhz</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=1420mhz</ThumbnailUrl>
     <Credits>Max Planck Institute for Radio Astronomy, generated by Glyn Haslam using data taken at Jodrell Bank, Effelsberg and Parkes telescopes. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (408MHz, Min=10, Max=200).</Credits>
     <CreditsUrl>http://skyview.gsfc.nasa.gov/cgi-bin/survey.pl#HI%20All-Sky%20Continuum%20Survey</CreditsUrl>
   </ImageSet>
@@ -230,98 +230,98 @@ Credit: NASA and FERMI-LAT Team.</Credits>
 <Folder Name="WMAP (5 Years)" Group="View">
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP ILC 5-Year CMB" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_ilc_200uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_ilc_200uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_ilc_200uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP K (Linear) 23 GHz" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_23GHz_K_200uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_23ghz_k_200uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_23ghz_k_200uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP K (Non-linear) 23 GHz" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_23GHz_K_nonlin" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_23ghz_k_nonlin</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_23ghz_k_nonlin</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP K (Polarization Map) 50 uK" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_polmap_K_50uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_polmap_k_50uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_polmap_k_50uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP Ka (Linear) 33 GHz" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_33GHz_Ka_200uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_33ghz_ka_200uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_33ghz_ka_200uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP Ka (Non-linear) 33 GHz" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_33GHz_Ka_nonlin" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_33ghz_ka_nonlin</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_33ghz_ka_nonlin</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP Ka (Polarization Map) 35 uK" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_polmap_Ka_35uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_polmap_ka_35uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_polmap_ka_35uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP Q (Linear) 41 GHz" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_41GHz_Q_200uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_41ghz_q_200uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_41ghz_q_200uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP Q (Non-linear) 41 GHz" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_41GHz_Q_nonlin" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_41ghz_q_nonlin</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_41ghz_q_nonlin</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP Q (Polarization Map) 35 uK" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_polmap_Q_35uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_polmap_q_35uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_polmap_q_35uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP V (Linear) 61 GHz" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_61GHz_V_200uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_61ghz_v_200uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_61ghz_v_200uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP V (Non-linear) 61 GHz" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_61GHz_V_nonlin" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_61ghz_v_nonlin</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_61ghz_v_nonlin</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP V (Polarization Map) 35 uK" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_polmap_V_35uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_polmap_v_35uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_polmap_v_35uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP W (Linear) 94 GHz" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_94GHz_W_200uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_94ghz_w_200uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_94ghz_w_200uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP W (Non-linear) 94 GHz" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_94GHz_W_nonlin" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_94ghz_w_nonlin</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_94ghz_w_nonlin</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP W (Polarization Map) 35 uK" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},wmap5yr_polmap_W_35uK" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_polmap_w_35uk</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap5yr_polmap_w_35uk</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/map/current/</CreditsUrl>
   </ImageSet>
@@ -333,49 +333,49 @@ Credit: NASA and FERMI-LAT Team.</Credits>
 <Folder Name="WMAP (3 Years)" Group="View">
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP Cosmic Microwave Background" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000000112{Q}?g=131" AltUrl="http://www.worldwidetelescope.org/wwtweb/wmap.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://map.gsfc.nasa.gov/m_mm/tm_1.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP QVW Power (Microwave)" Url="http://r{S:3}.ortho.tiles.virtualearth.net/tiles/wts0000000213{Q}?g=131" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://map.gsfc.nasa.gov/m_mm/tm_1.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP QVW Linear (Microwave)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000000212{Q}?g=131" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://map.gsfc.nasa.gov/m_mm/tm_1.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP K Band (Microwave)" Url="http://r{S:3}.ortho.tiles.virtualearth.net/tiles/wts0000000233{Q}?g=131" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://map.gsfc.nasa.gov/m_mm/tm_1.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP Ka Band (Microwave)" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000000220{Q}?g=131" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://map.gsfc.nasa.gov/m_mm/tm_1.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP Q Band (Microwave)" Url="http://r{S:1}.ortho.tiles.virtualearth.net/tiles/wts0000000221{Q}?g=131" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://map.gsfc.nasa.gov/m_mm/tm_1.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP V Band (Microwave)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000000222{Q}?g=131" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://map.gsfc.nasa.gov/m_mm/tm_1.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="WMAP W Band (Microwave)" Url="http://r{S:3}.ortho.tiles.virtualearth.net/tiles/wts0000001033{Q}?g=138" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=wmap</ThumbnailUrl>
     <Credits>Courtesy WMAP Science Team</Credits>
     <CreditsUrl>http://map.gsfc.nasa.gov/m_mm/tm_1.html</CreditsUrl>
   </ImageSet>
@@ -384,7 +384,7 @@ Credit: NASA and FERMI-LAT Team.</Credits>
 
 
 <Folder Name="Planck"  Group="View">
-  
+
     <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="Planck Dust &amp; Gas" Url="http://wwtfiles.blob.core.windows.net/plnk/planck4channelL{1}X{2}Y{3}.png" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False">
     <Credits />
     <CreditsUrl />
@@ -404,7 +404,7 @@ Credit: NASA and FERMI-LAT Team.</Credits>
     <CreditsUrl />
     <ThumbnailUrl>http://wwtfiles.blob.core.windows.net/plnk/planckspinningdust_thumb.jpg</ThumbnailUrl>
     <Description />
-  </ImageSet>  
+  </ImageSet>
 
     <ImageSet Generic="False" DataSetType="Sky" BandPass="Microwave" Name="Planck Molecular Gas (CO)" Url="http://wwtfiles.blob.core.windows.net/plnk/planckcoL{1}X{2}Y{3}.png" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False">
     <Credits />
@@ -453,7 +453,7 @@ Credit: NASA and FERMI-LAT Team.</Credits>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="IRIS: Improved Reprocessing of IRAS Survey (Infrared)" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000001130{Q}?g=182"  AltUrl="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},IRIScolor_12_60_100_6" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iriscolor</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iriscolor</ThumbnailUrl>
     <Credits>Original IRAS data: NASA/JPL IPAC, IRIS Reprocessing: Canadian Institute for Theoretical Astrophysics/Institut d'Astrophysique Spatiale. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (Red is IRIS100, Green IRIS60, Blue IRIS12).</Credits>
     <CreditsUrl>http://www.cita.utoronto.ca/~mamd/IRIS/IrisOverview.html</CreditsUrl>
   </ImageSet>
@@ -465,49 +465,49 @@ Credit: NASA and FERMI-LAT Team.</Credits>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="IRIS 12 Microns (Infrared)" Url="http://r{S:3}.ortho.tiles.virtualearth.net/tiles/wts0000000333{Q}?g=138" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iris12</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iris12</ThumbnailUrl>
     <Credits>Original IRAS data: NASA/JPL IPAC, IRIS Reprocessing: Canadian Institute for Theoretical Astrophysics/Institut d'Astrophysique Spatiale. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (IRIS12, Min=0.5, Max=1000).</Credits>
     <CreditsUrl>http://www.cita.utoronto.ca/~mamd/IRIS/IrisOverview.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="IRIS 25 Microns (Infrared)" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000001000{Q}?g=138" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iris25</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iris25</ThumbnailUrl>
     <Credits>Original IRAS data: NASA/JPL IPAC, IRIS Reprocessing: Canadian Institute for Theoretical Astrophysics/Institut d'Astrophysique Spatiale. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (IRIS25, Min=1, Max=2000).</Credits>
     <CreditsUrl>http://www.cita.utoronto.ca/~mamd/IRIS/IrisOverview.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="IRIS 60 Microns (Infrared)" Url="http://r{S:1}.ortho.tiles.virtualearth.net/tiles/wts0000001001{Q}?g=138" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iris60</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iris60</ThumbnailUrl>
     <Credits>Original IRAS data: NASA/JPL IPAC, IRIS Reprocessing: Canadian Institute for Theoretical Astrophysics/Institut d'Astrophysique Spatiale. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (IRIS60, Min=1, Max=2000).</Credits>
     <CreditsUrl>http://www.cita.utoronto.ca/~mamd/IRIS/IrisOverview.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="IRIS 100 Microns (Infrared)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000001002{Q}?g=138" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iris100</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=iris100</ThumbnailUrl>
     <Credits>Original IRAS data: NASA/JPL IPAC, IRIS Reprocessing: Canadian Institute for Theoretical Astrophysics/Institut d'Astrophysique Spatiale. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (IRIS100, Min=4, Max=4000).</Credits>
     <CreditsUrl>http://www.cita.utoronto.ca/~mamd/IRIS/IrisOverview.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="SFD 100 Micron (Infrared)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000000332{Q}?g=138"  BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=sfddust</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=sfddust</ThumbnailUrl>
     <Credits>Data provided by two NASA satellites, the  Infrared Astronomy Satellite (IRAS) and the Cosmic Background Explorer (COBE). Processing by David J. Schlegel, Douglas P. Finkbeiner and Marc Davis, Princeton University and University of California, Berkeley. TOASTing of images done by NASA's SkyView Virtual Telescope (SFD100m, Min=5, Max=5000).</Credits>
     <CreditsUrl>http://adsabs.harvard.edu/abs/1998ApJ...500..525S</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="COBE DIRBE (Infrared)" Url="http://r{S:3}.ortho.tiles.virtualearth.net/tiles/wts0000001003{Q}?g=138" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=cobe</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=cobe</ThumbnailUrl>
     <Credits>COBE Team. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (COBE, Min=10, Max=5000).</Credits>
     <CreditsUrl>http://lambda.gsfc.nasa.gov/product/cobe/dirbe_overview.cfm</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="COBE DIRBE Annual Average Map (Infrared)" Url="http://r{S:1}.ortho.tiles.virtualearth.net/tiles/wts0000001011{Q}?g=138" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=cobe</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=cobe</ThumbnailUrl>
     <Credits>COBE Team. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (COBEAAM, Min=10, Max=5000).</Credits>
     <CreditsUrl>http://skyview.gsfc.nasa.gov/cgi-bin/survey.pl#Cosmic%20Background%20Explorer%20DIRBE%20Annual%20Average%20Map</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="IR" Name="COBE DIRBE Zodi-Subtracted Mission Average (Infrared)" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000001010{Q}?g=138" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=cobe</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=cobe</ThumbnailUrl>
     <Credits>COBE Team. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (COBEZSMA, Min=10, Max=5000).</Credits>
     <CreditsUrl>http://skyview.gsfc.nasa.gov/cgi-bin/survey.pl#Cosmic%20Background%20Explorer%20DIRBE%20Zodi-Subtracted%20Mission%20Average</CreditsUrl>
   </ImageSet>
@@ -522,18 +522,18 @@ Credit: NASA and FERMI-LAT Team.</Credits>
 
 
 <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="GALEX 4 Near-UV" Url="http://www.worldwidetelescope.org/wwtweb/galex4near.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="10" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexnear</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexnear</ThumbnailUrl>
    <Credits>This is the Near UV band (1770-2730A) of the GALEX GR4 data release archived at MAST/STScI.
 TOAST-formatted mosaics were obtained using facilities of NASA's SkyView Virtual Telescope.
-</Credits> 
+</Credits>
     <CreditsUrl>http://galex.stsci.edu/GR4/</CreditsUrl>
   </ImageSet>
 
 <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="GALEX 4 Far-UV" Url="http://www.worldwidetelescope.org/wwtweb/galex4far.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="10" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexfar</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexfar</ThumbnailUrl>
    <Credits>This is the Far UV band(1350-1780A) of the GALEX GR4 data release archived at MAST/STScI.
 TOAST-formatted mosaics were obtained using facilities of NASA's SkyView Virtual Telescope.
-</Credits> 
+</Credits>
     <CreditsUrl>http://galex.stsci.edu/GR4/</CreditsUrl>
   </ImageSet>
 
@@ -545,50 +545,50 @@ TOAST-formatted mosaics were obtained using facilities of NASA's SkyView Virtual
 
 
 <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="GALEX 2 Combined" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000003212{Q}?g=209" BaseTileLevel="0" TileLevels="10" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexboth</ThumbnailUrl> 
-    <Credits>Space Telescope Science Institute. The GALEX, Galaxy Explorer, instrument allows imaging and spectroscopic observations to be made in two ultraviolet bands, Far UV 1350-1780A and Near UV 1770-2730A. This is the GR2/3 release, not the most recent GR4 release. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope.</Credits> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexboth</ThumbnailUrl>
+    <Credits>Space Telescope Science Institute. The GALEX, Galaxy Explorer, instrument allows imaging and spectroscopic observations to be made in two ultraviolet bands, Far UV 1350-1780A and Near UV 1770-2730A. This is the GR2/3 release, not the most recent GR4 release. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope.</Credits>
     <CreditsUrl>http://galex.stsci.edu/GR2/</CreditsUrl>
   </ImageSet>
 
 <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="GALEX 2 Near-UV" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000003210{Q}?g=209" BaseTileLevel="0" TileLevels="10" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexnear</ThumbnailUrl> 
-   <Credits>Space Telescope Science Institute. The GALEX, Galaxy Explorer, instrument allows imaging and spectroscopic observations to be made in two ultraviolet bands, Far UV 1350-1780A and Near UV 1770-2730A. This is the GR2/3 release, not the most recent GR4 release. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope.</Credits> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexnear</ThumbnailUrl>
+   <Credits>Space Telescope Science Institute. The GALEX, Galaxy Explorer, instrument allows imaging and spectroscopic observations to be made in two ultraviolet bands, Far UV 1350-1780A and Near UV 1770-2730A. This is the GR2/3 release, not the most recent GR4 release. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope.</Credits>
     <CreditsUrl>http://galex.stsci.edu/GR2/</CreditsUrl>
   </ImageSet>
 
 <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="GALEX 2 Far-UV" Url="http://r{S:1}.ortho.tiles.virtualearth.net/tiles/wts0000003211{Q}?g=209" BaseTileLevel="0" TileLevels="10" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexfar</ThumbnailUrl> 
-    <Credits>Space Telescope Science Institute. The GALEX, Galaxy Explorer, instrument allows imaging and spectroscopic observations to be made in two ultraviolet bands, Far UV 1350-1780A and Near UV 1770-2730A. This is the GR2/3 release, not the most recent GR4 release. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope.</Credits> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=galexfar</ThumbnailUrl>
+    <Credits>Space Telescope Science Institute. The GALEX, Galaxy Explorer, instrument allows imaging and spectroscopic observations to be made in two ultraviolet bands, Far UV 1350-1780A and Near UV 1770-2730A. This is the GR2/3 release, not the most recent GR4 release. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope.</Credits>
     <CreditsUrl>http://galex.stsci.edu/GR2/</CreditsUrl>
   </ImageSet>
 
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="Extreme Ultraviolet Explorer" Url="http://r{S:1}.ortho.tiles.virtualearth.net/tiles/wts0000001131{Q}?g=182"  AltUrl="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},euveColor_555_405_83_5" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=euve_jbis_map</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=euve_jbis_map</ThumbnailUrl>
     <Credits>Data from Center for Extreme UV Astronomy, University of California at Berkeley. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope. Red is 555 Angstroms (euve555), Green 405 Angstroms, Red 83 Angstroms.</Credits>
     <CreditsUrl>http://archive.stsci.edu/euve/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="EUVE 83 : Extreme Ultraviolet Explorer 83 Angstroms" Url="http://r{S:3}.ortho.tiles.virtualearth.net/tiles/wts0000000003{Q}?g=131" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=euvebw_jbis_map</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=euvebw_jbis_map</ThumbnailUrl>
     <Credits>Center for Extreme UV Astronomy, University of California at Berkeley. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (euve83, Min=1, Max=150).</Credits>
     <CreditsUrl>http://archive.stsci.edu/euve/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="EUVE 171 : Extreme Ultraviolet Explorer 171 Angstroms" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000001012{Q}?g=138" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=euvebw_jbis_map</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=euvebw_jbis_map</ThumbnailUrl>
     <Credits>Center for Extreme UV Astronomy, University of California at Berkeley. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (euve171, Min=4, Max=200).</Credits>
     <CreditsUrl>http://archive.stsci.edu/euve/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="EUVE 405 : Extreme Ultraviolet Explorer 405 Angstroms" Url="http://r{S:3}.ortho.tiles.virtualearth.net/tiles/wts0000001013{Q}?g=138" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=euvebw_jbis_map</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=euvebw_jbis_map</ThumbnailUrl>
     <Credits>Center for Extreme UV Astronomy, University of California at Berkeley. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (euve405, Min=0.7, Max=70).</Credits>
     <CreditsUrl>http://archive.stsci.edu/euve/</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Ultraviolet" Name="EUVE 555 : Extreme Ultraviolet Explorer 555 Angstroms" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000001020{Q}?g=138" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=euvebw_jbis_map</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=euvebw_jbis_map</ThumbnailUrl>
     <Credits>Center for Extreme UV Astronomy, University of California at Berkeley. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (euve555, Min=5, Max=500).</Credits>
     <CreditsUrl>http://archive.stsci.edu/euve/</CreditsUrl>
   </ImageSet>
@@ -615,55 +615,55 @@ TOAST-formatted mosaics were obtained using facilities of NASA's SkyView Virtual
 
 <Folder Name="X Ray" Group="View">
   <ImageSet Generic="False" DataSetType="Sky" BandPass="XRay" Name="RASS: ROSAT All Sky Survey (X-ray)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000001132{Q}?g=182"  AltUrl="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},RASS3Color_3sb_3bb0.8_3hb_7" BaseTileLevel="0" TileLevels="7" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosatcolor</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosatcolor</ThumbnailUrl>
     <Credits>This is a composite of three RASS3 surveys from the ROSAT Data Archive of the Max-Planck-Institut fur extraterrestrische Physik (MPE) at Garching, Germany. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope. Red is soft band (RASS3sb), Green is broad band (RASS3bb), Blue is hard band (RASS3hb)</Credits>
     <CreditsUrl>http://www.xray.mpe.mpg.de/cgi-bin/rosat/rosat-survey</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="XRay" Name="ROSAT Hard Band Count Map (X-Ray)" Url="http://r{S:3}.ortho.tiles.virtualearth.net/tiles/wts0000000313{Q}?g=138" BaseTileLevel="0" TileLevels="7" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosat</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosat</ThumbnailUrl>
     <Credits>We have made use of the ROSAT Data Archive of the Max-Planck-Institut fur extraterrestrische Physik (MPE) at Garching, Germany. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (RASS3hb, Min=0.2, Max=50).</Credits>
     <CreditsUrl>http://www.xray.mpe.mpg.de/cgi-bin/rosat/rosat-survey</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="XRay" Name="ROSAT Soft Band Count Map (X-Ray)" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000000320{Q}?g=138" BaseTileLevel="0" TileLevels="7" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosat</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosat</ThumbnailUrl>
     <Credits>We have made use of the ROSAT Data Archive of the Max-Planck-Institut fur extraterrestrische Physik (MPE) at Garching, Germany. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (RASS3sb, Min=0.2, Max=50).</Credits>
     <CreditsUrl>http://www.xray.mpe.mpg.de/cgi-bin/rosat/rosat-survey</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="XRay" Name="ROSAT Broad Band Count Map (X-Ray)" Url="http://r{S:3}.ortho.tiles.virtualearth.net/tiles/wts0000001133{Q}?g=182"  AltUrl="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},RASS3bb_0.2_50_7" BaseTileLevel="0" TileLevels="7" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosat</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosat</ThumbnailUrl>
     <Credits>We have made use of the ROSAT Data Archive of the Max-Planck-Institut fur extraterrestrische Physik (MPE) at Garching, Germany. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (RASS3bb, Min=0.2, Max=50).</Credits>
     <CreditsUrl>http://www.xray.mpe.mpg.de/cgi-bin/rosat/rosat-survey</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="XRay" Name="ROSAT Soft Band Intensity (X-Ray)" Url="http://r{S:2}.ortho.tiles.virtualearth.net/tiles/wts0000000322{Q}?g=138" BaseTileLevel="0" TileLevels="7" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosathard</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosathard</ThumbnailUrl>
     <Credits>We have made use of the ROSAT Data Archive of the Max-Planck-Institut fur extraterrestrische Physik (MPE) at Garching, Germany. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (RASSSB, Min=0.0002, Max=10).</Credits>
     <CreditsUrl>http://www.xray.mpe.mpg.de/cgi-bin/rosat/rosat-survey</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="XRay" Name="ROSAT Hard Band Intensity (X-Ray)" Url="http://r{S:1}.ortho.tiles.virtualearth.net/tiles/wts0000000321{Q}?g=138" BaseTileLevel="0" TileLevels="7" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosathard</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosathard</ThumbnailUrl>
     <Credits>We have made use of the ROSAT Data Archive of the Max-Planck-Institut fur extraterrestrische Physik (MPE) at Garching, Germany. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (RASSHB, Min=0.0002, Max=10).</Credits>
     <CreditsUrl>http://www.xray.mpe.mpg.de/cgi-bin/rosat/rosat-survey</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="XRay" Name="ROSAT PSPC summed pointed observations, 2 degree cutoff, intensity (X-Ray)" Url="http://r{S:3}.ortho.tiles.virtualearth.net/tiles/wts0000000323{Q}?g=138" BaseTileLevel="0" TileLevels="8" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosatpspc2int</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=rosatpspc2int</ThumbnailUrl>
     <Credits>Observational data from NASA Goddard Space Flight Center, mosaicking and TOASTing of images done by NASA's SkyView Virtual Telescope (PSPC2int, Min=0.00002, Max=0.01).</Credits>
     <CreditsUrl>http://skyview.gsfc.nasa.gov/help/pspc_generation.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="XRay" Name="Swift BAT All-Sky Survey: Significance 14-195 keV (X-Ray)" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000000330{Q}?g=138" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=batsig</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=batsig</ThumbnailUrl>
     <Credits>NASA BAT Team. TOASTing of images done by NASA's SkyView Virtual Telescope (BATSig, Min=1, Max=10).</Credits>
     <CreditsUrl>http://skyview.gsfc.nasa.gov/cgi-bin/survey.pl#Swift%20BAT%20All-Sky%20Survey:%20Significance%2014-195%20keV</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="XRay" Name="Swift BAT All-Sky Survey: Flux 14-195 keV (X-Ray)" Url="http://r{S:1}.ortho.tiles.virtualearth.net/tiles/wts0000000331{Q}?g=138" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=batflux</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=batflux</ThumbnailUrl>
     <Credits>NASA BAT Team. TOASTing of images done by NASA's SkyView Virtual Telescope (BATFlux, Min=1e-5, Max=1e-3).</Credits>
     <CreditsUrl>http://skyview.gsfc.nasa.gov/cgi-bin/survey.pl#Swift%20BAT%20All-Sky%20Survey:%20Flux%2014-195%20keV</CreditsUrl>
   </ImageSet>
@@ -683,13 +683,13 @@ TOAST-formatted mosaics were obtained using facilities of NASA's SkyView Virtual
 
 <Folder Name="Gamma" Group="View">
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Gamma" Name="Fermi (Gamma)" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000002000{Q}?g=182"  AltUrl="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},glast20080826" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=glast</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=glast</ThumbnailUrl>
     <Credits>NASA and the FERMI-LAT Team. Survey announced 26 AUgust 2008.</Credits>
     <CreditsUrl>http://www.nasa.gov/mission_pages/GLAST/main/index.html</CreditsUrl>
   </ImageSet>
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Gamma" Name="Fermi Six Months (Gamma)" Url="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wts0000002000{Q}?g=182"  AltUrl="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},glast20080826" BaseTileLevel="0" TileLevels="4" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
-    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=fermilogo</ThumbnailUrl> 
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=fermilogo</ThumbnailUrl>
     <Credits>NASA and the FERMI-LAT Team. Survey announced 26 AUgust 2008.</Credits>
     <CreditsUrl>http://www.nasa.gov/mission_pages/GLAST/main/index.html</CreditsUrl>
   </ImageSet>
@@ -709,7 +709,7 @@ TOAST-formatted mosaics were obtained using facilities of NASA's SkyView Virtual
     <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=FermiYearThree</ThumbnailUrl>
     <Description />
   </ImageSet>
- 
+
 
   <ImageSet Generic="False" DataSetType="Sky" BandPass="Gamma" Name="CGRO Compton Telescope: 3 channel data (Gamma)" Url="http://r{S:1}.ortho.tiles.virtualearth.net/tiles/wts0000001021{Q}?g=138" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
     <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=comptel</ThumbnailUrl>
@@ -732,24 +732,3 @@ TOAST-formatted mosaics were obtained using facilities of NASA's SkyView Virtual
 </Folder>
 
 </Folder>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
