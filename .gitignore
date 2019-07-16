@@ -1,5 +1,9 @@
 /docs/_static/embed-bundle.js
 /docs/_static/embed-bundle.js.map
+/package-lock.json
+/pywwt/labextension
+/pywwt/nbextension/static/index.js
+/pywwt/nbextension/static/index.js.map
 
 # Compiled files
 *.py[cod]
