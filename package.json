@@ -14,11 +14,14 @@
   },
   "license": "BSD-3-Clause",
   "author": "",
-  "main": "lib/index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/WorldWideTelescope/pywwt"
   },
+  "main": "lib/index.js",
+  "files": [
+    "lib/*.js"
+  ],
   "scripts": {
     "build": "npm run build:nbextension",
     "build:labextension": "cd pywwt && rimraf labextension && mkdir labextension && cd labextension && npm pack ../..",
