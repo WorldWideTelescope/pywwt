@@ -99,6 +99,17 @@ If you want to use the Jupyter widget, you will also need to run::
 
     jupyter nbextension install --py --symlink --sys-prefix pywwt
     jupyter nbextension enable --py --sys-prefix pywwt
+    jupyter nbextension list  # check that the output shows pywwt as enabled and OK
+    jupyter serverextension enable --py --sys-prefix pywwt
+    jupyter serverextension list  # check that the output shows pywwt as enabled and OK
+
+And if you additionally want to use the widget in JupyterLab, run::
+
+    jupyter labextension install .
+    jupyter labextension list  # check that the output shows pywwt as enabled and OK
+
+Besides ``pywwt``, the ``@jupyter-widgets/jupyterlab-manager`` and
+``ipyevents`` lab-extensions must be installed and enabled.
 
 If you use conda, you can alternatively install a recent developer version
 using::
