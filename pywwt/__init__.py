@@ -6,7 +6,7 @@ from .jupyter_server import load_jupyter_server_extension  # noqa
 
 def _jupyter_nbextension_paths():
     return [{'section': 'notebook',
-             'src': 'static',
+             'src': 'nbextension/static',
              'dest': 'pywwt',
              'require': 'pywwt/extension'}]
 
