@@ -29,7 +29,7 @@ module.exports = [
     entry: './lib/index.js',
     output: {
         filename: 'embed-bundle.js',
-        path: __dirname + '/docs/source/_static',
+        path: __dirname + '/docs/_static',
         library: "pywwt",
         libraryTarget: 'amd'
     },
