@@ -392,7 +392,7 @@ class BaseWWTWidget(HasTraits):
         return sorted(self._available_layers)
 
     foreground = Unicode('Digitized Sky Survey (Color)',
-                         help='The layer to show in the foreground (`str`)').tag(wwt_reset=True)
+                         help='The layer to show in the foreground (`str`)').tag(wwt=None, wwt_reset=True)
 
     @observe('foreground')
     def _on_foreground_change(self, changed):
@@ -409,7 +409,7 @@ class BaseWWTWidget(HasTraits):
             raise TraitError('foreground is not one of the available layers')
 
     background = Unicode('Hydrogen Alpha Full Sky Map',
-                         help='The layer to show in the background (`str`)').tag(wwt_reset=True)
+                         help='The layer to show in the background (`str`)').tag(wwt=None, wwt_reset=True)
 
     @observe('background')
     def _on_background_change(self, changed):
@@ -426,7 +426,8 @@ class BaseWWTWidget(HasTraits):
             raise TraitError('background is not one of the available layers')
 
     foreground_opacity = Float(0.8, help='The opacity of the foreground layer '
-                                         '(`float`)').tag(wwt_reset=True)
+                                         '(`float`)').tag(wwt=None,
+                                                          wwt_reset=True)
 
     @observe('foreground_opacity')
     def _on_foreground_opacity_change(self, changed):
@@ -566,14 +567,14 @@ class BaseWWTWidget(HasTraits):
     def save_as_html_bundle(self, dest, title=None, max_width=None, max_height=None):
         """
         Save the current view as a web page with supporting files.
-        
+
         This feature is currently under development, so not all
         settings/features that can be set in pyWWT will be saved
-        
+
         Parameters
         ----------
         dest : `str`
-            The path to output the bundle to. The path must represent a 
+            The path to output the bundle to. The path must represent a
             directory (which will be created if it does not exist) or a zip file.
         title : `str`, optional
             The desired title for the HTML page. If blank, a generic title will be used.
@@ -595,7 +596,7 @@ class BaseWWTWidget(HasTraits):
             if not os.path.exists(dest):
                 os.makedirs(os.path.abspath(dest))
             figure_dir = dest
-			
+
         nbexten_dir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
         fig_src_dir = os.path.join(nbexten_dir, 'interactive_figure')
         shutil.copy(os.path.join(fig_src_dir, "index.html"), figure_dir)
