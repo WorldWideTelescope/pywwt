@@ -47,7 +47,7 @@ console.log(JSON.stringify(msg))
     case 'get_fov':
       return wwt.get_fov();
       break;
-	  
+
     case 'load_tour':
       wwt.loadTour(msg['url']);
       break;
