@@ -73,7 +73,9 @@ class AstropyQuantity(TraitType):
     def validate(self, obj, value):
         if isinstance(value, u.Quantity):
             return value
-        self.error(obj, value)
+        else:
+            raise TraitError('This attribute must be an Astropy Quantity '
+                             'with associated units')
 
 
 class Color(TraitType):
@@ -83,17 +85,30 @@ class Color(TraitType):
         if self.help:
             self.__doc__ = self.help
 
+        # Check if current Color instance was called from ColorWithOpacity
+        self.from_cwo = False
+
     def validate(self, obj, value):
-        if isinstance(value, six.string_types) or (isinstance(value, tuple) and len(value) == 3):
+        if (isinstance(value, six.string_types)
+            or (isinstance(value, tuple) and len(value) == 3)):
             return to_hex(value)
         else:
-            if hasattr(obj, 'opacity'):
-                raise TraitError('color must be a string or a tuple of 3 or 4 floats')
+            if self.from_cwo:
+                raise TraitError('This attribute\'s color must be a string '
+                                 '(a recognized matplotlib color name or hex '
+                                 'code) or an RGB(A) tuple of 3 or 4 floats '
+                                 '(3 RGB colors and, optionally, 1 opacity)')
             else:
-                raise TraitError('color must be a string or a tuple of 3 floats')
+                raise TraitError('This attribute\'s color must be a string '
+                                 '(a recognized matplotlib color name or hex '
+                                 'code) or an RGB tuple of 3 floats')
 
 
 class ColorWithOpacity(Color):
+
+    def __init__(self, *args, **kwargs):
+        # Confirm that this class created a new instance of its parent, Color
+        self.from_cwo = True
 
     def validate(self, obj, value):
         if isinstance(value, tuple) and len(value) == 4:
