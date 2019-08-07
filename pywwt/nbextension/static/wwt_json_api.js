@@ -331,12 +331,7 @@ console.log(JSON.stringify(layer, null, 2));
         value = msg['value']
       }
       layer["set_" + name](value);
-<<<<<<< Updated upstream
 console.log(msg['event'] + " || " + name + " || " + value);
-=======
-console.log(layer.get_startTime());
-
->>>>>>> Stashed changes
       break;
 
     case 'table_layer_remove':
