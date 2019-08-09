@@ -19,11 +19,12 @@ from astropy.io import fits
 from matplotlib.pyplot import cm
 from matplotlib.colors import Colormap
 from astropy import units as u
-from astropy.time import Time
+from astropy.table import Column
+from astropy.time import Time, TimeDelta
 
 from datetime import datetime
 
-from traitlets import HasTraits, validate, observe
+from traitlets import HasTraits, validate, observe, TraitError
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
 from .utils import sanitize_image, validate_traits
 
@@ -654,6 +655,43 @@ class TableLayer(HasTraits):
 
         self.parent._send_msg(event='table_layer_set', id=self.id,
                               setting='colorMapColumn', value=CMAP_COLUMN_NAME)
+
+    #'''
+    @observe('time_att')
+    def _on_time_att_change(self, *value):
+
+        # Convert time column, once chosen, to GMT/UTC so WWT displays points at the expected times
+        # CURRENTLY NOT ROBUST TO CHANGES IN DST
+
+        if len(self.time_att) == 0 or self.time_series == False:
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='startDateColumn', value=-1)
+            return
+
+        # Parse time_att column and make sure it's in the proper format
+        col = self.table[self.time_att]
+
+        if isinstance(col, datetime):
+            col = Column([t.isoformat() for t in col])
+        if isinstance(col, Time):
+            col = Column([t.isot for t in col])
+        # check for properly formatted strings, or require Time/datetime?
+
+        # Find the difference between user's curent local time and UTC
+        # (rounding should also be robust for UTC+X:15, +X:30 time zones)
+        now = datetime.now()
+        utc_now = datetime.utcnow()
+
+        now_diff = (utc_now - now).total_seconds() / 3600
+        offset = (np.round(now_diff * 4) / 4) * u.hour
+
+        # Add offset to the times in the column so WWT will read them as UTC
+        col = (Time(col) + TimeDelta(offset)).isot
+
+        # Pass *this* version of the column on to WWT
+        self.table[self.time_att] = col
+        self.update_data(self.table)
+    #'''
 
     @property
     def _table_b64(self):

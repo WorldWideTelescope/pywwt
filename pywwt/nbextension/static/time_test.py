@@ -17,6 +17,11 @@ wwt.foreground_opacity = 0
 # and the time at which they begin ('start')
 %run to_test.py
 
+# whip up some test tables
+j2 = japan.copy(); j3 = japan.copy()
+j2['time'] = Time(japan['time']).datetime # datetime objs
+j3['time'] = [t.isoformat() for t in j2['time']] # iso strings
+
 # change to solar system mode
 wwt.set_view('solar system')
 
@@ -25,7 +30,7 @@ wwt.center_on_coordinates(SkyCoord(0,0,unit=u.deg), fov=.0001 * u.deg)
 wwt.solar_system.track_object('Earth')
 
 # add the earthquake layer
-jp_lay = wwt.layers.add_data_layer(table=japan, frame='Earth', lon_att='longitude', lat_att='latitude', size_scale=50, color='#ff0000', time_series=True, time_att='time', far_side_visible=True)
+jp_lay = wwt.layers.add_data_layer(table=japan, frame='Earth', lon_att='longitude', lat_att='latitude', size_scale=50, color='#ce1141', time_series=True, time_att='time', far_side_visible=True, decay=3*u.day)
 
 # rewind time to when the earthquakes took place
 wwt.set_current_time(start)
