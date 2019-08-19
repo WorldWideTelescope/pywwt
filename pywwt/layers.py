@@ -222,7 +222,8 @@ class LayerManager(object):
         frame = frame.capitalize()
 
         if table is not None:
-            layer = TableLayer(self._parent, table=table, frame=frame, **kwargs)
+            layer = TableLayer(self._parent, table=table,
+                               frame=frame, **kwargs)
         else:
             # NOTE: in future we may allow different arguments such as e.g.
             # orbit=, hence why we haven't made this a positional argument.
@@ -234,8 +235,8 @@ class LayerManager(object):
         """
         Deprecated, use ``add_table_layer`` instead.
         """
-        warnings.warn('add_data_layer has been deprecated, use add_table_layer '
-                      'instead', DeprecationWarning)
+        warnings.warn('add_data_layer has been deprecated, use '
+                      'add_table_layer instead', DeprecationWarning)
         return self.add_table_layer(*args, **kwargs)
 
     def _add_layer(self, layer):
@@ -323,24 +324,28 @@ class TableLayer(HasTraits):
     # NOTE: we deliberately don't link size_att to sizeColumn because we need
     # to compute the sizes ourselves based on the min/max and then use the
     # resulting column.
-    size_att = Unicode(help='The column to use for the marker size (`str`)')
-    size_vmin = Float(None, help='The minimum point size. Found automagically '
-                      'once size_att is set (`float`)', allow_none=True)
-    size_vmax = Float(None, help='The maximum point size. Found automagically '
-                      'once size_att is set (`float`)', allow_none=True)
+    size_att = Unicode(help='The column to use for the marker size '
+                       '(`str`)').tag(wwt=None)
+    size_vmin = Float(None, help='The minimum point size. '
+                      'Found automagically once size_att is set '
+                      '(`float`)', allow_none=True).tag(wwt=None)
+    size_vmax = Float(None, help='The maximum point size. '
+                      'Found automagically once size_att is set '
+                      '(`float`)', allow_none=True).tag(wwt=None)
 
     # NOTE: we deliberately don't link cmap_att to colorMapColumn because we
     # need to compute the colors ourselves based on the min/max and then use
     # the resulting column.
-    cmap_att = Unicode(help='The column to use for the colormap (`str`)')
+    cmap_att = Unicode(help='The column to use for the colormap '
+                       '(`str`)').tag(wwt=None)
     cmap_vmin = Float(None, help='The minimum level of the colormap. Found '
                       'automagically once cmap_att is set (`float`)',
-                      allow_none=True)
+                      allow_none=True).tag(wwt=None)
     cmap_vmax = Float(None, help='The maximum level of the colormap. Found '
                       'automagically once cmap_att is set (`float`)',
-                      allow_none=True)
+                      allow_none=True).tag(wwt=None)
     cmap = Any(cm.magma, help='The Matplotlib colormap '
-               '(:class:`matplotlib.colors.ListedColormap`)')
+               '(:class:`matplotlib.colors.ListedColormap`)').tag(wwt=None)
 
     # Visual attributes
 
@@ -364,8 +369,7 @@ class TableLayer(HasTraits):
     # NOTE: we deliberately don't link time_att to startDateColumn here
     # because we need to compute a new times column based on time_att before
     # passing the result on to WWT
-    time_att = Unicode(help='The column to use for time '
-                       '(`str`)')
+    time_att = Unicode(help='The column to use for time (`str`)').tag(wwt=None)
     time_series = Bool(False, help='Whether the layer contains time series '
                        'elements (`bool`)').tag(wwt='timeSeries')
     decay = AstropyQuantity(16 * u.day, help='How long a time series point '
@@ -537,9 +541,9 @@ class TableLayer(HasTraits):
         if unit in VALID_ALT_UNITS:
             self.alt_unit = unit
         elif unit is not None:
-            warnings.warn('Column {0} has units of {1} but this is not a valid '
-                          'unit of altitude - set the unit directly with '
-                          'alt_unit'.format(self.alt_att, unit), UserWarning)
+            warnings.warn('Column {0} has units of {1} but this is not a valid'
+                          ' unit of altitude - set the unit directly with'
+                          ' alt_unit'.format(self.alt_att, unit), UserWarning)
 
     @observe('lon_att')
     def _on_lon_att_change(self, *value):
@@ -820,11 +824,11 @@ class TableLayer(HasTraits):
             self._manager.remove_layer(self)
 
     def _on_trait_change(self, changed):
-        # This method gets called anytime a trait gets changed. Since this class
-        # gets inherited by the Jupyter widgets class which adds some traits of
-        # its own, we only want to react to changes in traits that have the wwt
-        # metadata attribute (which indicates the name of the corresponding WWT
-        # setting).
+        # This method gets called anytime a trait gets changed. Since this
+        # class gets inherited by the Jupyter widgets class which adds some
+        # traits of its own, we only want to react to changes in traits
+        # that have the wwt metadata attribute (which indicates the name of
+        # the corresponding WWT setting).
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         if wwt_name is not None:
             value = changed['new']
@@ -909,8 +913,9 @@ class ImageLayer(HasTraits):
         self._manager = None
         self._removed = False
 
-        # Transform the image so that it is always acceptable to WWT (Equatorial,
-        # TAN projection, double values) and write out to a temporary file
+        # Transform the image so that it is always acceptable to WWT
+        # (Equatorial, TAN projection, double values) and write out to a
+        # temporary file
         self._sanitized_image = tempfile.mktemp()
         sanitize_image(image, self._sanitized_image)
 
@@ -918,7 +923,8 @@ class ImageLayer(HasTraits):
         # For now we assume that image is a filename, but we could do more
         # detailed checks and reproject on-the-fly for example.
 
-        self._image_url = self.parent._serve_file(self._sanitized_image, extension='.fits')
+        self._image_url = self.parent._serve_file(self._sanitized_image,
+                                                  extension='.fits')
 
         # Default the image rendering parameters. Because of the way the image
         # loading works in WWT, we may end up with messages being applied out
@@ -976,11 +982,11 @@ class ImageLayer(HasTraits):
                                       vmin=self.vmin, vmax=self.vmax,
                                       version=self._stretch_version)
 
-        # This method gets called anytime a trait gets changed. Since this class
-        # gets inherited by the Jupyter widgets class which adds some traits of
-        # its own, we only want to react to changes in traits that have the wwt
-        # metadata attribute (which indicates the name of the corresponding WWT
-        # setting).
+        # This method gets called anytime a trait gets changed. Since this
+        # class gets inherited by the Jupyter widgets class which adds some
+        # traits of its own, we only want to react to changes in traits
+        # that have the wwt metadata attribute (which indicates the name of
+        # the corresponding WWT setting).
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         if wwt_name is not None:
             self.parent._send_msg(event='image_layer_set',
