@@ -11,6 +11,7 @@ notifications:
 env:
   global:
     - SETUP_XVFB=True
+    - CONDA_DEPENDENCIES="nodejs"
     - CONDA_CHANNELS="wwt/label/dev"
   matrix:
     - PYTHON_VERSION=2.7
