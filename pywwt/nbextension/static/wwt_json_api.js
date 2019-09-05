@@ -327,6 +327,8 @@ function wwt_apply_json_message(wwt, msg) {
         value = layer.get__table().header.indexOf(msg['value']);
       } else if(name == 'color') {
         value = wwtlib.Color.fromHex(msg['value']);
+      } else if(name == 'colorMapper') {
+        value = wwtlib.ColorMapContainer.fromNestedLists(msg['value']);
       } else if(name == 'altUnit') {
         value = wwtlib.AltUnits[msg['value']];
       } else if(name == 'raUnits') {
