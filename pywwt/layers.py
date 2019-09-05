@@ -72,8 +72,12 @@ def guess_lon_lat_columns(colnames):
     for lon, lat in [('ra', 'dec'), ('lon', 'lat'), ('lng', 'lat')]:
 
         # Check first for exact matches
-        if colnames_lower.count(lon) == 1 and colnames_lower.count(lat) == 1:
-            return lon, lat
+
+        lon_match = [colname == lon for colname in colnames_lower]
+        lat_match = [colname == lat for colname in colnames_lower]
+
+        if sum(lon_match) == 1 and sum(lat_match) == 1:
+            return colnames[lon_match.index(True)], colnames[lat_match.index(True)]
 
         # Next check for columns that start with specified names
 
@@ -88,6 +92,38 @@ def guess_lon_lat_columns(colnames):
         # errors (dlat).
 
     return None, None
+
+
+def guess_xyz_columns(colnames):
+    """
+    Given column names in a table, return the columns to use for x/y/z, or
+    None/None if no high confidence possibilities.
+    """
+
+    # Do all the checks in lowercase
+    colnames_lower = [colname.lower() for colname in colnames]
+
+    for x, y, z in [('x', 'y', 'z')]:
+
+        # Check first for exact matches
+
+        x_match = [colname == x for colname in colnames_lower]
+        y_match = [colname == y for colname in colnames_lower]
+        z_match = [colname == z for colname in colnames_lower]
+
+        if sum(x_match) == 1 and sum(y_match) == 1 and sum(z_match) == 1:
+            return colnames[x_match.index(True)], colnames[y_match.index(True)], colnames[z_match.index(True)]
+
+        # Next check for columns that start with specified names
+
+        x_match = [colname.startswith(x) for colname in colnames_lower]
+        y_match = [colname.startswith(y) for colname in colnames_lower]
+        z_match = [colname.startswith(z) for colname in colnames_lower]
+
+        if sum(x_match) == 1 and sum(y_match) == 1 and sum(z_match) == 1:
+            return colnames[x_match.index(True)], colnames[y_match.index(True)], colnames[z_match.index(True)]
+
+    return None, None, None
 
 
 def pick_unit_if_available(unit, valid_units):
@@ -318,13 +354,28 @@ class TableLayer(HasTraits):
 
         super(TableLayer, self).__init__(**kwargs)
 
-        lon_guess, lat_guess = guess_lon_lat_columns(self.table.colnames)
+        if kwargs.get('coord_type') == 'rectangular':
 
-        if 'lon_att' not in kwargs:
-            self.lon_att = lon_guess or self.table.colnames[0]
+            x_guess, y_guess, z_guess = guess_xyz_columns(self.table.colnames)
 
-        if 'lat_att' not in kwargs:
-            self.lat_att = lat_guess or self.table.colnames[1]
+            if 'x_att' not in kwargs:
+                self.x_att = x_guess or self.table.colnames[0]
+
+            if 'y_att' not in kwargs:
+                self.y_att = y_guess or self.table.colnames[1]
+
+            if 'z_att' not in kwargs:
+                self.z_att = z_guess or self.table.colnames[2]
+
+        else:
+
+            lon_guess, lat_guess = guess_lon_lat_columns(self.table.colnames)
+
+            if 'lon_att' not in kwargs:
+                self.lon_att = lon_guess or self.table.colnames[0]
+
+            if 'lat_att' not in kwargs:
+                self.lat_att = lat_guess or self.table.colnames[1]
 
     @validate('coord_type')
     def _check_coord_type(self, proposal):
