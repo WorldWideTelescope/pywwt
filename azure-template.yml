@@ -1,0 +1,53 @@
+jobs:
+- job: ${{ format(parameters.name) }}
+  pool:
+    ${{ if eq(parameters.os, 'macosx') }}:
+      vmImage: macOS 10.13
+    ${{ if eq(parameters.os, 'linux') }}:
+      vmImage: Ubuntu 16.04
+    ${{ if eq(parameters.os, 'windows') }}:
+      vmImage: vs2017-win2016
+  strategy:
+    matrix:
+      Python27:
+        python.version: '2.7'
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+
+  steps:
+
+  - ${{ if eq(parameters.os, 'linux') }}:
+    - bash: |
+        /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+                                --make-pidfile --background --exec /usr/bin/Xvfb \
+                                -- :99 -screen 0 1920x1200x24 -ac \
+                                +extension GLX +render -noreset
+      displayName: Starting Xvfb
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - bash: |
+      python -m pip install numpy pyopengl "PyQt5==5.9.*" jupyterlab
+      python -m pip install .[test]
+    displayName: Installing PyWWT and dependencies
+
+  - bash: python .check_enabled.py
+    displayName: Checking that plugins are enabled
+
+  - ${{ if eq(parameters.os, 'macosx') }}:
+    - bash: python -m pytest pywwt --cov pywwt
+      displayName: Running tests
+      env:
+        DISPLAY: :99.0
+        CI: true
+
+  - bash: python -m pip install .[docs]
+    displayName: Installing documentation dependencies
+
+  - bash: make -C docs html linkcheck
+    displayName: Building docs
