@@ -621,24 +621,26 @@ class TableLayer(HasTraits):
         # Update the size column in the table
 
         if self._uniform_size():
+
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='sizeColumn', value=-1)
-            return
 
-        column = self.table[self.size_att]
+        else:
 
-        size = (column - self.size_vmin) / (self.size_vmax - self.size_vmin) * 10
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='pointScaleType', value=0)
 
-        self.table[SIZE_COLUMN_NAME] = size
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='sizeColumn', value=SIZE_COLUMN_NAME)
 
-        self.parent._send_msg(event='table_layer_update', id=self.id,
-                              table=self._table_b64)
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='normalizeSize', value=True)
 
-        self.parent._send_msg(event='table_layer_set', id=self.id,
-                              setting='pointScaleType', value=0)
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='normalizeSizeMin', value=self.size_vmin)
 
-        self.parent._send_msg(event='table_layer_set', id=self.id,
-                              setting='sizeColumn', value=SIZE_COLUMN_NAME)
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='normalizeSizeMax', value=self.size_vmax)
 
     @observe('cmap_att')
     def _on_cmap_att_change(self, *value):
