@@ -11,7 +11,7 @@ notifications:
 env:
   global:
     - SETUP_XVFB=True
-    - CONDA_CHANNELS="wwt/label/dev conda-forge"
+    - CONDA_CHANNELS="wwt/label/dev"
     - CONDA_DEPENDENCIES="astropy qtpy traitlets ipywidgets>=7.0 ipyevents widgetsnbextension pyqt pytest pytest-cov>=2.6.1 pytest-remotedata>=0.3.1 requests matplotlib beautifulsoup4 lxml jupyterlab flask flask-cors pyopengl nodejs"
     - PIP_DEPENDENCIES="sphinx-automodapi numpydoc sphinx_rtd_theme codecov reproject"
   matrix:
