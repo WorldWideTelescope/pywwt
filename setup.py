@@ -118,6 +118,7 @@ setup_args = dict(
             'pytest',
             'pytest-cov>=2.6.1',
             'pytest-remotedata>=0.3.1',
+            'pytest-faulthandler'
         ],
         'docs': [
             'sphinx>=1.6',
