@@ -1,0 +1,81 @@
+parameters:
+  python_versions: ['27', '36', '37']
+
+jobs:
+
+- ${{ each python_version in parameters.python_versions }}:
+  - ${{ if or(ne(parameters.os, 'windows'), ne(python_version, '27')) }}:
+
+    - job: ${{ parameters.name }}_${{ python_version }}
+      pool:
+        ${{ if eq(parameters.os, 'macosx') }}:
+          vmImage: macOS 10.13
+        ${{ if eq(parameters.os, 'linux') }}:
+          vmImage: Ubuntu 16.04
+        ${{ if eq(parameters.os, 'windows') }}:
+          vmImage: vs2017-win2016
+
+      steps:
+
+      - ${{ if eq(parameters.os, 'linux') }}:
+        - bash: |
+            /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+                                    --make-pidfile --background --exec /usr/bin/Xvfb \
+                                    -- :99 -screen 0 1920x1200x24 -ac \
+                                    +extension GLX +render -noreset
+          displayName: Starting Xvfb
+
+      - ${{ if eq(python_version, '27') }}:
+
+        - task: CondaEnvironment@1
+          inputs:
+            packageSpecs: 'python=2.7 pyqt'
+            updateConda: true
+            cleanEnvironment: true
+
+      - ${{ if ne(python_version, '27') }}:
+
+        - task: UsePythonVersion@0
+          inputs:
+            ${{ if eq(python_version, '36') }}:
+              versionSpec: '3.6'
+            ${{ if eq(python_version, '37') }}:
+              versionSpec: '3.7'
+            architecture: 'x64'
+
+        - bash: python -m pip install "PyQt5==5.9.*"
+          displayName: Installing PyQt5
+
+      - bash: python -m pip install .[test,lab] pyopengl
+        displayName: Installing PyWWT and dependencies
+
+      - bash: jupyter nbextension list
+        displayName: Listing Jupyter Notebook extensions
+
+      - bash: jupyter labextension list
+        displayName: Listing Jupyter Lab extensions
+
+      - bash: jupyter serverextension list
+        displayName: Listing Jupyter Server extensions
+
+      - bash: python .check_enabled.py
+        displayName: Checking that plugins are enabled
+
+      - ${{ if ne(parameters.os, 'macosx') }}:
+        - bash: python -m pytest pywwt --cov pywwt
+          displayName: Running tests
+          env:
+            DISPLAY: :99.0
+            CI: true
+
+      - bash: python -m pip install codecov
+        displayName: Installing codecov
+
+      - bash: python -m codecov --name ${{ parameters.name }}_${{ python_version }} -t $(codecov.token)
+        displayName: Running codecov
+
+      - bash: python -m pip install .[docs]
+        displayName: Installing documentation dependencies
+
+      - bash: make -C docs html linkcheck
+        displayName: Building docs

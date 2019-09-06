@@ -127,8 +127,11 @@ setup_args = dict(
             'jupyter_sphinx',
         ],
         'qt': [
-            'PyQt5',
-            'PyQtWebEngine',
+            'PyQt5;python_version>="3"',
+            'PyQtWebEngine;python_version>="3"',
+        ],
+        'lab': [
+            'jupyterlab'
         ]
     },
     entry_points = {
