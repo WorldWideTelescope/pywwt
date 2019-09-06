@@ -43,10 +43,19 @@ jobs:
           architecture: 'x64'
 
       - bash: python -m pip install "PyQt5==5.9.*"
-        displayName: Installing PyWWT and dependencies
+        displayName: Installing PyQt5
 
-    - bash: python -m pip install .[test,lab] --user
+    - bash: python -m pip install .[test,lab]
       displayName: Installing PyWWT and dependencies
+
+    - bash: jupyter nbextension list
+      displayName: Listing Jupyter Notebook extensions
+
+    - bash: jupyter labextension list
+      displayName: Listing Jupyter Lab extensions
+
+    - bash: jupyter serverextension list
+      displayName: Listing Jupyter Server extensions
 
     - bash: python .check_enabled.py
       displayName: Checking that plugins are enabled
