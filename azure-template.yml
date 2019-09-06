@@ -26,15 +26,25 @@ jobs:
                                 +extension GLX +render -noreset
       displayName: Starting Xvfb
 
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      architecture: 'x64'
+  - ${{ if eq('$(python.version)', '2.7') }}:
 
-  - bash: python -m pip install pip --upgrade
-    displayName: Upgrading pip
+    - task: CondaEnvironment@1
+      inputs:
+        packageSpecs: 'python=2.7 pyqt5'
+        updateConda: true
+        cleanEnvironment: true
 
-  - bash: python -m pip install .[qt,test,lab]
+  - ${{ if ne('$(python.version)', '2.7') }}:
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '$(python.version)'
+        architecture: 'x64'
+
+    - bash: python -m pip install "PyQt5==5.9.*"
+      displayName: Installing PyWWT and dependencies
+
+  - bash: python -m pip install .[test,lab]
     displayName: Installing PyWWT and dependencies
 
   - bash: python .check_enabled.py

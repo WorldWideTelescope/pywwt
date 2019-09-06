@@ -127,8 +127,8 @@ setup_args = dict(
             'jupyter_sphinx',
         ],
         'qt': [
-            'PyQt5<5.12;python_version>="3"',
-            'PySide2;python_version=="2"'
+            'PyQt5;python_version>="3"',
+            'PyQtWebEngine;python_version>="3"',
         ],
         'lab': [
             'jupyterlab'
