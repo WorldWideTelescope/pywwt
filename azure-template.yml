@@ -32,6 +32,10 @@ jobs:
           updateConda: true
           cleanEnvironment: true
 
+      - ${{ if eq(parameters.os, 'windows') }}:
+        - bash: choco install vcpython27
+          displayName: Installing Microsoft Visual C++ 9.0
+
     - ${{ if ne(python_version, '27') }}:
 
       - task: UsePythonVersion@0

@@ -223,3 +223,4 @@ except ImportError:
 
 linkcheck_retries = 5
 linkcheck_timeout = 10
+linkcheck_ignore = ['https://en.wikipedia.org/wiki/Aircraft_principal_axes']
