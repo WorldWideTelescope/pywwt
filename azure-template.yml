@@ -68,6 +68,12 @@ jobs:
             DISPLAY: :99.0
             CI: true
 
+      - bash: python -m pip install codecov
+        displayName: Installing codecov
+
+      - bash: python -m codecov --name ${{ parameters.name }}_${{ python_version }} -t $(codecov.token)
+        displayName: Running codecov
+
       - bash: python -m pip install .[docs]
         displayName: Installing documentation dependencies
 
