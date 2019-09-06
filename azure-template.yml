@@ -55,14 +55,16 @@ jobs:
     - bash: jupyter nbextension list
       displayName: Listing Jupyter Notebook extensions
 
-    - bash: jupyter labextension list
-      displayName: Listing Jupyter Lab extensions
+    - ${{ if or(ne(parameters.os, 'windows'), ne(python_version, '27')) }}:
+      - bash: jupyter labextension list
+        displayName: Listing Jupyter Lab extensions
 
     - bash: jupyter serverextension list
       displayName: Listing Jupyter Server extensions
 
-    - bash: python .check_enabled.py
-      displayName: Checking that plugins are enabled
+    - ${{ if or(ne(parameters.os, 'windows'), ne(python_version, '27')) }}:
+      - bash: python .check_enabled.py
+        displayName: Checking that plugins are enabled
 
     - ${{ if eq(parameters.os, 'macosx') }}:
       - bash: python -m pytest pywwt --cov pywwt
