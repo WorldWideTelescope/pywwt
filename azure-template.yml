@@ -31,9 +31,7 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
-  - bash: |
-      python -m pip install numpy pyopengl "PyQt5==5.9.*" jupyterlab
-      python -m pip install .[test]
+  - bash: python -m pip install .[qt,test,lab]
     displayName: Installing PyWWT and dependencies
 
   - bash: python .check_enabled.py
