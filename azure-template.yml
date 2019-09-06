@@ -28,7 +28,7 @@ jobs:
 
   - task: CondaEnvironment@1
     inputs:
-      packageSpecs: 'python=$(python.version) pyqt5'
+      packageSpecs: 'python=$(python.version) pyqt'
       updateConda: true
       cleanEnvironment: true
 
