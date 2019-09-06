@@ -49,7 +49,7 @@ jobs:
       - bash: python -m pip install "PyQt5==5.9.*"
         displayName: Installing PyQt5
 
-    - bash: python -m pip install .[test,lab]
+    - bash: python -m pip install .[test,lab] pyopengl
       displayName: Installing PyWWT and dependencies
 
     - bash: jupyter nbextension list
