@@ -26,23 +26,21 @@ jobs:
                                 +extension GLX +render -noreset
       displayName: Starting Xvfb
 
-  - ${{ if eq('$(python.version)', '2.7') }}:
+  - task: CondaEnvironment@1
+    inputs:
+      packageSpecs: 'python=$(python.version) pyqt5'
+      updateConda: true
+      cleanEnvironment: true
 
-    - task: CondaEnvironment@1
-      inputs:
-        packageSpecs: 'python=2.7 pyqt5'
-        updateConda: true
-        cleanEnvironment: true
-
-  - ${{ if ne('$(python.version)', '2.7') }}:
-
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '$(python.version)'
-        architecture: 'x64'
-
-    - bash: python -m pip install "PyQt5==5.9.*"
-      displayName: Installing PyWWT and dependencies
+  # NOTE: once we drop support for Python 2.7, we can use:
+  #
+  # - task: UsePythonVersion@0
+  #   inputs:
+  #     versionSpec: '$(python.version)'
+  #     architecture: 'x64'
+  #
+  # - bash: python -m pip install "PyQt5==5.9.*"
+  #   displayName: Installing PyWWT and dependencies
 
   - bash: python -m pip install .[test,lab]
     displayName: Installing PyWWT and dependencies
