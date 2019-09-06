@@ -31,6 +31,9 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
+  - bash: python -m pip install pip --upgrade
+    displayName: Upgrading pip
+
   - bash: python -m pip install .[qt,test,lab]
     displayName: Installing PyWWT and dependencies
 
