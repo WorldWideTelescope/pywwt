@@ -1,62 +1,65 @@
+parameters:
+  python_versions: ['27', '36', '37']
+
 jobs:
-- job: ${{ format(parameters.name) }}
-  pool:
-    ${{ if eq(parameters.os, 'macosx') }}:
-      vmImage: macOS 10.13
-    ${{ if eq(parameters.os, 'linux') }}:
-      vmImage: Ubuntu 16.04
-    ${{ if eq(parameters.os, 'windows') }}:
-      vmImage: vs2017-win2016
-  strategy:
-    matrix:
-      Python27:
-        python.version: '2.7'
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
 
-  steps:
+- ${{ each python_version in parameters.python_versions }}:
 
-  - ${{ if eq(parameters.os, 'linux') }}:
-    - bash: |
-        /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
-                                --make-pidfile --background --exec /usr/bin/Xvfb \
-                                -- :99 -screen 0 1920x1200x24 -ac \
-                                +extension GLX +render -noreset
-      displayName: Starting Xvfb
+  - job: ${{ parameters.name }}_${{ python_version }}
+    pool:
+      ${{ if eq(parameters.os, 'macosx') }}:
+        vmImage: macOS 10.13
+      ${{ if eq(parameters.os, 'linux') }}:
+        vmImage: Ubuntu 16.04
+      ${{ if eq(parameters.os, 'windows') }}:
+        vmImage: vs2017-win2016
 
-  - task: CondaEnvironment@1
-    inputs:
-      packageSpecs: 'python=$(python.version) pyqt'
-      updateConda: true
-      cleanEnvironment: true
+    steps:
 
-  # NOTE: once we drop support for Python 2.7, we can use:
-  #
-  # - task: UsePythonVersion@0
-  #   inputs:
-  #     versionSpec: '$(python.version)'
-  #     architecture: 'x64'
-  #
-  # - bash: python -m pip install "PyQt5==5.9.*"
-  #   displayName: Installing PyWWT and dependencies
+    - ${{ if eq(parameters.os, 'linux') }}:
+      - bash: |
+          /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+                                  --make-pidfile --background --exec /usr/bin/Xvfb \
+                                  -- :99 -screen 0 1920x1200x24 -ac \
+                                  +extension GLX +render -noreset
+        displayName: Starting Xvfb
 
-  - bash: python -m pip install .[test,lab]
-    displayName: Installing PyWWT and dependencies
+    - ${{ if eq(python_version, '27') }}:
 
-  - bash: python .check_enabled.py
-    displayName: Checking that plugins are enabled
+      - task: CondaEnvironment@1
+        inputs:
+          packageSpecs: 'python=2.7 pyqt'
+          updateConda: true
+          cleanEnvironment: true
 
-  - ${{ if eq(parameters.os, 'macosx') }}:
-    - bash: python -m pytest pywwt --cov pywwt
-      displayName: Running tests
-      env:
-        DISPLAY: :99.0
-        CI: true
+    - ${{ if ne(python_version, '27') }}:
 
-  - bash: python -m pip install .[docs]
-    displayName: Installing documentation dependencies
+      - task: UsePythonVersion@0
+        inputs:
+          ${{ if eq(python_version, '36') }}:
+            versionSpec: '3.6'
+          ${{ if eq(python_version, '37') }}:
+            versionSpec: '3.7'
+          architecture: 'x64'
 
-  - bash: make -C docs html linkcheck
-    displayName: Building docs
+      - bash: python -m pip install "PyQt5==5.9.*"
+        displayName: Installing PyWWT and dependencies
+
+    - bash: python -m pip install .[test,lab] --user
+      displayName: Installing PyWWT and dependencies
+
+    - bash: python .check_enabled.py
+      displayName: Checking that plugins are enabled
+
+    - ${{ if eq(parameters.os, 'macosx') }}:
+      - bash: python -m pytest pywwt --cov pywwt
+        displayName: Running tests
+        env:
+          DISPLAY: :99.0
+          CI: true
+
+    - bash: python -m pip install .[docs]
+      displayName: Installing documentation dependencies
+
+    - bash: make -C docs html linkcheck
+      displayName: Building docs
