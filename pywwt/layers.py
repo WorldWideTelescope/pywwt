@@ -97,7 +97,7 @@ def guess_lon_lat_columns(colnames):
 def guess_xyz_columns(colnames):
     """
     Given column names in a table, return the columns to use for x/y/z, or
-    None/None if no high confidence possibilities.
+    None/None/None if no high confidence possibilities.
     """
 
     # Do all the checks in lowercase

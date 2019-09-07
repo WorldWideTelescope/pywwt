@@ -91,7 +91,7 @@ this case, you will need to set ``coord_type='rectangular'`` and use ``x_att``,
 
 and the unit for the coordinates can be set with::
 
-    >>> layer.xyz_unit = 'rectangular'
+    >>> layer.xyz_unit = 'au'
 
 Data settings
 -------------
