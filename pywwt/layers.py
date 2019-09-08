@@ -107,6 +107,18 @@ def csv_table_win_newline(table):
     #Replace single \r or \n characters with \r\n
     return re.sub(r"(?<![\r\n])(\r|\n)(?![\r\n])", "\r\n", s.read())
 
+def validate_traits(cls, traits):
+    '''
+    Helper function to ensure user-provided trait names match those of the
+    class they're being used to instantiate
+    '''
+    mismatch = [key for key in traits if key not in cls.trait_names()]
+    if mismatch:
+        raise KeyError('Key{0} {1} do{2}n\'t match any layer trait name'
+                       .format('s' if len(mismatch) > 1 else '',
+                               mismatch,
+                               '' if len(mismatch) > 1 else 'es'))
+
 
 class LayerManager(object):
     """
@@ -280,7 +292,7 @@ class TableLayer(HasTraits):
     # zAxisReverse
 
     def __init__(self, parent=None, table=None, frame=None, **kwargs):
-        
+
         self.table = table
 
         # Validate frame
@@ -311,13 +323,8 @@ class TableLayer(HasTraits):
 
         self.observe(self._on_trait_change, type='change')
 
-        # Check that all kwargs are valid
-        mismatch = [key for key in kwargs if key not in self.trait_names()]
-        if mismatch:
-            raise KeyError('Key{0} {1} do{2}n\'t match any layer trait name'
-                           .format('s' if len(mismatch) > 1 else '',
-                                   mismatch,
-                                   '' if len(mismatch) > 1 else 'es'))
+        # Check that all kwargs are valid -- throws error if not
+        validate_traits(self, kwargs)
 
         super(TableLayer, self).__init__(**kwargs)
 
@@ -670,13 +677,8 @@ class ImageLayer(HasTraits):
 
         self._initialize_layer()
 
-        # Check that all kwargs are valid
-        mismatch = [key for key in kwargs if key not in self.trait_names()]
-        if mismatch:
-            raise KeyError('Key{0} {1} do{2}n\'t match any layer trait name'
-                           .format('s' if len(mismatch) > 1 else '',
-                                   mismatch,
-                                   '' if len(mismatch) > 1 else 'es'))
+        # Check that all kwargs are valid -- throws error if not
+        validate_traits(self, kwargs)
 
         super(ImageLayer, self).__init__(**kwargs)
 

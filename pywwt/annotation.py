@@ -13,6 +13,18 @@ from .traits import (Color, ColorWithOpacity, Bool,
 
 __all__ = ['Annotation', 'Circle', 'Polygon', 'Line', 'FieldOfView']
 
+def validate_traits(cls, traits):
+    '''
+    Helper function to ensure user-provided trait names match those of the
+    class they're being used to instantiate
+    '''
+    mismatch = [key for key in traits if key not in cls.trait_names()]
+    if mismatch:
+        raise KeyError('Key{0} {1} do{2}n\'t match any layer trait name'
+                       .format('s' if len(mismatch) > 1 else '',
+                               mismatch,
+                               '' if len(mismatch) > 1 else 'es'))
+
 
 class Annotation(HasTraits):
     """
@@ -43,24 +55,13 @@ class Annotation(HasTraits):
         self.observe(self._on_trait_change, type='change')
         self.id = str(uuid.uuid4())
 
-        # Check that all kwargs are valid
-        mismatch = [key for key in kwargs if key not in self.trait_names()]
-        if not mismatch:
-            self.parent._send_msg(event='annotation_create',
-                                  id=self.id, shape=self.shape)
-            super(Annotation, self).__init__(**kwargs)            
-        else:
-            raise KeyError('Key{0} {1} do{2}n\'t match any annotation traits'
-                           .format('s' if len(mismatch) > 1 else '',
-                                   mismatch,
-                                   '' if len(mismatch) > 1 else 'es'))
+        # Check that all kwargs are valid -- throws error if not
+        validate_traits(self, kwargs)
+
+        self.parent._send_msg(event='annotation_create',
+                              id=self.id, shape=self.shape)
+        super(Annotation, self).__init__(**kwargs)
         
-        if all(key in self.trait_names() for key in kwargs):
-            self.parent._send_msg(event='annotation_create',
-                                  id=self.id, shape=self.shape)
-            super(Annotation, self).__init__(**kwargs)
-        else:
-            raise KeyError('a key doesn\'t match any annotation trait name')
         self.parent._annotation_set.add(self)
 
     def _on_trait_change(self, changed):
