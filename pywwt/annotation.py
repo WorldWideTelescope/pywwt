@@ -7,23 +7,12 @@ import numpy as np
 
 from .traits import (Color, ColorWithOpacity, Bool,
                      Float, Unicode, AstropyQuantity)
+from .utils import validate_traits
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbook.io/html5-control-reference/
 
 __all__ = ['Annotation', 'Circle', 'Polygon', 'Line', 'FieldOfView']
-
-def validate_traits(cls, traits):
-    '''
-    Helper function to ensure user-provided trait names match those of the
-    class they're being used to instantiate
-    '''
-    mismatch = [key for key in traits if key not in cls.trait_names()]
-    if mismatch:
-        raise KeyError('Key{0} {1} do{2}n\'t match any layer trait name'
-                       .format('s' if len(mismatch) > 1 else '',
-                               mismatch,
-                               '' if len(mismatch) > 1 else 'es'))
 
 
 class Annotation(HasTraits):
@@ -61,7 +50,7 @@ class Annotation(HasTraits):
         self.parent._send_msg(event='annotation_create',
                               id=self.id, shape=self.shape)
         super(Annotation, self).__init__(**kwargs)
-        
+
         self.parent._annotation_set.add(self)
 
     def _on_trait_change(self, changed):

@@ -22,7 +22,7 @@ from astropy import units as u
 
 from traitlets import HasTraits, validate, observe
 from .traits import Any, Unicode, Float, Color, Bool, to_hex
-from .utils import sanitize_image
+from .utils import sanitize_image, validate_traits
 
 __all__ = ['LayerManager', 'TableLayer', 'ImageLayer']
 
@@ -106,18 +106,6 @@ def csv_table_win_newline(table):
     s.seek(0)
     #Replace single \r or \n characters with \r\n
     return re.sub(r"(?<![\r\n])(\r|\n)(?![\r\n])", "\r\n", s.read())
-
-def validate_traits(cls, traits):
-    '''
-    Helper function to ensure user-provided trait names match those of the
-    class they're being used to instantiate
-    '''
-    mismatch = [key for key in traits if key not in cls.trait_names()]
-    if mismatch:
-        raise KeyError('Key{0} {1} do{2}n\'t match any layer trait name'
-                       .format('s' if len(mismatch) > 1 else '',
-                               mismatch,
-                               '' if len(mismatch) > 1 else 'es'))
 
 
 class LayerManager(object):
