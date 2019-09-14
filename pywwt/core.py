@@ -3,6 +3,7 @@ from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
 from astropy.time import Time
 from astropy.coordinates import SkyCoord
+from datetime import datetime
 
 # We import the trait classes from .traits since we do various customizations
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity
@@ -15,6 +16,7 @@ from .instruments import Instruments
 
 import json
 import os
+import pytz
 import shutil
 import tempfile
 
@@ -220,14 +222,18 @@ class BaseWWTWidget(HasTraits):
             astropy :class:`astropy.time.Time` object. If not specified, this
             uses the current time
         """
+        # Ensure the object received is a datetime or Time; convert it to UTC
         if dt is None:
-            dt = Time.now()
-        if isinstance(dt, Time):
-            dt = dt.datetime
-        self._send_msg(event='set_datetime',
-                       year=dt.year, month=dt.month, day=dt.day,
-                       hour=dt.hour, minute=dt.minute, second=dt.second,
-                       millisecond=int(dt.microsecond / 1000.))
+            utc_dt = datetime.utcnow()
+        elif isinstance(dt, datetime):
+            utc_dt = dt.astimezone(timezone=pytz.UTC)
+        elif isinstance(dt, Time):
+            utc_dt = dt.to_datetime(timezone=pytz.UTC)
+        else:
+            raise ValueError('Time must be a datetime or astropy.Time object')
+
+        iso_t = Time(utc_dt, format='datetime').isot
+        self._send_msg(event='set_datetime', isot=iso_t)
 
     def center_on_coordinates(self, coord, fov=60 * u.deg, instant=True):
         """

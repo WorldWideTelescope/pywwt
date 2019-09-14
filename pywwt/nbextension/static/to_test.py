@@ -21,6 +21,7 @@ for i, val in enumerate(jan['time']):
 lons = np.intersect1d(np.where(jan['longitude'] > 135)[0], np.where(jan['longitude'] < 165)[0])
 lats = np.intersect1d(np.where(jan['latitude'] > 15)[0], np.where(jan['latitude'] < 45)[0])
 japan = jan[np.intersect1d(lons, lats)]
+japan.remove_column('place') # causes parsing issues
 
 '''
 # translate table to b64 for use in JS when working directly with the SDK
