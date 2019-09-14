@@ -166,12 +166,10 @@ console.log(JSON.stringify(msg))
       break;
 
     case 'set_datetime':
-      // for whatever reason, Date's month argument begins from 0 (i.e. Feb. is 1)
-      // so we make sure to subtract 1 from msg['month']
-      var date = new Date(msg['year'], msg['month'] - 1, msg['day'],
-                          msg['hour'], msg['minute'], msg['second'],
-                          msg['millisecond']);
+
+      var date = new Date(msg['isot']);
 console.log(date);
+
       stc = wwtlib.SpaceTimeController;
       stc.set_timeRate(1);
       stc.set_now(date);

@@ -4,6 +4,7 @@ import tempfile
 from os import path
 import shutil
 
+import pytz
 import re
 
 if sys.version_info[0] == 2:  # noqa
@@ -21,7 +22,6 @@ from matplotlib.colors import Colormap
 from astropy import units as u
 from astropy.table import Column
 from astropy.time import Time, TimeDelta
-
 from datetime import datetime
 
 from traitlets import HasTraits, validate, observe
@@ -57,7 +57,7 @@ VALID_MARKER_SCALES = ['screen', 'world']
 
 VALID_STRETCHES = ['linear', 'log', 'power', 'sqrt', 'histeq']
 
-# Create regex test to validate ISOT strings in time series tables
+# Save string types for validating ISOT strings in time series tables
 if sys.version_info[0] == 2:
     STR_TYPE = basestring
     NP_STR_TYPE = np.string_
@@ -65,17 +65,11 @@ else:
     STR_TYPE = str
     NP_STR_TYPE = np.unicode_
 
-VALID_ISOT_FORMAT = (r'^(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-'
-                     + r'(3[01]|0[1-9]|[12][0-9])T'
-                     + r'(2[0-3]|[01][0-9]):([0-5][0-9]):'
-                     + r'([0-5][0-9])'
-                     + r'(\.[0-9]+)?(Z|[+-](?:2[0-3]|[01][0-9]):[0-5][0-9])?$')
-iso_test = re.compile(VALID_ISOT_FORMAT)
-
 # The following are columns that we add dynamically and internally, so we need
 # to make sure they have unique names that won't clash with existing columns
 SIZE_COLUMN_NAME = str(uuid.uuid4())
 CMAP_COLUMN_NAME = str(uuid.uuid4())
+TIME_COLUMN_NAME = str(uuid.uuid4())
 
 
 def guess_lon_lat_columns(colnames):
@@ -344,7 +338,7 @@ class TableLayer(HasTraits):
     cmap_vmax = Float(None, help='The maximum level of the colormap. Found '
                       'automagically once cmap_att is set (`float`)',
                       allow_none=True).tag(wwt=None)
-    cmap = Any(cm.magma, help='The Matplotlib colormap '
+    cmap = Any(cm.viridis, help='The Matplotlib colormap '
                '(:class:`matplotlib.colors.ListedColormap`)').tag(wwt=None)
 
     # Visual attributes
@@ -372,9 +366,11 @@ class TableLayer(HasTraits):
     time_att = Unicode(help='The column to use for time (`str`)').tag(wwt=None)
     time_series = Bool(False, help='Whether the layer contains time series '
                        'elements (`bool`)').tag(wwt='timeSeries')
-    decay = AstropyQuantity(16 * u.day, help='How long a time series point '
-                            'takes to fade away after appearing (0 if never) '
-                            '(:class:`~astropy.units.Quantity`)').tag(wwt='decay')
+    time_decay = AstropyQuantity(16 * u.day, help='How long a time series '
+                                 'point takes to fade away after appearing (0 '
+                                 'if never) '
+                                 '(:class:`~astropy.units.Quantity`)'
+                                 ).tag(wwt='decay')
 
     # TODO: support:
     # xAxisColumn
@@ -392,17 +388,6 @@ class TableLayer(HasTraits):
         if frame.lower() not in VALID_FRAMES:
             raise ValueError('frame should be one of {0}'.format('/'.join(sorted(str(x) for x in VALID_FRAMES))))
         self.frame = frame.capitalize()
-
-        # ISSUE: For some reason, WWT seems to prefer the that time column
-        # be 0th-10th/12th column in the table.
-        ### (varies with placement of latitude and longitude columns,
-        ###  which also need to be 0th-12th)
-        # So the current proposition is to limit table's max number of columns
-        ### (the max will change depending on how time_att is implemented)
-        max_cols = 13
-        if len(self.table.colnames) > max_cols:
-            raise ValueError('Table must have fewer than {} '.format(max_cols)
-                             + 'columns to ensure predictable behavior')
 
         self.parent = parent
         self.id = str(uuid.uuid4())
@@ -428,7 +413,7 @@ class TableLayer(HasTraits):
         self._on_trait_change({'name': 'cmap_att', 'new': self.cmap_att})
         self._on_trait_change({'name': 'time_att', 'new': self.time_att})
         self._on_trait_change({'name': 'time_series', 'new': self.time_series})
-        self._on_trait_change({'name': 'decay', 'new': self.decay})
+        self._on_trait_change({'name': 'time_decay', 'new': self.time_decay})
 
         self.observe(self._on_trait_change, type='change')
 
@@ -509,27 +494,26 @@ class TableLayer(HasTraits):
         if (isinstance(col, STR_TYPE)
             or np.issubdtype(col.dtype, NP_STR_TYPE)):
 
-            col_list = col.tolist()
-            is_iso = all(iso_test.match(t) for t in col_list)
-
-            if is_iso:
+            try:
+                Time(col, format='isot')
                 return proposal['value']
-            else:
+            except ValueError:
                 raise ValueError('String times must conform to the ISOT'
                                  'standard (YYYY-MM-DD`T`HH:MM:SS:MS)')
 
-        elif isinstance(col, (datetime, Time)):
+        elif (all(isinstance(t, datetime) for t in col)
+              or all(isinstance(t, Time) for t in col)):
             return proposal['value']
         else:
-            raise ValueError('A time column must have string, '
+            raise ValueError('A time column must only have string, '
                              'datetime.datetime, or astropy Time values')
 
-    @validate('decay')
+    @validate('time_decay')
     def _check_decay(self, proposal):
         if proposal['value'].unit.physical_type == 'time':
             return proposal['value']
         else:
-            raise ValueError('decay should be in units of time')
+            raise ValueError('time_decay should be in units of time')
 
     @observe('alt_att')
     def _on_alt_att_change(self, *value):
@@ -716,58 +700,35 @@ class TableLayer(HasTraits):
 
     @observe('time_att')
     def _on_time_att_change(self, *value):
-        # Convert time column to UTC so WWT displays points at expected times
-        ### ISSUE: Currently not robust to changes in DST.
-        # Needs GMT instead of UTC?
-
-        # The conversion only seems needed in Qt, so check the widget version
-        if type(self.parent).__name__.find('Qt') < 0:
-            self.parent._send_msg(event='table_layer_set', id=self.id,
-                                  setting='startDateColumn',
-                                  value=self.time_att)
-            return
 
         if len(self.time_att) == 0 or self.time_series == False:
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='startDateColumn', value=-1)
             return
 
+        # Convert time column to UTC so WWT displays points at expected times
         col = self.table[self.time_att]
 
         if isinstance(col, datetime):
-            wwt_times = Column([t.isoformat() for t in col])
+            wwt_times = Column([t.astimezone(timezone=pytz.UTC).isoformat()
+                                for t in col])
         elif isinstance(col, Time):
-            wwt_times = Column([t.isot for t in col])
+            wwt_times = Column([t.to_datetime(timezone=pytz.UTC).isot
+                                for t in col])
         else:
             col_list = col.tolist()
             wwt_times = Column(col_list)
 
-        # Find the difference between user's curent local time and UTC
-        # (rounding should also be robust for UTC+X:15, +X:30 time zones)
-        now = datetime.now()
-        utc_now = datetime.utcnow()
-
-        now_diff = (utc_now - now).total_seconds() / 3600
-        offset = (np.round(now_diff * 4) / 4) * u.hour
-
-        # Add time offset to column so WWT will read values as UTC
-        wwt_times = (Time(wwt_times) + TimeDelta(offset)).isot
-
         # Update the table passed to WWT with the new, modified time column
-        ### ISSUE: better to create a new column (like cmap_att/size_att)
-        ### or replace the entries in the original time_att column?
-        ### given the column limit discussed earlier, creating new columns
-        ### further limits the number of columns a user can provide
-        self.table[self.time_att] = wwt_times
-        #self.table[TIME_COLUMN_NAME] = wwt_times
+        wwt_times = Time(wwt_times).isot
+        self.table[TIME_COLUMN_NAME] = wwt_times
 
         self.parent._send_msg(event='table_layer_update', id=self.id,
                               table=self._table_b64)
 
         self.parent._send_msg(event='table_layer_set', id=self.id,
                               setting='startDateColumn',
-                              value=self.time_att)#,
-                              #value=TIME_COLUMN_NAME)
+                              value=TIME_COLUMN_NAME)
 
     @property
     def _table_b64(self):
@@ -840,7 +801,7 @@ class TableLayer(HasTraits):
                 value = VALID_ALT_UNITS[self._check_xyz_unit({'value': value})]
             elif isinstance(value, u.Quantity):
                 value = value.value
-            elif changed['name'] == 'decay':
+            elif changed['name'] == 'time_decay':
                 value = value.to(u.day).value
             self.parent._send_msg(event='table_layer_set',
                                   id=self.id,
