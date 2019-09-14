@@ -41,6 +41,8 @@ package_data_spec = {
     name: [
         'nbextension/static/*.*js*',
         'nbextension/static/*.html',
+        'nbextension/static/interactive_figure/*.html',
+        'nbextension/static/interactive_figure/*.js',
         'labextension/*.tgz',
         'tests/data/*/*.png'
     ]
