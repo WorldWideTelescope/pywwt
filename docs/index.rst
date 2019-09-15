@@ -65,5 +65,8 @@ If you run into any issues when using pywwt, please open an issue
 Acknowledgments
 ---------------
 
-Work on pywwt is funded through the `American Astronomical Society`_ WorldWide
-Telescope project.
+Work on pywwt and the WorldWide Telescope is supported by the `American
+Astronomical Society`_ (AAS). Some work on pywwt has been supported by NSF
+grant 1642446_.
+
+.. _1642446: https://www.nsf.gov/awardsearch/showAward?AWD_ID=1642446
