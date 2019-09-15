@@ -4,11 +4,12 @@ Installation
 Try without installing
 ----------------------
 
-If you want to try out the WorldWide Telescope Jupyter widget without installing
-anything locally, note that you can do so by viewing an example Jupyter notebook online
-`at mybinder.org <https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?filepath=basic.ipynb>`_
-(once you click on the link you may need to wait for up to a minute before
-the notebook appears).
+You can try out the pywwt Jupyter widget without installing anything locally
+by using one of our example notebooks, served from the cloud! Visit `the
+pywwt-notebooks repository`_ on GitHub for quick links to the latest examples.
+
+.. _the pywwt-notebooks repository: https://github.com/WorldWideTelescope/pywwt-notebooks#readme
+
 
 Installing pywwt with conda (recommended)
 -----------------------------------------
