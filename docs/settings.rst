@@ -2,12 +2,12 @@ Basic controls
 ==============
 
 Once a Jupyter or Qt widget has been created, the way in which you change
-settings and interact with WorldWide Telescope is the same.
+settings and interact with AAS WorldWide Telescope is the same.
 
 Visual settings
 ---------------
 
-Once the WorldWide Telescope Jupyter or Qt widget has been initialized -- here
+Once the AAS WorldWide Telescope Jupyter or Qt widget has been initialized -- here
 we assign it to the variable name ``wwt`` -- you can toggle several visual
 settings on and off. For example::
 
