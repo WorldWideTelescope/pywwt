@@ -7,11 +7,13 @@ exploring humanity’s scientific understanding of the Universe. It includes a
 sophisticated 4D WebGL rendering engine and a cloud-based web service for
 sharing and visualizing terabytes of astronomical data. WWT is brought to you
 by the non-profit `American Astronomical Society`_ (AAS), the major
-organization of professional astronomers in North America.
+organization of professional astronomers in North America, and the `.NET
+Foundation`_.
 
 .. _AAS: https://aas.org/
 .. _American Astronomical Society: https://aas.org/
 .. _WorldWide Telescope: http://www.worldwidetelescope.org/home
+.. _.NET Foundation: https://dotnetfoundation.org/
 
 With pywwt you can:
 
@@ -93,8 +95,14 @@ discussion forum`_ site.
 Acknowledgments
 ---------------
 
-Work on pywwt and the WorldWide Telescope is supported by the `American
-Astronomical Society`_ (AAS). Some work on pywwt has been supported by NSF
-grant 1642446_.
+The AAS WorldWide Telescope (WWT) system, including pywwt, is a `.NET
+Foundation`_ project. Work on WWT and pywwt has been supported by the
+`American Astronomical Society`_ (AAS), the US `National Science Foundation`_
+(grants 1550701_ and 1642446_), the `Gordon and Betty Moore Foundation`_, and
+`Microsoft`_.
 
+.. _National Science Foundation: https://www.nsf.gov/
+.. _1550701: https://www.nsf.gov/awardsearch/showAward?AWD_ID=1550701
 .. _1642446: https://www.nsf.gov/awardsearch/showAward?AWD_ID=1642446
+.. _Gordon and Betty Moore Foundation: https://www.moore.org/
+.. _Microsoft: https://microsoft.com/
