@@ -1,7 +1,7 @@
 .. To preview locally, install Sphinx and run: rst2html.py README.rst README.html
 
-.. image:: https://travis-ci.org/WorldWideTelescope/pywwt.svg?branch=tests
-    :target: https://travis-ci.org/WorldWideTelescope/pywwt
+.. image:: https://travis-ci.com/WorldWideTelescope/pywwt.svg
+    :target: https://travis-ci.com/WorldWideTelescope/pywwt
 
 .. image:: https://ci.appveyor.com/api/projects/status/yweuddwyxy97d8go/branch/master?svg=true
     :target: https://ci.appveyor.com/project/astrofrog/pywwt/branch/master
