@@ -26,3 +26,16 @@ def sanitize_image(image, output_file, overwrite=False):
 
     fits.writeto(output_file, array.astype(np.float32),
                  wcs.to_header(), overwrite=overwrite)
+
+
+def validate_traits(cls, traits):
+    '''
+    Helper function to ensure user-provided trait names match those of the
+    class they're being used to instantiate
+    '''
+    mismatch = [key for key in traits if key not in cls.trait_names()]
+    if mismatch:
+        raise KeyError('Key{0} {1} do{2}n\'t match any layer trait name'
+                       .format('s' if len(mismatch) > 1 else '',
+                               mismatch,
+                               '' if len(mismatch) > 1 else 'es'))

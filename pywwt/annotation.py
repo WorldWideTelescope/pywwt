@@ -7,6 +7,7 @@ import numpy as np
 
 from .traits import (Color, ColorWithOpacity, Bool,
                      Float, Unicode, AstropyQuantity)
+from .utils import validate_traits
 
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbook.io/html5-control-reference/
@@ -42,12 +43,14 @@ class Annotation(HasTraits):
         self.parent = parent
         self.observe(self._on_trait_change, type='change')
         self.id = str(uuid.uuid4())
-        if all(key in self.trait_names() for key in kwargs):
-            self.parent._send_msg(event='annotation_create',
-                                  id=self.id, shape=self.shape)
-            super(Annotation, self).__init__(**kwargs)
-        else:
-            raise KeyError('a key doesn\'t match any annotation trait name')
+
+        # Check that all kwargs are valid -- throws error if not
+        validate_traits(self, kwargs)
+
+        self.parent._send_msg(event='annotation_create',
+                              id=self.id, shape=self.shape)
+        super(Annotation, self).__init__(**kwargs)
+
         self.parent._annotation_set.add(self)
 
     def _on_trait_change(self, changed):
