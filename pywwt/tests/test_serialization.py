@@ -22,7 +22,7 @@ STARDARD_WWT_SETTINGS = ['actualPlanetScale', 'showAltAzGrid', 'showConstellatio
 class MockWWTWidget(BaseWWTWidget):
     def quick_serialize(self):
         return self._serialize_state(None, None, None)
-    
+
     def _get_view_data(self, field):
         mock_vals = {'ra': 5. * DEGREES_TO_HOURS, 'dec': 10., 'fov': 15.}
         return mock_vals[field]
@@ -344,7 +344,9 @@ def test_table_setting_serialization():
     expected_settings = {'lngColumn':'ra', 'raUnits': 'degrees', 'latColumn': 'dec', 'altColumn': 'flux',
                          'altUnit': None, 'altType': 'distance', 'color': '#aacc00', 'scaleFactor': 14,
                          'opacity': 0.75, 'plotType': 'square', 'markerScale': 'world', 'showFarSide': True,
-                         'sizeColumn': -1, '_colorMap': 0, 'colorMapColumn': -1}
+                         'sizeColumn': -1, '_colorMap': 0, 'colorMapColumn': -1,  'xAxisColumn': '',
+                         'yAxisColumn': '', 'zAxisColumn': '', 'cartesianScale': None,
+                         'coordinatesType': 'spherical'}
     assert layer_state['settings'] == expected_settings
 
     #Check when we have colormap and scaling

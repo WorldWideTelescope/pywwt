@@ -11,7 +11,7 @@ from astropy.coordinates import SkyCoord
 from .test_qt_widget import assert_widget_image
 
 from ..core import BaseWWTWidget
-from ..layers import TableLayer, guess_lon_lat_columns, csv_table_win_newline
+from ..layers import TableLayer, guess_lon_lat_columns, guess_xyz_columns, csv_table_win_newline
 
 
 class TestLayers:
@@ -239,9 +239,40 @@ class TestLayers:
         assert len(w) == 1
         assert issubclass(w[-1].category, DeprecationWarning)
 
+    def test_cartesian_layer(self):
+
+        table = Table()
+        table['x'] = [1, 2, 3] * u.au
+        table['y'] = [1, 2, 3] * u.au
+        table['z'] = [1, 2, 3] * u.au
+
+        # Make sure adding the layer doesn't emit any warnings, which previously
+        # happened due to a bug with the logic in the table layer initialization
+        with pytest.warns(None) as record:
+            layer = self.client.layers.add_table_layer(table=table, coord_type='rectangular',
+                                                       x_att='x', y_att='y', z_att='z')
+
+        assert len(record) == 0
+
+        assert layer.xyz_unit is u.au
+
+    def test_cartesian_layer_autocolumn(self):
+
+        table = Table()
+        table['x'] = [1, 2, 3] * u.au
+        table['y'] = [1, 2, 3] * u.au
+        table['z'] = [1, 2, 3] * u.au
+
+        layer = self.client.layers.add_table_layer(table=table, coord_type='rectangular')
+
+        assert layer.x_att == 'x'
+        assert layer.y_att == 'y'
+        assert layer.z_att == 'z'
+
 
 CASES = [[('flux', 'dec', 'ra'), ('ra', 'dec')],
          [('mass', 'lat', 'lon'), ('lon', 'lat')],
+         [('mass', 'LAT', 'LON'), ('LON', 'LAT')],
          [('a', 'lng', 'b', 'lat'), ('lng', 'lat')],
          [('flux', 'ra', 'radius', 'dec'), ('ra', 'dec')],
          [('FLUX', 'DECJ2000', 'RAJ2000'), ('RAJ2000', 'DECJ2000')],
@@ -255,7 +286,20 @@ def test_guess_lon_lat_columns(colnames, expected):
     assert guess_lon_lat_columns(colnames) == expected
 
 
-def test_layers_image(tmpdir, wwt_qt_client):
+CASES_XYZ = [[('x', 'y', 'z'), ('x', 'y', 'z')],
+             [('X', 'Y', 'Z'), ('X', 'Y', 'Z')],
+             [('y', 'z', 'a', 'x'), ('x', 'y', 'z')],
+             [('ra', 'z_att', 'x_att', 'y_att'), ('x_att', 'y_att', 'z_att')],
+             [('x', 'y', 'ra'), (None, None, None)],
+             [('xa', 'ya', 'za', 'xb', 'yb', 'zb'), (None, None, None)]]
+
+
+@pytest.mark.parametrize(('colnames', 'expected'), CASES_XYZ)
+def test_guess_xyz_columns(colnames, expected):
+    assert guess_xyz_columns(colnames) == expected
+
+
+def test_table_layers_image(tmpdir, wwt_qt_client):
 
     # A series of tests that excercise the layer functionality and compare
     # the results with a set of baseline images.
@@ -336,6 +380,46 @@ def test_layers_image(tmpdir, wwt_qt_client):
     # OpenGL features that aren't available there.
     if os.environ.get('CI', 'false').lower() == 'false':
         assert_widget_image(tmpdir, wwt, 'sky_layers.png')
+
+
+def test_table_layers_cartesian_image(tmpdir, wwt_qt_client):
+
+    # A series of tests that excercise the layer functionality and compare
+    # the results with a set of baseline images.
+
+    wwt = wwt_qt_client
+
+    wwt.foreground = 'Black Sky Background'
+    wwt.background = 'Black Sky Background'
+
+    # TODO: need a way to completely turn off sun + planets. For now we just
+    # point towards the ecliptic North pole
+    wwt.center_on_coordinates(SkyCoord(0 * u.hourangle, 0 * u.deg))
+
+    # Simple default case
+
+    table = Table()
+    table['x'] = [1, 2, 3, 4, 5] * u.au
+    table['y'] = [0, 0.2, 0.4, 0.6, 0.8] * u.au
+    table['z'] = [0, 0.1, 0.2, 0.3, 0.4] * u.au
+
+    layer1 = wwt.layers.add_table_layer(table=table, coord_type='rectangular', size_scale=100, frame='Sky')
+
+    table = Table()
+    table['x'] = [1, 2, 3, 4, 5] * u.au
+    table['y'] = [-0.2, 0, 0.2, 0.4, 0.6 ] * u.au
+    table['z'] = [0, 0.2, 0.4, 0.6, 0.8] * u.au
+
+    layer2 = wwt.layers.add_table_layer(table=table, coord_type='rectangular', frame='Sky')
+    layer2.cmap_att = 'x'
+    layer2.size_att = 'x'
+
+    wwt.wait(2)
+
+    # For now this test doesn't work in CI, seemingly because of some
+    # OpenGL features that aren't available there.
+    if os.environ.get('CI', 'false').lower() == 'false':
+        assert_widget_image(tmpdir, wwt, 'sky_layers_cartesian.png')
 
 
 def test_image_layer_equ(tmpdir, wwt_qt_client_isolated):
