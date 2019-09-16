@@ -71,6 +71,9 @@ if using pip). For the record, these dependencies are as follows:
 * `ipywidgets <https://ipywidgets.readthedocs.io>`_ 7.0.0 or later
 * `ipyevents <https://github.com/mwcraig/ipyevents>`_
 * `traitlets <https://traitlets.readthedocs.io>`_
+* `reproject <https://reproject.readthedocs.io/>`_
+* `six <https://six.readthedocs.io/>`_
+* `pytz <http://pythonhosted.org/pytz>`_
 
 In addition, if you want to use the Qt widget, you will need:
 
@@ -79,6 +82,8 @@ In addition, if you want to use the Qt widget, you will need:
   <https://riverbankcomputing.com/software/pyqtwebengine/intro>`__ (both PyQt4
   and PyQt5 are supported)
 * `QtPy <https://pypi.org/project/QtPy/>`__ 1.2 or later
+* `flask <https://palletsprojects.com/p/flask/>`_
+* `flask-cors <https://github.com/corydolphin/flask-cors>`_
 
 For the Jupyter widget, you will need:
 
