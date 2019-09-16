@@ -5,6 +5,7 @@
 
 
 var ReferenceFramesRadius = {
+  Sky: 149500000000,
   Sun: 696000000,
   Mercury: 2439700,
   Venus: 6051800,
@@ -265,6 +266,9 @@ console.log(date.toUTCString());
       layer.set_colorMapColumn(-1);
       layer.set_startDateColumn(-1);
       layer.set_endDateColumn(-1);
+      layer.set_xAxisColumn(-1);
+      layer.set_yAxisColumn(-1);
+      layer.set_zAxisColumn(-1);
 
       // FIXME: at the moment WWT incorrectly sets the mean radius of the object
       // in the frame to that of the Earth, so we need to override this here.
@@ -322,6 +326,10 @@ console.log(JSON.stringify(layer, null, 2));
         value = wwtlib.PlotTypes[msg['value']];
       } else if(name == 'markerScale') {
         value = wwtlib.MarkerScales[msg['value']];
+      } else if(name == 'coordinatesType') {
+        value = wwtlib.CoordinatesTypes[msg['value']];
+      } else if(name == 'cartesianScale') {
+        value = wwtlib.AltUnits[msg['value']];
       } else {
         value = msg['value']
       }

@@ -41,6 +41,8 @@ package_data_spec = {
     name: [
         'nbextension/static/*.*js*',
         'nbextension/static/*.html',
+        'nbextension/static/interactive_figure/*.html',
+        'nbextension/static/interactive_figure/*.js',
         'labextension/*.tgz',
         'tests/data/*/*.png'
     ]
@@ -68,7 +70,7 @@ with open('README.rst') as f:
 
 setup_args = dict(
     name            = name,
-    description     = 'WorldWide Telescope from Python',
+    description     = 'The AAS WorldWide Telescope from Python',
     long_description = LONG_DESCRIPTION,
     version         = version,
     scripts         = glob(pjoin('scripts', '*')),
@@ -127,8 +129,11 @@ setup_args = dict(
             'jupyter_sphinx',
         ],
         'qt': [
-            'PyQt5',
-            'PyQtWebEngine',
+            'PyQt5;python_version>="3"',
+            'PyQtWebEngine;python_version>="3"',
+        ],
+        'lab': [
+            'jupyterlab'
         ]
     },
     entry_points = {

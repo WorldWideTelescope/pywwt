@@ -4,7 +4,7 @@ Changing and controlling views
 ==============================
 
 PyWWT includes the option to toggle between view modes in the same manner as in
-the WorldWide Telescope Web Client by using the
+the AAS WorldWide Telescope Web Client by using the
 :meth:`~pywwt.BaseWWTWidget.set_view` method. Available modes include a view of
 the sky, as well as 3D views of celestial bodies, the solar system, the galaxy,
 or the observable universe. The rest of the documentation is based on the

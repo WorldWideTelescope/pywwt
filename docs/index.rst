@@ -1,24 +1,32 @@
-pywwt: WorldWide Telescope from Python
-======================================
+pywwt: The AAS WorldWide Telescope from Python
+==============================================
 
-About
------
+The pywwt package is the official toolkit for accessing the AAS_ `WorldWide
+Telescope`_ (WWT) from Python. WWT is a free, open-source tool for visually
+exploring humanity’s scientific understanding of the Universe. It includes a
+sophisticated 4D WebGL rendering engine and a cloud-based web service for
+sharing and visualizing terabytes of astronomical data. WWT is brought to you
+by the non-profit `American Astronomical Society`_ (AAS), the major
+organization of professional astronomers in North America, and the `.NET
+Foundation`_.
 
-`WorldWide Telescope <http://worldwidetelescope.org/home>`_ is a free and
-powerful visualization engine developed by the `American Astronomical Society
-<https://aas.org>`_ that can display astronomical and planetary data. The two
-main versions of WorldWide Telescope are the cross-platform HTML/WebGL-based
-“web client”, and a Windows desktop application. Both versions can access a
-large (multi-terabyte) collection of astronomical survey data stored in the
-cloud. WorldWide Telescope is designed to be useful to a wide audience,
-including researchers, educators, and the general public.
+.. _AAS: https://aas.org/
+.. _American Astronomical Society: https://aas.org/
+.. _WorldWide Telescope: http://www.worldwidetelescope.org/home
+.. _.NET Foundation: https://dotnetfoundation.org/
 
-The pywwt package allows you to embed the WorldWide Telescope interface in a
-`Jupyter <https://jupyter.org>`_ notebook, control it, and display arbitrary
-astronomical and planetary data sets in it. It also provides:
+With pywwt you can:
 
-* A standalone Qt viewer/widget
-* A client for the Windows version of the WorldWide Telescope application
+* Visualize and explore astronomical data interactively in the `Jupyter and
+  JupyterLab`_ environments through an HTML widget
+* Do the same in standalone applications with a Qt_ widget
+* Load data from common astronomical data formats (e.g. `AstroPy tables`_)
+  into WWT
+* Control a running instance of the WWT Windows application
+
+.. _Jupyter and JupyterLab: https://jupyter.org/
+.. _Qt: https://www.qt.io/
+.. _AstroPy tables: https://docs.astropy.org/en/stable/table/
 
 .. figure:: images/data_layers_kepler.png
    :align: center
@@ -26,16 +34,32 @@ astronomical and planetary data sets in it. It also provides:
 
    A map of exoplanets in the Kepler field rendered over background imagery by pywwt.
 
-This package is still under development and functionality is still being added.
-Please do let us know if you try it out and run into any issues (see `Getting
-help`_).
+This package is under active development. If you run into any issues or would
+like to see a new feature added, please ask! See the `Getting
+help`_ section below.
+
 
 Quick start
 -----------
 
-The quickest way to see what the pywwt can do is to run some of our example
-Jupyter notebooks in the cloud: open them up `at mybinder.org
-<https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?filepath=basic.ipynb>`_.
+The quickest way to see what the pywwt can do is to try it out live, which you
+can do straight in your browser with our cloud-based Jupyter notebooks. Here
+are some examples:
+
+* `Explore which parts of the sky have been observed by the NASA K2 mission
+  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/first-tutorials/kepler2_fovs.ipynb>`_
+* `Plot earthquake data on the surface of the Earth <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/first-tutorials/planet_layers.ipynb>`_
+* `Animate the motions of the Solar System planets in 3D <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/first-tutorials/solar_system_simulation.ipynb>`_
+
+For more examples or to suggest your own, visit the `pywwt-notebooks
+repository`_ on GitHub.
+
+.. _pywwt-notebooks repository: https://github.com/WorldWideTelescope/pywwt-notebooks
+
+*Note: it is usually fast to launch these notebooks, but if the code has been
+recently updated, you may have to wait a few minutes for the backing software
+images to be rebuilt.*
+
 
 User guide
 ----------
@@ -56,14 +80,29 @@ User guide
    windows
    api
 
+
 Getting help
 ------------
 
-If you run into any issues when using pywwt, please open an issue
-`on its GitHub repository <https://github.com/WorldWideTelescope/pywwt/issues>`_.
+If you run into any issues when using pywwt, please open an issue `in the
+pywwt repository <https://github.com/WorldWideTelescope/pywwt/issues>`_ on
+GitHub. We also encourage you to consider asking a question on `the WWT
+discussion forum`_ site.
+
+.. _the WWT discussion forum: https://wwt-forum.org/
+
 
 Acknowledgments
 ---------------
 
-Work on pywwt is funded through the `American Astronomical Society`_ WorldWide
-Telescope project.
+The AAS WorldWide Telescope (WWT) system, including pywwt, is a `.NET
+Foundation`_ project. Work on WWT and pywwt has been supported by the
+`American Astronomical Society`_ (AAS), the US `National Science Foundation`_
+(grants 1550701_ and 1642446_), the `Gordon and Betty Moore Foundation`_, and
+`Microsoft`_.
+
+.. _National Science Foundation: https://www.nsf.gov/
+.. _1550701: https://www.nsf.gov/awardsearch/showAward?AWD_ID=1550701
+.. _1642446: https://www.nsf.gov/awardsearch/showAward?AWD_ID=1642446
+.. _Gordon and Betty Moore Foundation: https://www.moore.org/
+.. _Microsoft: https://microsoft.com/
