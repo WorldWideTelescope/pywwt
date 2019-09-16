@@ -1,10 +1,14 @@
+import logging
 import sys
 
 from jupyterlab.commands import get_app_info
 from notebook.nbextensions import validate_nbextension
 from notebook.serverextensions import validate_serverextension
 
-if validate_nbextension('pywwt/extension') != []:
+# If there's a problem and we don't provide this, the validate function crashes :-(
+logger = logging.getLogger('')
+
+if validate_nbextension('pywwt/extension', logger=logger) != []:
     print("Issue detected with nbextension")
     sys.exit(1)
 
@@ -14,6 +18,6 @@ if 'pywwt' not in info['extensions'] or 'pywwt' in info['disabled']:
     print("Issue detected with labextension")
     sys.exit(1)
 
-if validate_serverextension('pywwt') != []:
+if validate_serverextension('pywwt', logger=logger) != []:
     print("Issue detected with serverextension")
     sys.exit(1)
