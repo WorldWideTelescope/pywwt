@@ -433,7 +433,11 @@ class TableLayer(HasTraits):
         # (string in isot format, astropy Time, or datetime)
         col = self.table[proposal['value']]
 
-        if (isinstance(col, STR_TYPE)
+        if (all(isinstance(t, datetime) for t in col)
+              or all(isinstance(t, Time) for t in col)):
+            return proposal['value']
+
+        elif (isinstance(col, STR_TYPE)
             or np.issubdtype(col.dtype, NP_STR_TYPE)):
 
             try:
@@ -443,9 +447,6 @@ class TableLayer(HasTraits):
                 raise ValueError('String times must conform to the ISOT'
                                  'standard (YYYY-MM-DD`T`HH:MM:SS:MS)')
 
-        elif (all(isinstance(t, datetime) for t in col)
-              or all(isinstance(t, Time) for t in col)):
-            return proposal['value']
         else:
             raise ValueError('A time column must only have string, '
                              'datetime.datetime, or astropy Time values')
@@ -595,6 +596,26 @@ class TableLayer(HasTraits):
             return
 
         # Convert time column to UTC so WWT displays points at expected times
+        wwt_times = Column(self.table[self.time_att].copy()).tolist()
+        # must specify Column so we can use tolist() on astropy Time columns
+
+        for i, tm in enumerate(wwt_times):
+            if isinstance(tm, datetime):
+                if tm.tzinfo is None:
+                    wwt_times[i] = pytz.utc.localize(tm).isoformat()
+                elif tm.tzinfo == pytz.UTC:
+                    wwt_times[i] = tm.isoformat()
+                else: # has another time zone besides UTC
+                    wwt_times[i] = tm.astimezone(pytz.UTC).isoformat()
+
+            elif isinstance(tm, Time):
+                wwt_times[i] = tm.to_datetime(pytz.UTC).isoformat()
+
+            else: # is an ISOT string
+                utc_tm = Time(tm, format='isot').to_datetime(pytz.UTC)
+                wwt_times[i] = utc_tm.isoformat()
+
+        '''
         col = self.table[self.time_att]
 
         if isinstance(col, datetime):
@@ -606,10 +627,10 @@ class TableLayer(HasTraits):
         else:
             col_list = col.tolist()
             wwt_times = Column(col_list)
+        '''
 
         # Update the table passed to WWT with the new, modified time column
-        wwt_times = Time(wwt_times).isot
-        self.table[TIME_COLUMN_NAME] = wwt_times
+        self.table[TIME_COLUMN_NAME] = Column(wwt_times)
 
         self.parent._send_msg(event='table_layer_update', id=self.id,
                               table=self._table_b64)
