@@ -24,7 +24,6 @@ var ReferenceFramesRadius = {
 };
 
 function wwt_apply_json_message(wwt, msg) {
-console.log(JSON.stringify(msg))
   if (!wwt.hasOwnProperty('annotations')) {
     wwt.annotations = {};
     wwt.layers = {};
@@ -172,8 +171,6 @@ console.log(JSON.stringify(msg))
     case 'set_datetime':
 
       var date = new Date(msg['isot']);
-console.log(date.toLocaleString())
-console.log(date.toUTCString());
 
       stc = wwtlib.SpaceTimeController;
       stc.set_timeRate(1);
@@ -288,7 +285,6 @@ console.log(date.toUTCString());
       layer.set_altUnit(1);
 
       wwt.layers[msg['id']] = layer;
-console.log(msg['event']);
       break;
 
     case 'table_layer_update':
@@ -301,9 +297,6 @@ console.log(msg['event']);
       // Use updateData instead of loadFromString here since updateData also
       // takes care of cache invalidation.
       layer.upadteData(csv, true, true, true)
-
-console.log(msg['event']);
-console.log(JSON.stringify(layer, null, 2));
       break;
 
     case 'table_layer_set':
@@ -334,14 +327,12 @@ console.log(JSON.stringify(layer, null, 2));
         value = msg['value']
       }
       layer["set_" + name](value);
-console.log(msg['event'] + " || " + name + " || " + value);
       break;
 
     case 'table_layer_remove':
 
       var layer = wwt.layers[msg['id']];
       wwtlib.LayerManager.deleteLayerByID(layer.id, true, true);
-console.log(msg['event']);
       break;
 
   }
