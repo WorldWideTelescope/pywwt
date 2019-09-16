@@ -243,7 +243,7 @@ class BaseWWTWidget(HasTraits):
         else:
             raise ValueError('Time must be a datetime or astropy.Time object')
 
-        self._send_msg(event=‘set_datetime’, isot=utc_dt)
+        self._send_msg(event='set_datetime', isot=utc_dt)
 
     def center_on_coordinates(self, coord, fov=60 * u.deg, instant=True):
         """
