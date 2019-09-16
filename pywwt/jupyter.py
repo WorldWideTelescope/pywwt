@@ -37,9 +37,13 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     _model_module = Unicode('pywwt').tag(sync=True)
     _view_module_version = Unicode(VIEW_MODULE_VERSION).tag(sync=True)
     _model_module_version = Unicode(MODEL_MODULE_VERSION).tag(sync=True)
-    _ra = Float(0.0).tag(sync=True)
-    _dec = Float(0.0).tag(sync=True)
-    _fov = Float(60.0).tag(sync=True)
+
+    _ra = Float(0.0).tag(sync=True, wwt=None)
+    _dec = Float(0.0).tag(sync=True, wwt=None)
+    _fov = Float(60.0).tag(sync=True, wwt=None)
+    _datetime = Unicode('2017-03-09T12:30:00').tag(sync=True, wwt=None)
+    # wwt=None tag needed to avoid linkage to 'wwt.settings.set_' type traits
+    # (see _on_trait_change() in core.py)
 
     def __init__(self):
         widgets.DOMWidget.__init__(self)
@@ -67,8 +71,11 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
             return self._dec
         elif field == 'fov':
             return self._fov
+        elif field == 'datetime':
+            return self._datetime
         else:
-            raise ValueError("'field' should be one of: 'ra', 'dec', or 'fov'")
+            raise ValueError("'field' should be one of: 'ra', 'dec', "
+                             "'fov', or 'datetime'")
 
     def _create_image_layer(self, **kwargs):
         """Returns a specialized subclass of ImageLayer that has some extra hooks for
