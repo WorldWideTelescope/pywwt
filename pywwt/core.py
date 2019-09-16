@@ -162,7 +162,7 @@ class BaseWWTWidget(HasTraits):
 
     def get_fov(self):
         """
-        Return the view's current field of view in degrees
+        Return the view's current field of view in degrees.
         """
         return self._get_view_data('fov') * u.deg
 
@@ -210,6 +210,12 @@ class BaseWWTWidget(HasTraits):
             The rate at which time passes (1 meaning real-time)
         """
         self._send_msg(event='resume_time', rate=rate)
+
+    def get_current_time(self):
+        """
+        Return the viewer's current time as an `~astropy.time.Time` object.
+        """
+        return Time(self._get_view_data('datetime'), format='isot')
 
     def set_current_time(self, dt=None):
         """

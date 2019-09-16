@@ -35,6 +35,10 @@ console.log(JSON.stringify(msg))
       return wwt.clearAnnotations();
       break;
 
+    case 'get_datetime':
+      return wwtlib.SpaceTimeController.get_now().toISOString();
+      break;
+
     case 'get_dec':
       return wwt.getDec();
       break;
@@ -167,7 +171,8 @@ console.log(JSON.stringify(msg))
     case 'set_datetime':
 
       var date = new Date(msg['isot']);
-console.log(date);
+console.log(date.toLocaleString())
+console.log(date.toUTCString());
 
       stc = wwtlib.SpaceTimeController;
       stc.set_timeRate(1);
