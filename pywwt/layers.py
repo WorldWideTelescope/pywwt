@@ -26,7 +26,7 @@ from datetime import datetime
 
 from traitlets import HasTraits, validate, observe
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
-from .utils import sanitize_image
+from .utils import sanitize_image, validate_traits
 
 __all__ = ['LayerManager', 'TableLayer', 'ImageLayer']
 
@@ -366,9 +366,12 @@ class TableLayer(HasTraits):
 
     def __init__(self, parent=None, table=None, frame=None, **kwargs):
 
-        # TODO: need to validate reference frame
         self.table = table
-        self.frame = frame
+
+        # Validate frame
+        if frame.lower() not in VALID_FRAMES:
+            raise ValueError('frame should be one of {0}'.format('/'.join(sorted(str(x) for x in VALID_FRAMES))))
+        self.frame = frame.capitalize()
 
         self.parent = parent
         self.id = str(uuid.uuid4())
@@ -398,8 +401,8 @@ class TableLayer(HasTraits):
 
         self.observe(self._on_trait_change, type='change')
 
-        if any(key not in self.trait_names() for key in kwargs):
-            raise KeyError('a key doesn\'t match any layer trait name')
+        # Check that all kwargs are valid -- throws error if not
+        validate_traits(self, kwargs)
 
         super(TableLayer, self).__init__(**kwargs)
 
@@ -898,8 +901,8 @@ class ImageLayer(HasTraits):
 
         self._initialize_layer()
 
-        if any(key not in self.trait_names() for key in kwargs):
-            raise KeyError('a key doesn\'t match any layer trait name')
+        # Check that all kwargs are valid -- throws error if not
+        validate_traits(self, kwargs)
 
         super(ImageLayer, self).__init__(**kwargs)
 
