@@ -70,7 +70,7 @@ with open('README.rst') as f:
 
 setup_args = dict(
     name            = name,
-    description     = 'WorldWide Telescope from Python',
+    description     = 'The AAS WorldWide Telescope from Python',
     long_description = LONG_DESCRIPTION,
     version         = version,
     scripts         = glob(pjoin('scripts', '*')),

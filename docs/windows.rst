@@ -4,7 +4,7 @@ Using the Windows client
 About
 -----
 
-The **pywwt.windows** sub-package includes a Python interface for the Microsoft
+The **pywwt.windows** sub-package includes a Python interface for the AAS
 `WorldWide Telescope <http://www.worldwidetelescope.org/home>`_
 (WWT) Windows client, using the
 `Layer Control API (LCAPI) <https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#load>`_.
@@ -15,7 +15,7 @@ IPython notebook. Most importantly, it enables the passing of data created
 within a Python environment to WWT.
 
 .. note:: The **pywwt** package was originally developed as a client for
-          the Windows WorldWideTelescope application. For now, the API for
+          the Windows WorldWide Telescope application. For now, the API for
           the Windows is identical to that in previous versions, with the
           exception that imports of the ``WWTClient`` class should be
           changed from::

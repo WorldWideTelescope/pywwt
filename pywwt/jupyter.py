@@ -25,7 +25,7 @@ if not PY2:
 @widgets.register
 class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     """
-    A WorldWide Telescope Jupyter widget.
+    An AAS WorldWide Telescope Jupyter widget.
     """
 
     _view_name = Unicode('WWTView').tag(sync=True)

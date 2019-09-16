@@ -38,7 +38,7 @@ class BaseWWTWidget(HasTraits):
     The core class in common to the Qt and Jupyter widgets.
 
     This class provides a common interface to modify settings and interact with
-    WorldWide Telescope.
+    the AAS WorldWide Telescope.
     """
     def __init__(self, **kwargs):
         super(BaseWWTWidget, self).__init__()
