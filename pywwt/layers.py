@@ -4,7 +4,6 @@ import tempfile
 from os import path
 import shutil
 
-import pytz
 import re
 
 if sys.version_info[0] == 2:  # noqa
@@ -26,7 +25,7 @@ from datetime import datetime
 
 from traitlets import HasTraits, validate, observe
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
-from .utils import sanitize_image, validate_traits
+from .utils import sanitize_image, validate_traits, ensure_utc
 
 __all__ = ['LayerManager', 'TableLayer', 'ImageLayer']
 
@@ -707,39 +706,12 @@ class TableLayer(HasTraits):
                                   setting='startDateColumn', value=-1)
             return
 
-        # Convert time column to UTC so WWT displays points at expected times
         wwt_times = Column(self.table[self.time_att].copy()).tolist()
         # must specify Column so we can use tolist() on astropy Time columns
 
+        # Convert time column to UTC so WWT displays points at expected times
         for i, tm in enumerate(wwt_times):
-            if isinstance(tm, datetime):
-                if tm.tzinfo is None:
-                    wwt_times[i] = pytz.utc.localize(tm).isoformat()
-                elif tm.tzinfo == pytz.UTC:
-                    wwt_times[i] = tm.isoformat()
-                else: # has another time zone besides UTC
-                    wwt_times[i] = tm.astimezone(pytz.UTC).isoformat()
-
-            elif isinstance(tm, Time):
-                wwt_times[i] = tm.to_datetime(pytz.UTC).isoformat()
-
-            else: # is an ISOT string
-                utc_tm = Time(tm, format='isot').to_datetime(pytz.UTC)
-                wwt_times[i] = utc_tm.isoformat()
-
-        '''
-        col = self.table[self.time_att]
-
-        if isinstance(col, datetime):
-            wwt_times = Column([t.astimezone(timezone=pytz.UTC).isoformat()
-                                for t in col])
-        elif isinstance(col, Time):
-            wwt_times = Column([t.to_datetime(timezone=pytz.UTC).isot
-                                for t in col])
-        else:
-            col_list = col.tolist()
-            wwt_times = Column(col_list)
-        '''
+            wwt_times[i] = ensure_utc(tm, str_allowed=True)
 
         # Update the table passed to WWT with the new, modified time column
         self.table[TIME_COLUMN_NAME] = Column(wwt_times)
@@ -820,8 +792,6 @@ class TableLayer(HasTraits):
                 value = VALID_LON_UNITS[self._check_lon_unit({'value': value})]
             elif changed['name'] == 'xyz_unit':
                 value = VALID_ALT_UNITS[self._check_xyz_unit({'value': value})]
-            elif isinstance(value, u.Quantity):
-                value = value.value
             elif changed['name'] == 'time_decay':
                 value = value.to(u.day).value
             self.parent._send_msg(event='table_layer_set',

@@ -13,10 +13,10 @@ from .imagery import get_imagery_layers, ImageryLayers
 from .solar_system import SolarSystem
 from .layers import LayerManager
 from .instruments import Instruments
+from .utils import ensure_utc
 
 import json
 import os
-import pytz
 import shutil
 import tempfile
 
@@ -229,21 +229,8 @@ class BaseWWTWidget(HasTraits):
             uses the current time
         """
         # Ensure the object received is a datetime or Time; convert it to UTC
-        if dt is None:
-            utc_dt = datetime.utcnow().astimezone(pytz.UTC).isoformat()
-        elif isinstance(dt, datetime):
-            if dt.tzinfo is None:
-                utc_dt = pytz.utc.localize(dt).isoformat()
-            elif dt.tzinfo == pytz.UTC:
-                utc_dt = dt.isoformat()
-            else:  # has a non-UTC time zone
-                utc_dt = dt.astimezone(pytz.UTC).isoformat()
-        elif isinstance(dt, Time):
-            utc_dt = dt.to_datetime(pytz.UTC).isoformat()
-        else:
-            raise ValueError('Time must be a datetime or astropy.Time object')
-
-        self._send_msg(event='set_datetime', isot=utc_dt)
+        utc_tm = ensure_utc(dt, str_allowed=False)
+        self._send_msg(event='set_datetime', isot=utc_tm)
 
     def center_on_coordinates(self, coord, fov=60 * u.deg, instant=True):
         """
