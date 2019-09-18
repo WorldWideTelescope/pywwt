@@ -1,8 +1,14 @@
+0.7.1
+------------------
+
+- Incorporate time series behavior for data layers; add method that
+  returns current time in the viewer. [#187]
+
 0.7.0 (2019-09-20)
 ------------------
 
 - You can now save your WWT views as interactive figures to be used in journal
-  articles! (Actually, they're just standalone webpages, so they can be used
+  articles! (Actually, they're just standalone web pages, so they can be used
   anywhere you've got a web server.) This feature is new so it will still have
   some rough edges — keep your eyes open for improvements. And the docs haven't
   been written yet :-( [#215, #227]
