@@ -341,11 +341,17 @@ def test_table_setting_serialization():
     assert layer_state['frame'] == 'Earth'
 
     assert 'settings' in layer_state
-    expected_settings = {'lngColumn':'ra', 'raUnits': 'degrees', 'latColumn': 'dec', 'altColumn': 'flux',
-                         'altUnit': None, 'altType': 'distance', 'color': '#aacc00', 'scaleFactor': 14,
-                         'opacity': 0.75, 'plotType': 'square', 'markerScale': 'world', 'showFarSide': True,
-                         'sizeColumn': -1, '_colorMap': 0, 'colorMapColumn': -1,  'xAxisColumn': '',
-                         'yAxisColumn': '', 'zAxisColumn': '', 'cartesianScale': None,
+    expected_settings = {'lngColumn':'ra', 'raUnits': 'degrees',
+                         'latColumn': 'dec', 'altColumn': 'flux',
+                         'timeSeries': False, 'decay': 16 * u.day,
+                         'altUnit': None, 'altType': 'distance',
+                         'color': '#aacc00', 'scaleFactor': 14,
+                         'opacity': 0.75, 'plotType': 'square',
+                         'markerScale': 'world', 'showFarSide': True,
+                         'sizeColumn': -1, '_colorMap': 0,
+                         'colorMapColumn': -1,  'xAxisColumn': '',
+                         'yAxisColumn': '', 'zAxisColumn': '',
+                         'cartesianScale': None,
                          'coordinatesType': 'spherical'}
     assert layer_state['settings'] == expected_settings
 

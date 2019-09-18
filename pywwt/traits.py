@@ -106,11 +106,8 @@ class Color(TraitType):
 
 class ColorWithOpacity(Color):
 
-    def __init__(self, *args, **kwargs):
-        # Confirm that this class created a new instance of its parent, Color
-        self.from_cwo = True
-
     def validate(self, obj, value):
+        self.from_cwo = True
         if isinstance(value, tuple) and len(value) == 4:
             obj.opacity = value[-1]
             value = value[:3]
