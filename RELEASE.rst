@@ -45,6 +45,11 @@ At this point, you can tag the release with::
 
 If you have PGP keys set up, you can sign the tag by also including ``-s``.
 
+If this release is a new minor series (``0.N.0``), create a new branch for point
+releases as well::
+
+    git branch v0.N.x
+
 Now change the versions in the files listed above to the next version - and for
 the ``pywwt/_version.py`` file, change ``final`` to ``dev``. Commit the changes
 with::
