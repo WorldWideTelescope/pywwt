@@ -29,7 +29,7 @@ At this point, if you wish, you can untar the tar file and try installing and
 testing the installation. Once you are satisfied that the release is good
 you can upload the release using twine::
 
-    twine upload pywwt-0.5.1.tar.gz pywwt-0.5.1-py2.py3-none-any.whl
+    twine upload pywwt-*.tar.gz pywwt-*-none-any.whl
 
 If you don't have twine installed, you can get it with ``pip install twine``.
 
