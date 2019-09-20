@@ -29,7 +29,7 @@ At this point, if you wish, you can untar the tar file and try installing and
 testing the installation. Once you are satisfied that the release is good
 you can upload the release using twine::
 
-    twine upload pywwt-0.5.1.tar.gz pywwt-0.5.1-py2.py3-none-any.whl
+    twine upload pywwt-*.tar.gz pywwt-*-none-any.whl
 
 If you don't have twine installed, you can get it with ``pip install twine``.
 
@@ -44,6 +44,11 @@ At this point, you can tag the release with::
     git tag -m v<version> v<version>
 
 If you have PGP keys set up, you can sign the tag by also including ``-s``.
+
+If this release is a new minor series (``0.N.0``), create a new branch for point
+releases as well::
+
+    git branch v0.N.x
 
 Now change the versions in the files listed above to the next version - and for
 the ``pywwt/_version.py`` file, change ``final`` to ``dev``. Commit the changes

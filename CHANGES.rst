@@ -1,12 +1,29 @@
-0.7.0 (unreleased)
+0.7.0 (2019-09-20)
 ------------------
 
-- No changes yet.
+- You can now save your WWT views as interactive figures to be used in journal
+  articles! (Actually, they're just standalone webpages, so they can be used
+  anywhere you've got a web server.) This feature is new so it will still have
+  some rough edges — keep your eyes open for improvements. And the docs haven't
+  been written yet :-( [#215, #227]
 
-0.6.2 (unreleased)
-------------------
+- Relatedly, there is new first-draft support for interactive controls for
+  image layers through the ``image.controls`` meta-property. This will also
+  evolve over the next few releases. [#217]
+
+- Initial support for data layers with Cartesian (XYZ) rather than spherical
+  (lat, lon, alt) coordinates. [#190]
+
+- Fix compatibility with the JupyterLab 1.0.x series. [#216, #219, #221]
 
 - Expose all available imagery layers. [#220]
+
+- Validate coordinate frame names used with tabular data layers. [#195]
+
+- Fix the widget ``reset`` method . [#212]
+
+- Various improvements to CI infrastructure, docs, landing pages, etc. [#218,
+  #225, #228, #229, #230]
 
 0.6.1 (2019-06-10)
 ------------------

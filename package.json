@@ -1,6 +1,6 @@
 {
   "name": "pywwt",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "AAS WorldWide Telescope from Python",
   "keywords": [
     "jupyter",
