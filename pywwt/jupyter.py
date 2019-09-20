@@ -18,6 +18,9 @@ from .jupyter_server import serve_file
 
 __all__ = ['WWTJupyterWidget']
 
+VIEW_MODULE_VERSION = '0.8.0'  # synchronize these with lib/wwt.js
+MODEL_MODULE_VERSION = '0.8.0'
+
 if not PY2:
     dom_listener = DOMListener()
 
@@ -32,8 +35,8 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     _model_name = Unicode('WWTModel').tag(sync=True)
     _view_module = Unicode('pywwt').tag(sync=True)
     _model_module = Unicode('pywwt').tag(sync=True)
-    _view_module_version = Unicode('0.7.0').tag(sync=True)
-    _model_module_version = Unicode('0.7.0').tag(sync=True)
+    _view_module_version = Unicode(VIEW_MODULE_VERSION).tag(sync=True)
+    _model_module_version = Unicode(MODEL_MODULE_VERSION).tag(sync=True)
     _ra = Float(0.0).tag(sync=True)
     _dec = Float(0.0).tag(sync=True)
     _fov = Float(60.0).tag(sync=True)
