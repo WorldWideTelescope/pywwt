@@ -6,6 +6,9 @@
 0.8.0 (2020-04-03)
 ------------------
 
+- Added a ``name`` attribute for table and image layers, and set layer names
+  to unique IDs if not specified. [#235]
+
 - Improve performance when changing size parameters for tabular layers. In these
   cases, the performance is e.g. more than 1000x better for a 50,000 row
   dataset. [#224]

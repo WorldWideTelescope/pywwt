@@ -308,7 +308,7 @@ class TableLayer(HasTraits):
     A layer where the data is stored in an :class:`~astropy.table.Table`
     """
 
-    name = Unicode(help='The name of the layer', allow_none=True)
+    name = Unicode(None, help='The name of the layer', allow_none=True)
 
     coord_type = Unicode('spherical', help='Whether to give the coordinates '
                          'in spherical or rectangular coordinates').tag(wwt='coordinatesType')
@@ -902,7 +902,7 @@ class ImageLayer(HasTraits):
     An image layer.
     """
 
-    name = Unicode(help='The name of the layer', allow_none=True)
+    name = Unicode(None, help='The name of the layer', allow_none=True)
 
     vmin = Float(None, allow_none=True)
     vmax = Float(None, allow_none=True)
