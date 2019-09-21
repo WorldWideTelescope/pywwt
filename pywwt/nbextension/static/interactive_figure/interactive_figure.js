@@ -194,6 +194,7 @@ function loadTableLayer(layerInfo) {
     var onCsvLoad = function (data) {
         wwt_apply_json_message(wwt, {
             event: 'table_layer_create',
+            name: layerInfo['name'],
             frame: layerInfo['frame'],
             id: id,
             table: btoa(data)

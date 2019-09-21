@@ -191,7 +191,7 @@ function wwt_apply_json_message(wwt, msg) {
 
     case 'image_layer_create':
 
-      layer = wwt.loadFits(msg['url']);
+      layer = wwt.loadFitsLayer(msg['url']), msg['name'], true, null);
       layer._stretch_version = 0;
       layer._cmap_version = 0;
 
@@ -270,7 +270,7 @@ function wwt_apply_json_message(wwt, msg) {
       // Get reference frame
       frame = msg['frame']
 
-      layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, 'PyWWT Layer', csv);
+      layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, msg['name'], csv);
       layer.set_referenceFrame(frame);
 
       // Override any guesses

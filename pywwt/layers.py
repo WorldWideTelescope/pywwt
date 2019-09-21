@@ -308,6 +308,8 @@ class TableLayer(HasTraits):
     A layer where the data is stored in an :class:`~astropy.table.Table`
     """
 
+    name = Unicode(help='The name of the layer', allow_none=True)
+
     coord_type = Unicode('spherical', help='Whether to give the coordinates '
                          'in spherical or rectangular coordinates').tag(wwt='coordinatesType')
 
@@ -790,8 +792,9 @@ class TableLayer(HasTraits):
         return not self.size_att or self.size_vmin is None or self.size_vmax is None
 
     def _initialize_layer(self):
-        self.parent._send_msg(event='table_layer_create',
-                              id=self.id, table=self._table_b64, frame=self.frame)
+        self.parent._send_msg(event='table_layer_create', id=self.id,
+                              name=self.name or self.id,
+                              table=self._table_b64, frame=self.frame)
 
     def update_data(self, table=None):
         """
@@ -852,6 +855,7 @@ class TableLayer(HasTraits):
     def _serialize_state(self):
         state = {'id': self.id,
                  'layer_type': 'table',
+                 'name': self.name,
                  'frame': self.frame,
                  'settings': {}}
 
@@ -897,6 +901,8 @@ class ImageLayer(HasTraits):
     """
     An image layer.
     """
+
+    name = Unicode(help='The name of the layer', allow_none=True)
 
     vmin = Float(None, allow_none=True)
     vmax = Float(None, allow_none=True)
@@ -976,8 +982,8 @@ class ImageLayer(HasTraits):
             return proposal['value']
 
     def _initialize_layer(self):
-        self.parent._send_msg(event='image_layer_create',
-                              id=self.id, url=self._image_url)
+        self.parent._send_msg(event='image_layer_create', id=self.id,
+                              name=self.name or self.id, url=self._image_url)
 
     def remove(self):
         """
@@ -1025,6 +1031,7 @@ class ImageLayer(HasTraits):
     def _serialize_state(self):
         state = {'id': self.id,
                  'layer_type': 'image',
+                 'name': self.name,
                  'settings': {}
                  }
 
