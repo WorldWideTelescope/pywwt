@@ -94,7 +94,7 @@ def pytest_unconfigure(config):
         cleanup_qapp()
 
 
-REFERENCE_TIME = datetime(2017, 1, 1, 0, 0, 0, 0)
+REFERENCE_TIME = datetime(2017, 2, 1, 0, 0, 0, 0)
 
 
 @pytest.fixture(scope='session')
