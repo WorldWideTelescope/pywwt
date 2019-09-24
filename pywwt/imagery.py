@@ -103,10 +103,10 @@ class ImageryLayers():
         while short in diction[bandpass]:
             if suffix:
                 suffix += 1
+                short = short[:-1] + str(suffix)
             else:
                 suffix = 1
-
-            short += str(suffix)
+                short += str(suffix)
 
         diction[bandpass][short] = {}
         diction[bandpass][short]['full_name'] = full_layer
