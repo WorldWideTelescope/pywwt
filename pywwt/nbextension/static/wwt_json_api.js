@@ -191,7 +191,7 @@ function wwt_apply_json_message(wwt, msg) {
 
     case 'image_layer_create':
 
-      layer = wwt.loadFitsLayer(msg['url']), msg['name'], true, null);
+      layer = wwt.loadFitsLayer(msg['url'], msg['name'], true, null);
       layer._stretch_version = 0;
       layer._cmap_version = 0;
 
