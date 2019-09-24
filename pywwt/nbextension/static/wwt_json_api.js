@@ -24,7 +24,6 @@ var ReferenceFramesRadius = {
 };
 
 function wwt_apply_json_message(wwt, msg) {
-
   if (!wwt.hasOwnProperty('annotations')) {
     wwt.annotations = {};
     wwt.layers = {};
@@ -34,6 +33,10 @@ function wwt_apply_json_message(wwt, msg) {
 
     case 'clear_annotations':
       return wwt.clearAnnotations();
+      break;
+
+    case 'get_datetime':
+      return wwtlib.SpaceTimeController.get_now().toISOString();
       break;
 
     case 'get_dec':
@@ -47,7 +50,7 @@ function wwt_apply_json_message(wwt, msg) {
     case 'get_fov':
       return wwt.get_fov();
       break;
-	  
+
     case 'load_tour':
       wwt.loadTour(msg['url']);
       break;
@@ -167,9 +170,7 @@ function wwt_apply_json_message(wwt, msg) {
 
     case 'set_datetime':
 
-      var date = new Date(msg['year'], msg['month'], msg['day'],
-                          msg['hour'], msg['minute'], msg['second'],
-                          msg['millisecond']);
+      var date = new Date(msg['isot']);
 
       stc = wwtlib.SpaceTimeController;
       stc.set_timeRate(1);
@@ -179,7 +180,7 @@ function wwt_apply_json_message(wwt, msg) {
     case 'set_viewer_mode':
       // We need to set both the backround and foreground layers
       // otherwise when changing to planet view, there are weird
-      // artifacts due to the fact one of the layes is the sky.
+      // artifacts due to the fact one of the layers is the sky.
       wwt.setBackgroundImageByName(msg['mode']);
       wwt.setForegroundImageByName(msg['mode']);
       break;
@@ -251,7 +252,7 @@ function wwt_apply_json_message(wwt, msg) {
       // Get reference frame
       frame = msg['frame']
 
-      layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, "PyWWT Layer", csv);
+      layer = wwtlib.LayerManager.createSpreadsheetLayer(frame, 'PyWWT Layer', csv);
       layer.set_referenceFrame(frame);
 
       // Override any guesses
@@ -296,7 +297,6 @@ function wwt_apply_json_message(wwt, msg) {
       // Use updateData instead of loadFromString here since updateData also
       // takes care of cache invalidation.
       layer.upadteData(csv, true, true, true)
-
       break;
 
     case 'table_layer_set':
@@ -326,9 +326,7 @@ function wwt_apply_json_message(wwt, msg) {
       } else {
         value = msg['value']
       }
-
       layer["set_" + name](value);
-
       break;
 
     case 'table_layer_remove':

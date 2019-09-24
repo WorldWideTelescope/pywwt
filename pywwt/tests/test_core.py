@@ -59,4 +59,6 @@ def test_color_validation():
 
     with pytest.raises(TraitError) as exc:
         widget.constellation_figure_color = (1, 0, 0, 2)
-    assert exc.value.args[0] == 'color must be a string or a tuple of 3 floats'
+    assert exc.value.args[0] == ('This attribute\'s color must be a string '
+                                 '(a recognized matplotlib color name or hex '
+                                 'code) or an RGB tuple of 3 floats')

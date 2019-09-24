@@ -49,6 +49,9 @@ jobs:
       - bash: python -m pip install .[test,lab] pyopengl
         displayName: Installing PyWWT and dependencies
 
+      - bash: python -c "import pywwt"
+        displayName: Test basic PyWWT importability
+
       - bash: jupyter nbextension list
         displayName: Listing Jupyter Notebook extensions
 

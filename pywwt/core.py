@@ -3,6 +3,7 @@ from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
 from astropy.time import Time
 from astropy.coordinates import SkyCoord
+from datetime import datetime
 
 # We import the trait classes from .traits since we do various customizations
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity
@@ -12,6 +13,7 @@ from .imagery import get_imagery_layers, ImageryLayers
 from .solar_system import SolarSystem
 from .layers import LayerManager
 from .instruments import Instruments
+from .utils import ensure_utc
 
 import json
 import os
@@ -160,7 +162,7 @@ class BaseWWTWidget(HasTraits):
 
     def get_fov(self):
         """
-        Return the view's current field of view in degrees
+        Return the view's current field of view in degrees.
         """
         return self._get_view_data('fov') * u.deg
 
@@ -209,6 +211,12 @@ class BaseWWTWidget(HasTraits):
         """
         self._send_msg(event='resume_time', rate=rate)
 
+    def get_current_time(self):
+        """
+        Return the viewer's current time as an `~astropy.time.Time` object.
+        """
+        return Time(self._get_view_data('datetime'), format='isot')
+
     def set_current_time(self, dt=None):
         """
         Set the viewer time to match the real-world time.
@@ -220,14 +228,9 @@ class BaseWWTWidget(HasTraits):
             astropy :class:`astropy.time.Time` object. If not specified, this
             uses the current time
         """
-        if dt is None:
-            dt = Time.now()
-        if isinstance(dt, Time):
-            dt = dt.datetime
-        self._send_msg(event='set_datetime',
-                       year=dt.year, month=dt.month, day=dt.day,
-                       hour=dt.hour, minute=dt.minute, second=dt.second,
-                       millisecond=int(dt.microsecond / 1000.))
+        # Ensure the object received is a datetime or Time; convert it to UTC
+        utc_tm = ensure_utc(dt, str_allowed=False)
+        self._send_msg(event='set_datetime', isot=utc_tm)
 
     def center_on_coordinates(self, coord, fov=60 * u.deg, instant=True):
         """
@@ -392,7 +395,7 @@ class BaseWWTWidget(HasTraits):
         return sorted(self._available_layers)
 
     foreground = Unicode('Digitized Sky Survey (Color)',
-                         help='The layer to show in the foreground (`str`)').tag(wwt_reset=True)
+                         help='The layer to show in the foreground (`str`)').tag(wwt=None, wwt_reset=True)
 
     @observe('foreground')
     def _on_foreground_change(self, changed):
@@ -409,7 +412,7 @@ class BaseWWTWidget(HasTraits):
             raise TraitError('foreground is not one of the available layers')
 
     background = Unicode('Hydrogen Alpha Full Sky Map',
-                         help='The layer to show in the background (`str`)').tag(wwt_reset=True)
+                         help='The layer to show in the background (`str`)').tag(wwt=None, wwt_reset=True)
 
     @observe('background')
     def _on_background_change(self, changed):
@@ -426,7 +429,8 @@ class BaseWWTWidget(HasTraits):
             raise TraitError('background is not one of the available layers')
 
     foreground_opacity = Float(0.8, help='The opacity of the foreground layer '
-                                         '(`float`)').tag(wwt_reset=True)
+                                         '(`float`)').tag(wwt=None,
+                                                          wwt_reset=True)
 
     @observe('foreground_opacity')
     def _on_foreground_opacity_change(self, changed):
@@ -502,7 +506,7 @@ class BaseWWTWidget(HasTraits):
     @property
     def instruments(self):
         """
-        Instruments available for use in `add_fov`
+        A list of instruments available for use in `add_fov`.
         """
         return self._instruments
 
@@ -566,14 +570,14 @@ class BaseWWTWidget(HasTraits):
     def save_as_html_bundle(self, dest, title=None, max_width=None, max_height=None):
         """
         Save the current view as a web page with supporting files.
-        
+
         This feature is currently under development, so not all
         settings/features that can be set in pyWWT will be saved
-        
+
         Parameters
         ----------
         dest : `str`
-            The path to output the bundle to. The path must represent a 
+            The path to output the bundle to. The path must represent a
             directory (which will be created if it does not exist) or a zip file.
         title : `str`, optional
             The desired title for the HTML page. If blank, a generic title will be used.
@@ -595,7 +599,7 @@ class BaseWWTWidget(HasTraits):
             if not os.path.exists(dest):
                 os.makedirs(os.path.abspath(dest))
             figure_dir = dest
-			
+
         nbexten_dir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
         fig_src_dir = os.path.join(nbexten_dir, 'interactive_figure')
         shutil.copy(os.path.join(fig_src_dir, "index.html"), figure_dir)

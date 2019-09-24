@@ -255,10 +255,11 @@ class WWTQtClient(BaseWWTWidget):
         return self.widget._run_js("wwt_apply_json_message(wwt, {0});".format(msg), asynchronous=asynchronous)
 
     def _get_view_data(self, field):
-        if field in ['ra', 'dec', 'fov']:
+        if field in ['ra', 'dec', 'fov', 'datetime']:
             return self._send_msg(event='get_'+field, asynchronous=False)
         else:
-            raise ValueError("'field' should be one of: 'ra', 'dec', or 'fov'")
+            raise ValueError("'field' should be one of: 'ra', 'dec', "
+                             "'fov', or 'datetime'")
 
     def _serve_file(self, filename, extension=''):
         return self._data_server.serve_file(filename, extension=extension)

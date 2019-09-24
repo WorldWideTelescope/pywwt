@@ -19,10 +19,13 @@ from astropy.io import fits
 from matplotlib.pyplot import cm
 from matplotlib.colors import Colormap
 from astropy import units as u
+from astropy.table import Column
+from astropy.time import Time, TimeDelta
+from datetime import datetime
 
 from traitlets import HasTraits, validate, observe
-from .traits import Any, Unicode, Float, Color, Bool, to_hex
-from .utils import sanitize_image, validate_traits
+from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
+from .utils import sanitize_image, validate_traits, ensure_utc
 
 __all__ = ['LayerManager', 'TableLayer', 'ImageLayer']
 
@@ -33,7 +36,6 @@ VALID_FRAMES = ['sky', 'ecliptic', 'galactic', 'sun', 'mercury', 'venus',
 VALID_LON_UNITS = {u.deg: 'degrees',
                    u.hour: 'hours',
                    u.hourangle: 'hours'}
-
 
 # NOTE: for cartesian coordinates, we can also allow custom units
 VALID_ALT_UNITS = {u.m: 'meters',
@@ -54,10 +56,19 @@ VALID_MARKER_SCALES = ['screen', 'world']
 
 VALID_STRETCHES = ['linear', 'log', 'power', 'sqrt', 'histeq']
 
+# Save string types for validating ISOT strings in time series tables
+if sys.version_info[0] == 2:
+    STR_TYPE = basestring
+    NP_STR_TYPE = np.string_
+else:
+    STR_TYPE = str
+    NP_STR_TYPE = np.unicode_
+
 # The following are columns that we add dynamically and internally, so we need
 # to make sure they have unique names that won't clash with existing columns
 SIZE_COLUMN_NAME = str(uuid.uuid4())
 CMAP_COLUMN_NAME = str(uuid.uuid4())
+TIME_COLUMN_NAME = str(uuid.uuid4())
 
 
 def guess_lon_lat_columns(colnames):
@@ -135,7 +146,8 @@ def pick_unit_if_available(unit, valid_units):
 
 def csv_table_win_newline(table):
     '''
-    Helper function to get Astropy tables as ASCII CSV with Windows line endings
+    Helper function to get Astropy tables as ASCII CSV with Windows line
+    endings
     '''
     s = StringIO()
     table.write(s, format='ascii.basic', delimiter=',', comment=False)
@@ -203,7 +215,8 @@ class LayerManager(object):
         frame = frame.capitalize()
 
         if table is not None:
-            layer = TableLayer(self._parent, table=table, frame=frame, **kwargs)
+            layer = TableLayer(self._parent, table=table,
+                               frame=frame, **kwargs)
         else:
             # NOTE: in future we may allow different arguments such as e.g.
             # orbit=, hence why we haven't made this a positional argument.
@@ -215,8 +228,8 @@ class LayerManager(object):
         """
         Deprecated, use ``add_table_layer`` instead.
         """
-        warnings.warn('add_data_layer has been deprecated, use add_table_layer '
-                      'instead', DeprecationWarning)
+        warnings.warn('add_data_layer has been deprecated, use '
+                      'add_table_layer instead', DeprecationWarning)
         return self.add_table_layer(*args, **kwargs)
 
     def _add_layer(self, layer):
@@ -277,48 +290,94 @@ class TableLayer(HasTraits):
 
     # Attributes for spherical coordinates
 
-    lon_att = Unicode(help='The column to use for the longitude').tag(wwt='lngColumn')
-    lon_unit = Any(help='The units to use for longitude').tag(wwt='raUnits')
-    lat_att = Unicode(help='The column to use for the latitude').tag(wwt='latColumn')
+    lon_att = Unicode(help='The column to use for the longitude '
+                      '(`str`)').tag(wwt='lngColumn')
+    lon_unit = Any(help='The units to use for longitude '
+                   '(:class:`~astropy.units.Unit`)').tag(wwt='raUnits')
+    lat_att = Unicode(help='The column to use for the latitude '
+                      '(`str`)').tag(wwt='latColumn')
 
-    alt_att = Unicode(help='The column to use for the altitude').tag(wwt='altColumn')
-    alt_unit = Any(help='The units to use for the altitude').tag(wwt='altUnit')
-    alt_type = Unicode(help='The type of altitude').tag(wwt='altType')
+    alt_att = Unicode(help='The column to use for the altitude '
+                      '(`str`)').tag(wwt='altColumn')
+    alt_unit = Any(help='The units to use for the altitude '
+                   '(:class:`~astropy.units.Unit`)').tag(wwt='altUnit')
+    alt_type = Unicode(help='The type of altitude (`str`)').tag(wwt='altType')
 
     # Attributes for cartesian coordinates
 
-    x_att = Unicode(help='The column to use for the x coordinate').tag(wwt='xAxisColumn')
-    y_att = Unicode(help='The column to use for the y coordinate').tag(wwt='yAxisColumn')
-    z_att = Unicode(help='The column to use for the z coordinate').tag(wwt='zAxisColumn')
-    xyz_unit = Any(help='The units to use for the x/y/z positions').tag(wwt='cartesianScale')
+    x_att = Unicode(help='The column to use for the x '
+                    'coordinate').tag(wwt='xAxisColumn')
+    y_att = Unicode(help='The column to use for the y '
+                    'coordinate').tag(wwt='yAxisColumn')
+    z_att = Unicode(help='The column to use for the z '
+                    'coordinate').tag(wwt='zAxisColumn')
+    xyz_unit = Any(help='The units to use for the x/y/z '
+                   'positions').tag(wwt='cartesianScale')
 
-    # NOTE: we deliberately don't link size_att to sizeColumn because we need to
-    # compute the sizes ourselves based on the min/max and then use the
+    # NOTE: we deliberately don't link size_att to sizeColumn because we need
+    # to compute the sizes ourselves based on the min/max and then use the
     # resulting column.
-    size_att = Unicode(help='The column to use for the size')
-    size_vmin = Float(None, allow_none=True)
-    size_vmax = Float(None, allow_none=True)
+    size_att = Unicode(help='The column to use for the marker size '
+                       '(`str`)').tag(wwt=None)
+    size_vmin = Float(None, help='The minimum point size. '
+                      'Found automagically once size_att is set '
+                      '(`float`)', allow_none=True).tag(wwt=None)
+    size_vmax = Float(None, help='The maximum point size. '
+                      'Found automagically once size_att is set '
+                      '(`float`)', allow_none=True).tag(wwt=None)
 
     # NOTE: we deliberately don't link cmap_att to colorMapColumn because we
-    # need to compute the colors ourselves based on the min/max and then use the
-    # resulting column.
-    cmap_att = Unicode(help='The column to use for the colormap')
-    cmap_vmin = Float(None, allow_none=True)
-    cmap_vmax = Float(None, allow_none=True)
-    cmap = Any(cm.viridis, help='The Matplotlib colormap')
+    # need to compute the colors ourselves based on the min/max and then use
+    # the resulting column.
+    cmap_att = Unicode(help='The column to use for the colormap '
+                       '(`str`)').tag(wwt=None)
+    cmap_vmin = Float(None, help='The minimum level of the colormap. Found '
+                      'automagically once cmap_att is set (`float`)',
+                      allow_none=True).tag(wwt=None)
+    cmap_vmax = Float(None, help='The maximum level of the colormap. Found '
+                      'automagically once cmap_att is set (`float`)',
+                      allow_none=True).tag(wwt=None)
+    cmap = Any(cm.viridis, help='The Matplotlib colormap '
+               '(:class:`matplotlib.colors.ListedColormap`)').tag(wwt=None)
 
     # Visual attributes
 
-    size_scale = Float(10, help='The factor by which to scale the size of the points').tag(wwt='scaleFactor')
-    color = Color('white', help='The color of the markers').tag(wwt='color')
-    opacity = Float(1, help='The opacity of the markers').tag(wwt='opacity')
+    size_scale = Float(10, help='The factor by which to scale the size '
+                       'of the points (`float`)').tag(wwt='scaleFactor')
+    color = Color('white', help='The color of the markers '
+                  '(`str` or `tuple`)').tag(wwt='color')
+    opacity = Float(1, help='The opacity of the markers '
+                    '(`str`)').tag(wwt='opacity')
 
-    marker_type = Unicode('gaussian', help='The type of marker').tag(wwt='plotType')
-    marker_scale = Unicode('screen', help='Whether the scale is defined in '
-                           'world or pixel coordinates').tag(wwt='markerScale')
+    marker_type = Unicode('gaussian', help='The type of marker '
+                          '(`str`)').tag(wwt='plotType')
+    marker_scale = Unicode('screen', help='Whether the scale is '
+                           'defined in world or pixel coordinates '
+                           '(`str`)').tag(wwt='markerScale')
 
-    far_side_visible = Bool(False, help='Whether markers on the far side are '
-                            'visible').tag(wwt='showFarSide')
+    far_side_visible = Bool(False, help='Whether markers on the far side '
+                            'of a 3D object are visible '
+                            '(`bool`)').tag(wwt='showFarSide')
+
+    # NOTE: we deliberately don't link time_att to startDateColumn here
+    # because we need to compute a new times column based on time_att before
+    # passing the result on to WWT
+    time_att = Unicode(help='The column to use for time (`str`)').tag(wwt=None)
+    time_series = Bool(False, help='Whether the layer contains time series '
+                       'elements (`bool`)').tag(wwt='timeSeries')
+    time_decay = AstropyQuantity(16 * u.day, help='How long a time series '
+                                 'point takes to fade away after appearing (0 '
+                                 'if never) '
+                                 '(:class:`~astropy.units.Quantity`)'
+                                 ).tag(wwt='decay')
+
+    # TODO: support:
+    # xAxisColumn
+    # yAxisColumn
+    # zAxisColumn
+    # xAxisReverse
+    # yAxisReverse
+    # zAxisReverse
 
     def __init__(self, parent=None, table=None, frame=None, **kwargs):
 
@@ -345,10 +404,15 @@ class TableLayer(HasTraits):
         self._on_trait_change({'name': 'color', 'new': self.color})
         self._on_trait_change({'name': 'opacity', 'new': self.opacity})
         self._on_trait_change({'name': 'marker_type', 'new': self.marker_type})
-        self._on_trait_change({'name': 'marker_scale', 'new': self.marker_scale})
-        self._on_trait_change({'name': 'far_side_visible', 'new': self.far_side_visible})
+        self._on_trait_change({'name': 'marker_scale',
+                               'new': self.marker_scale})
+        self._on_trait_change({'name': 'far_side_visible',
+                               'new': self.far_side_visible})
         self._on_trait_change({'name': 'size_att', 'new': self.size_att})
         self._on_trait_change({'name': 'cmap_att', 'new': self.cmap_att})
+        self._on_trait_change({'name': 'time_att', 'new': self.time_att})
+        self._on_trait_change({'name': 'time_series', 'new': self.time_series})
+        self._on_trait_change({'name': 'time_decay', 'new': self.time_decay})
 
         self.observe(self._on_trait_change, type='change')
 
@@ -420,6 +484,37 @@ class TableLayer(HasTraits):
             raise ValueError('alt_type should be one of {0}'.format('/'.join(str(x) for x in VALID_ALT_TYPES)))
 
 
+    @validate('time_att')
+    def _check_time_att(self, proposal):
+        # Parse the time_att column and make sure it's in the proper format
+        # (string in isot format, astropy Time, or datetime)
+        col = self.table[proposal['value']]
+
+        if (all(isinstance(t, datetime) for t in col)
+              or all(isinstance(t, Time) for t in col)):
+            return proposal['value']
+
+        elif (isinstance(col, STR_TYPE)
+            or np.issubdtype(col.dtype, NP_STR_TYPE)):
+
+            try:
+                Time(col, format='isot')
+                return proposal['value']
+            except ValueError:
+                raise ValueError('String times must conform to the ISOT'
+                                 'standard (YYYY-MM-DD`T`HH:MM:SS:MS)')
+
+        else:
+            raise ValueError('A time column must only have string, '
+                             'datetime.datetime, or astropy Time values')
+
+    @validate('time_decay')
+    def _check_decay(self, proposal):
+        if proposal['value'].unit.physical_type == 'time':
+            return proposal['value']
+        else:
+            raise ValueError('time_decay should be in units of time')
+
     @observe('alt_att')
     def _on_alt_att_change(self, *value):
         # Check if we can set the unit of the altitude automatically
@@ -430,9 +525,9 @@ class TableLayer(HasTraits):
         if unit in VALID_ALT_UNITS:
             self.alt_unit = unit
         elif unit is not None:
-            warnings.warn('Column {0} has units of {1} but this is not a valid '
-                          'unit of altitude - set the unit directly with '
-                          'alt_unit'.format(self.alt_att, unit), UserWarning)
+            warnings.warn('Column {0} has units of {1} but this is not a valid'
+                          ' unit of altitude - set the unit directly with'
+                          ' alt_unit'.format(self.alt_att, unit), UserWarning)
 
     @observe('lon_att')
     def _on_lon_att_change(self, *value):
@@ -602,6 +697,32 @@ class TableLayer(HasTraits):
         self.parent._send_msg(event='table_layer_set', id=self.id,
                               setting='colorMapColumn', value=CMAP_COLUMN_NAME)
 
+
+    @observe('time_att')
+    def _on_time_att_change(self, *value):
+
+        if len(self.time_att) == 0 or self.time_series == False:
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='startDateColumn', value=-1)
+            return
+
+        wwt_times = Column(self.table[self.time_att].copy()).tolist()
+        # must specify Column so we can use tolist() on astropy Time columns
+
+        # Convert time column to UTC so WWT displays points at expected times
+        for i, tm in enumerate(wwt_times):
+            wwt_times[i] = ensure_utc(tm, str_allowed=True)
+
+        # Update the table passed to WWT with the new, modified time column
+        self.table[TIME_COLUMN_NAME] = Column(wwt_times)
+
+        self.parent._send_msg(event='table_layer_update', id=self.id,
+                              table=self._table_b64)
+
+        self.parent._send_msg(event='table_layer_set', id=self.id,
+                              setting='startDateColumn',
+                              value=TIME_COLUMN_NAME)
+
     @property
     def _table_b64(self):
 
@@ -657,11 +778,11 @@ class TableLayer(HasTraits):
             self._manager.remove_layer(self)
 
     def _on_trait_change(self, changed):
-        # This method gets called anytime a trait gets changed. Since this class
-        # gets inherited by the Jupyter widgets class which adds some traits of
-        # its own, we only want to react to changes in traits that have the wwt
-        # metadata attribute (which indicates the name of the corresponding WWT
-        # setting).
+        # This method gets called anytime a trait gets changed. Since this
+        # class gets inherited by the Jupyter widgets class which adds some
+        # traits of its own, we only want to react to changes in traits
+        # that have the wwt metadata attribute (which indicates the name of
+        # the corresponding WWT setting).
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         if wwt_name is not None:
             value = changed['new']
@@ -671,6 +792,8 @@ class TableLayer(HasTraits):
                 value = VALID_LON_UNITS[self._check_lon_unit({'value': value})]
             elif changed['name'] == 'xyz_unit':
                 value = VALID_ALT_UNITS[self._check_xyz_unit({'value': value})]
+            elif changed['name'] == 'time_decay':
+                value = value.to(u.day).value
             self.parent._send_msg(event='table_layer_set',
                                   id=self.id,
                                   setting=wwt_name,
@@ -742,8 +865,9 @@ class ImageLayer(HasTraits):
         self._manager = None
         self._removed = False
 
-        # Transform the image so that it is always acceptable to WWT (Equatorial,
-        # TAN projection, double values) and write out to a temporary file
+        # Transform the image so that it is always acceptable to WWT
+        # (Equatorial, TAN projection, double values) and write out to a
+        # temporary file
         self._sanitized_image = tempfile.mktemp()
         sanitize_image(image, self._sanitized_image)
 
@@ -751,7 +875,8 @@ class ImageLayer(HasTraits):
         # For now we assume that image is a filename, but we could do more
         # detailed checks and reproject on-the-fly for example.
 
-        self._image_url = self.parent._serve_file(self._sanitized_image, extension='.fits')
+        self._image_url = self.parent._serve_file(self._sanitized_image,
+                                                  extension='.fits')
 
         # Default the image rendering parameters. Because of the way the image
         # loading works in WWT, we may end up with messages being applied out
@@ -809,11 +934,11 @@ class ImageLayer(HasTraits):
                                       vmin=self.vmin, vmax=self.vmax,
                                       version=self._stretch_version)
 
-        # This method gets called anytime a trait gets changed. Since this class
-        # gets inherited by the Jupyter widgets class which adds some traits of
-        # its own, we only want to react to changes in traits that have the wwt
-        # metadata attribute (which indicates the name of the corresponding WWT
-        # setting).
+        # This method gets called anytime a trait gets changed. Since this
+        # class gets inherited by the Jupyter widgets class which adds some
+        # traits of its own, we only want to react to changes in traits
+        # that have the wwt metadata attribute (which indicates the name of
+        # the corresponding WWT setting).
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         if wwt_name is not None:
             self.parent._send_msg(event='image_layer_set',
