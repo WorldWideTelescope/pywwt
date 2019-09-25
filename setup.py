@@ -5,6 +5,7 @@
 # Distributed under the terms of the Modified BSD License.
 
 from __future__ import print_function
+import io
 import os
 from glob import glob
 from os.path import join as pjoin
@@ -65,7 +66,7 @@ cmdclass['jsdeps'] = combine_commands(
     ensure_targets(jstargets),
 )
 
-with open('README.rst') as f:
+with io.open('README.rst', encoding='utf_8') as f:
     LONG_DESCRIPTION = f.read()
 
 setup_args = dict(
