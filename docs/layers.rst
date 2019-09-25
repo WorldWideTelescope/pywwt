@@ -11,7 +11,7 @@ used to show image-based data on the celestial sphere.
 
 The main layer type for point-data at the moment is
 :class:`~pywwt.layers.TableLayer`. This layer type can be created using an
-`astropy <http://docs.astropy.org/en/stable/table/index.html>`_
+`astropy <http://docs.astropy.org/en/stable/table/index.html>`__
 :class:`~astropy.table.Table` as well as a coordinate frame, which can be e.g.
 ``'Sky'`` or the name of one of the planets or satellites. The main layer type
 for images is :class:`~pywwt.layers.ImageLayer`.
@@ -93,8 +93,8 @@ and the unit for the coordinates can be set with::
 
     >>> layer.xyz_unit = 'au'
 
-Data settings
--------------
+Editing data settings
+---------------------
 
 There are several settings that can be used to fine-tune the interpretation of
 the data. First, we can set how to interpret the 'altitude'::
@@ -112,7 +112,7 @@ It is also possible to specify the units to use for the altitude::
     >>> from astropy import units as u
     >>> layer.alt_unit = u.km
 
-This should be astropy :class:`~astropy.units.Unit` and should be one of
+This should be an astropy :class:`~astropy.units.Unit` and should be one of
 ``u.m``, ``u.km``, ``u.au``, ``u.lyr``, ``u.pc``, ``u.Mpc``,
 ``u.imperial.foot``, or ``u.imperial.mile``. It is also possible to pass a
 string provided that when passed to :class:`~astropy.units.Unit` this returns
@@ -125,8 +125,44 @@ Finally, it is possible to set the units for the longitude::
 The valid values are ``u.degree`` and ``u.hourangle`` (or simply ``u.hour``) or
 their string equivalents.
 
-Visual attributes
------------------
+Enabling time series attributes
+-------------------------------
+
+If your table has a column of times, you can animate your data by activating 
+the time series attribute and specifying the proper column::
+
+    >>> layer.time_series = True
+    >>> layer.time_att = 'time'
+
+(Please note that time columns must contain 
+`astropy <http://docs.astropy.org/en/stable/time/index.html>`__
+:class:`~astropy.time.Time` objects, :class:`~datetime.datetime` objects,  or 
+`ISOT  
+<https://docs.astropy.org/en/stable/api/astropy.time.TimeISOT.html#astropy.time.
+TimeISOT>`_ compliant strings.)
+
+Once the time in the viewer matches an object's stated time in the table, its
+corresponding point will pop into view. See :ref:`views` for more information
+on how to control time in the viewer.
+
+By default, time series points disappear 16 days (viewer time, not necessarily
+real time) after they pop up. You can adjust their decay time using :class:`~astropy.units.Quantity` objects::
+
+    >>> layer.time_decay = 2 * u.hour
+    
+To allow time series-enabled points to remain visible forever after they first
+appear, set :attr:`~pywwt.layers.TableLayer.time_decay` equal to zero (still
+remembering to use units).
+
+.. note:: Limitations of WWT's current date calculation algorithm for time 
+          series layers cause decreasing precision in displaying points as
+          their dates move away from 2010. For a year like 2019, points within 
+          a few seconds of each other appear simultaneously. The same is true 
+          for points within a minute of each other for a year like 2110. Points 
+          with offsets on the order of days or more are largely unaffected.
+
+Choosing visual attributes
+--------------------------
 
 There are a number of settings to control the visual appearance of a layer.
 First off, the points can be made larger or smaller by changing::
@@ -191,8 +227,8 @@ you can modify the limits, stretch, and opacity using::
     >>> layer.stretch = 'log'
     >>> layer.opacity = 0.5
 
-Listing layers and removing layers
-----------------------------------
+Listing and removing layers
+---------------------------
 
 You can list the layers present in the visualization by doing::
 
