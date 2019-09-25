@@ -46,13 +46,14 @@ The quickest way to see what the pywwt can do is to try it out live, which you
 can do straight in your browser with our cloud-based Jupyter notebooks. Here
 are some examples:
 
-* `Explore which parts of the sky have been observed by the NASA K2 mission
-  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/first-tutorials/kepler2_fovs.ipynb>`_
-* `Plot earthquake data on the surface of the Earth <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/first-tutorials/planet_layers.ipynb>`_
-* `Animate the motions of the Solar System planets in 3D <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/first-tutorials/solar_system_simulation.ipynb>`_
+* `Plot earthquake data on the surface of the Earth
+  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/first-tutorials/planet_layers.ipynb>`_
+* `Load and manipulate a FITS image against multiple all-sky surveys
+  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/video-tutorials/fits_video.ipynb>`__
 
-For more examples or to suggest your own, visit the `pywwt-notebooks
-repository`_ on GitHub.
+To browse all interactive example notebooks, go to `our index page
+<http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/>`__.
+To suggest your own, visit the `pywwt-notebooks repository`_ on GitHub.
 
 .. _pywwt-notebooks repository: https://github.com/WorldWideTelescope/pywwt-notebooks
 
