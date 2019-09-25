@@ -134,12 +134,12 @@ provided is a :class:`~datetime.datetime` or an
     >>> my_time = Time('2017-03-09')
     >>> wwt.set_current_time(my_time)
     
-(To bring the viewer back to real time, call 
-:meth:`~pywwt.BaseWWTWidget.set_current_time` without an argument.)
+To bring the viewer back to real time, call
+:meth:`~pywwt.BaseWWTWidget.set_current_time` without an argument.
 
 If you're unsure of where in time you've landed, the
 :meth:`~pywwt.BaseWWTWidget.get_current_time` method returns the viewer's 
-current time as an :class:astropy.time.Time object in UTC::
+current time as an :class:`astropy.time.Time` object in UTC::
 
-    >>> wwt.set_current_time(my_time)
+    >>> wwt.get_current_time()
     <Time object: scale='utc' format='isot' value=2019-09-21T08:02:37.696>
