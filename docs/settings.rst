@@ -28,7 +28,7 @@ by the :func:`matplotlib.colors.to_hex` function from Matplotlib::
     >>> wwt.constellation_figure_color = '#D3BC8D'
     >>> wwt.constellation_selection_color = (1, 0, 1)
 
-Numerical settings all take values as Astropy :class:`astropy.units.Quantity`
+Numerical settings all take values as astropy :class:`astropy.units.Quantity`
 objects, which are floating point values with associated units. To demonstrate
 this, let's say you'd like to simulate the celestial view from the top of the
 tallest building in Santiago, Chile. You would then enter::

@@ -119,7 +119,27 @@ You can then resume the passage of time with the
     >>> wwt.play_time()
 
 You can also change the rate of passage of time by passing a ``rate`` argument
-to :meth:`~pywwt.BaseWWTWidget.play_time` - for example to speed things up by
+to :meth:`~pywwt.BaseWWTWidget.play_time` - for example, to speed things up by
 a factor of 10000, use::
 
     >>> wwt.play_time(rate=10000)
+    
+It is also possible to specify a time in the viewer yourself through the 
+:meth:`~pywwt.BaseWWTWidget.set_current_time` method as long as the time
+provided is a :class:`~datetime.datetime` or an
+`astropy <http://docs.astropy.org/en/stable/time/index.html>`_
+:class:`~astropy.time.Time` object::
+
+    >>> from astropy.time import Time
+    >>> my_time = Time('2017-03-09')
+    >>> wwt.set_current_time(my_time)
+    
+(To bring the viewer back to real time, call 
+:meth:`~pywwt.BaseWWTWidget.set_current_time` without an argument.)
+
+If you're unsure of where in time you've landed, the
+:meth:`~pywwt.BaseWWTWidget.get_current_time` method provides a printout of the
+viewer's current time in UTC::
+
+    >>> wwt.set_current_time(my_time)
+    <Time object: scale='utc' format='isot' value=2019-09-21T08:02:37.696>
