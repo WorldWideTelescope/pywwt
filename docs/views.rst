@@ -138,8 +138,8 @@ provided is a :class:`~datetime.datetime` or an
 :meth:`~pywwt.BaseWWTWidget.set_current_time` without an argument.)
 
 If you're unsure of where in time you've landed, the
-:meth:`~pywwt.BaseWWTWidget.get_current_time` method provides a printout of the
-viewer's current time in UTC::
+:meth:`~pywwt.BaseWWTWidget.get_current_time` method returns the viewer's 
+current time as an :class:astropy.time.Time object in UTC::
 
     >>> wwt.set_current_time(my_time)
     <Time object: scale='utc' format='isot' value=2019-09-21T08:02:37.696>

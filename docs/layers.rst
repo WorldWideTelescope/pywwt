@@ -11,7 +11,7 @@ used to show image-based data on the celestial sphere.
 
 The main layer type for point-data at the moment is
 :class:`~pywwt.layers.TableLayer`. This layer type can be created using an
-`astropy <http://docs.astropy.org/en/stable/table/index.html>`_
+`astropy <http://docs.astropy.org/en/stable/table/index.html>`__
 :class:`~astropy.table.Table` as well as a coordinate frame, which can be e.g.
 ``'Sky'`` or the name of one of the planets or satellites. The main layer type
 for images is :class:`~pywwt.layers.ImageLayer`.
@@ -28,8 +28,7 @@ first example. We start off by using `astropy.table
 comma-separated values (CSV) file of the data::
 
     >>> from astropy.table import Table
-    >>> OEC = 
-'https://worldwidetelescope.github.io/pywwt/data/open_exoplanet_catalogue.csv'
+    >>> OEC = 'https://worldwidetelescope.github.io/pywwt/data/open_exoplanet_catalogue.csv'
     >>> table = Table.read(OEC, delimiter=',', format='ascii.basic')
 
 Assuming that you already have either the Qt or Jupyter version of pywwt open
@@ -56,15 +55,13 @@ Be sure to zoom in so that you can see the Earth properly. Next, we use a
 dataset that includes all recorded earthquakes in 2010::
 
     >>> from astropy.table import Table
-    >>> EARTHQUAKES = 
-'https://worldwidetelescope.github.io/pywwt/data/earthquakes_2010.csv'
+    >>> EARTHQUAKES = 'https://worldwidetelescope.github.io/pywwt/data/earthquakes_2010.csv'
     >>> table = Table.read(EARTHQUAKES, delimiter=',', format='ascii.basic')
 
 We can then add the data layer using::
 
     >>> layer = wwt.layers.add_table_layer(table=table, frame='Earth',
-    ...                                    lon_att='longitude', 
-lat_att='latitude')
+    ...                                    lon_att='longitude', lat_att='latitude')
 
 .. image:: images/data_layers_earthquakes.png
    :align: center
@@ -138,19 +135,18 @@ the time series attribute and specifying the proper column::
     >>> layer.time_att = 'time'
 
 (Please note that time columns must contain 
-`astropy <http://docs.astropy.org/en/stable/time/index.html>`_
+`astropy <http://docs.astropy.org/en/stable/time/index.html>`__
 :class:`~astropy.time.Time` objects, :class:`~datetime.datetime` objects,  or 
 `ISOT  
 <https://docs.astropy.org/en/stable/api/astropy.time.TimeISOT.html#astropy.time.
-TimeISOT>`_ compliant strings.)    
+TimeISOT>`_ compliant strings.)
 
 Once the time in the viewer matches an object's stated time in the table, its
 corresponding point will pop into view. See :ref:`views` for more information
 on how to control time in the viewer.
 
-By default, time series points disappear a certain amount of time after they 
-pop up. You can adjust their decay time using :class:`astropy.units.Quantity`
-objects::
+By default, time series points disappear 16 days (viewer time, not necessarily
+real time) after they pop up. You can adjust their decay time using :class:`~astropy.units.Quantity` objects::
 
     >>> layer.time_decay = 2 * u.hour
     
