@@ -7,7 +7,7 @@ import sys
 PY2 = sys.version_info[0] == 2
 
 import ipywidgets as widgets
-from traitlets import Unicode, Float, default, link
+from traitlets import Unicode, Float, default, link, directional_link
 
 if not PY2:
     from ipyevents import Event as DOMListener
@@ -107,60 +107,81 @@ class JupyterImageLayer(ImageLayer):
 
     @property
     def controls(self):
-        from .layers import VALID_STRETCHES
+        from .layers import VALID_STRETCHES, VALID_COLORMAPS
 
         if self._controls is not None:
             return self._controls
 
         opacity = widgets.FloatSlider(
-            description = 'Opacity:',
-            value = self.opacity,
-            min = 0,
-            max = 1,
-            readout = False,
+            description='Opacity:',
+            value=self.opacity,
+            min=0,
+            max=1,
+            readout=False,
+            step=0.01,
+            layout={'width': '200px'}
         )
-        link((opacity, 'value'), (self, 'opacity'))
+        link((self, 'opacity'), (opacity, 'value'))
 
         stretch = widgets.Dropdown(
-            description = 'Stretch:',
-            options = VALID_STRETCHES,
-            value = self.stretch,
+            description='Stretch:',
+            options=VALID_STRETCHES,
+            value=self.stretch,
+            layout={'width': '200px'}
         )
-        link((stretch, 'value'), (self, 'stretch'))
+        link((self, 'stretch'), (stretch, 'value'))
 
-        double_width = widgets.Layout(width='600px')
+        colormap = widgets.Dropdown(
+            description='Colormap:',
+            options=VALID_COLORMAPS,
+            value=self.cmap.name,
+            layout={'width': '200px'}
+        )
+        directional_link((colormap, 'label'), (self, 'cmap'))
+        directional_link((self, 'cmap'), (colormap, 'label'), lambda x: x.name)
 
         vrange = widgets.FloatRangeSlider(
-            description = 'Fine min/max:',
-            value = [self.vmin, self.vmax],
-            min = self._data_min,
-            max = self._data_max,
-            readout = True,
-            layout = double_width,
+            description='Fine min/max:',
+            value=[self.vmin, self.vmax],
+            min=self._data_min,
+            max=self._data_max,
+            readout=True,
+            layout={'width': '600px'},
+            step=(self.vmax - self.vmin) / 100,
+            format='.3g'
         )
 
         # Linkage must be manual since vrange uses a pair of values whereas we
         # have two separate traitlets.
         vrange.observe(self._vrange_slider_updated, names=['value'])
+
         def update_vrange(change):
             # Note: when this function is called, these values are indeed updated.
             vrange.value = (self.vmin, self.vmax)
+
         self.observe(update_vrange, names=['vmin', 'vmax'])
 
+        def update_step(change):
+            vrange.step = (vrange.max - vrange.min) / 100
+
+        vrange.observe(update_step, names=['min', 'max'])
+
         coarse_min = widgets.FloatText(
-            description = 'Coarse min:',
-            value = self._data_min,
+            description='Coarse min:',
+            value=self._data_min,
+            layout={'width': '300px'}
         )
         link((coarse_min, 'value'), (vrange, 'min'))
 
         coarse_max = widgets.FloatText(
-            description = 'Coarse max:',
-            value = self._data_max,
+            description='Coarse max:',
+            value=self._data_max,
+            layout={'width': '300px'}
         )
         link((coarse_max, 'value'), (vrange, 'max'))
 
         self._controls = widgets.VBox([
-            widgets.HBox([opacity, stretch]),
+            widgets.HBox([colormap, stretch, opacity]),
             widgets.HBox([coarse_min, coarse_max]),
             vrange,
         ])

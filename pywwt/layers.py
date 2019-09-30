@@ -20,9 +20,10 @@ from matplotlib.pyplot import cm
 from matplotlib.colors import Colormap
 from astropy import units as u
 from astropy.table import Column
-from astropy.time import Time, TimeDelta
+from astropy.time import Time
 from datetime import datetime
 
+from ipywidgets import HBox, Dropdown, FloatText, FloatSlider, link
 from traitlets import HasTraits, validate, observe
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
 from .utils import sanitize_image, validate_traits, ensure_utc
@@ -57,8 +58,8 @@ VALID_MARKER_SCALES = ['screen', 'world']
 VALID_STRETCHES = ['linear', 'log', 'power', 'sqrt', 'histeq']
 
 VALID_COLORMAPS = ['viridis', 'plasma', 'inferno', 'magma', 'cividis',
-                   'greys', 'purples', 'blues', 'greens', 'oranges', 'reds',
-                   'rdylbu']
+                   'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+                   'RdYlBu']
 
 # Save string types for validating ISOT strings in time series tables
 if sys.version_info[0] == 2:
@@ -861,7 +862,7 @@ class ImageLayer(HasTraits):
     vmax = Float(None, allow_none=True)
     stretch = Unicode('linear')
     opacity = Float(1, help='The opacity of the image').tag(wwt='opacity')
-    cmap = Any(cm.Greys, help='The Matplotlib colormap '
+    cmap = Any(cm.viridis, help='The Matplotlib colormap '
                '(:class:`matplotlib.colors.ListedColormap`)').tag(wwt=None)
 
     def __init__(self, parent=None, image=None, **kwargs):
@@ -893,6 +894,7 @@ class ImageLayer(HasTraits):
         # loading works in WWT, we may end up with messages being applied out
         # of order (see notes in image_layer_stretch in wwt_json_api.js)
         self._stretch_version = 0
+        self._cmap_version = 0
 
         data = fits.getdata(self._sanitized_image)
         self._data_min, self.vmin, self.vmax, self._data_max = \
@@ -909,7 +911,7 @@ class ImageLayer(HasTraits):
         # automagically going forward.
         self._on_trait_change({'name': 'vmin', 'new': self.vmin})
         self._on_trait_change({'name': 'opacity', 'new': self.opacity})
-        self._on_trait_change({'name': 'cmap', 'new': self.cmap})
+        self._on_cmap_change()
 
         self.observe(self._on_trait_change, type='change')
 
@@ -924,13 +926,13 @@ class ImageLayer(HasTraits):
     def _check_cmap(self, proposal):
         if isinstance(proposal['value'], str):
             if proposal['value'] not in VALID_COLORMAPS:
-                raise ValueError('Colormap should be one of ' + '/'.join(VALID_COLORMAPS))
+                raise ValueError('Colormap should be one of ' + '/'.join(VALID_COLORMAPS) + ' (got {0})'.format(proposal['value']))
             return cm.get_cmap(proposal['value'])
         elif not isinstance(proposal['value'], Colormap):
             raise TypeError('cmap should be set to a Matplotlib colormap')
         else:
             if proposal['value'].name not in VALID_COLORMAPS:
-                raise ValueError('Colormap should be one of ' + ', '.join(VALID_COLORMAPS))
+                raise ValueError('Colormap should be one of ' + ', '.join(VALID_COLORMAPS) + ' (got {0})'.format(proposal['value'].name))
             return proposal['value']
 
     def _initialize_layer(self):
@@ -950,10 +952,12 @@ class ImageLayer(HasTraits):
 
     @observe('cmap')
     def _on_cmap_change(self, *value):
-        self.parent._send_msg(event='image_layer_set',
+        self._cmap_version += 1
+        self.parent._send_msg(event='image_layer_cmap',
                               id=self.id,
                               setting='colorMapperName',
-                              value=self.cmap.name)
+                              cmap=self.cmap.name,
+                              version=self._cmap_version)
 
     def _on_trait_change(self, changed):
 
