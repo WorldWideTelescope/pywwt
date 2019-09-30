@@ -1,4 +1,11 @@
-0.7.1
+0.8.0 (unreleased)
+------------------
+
+- Improve performance when changing size parameters for tabular layers. In these
+  cases, the performance is e.g. more than 1000x better for a 50,000 row
+  dataset. [#224]
+
+0.7.1 (unreleased)
 ------------------
 
 - Incorporate time series behavior for data layers; add method that
