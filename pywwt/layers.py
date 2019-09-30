@@ -56,6 +56,10 @@ VALID_MARKER_SCALES = ['screen', 'world']
 
 VALID_STRETCHES = ['linear', 'log', 'power', 'sqrt', 'histeq']
 
+VALID_COLORMAPS = ['viridis', 'plasma', 'inferno', 'magma', 'cividis',
+                   'greys', 'purples', 'blues', 'greens', 'oranges', 'reds',
+                   'rdylbu']
+
 # Save string types for validating ISOT strings in time series tables
 if sys.version_info[0] == 2:
     STR_TYPE = basestring
@@ -857,6 +861,8 @@ class ImageLayer(HasTraits):
     vmax = Float(None, allow_none=True)
     stretch = Unicode('linear')
     opacity = Float(1, help='The opacity of the image').tag(wwt='opacity')
+    cmap = Any(cm.Greys, help='The Matplotlib colormap '
+               '(:class:`matplotlib.colors.ListedColormap`)').tag(wwt=None)
 
     def __init__(self, parent=None, image=None, **kwargs):
 
@@ -903,8 +909,9 @@ class ImageLayer(HasTraits):
         # automagically going forward.
         self._on_trait_change({'name': 'vmin', 'new': self.vmin})
         self._on_trait_change({'name': 'opacity', 'new': self.opacity})
-        self.observe(self._on_trait_change, type='change')
+        self._on_trait_change({'name': 'cmap', 'new': self.cmap})
 
+        self.observe(self._on_trait_change, type='change')
 
     @validate('stretch')
     def _check_stretch(self, proposal):
@@ -912,6 +919,19 @@ class ImageLayer(HasTraits):
             return proposal['value']
         else:
             raise ValueError('stretch should be one of {0}'.format('/'.join(str(x) for x in VALID_STRETCHES)))
+
+    @validate('cmap')
+    def _check_cmap(self, proposal):
+        if isinstance(proposal['value'], str):
+            if proposal['value'] not in VALID_COLORMAPS:
+                raise ValueError('Colormap should be one of ' + '/'.join(VALID_COLORMAPS))
+            return cm.get_cmap(proposal['value'])
+        elif not isinstance(proposal['value'], Colormap):
+            raise TypeError('cmap should be set to a Matplotlib colormap')
+        else:
+            if proposal['value'].name not in VALID_COLORMAPS:
+                raise ValueError('Colormap should be one of ' + ', '.join(VALID_COLORMAPS))
+            return proposal['value']
 
     def _initialize_layer(self):
         self.parent._send_msg(event='image_layer_create',
@@ -927,6 +947,13 @@ class ImageLayer(HasTraits):
         self._removed = True
         if self._manager is not None:
             self._manager.remove_layer(self)
+
+    @observe('cmap')
+    def _on_cmap_change(self, *value):
+        self.parent._send_msg(event='image_layer_set',
+                              id=self.id,
+                              setting='colorMapperName',
+                              value=self.cmap.name)
 
     def _on_trait_change(self, changed):
 
