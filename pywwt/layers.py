@@ -637,6 +637,9 @@ class TableLayer(HasTraits):
                                   setting='normalizeSize', value=True)
 
             self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='normalizeSizeClip', value=True)
+
+            self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='normalizeSizeMin', value=self.size_vmin)
 
             self.parent._send_msg(event='table_layer_set', id=self.id,
