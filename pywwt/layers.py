@@ -631,7 +631,7 @@ class TableLayer(HasTraits):
                                   setting='pointScaleType', value=0)
 
             self.parent._send_msg(event='table_layer_set', id=self.id,
-                                  setting='sizeColumn', value=SIZE_COLUMN_NAME)
+                                  setting='sizeColumn', value=self.size_att)
 
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='normalizeSize', value=True)
