@@ -167,6 +167,7 @@ def pick_unit_if_available(unit, valid_units):
             return valid_unit
     return unit
 
+
 def csv_table_win_newline(table):
     '''
     Helper function to get Astropy tables as ASCII CSV with Windows line
@@ -349,9 +350,6 @@ class TableLayer(HasTraits):
                       'Found automagically once size_att is set '
                       '(`float`)', allow_none=True).tag(wwt=None)
 
-    # NOTE: we deliberately don't link cmap_att to colorMapColumn because we
-    # need to compute the colors ourselves based on the min/max and then use
-    # the resulting column.
     cmap_att = Unicode(help='The column to use for the colormap '
                        '(`str`)').tag(wwt=None)
     cmap_vmin = Float(None, help='The minimum level of the colormap. Found '
@@ -436,6 +434,8 @@ class TableLayer(HasTraits):
         self._on_trait_change({'name': 'time_att', 'new': self.time_att})
         self._on_trait_change({'name': 'time_series', 'new': self.time_series})
         self._on_trait_change({'name': 'time_decay', 'new': self.time_decay})
+
+        self._on_trait_change({'name': 'cmap', 'new': self.cmap})
 
         self.observe(self._on_trait_change, type='change')
 
@@ -679,7 +679,7 @@ class TableLayer(HasTraits):
                                   setting='colorMapColumn', value=-1)
 
             self.parent._send_msg(event='table_layer_set', id=self.id,
-                                  setting='_colorMap', value=0)
+                                  setting='colorMap', value=0)
 
             return
 
@@ -702,29 +702,53 @@ class TableLayer(HasTraits):
                                   setting='colorMapColumn', value=-1)
 
             self.parent._send_msg(event='table_layer_set', id=self.id,
-                                  setting='_colorMap', value=0)
+                                  setting='colorMap', value=0)
 
-            return
+        else:
 
-        column = self.table[self.cmap_att]
+            self.parent._send_msg(event='table_layer_set', id=self.id,
+                                  setting='colorMap', value=3)
 
-        values = (column - self.cmap_vmin) / (self.cmap_vmax - self.cmap_vmin)
+            if self.cmap.name.lower() in VALID_COLORMAPS:
 
-        # PERF: vectorize the calculation of the hex strings
-        rgb = self.cmap(values)[:, :-1]
-        hex_values = [to_hex(x) for x in rgb]
+                self.parent._send_msg(event='table_layer_set', id=self.id,
+                                      setting='colorMapColumn', value=self.cmap_att)
 
-        self.table[CMAP_COLUMN_NAME] = hex_values
+                self.parent._send_msg(event='table_layer_set', id=self.id,
+                                      setting='colorMapperName', value=self.cmap.name)
 
-        self.parent._send_msg(event='table_layer_update', id=self.id,
-                              table=self._table_b64)
+                self.parent._send_msg(event='table_layer_set', id=self.id,
+                                      setting='dynamicColor', value=True)
 
-        self.parent._send_msg(event='table_layer_set', id=self.id,
-                              setting='_colorMap', value=3)
+                self.parent._send_msg(event='table_layer_set', id=self.id,
+                                      setting='normalizeColorMap', value=True)
 
-        self.parent._send_msg(event='table_layer_set', id=self.id,
-                              setting='colorMapColumn', value=CMAP_COLUMN_NAME)
+                self.parent._send_msg(event='table_layer_set', id=self.id,
+                                      setting='normalizeColorMapMin', value=self.cmap_vmin)
 
+                self.parent._send_msg(event='table_layer_set', id=self.id,
+                                      setting='normalizeColorMapMax', value=self.cmap_vmax)
+
+            else:
+
+                column = self.table[self.cmap_att]
+
+                values = (column - self.cmap_vmin) / (self.cmap_vmax - self.cmap_vmin)
+
+                # PERF: vectorize the calculation of the hex strings
+                rgb = self.cmap(values)[:, :-1]
+                hex_values = [to_hex(x) for x in rgb]
+
+                self.table[CMAP_COLUMN_NAME] = hex_values
+
+                self.parent._send_msg(event='table_layer_update', id=self.id,
+                                      table=self._table_b64)
+
+                self.parent._send_msg(event='table_layer_set', id=self.id,
+                                      setting='dynamicColor', value=False)
+
+                self.parent._send_msg(event='table_layer_set', id=self.id,
+                                      setting='colorMapColumn', value=CMAP_COLUMN_NAME)
 
     @observe('time_att')
     def _on_time_att_change(self, *value):

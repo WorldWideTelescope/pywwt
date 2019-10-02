@@ -5,10 +5,11 @@
   cases, the performance is e.g. more than 1000x better for a 50,000 row
   dataset. [#224]
 
-- Added a ``cmap`` parameter on image layers to control the colormap. [#244]
+- Improve performance when changing colormap parameters for tabular
+  layers, for a subset of colormaps. In these cases, the performance
+  is e.g. more than 1000x better for a 50,000 row dataset. [#223]
 
-0.7.1 (unreleased)
-------------------
+- Added a ``cmap`` parameter on image layers to control the colormap. [#244]
 
 - Incorporate time series behavior for data layers; add method that
   returns current time in the viewer. [#187]

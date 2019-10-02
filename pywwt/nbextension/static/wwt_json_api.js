@@ -314,7 +314,8 @@ function wwt_apply_json_message(wwt, msg) {
 
       // Use updateData instead of loadFromString here since updateData also
       // takes care of cache invalidation.
-      layer.upadteData(csv, true, true, true)
+      layer.updateData(csv, true, true, true)
+
       break;
 
     case 'table_layer_set':
@@ -327,6 +328,8 @@ function wwt_apply_json_message(wwt, msg) {
         value = layer.get__table().header.indexOf(msg['value']);
       } else if(name == 'color') {
         value = wwtlib.Color.fromHex(msg['value']);
+      } else if(name == 'colorMapper') {
+        value = wwtlib.ColorMapContainer.fromNestedLists(msg['value']);
       } else if(name == 'altUnit') {
         value = wwtlib.AltUnits[msg['value']];
       } else if(name == 'raUnits') {

@@ -64,7 +64,7 @@ if using pip). For the record, these dependencies are as follows:
 * `NumPy <https://www.numpy.org>`_ 1.9 or later
 * `Matplotlib <https://matplotlib.org>`_ 1.5 or later
 * `Astropy <https://www.astropy.org>`_ 1.0 or later
-* `Requests <https://2.python-requests.org/en/latest/>`_
+* `Requests <https://requests.kennethreitz.org/en/master/>`_
 * `Beautiful Soup 4 <https://www.crummy.com/software/BeautifulSoup>`_
 * `Dateutil <http://labix.org/python-dateutil>`_
 * `lxml <https://lxml.de>`_
