@@ -193,6 +193,7 @@ function wwt_apply_json_message(wwt, msg) {
 
       layer = wwt.loadFits(msg['url']);
       layer._stretch_version = 0;
+      layer._cmap_version = 0;
 
       wwt.layers[msg['id']] = layer;
       break;
@@ -226,6 +227,23 @@ function wwt_apply_json_message(wwt, msg) {
 
       }
       break;
+
+      case 'image_layer_cmap':
+
+        // See image_layer_stretch for why we need to do what we do below
+
+        var layer = wwt.layers[msg['id']];
+
+        if (layer.get_imageSet() == null) {
+          setTimeout(function(){ wwt_apply_json_message(wwt, msg); }, 200);
+        } else {
+          if (msg['version'] > layer._cmap_version) {
+            layer.set_colorMapperName(msg['cmap']);
+            layer._cmap_version = msg['version'];
+          }
+
+        }
+        break;
 
     case 'image_layer_set':
 

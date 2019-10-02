@@ -5,6 +5,8 @@
   cases, the performance is e.g. more than 1000x better for a 50,000 row
   dataset. [#224]
 
+- Added a ``cmap`` parameter on image layers to control the colormap. [#244]
+
 0.7.1 (unreleased)
 ------------------
 
