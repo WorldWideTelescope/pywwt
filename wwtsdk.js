@@ -39407,6 +39407,9 @@ window.wwtlib = function(){
               default:
                 break;
             }
+            if (pointColor == null) {
+              pointColor = Colors.get_transparent();
+            }
             if (this.sizeColumn > -1) {
               switch (this.pointScaleType) {
                 case 0:
