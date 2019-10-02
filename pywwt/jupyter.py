@@ -107,7 +107,7 @@ class JupyterImageLayer(ImageLayer):
 
     @property
     def controls(self):
-        from .layers import VALID_STRETCHES, VALID_COLORMAPS
+        from .layers import VALID_STRETCHES, VALID_COLORMAPS, UI_COLORMAPS
 
         if self._controls is not None:
             return self._controls
@@ -131,14 +131,16 @@ class JupyterImageLayer(ImageLayer):
         )
         link((self, 'stretch'), (stretch, 'value'))
 
+        # NB, this will crash if `self.cmap` is not one of our allowed values
+        reverse_ui_colormaps = dict((kv[1], kv[0]) for kv in UI_COLORMAPS.items())
         colormap = widgets.Dropdown(
             description='Colormap:',
-            options=VALID_COLORMAPS,
-            value=self.cmap.name,
+            options=UI_COLORMAPS.keys(),
+            value=reverse_ui_colormaps[self.cmap.name],
             layout={'width': '200px'}
         )
-        directional_link((colormap, 'label'), (self, 'cmap'))
-        directional_link((self, 'cmap'), (colormap, 'label'), lambda x: x.name)
+        directional_link((colormap, 'label'), (self, 'cmap'), lambda x: UI_COLORMAPS[x])
+        directional_link((self, 'cmap'), (colormap, 'label'), lambda x: reverse_ui_colormaps[x.name])
 
         vrange = widgets.FloatRangeSlider(
             description='Fine min/max:',

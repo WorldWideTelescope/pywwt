@@ -13,6 +13,7 @@ else:
 
 import warnings
 from base64 import b64encode
+from collections import OrderedDict
 
 import numpy as np
 from astropy.io import fits
@@ -58,8 +59,25 @@ VALID_MARKER_SCALES = ['screen', 'world']
 VALID_STRETCHES = ['linear', 'log', 'power', 'sqrt', 'histeq']
 
 VALID_COLORMAPS = ['viridis', 'plasma', 'inferno', 'magma', 'cividis',
-                   'Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+                   'Greys', 'gray', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
                    'RdYlBu']
+
+UI_COLORMAPS = OrderedDict([
+    ('Viridis', 'viridis'),
+    ('Plasma', 'plasma'),
+    ('Black to white', 'gray'),
+    ('White to black', 'Greys'),
+    ('Inferno', 'inferno'),
+    ('Magma', 'magma'),
+    ('Cividis', 'cividis'),
+    ('Red-Yellow-Blue', 'RdYlBu'),
+    ('Purples', 'Purples'),
+    ('Blues', 'Blues'),
+    ('Greens', 'Greens'),
+    ('Oranges', 'Oranges'),
+    ('Reds', 'Reds'),
+])
+
 
 # Save string types for validating ISOT strings in time series tables
 if sys.version_info[0] == 2:
