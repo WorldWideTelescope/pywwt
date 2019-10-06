@@ -1037,9 +1037,12 @@ class ImageLayer(HasTraits):
                 state['settings'][wwt_name] = trait.get(self)
 
         if self.vmin is not None and self.vmax is not None:
-            state['stretch_info'] = {'vmin': self.vmin,
-                                     'vmax': self.vmax,
-                                     'stretch':VALID_STRETCHES.index(self.stretch)}
+            state['stretch_info'] = {
+                'vmin': self.vmin,
+                'vmax': self.vmax,
+                'stretch': VALID_STRETCHES.index(self.stretch),
+                'cmap': self.cmap.name,
+            }
 
         return state
 
