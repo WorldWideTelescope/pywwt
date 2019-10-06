@@ -10747,6 +10747,9 @@ window.wwtlib = function(){
     return temp;
   };
   ColorMapContainer.fromNamedColormap = function(name) {
+    if (name == null) {
+      return null;
+    }
     switch (name.toLowerCase()) {
       case 'viridis':
         return ColorMapContainer.viridis;
