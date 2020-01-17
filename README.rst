@@ -1,10 +1,8 @@
 .. To preview locally, install Sphinx and run: rst2html.py README.rst README.html
 
-.. image:: https://travis-ci.com/WorldWideTelescope/pywwt.svg
-    :target: https://travis-ci.com/WorldWideTelescope/pywwt
-
-.. image:: https://ci.appveyor.com/api/projects/status/yweuddwyxy97d8go/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/astrofrog/pywwt/branch/master
+.. image:: https://dev.azure.com/thomasrobitaille/pywwt/_apis/build/status/WorldWideTelescope.pywwt?branchName=master
+   :target: https://dev.azure.com/thomasrobitaille/pywwt/_build/latest?definitionId=12&branchName=master
+   :alt: Azure Pipelines Status
 
 .. image:: https://readthedocs.org/projects/pywwt/badge/?version=latest
    :target: http://pywwt.readthedocs.io/en/latest/?badge=latest
