@@ -76,7 +76,7 @@ class TestLayers:
         # Using an invalid string
         with pytest.raises(ValueError) as exc:
             layer.alt_unit = 'banana'
-        assert exc.value.args[0].strip() == "'banana' did not parse as unit: At col 0, banana is not a valid unit."
+        assert exc.value.args[0].strip().startswith("'banana' did not parse as unit: At col 0, banana is not a valid unit.")
 
         # Using an unsupported unit
         with pytest.raises(ValueError) as exc:
@@ -104,7 +104,7 @@ class TestLayers:
         # Using an invalid string
         with pytest.raises(ValueError) as exc:
             layer.lon_unit = 'banana'
-        assert exc.value.args[0].strip() == "'banana' did not parse as unit: At col 0, banana is not a valid unit."
+        assert exc.value.args[0].strip().startswith("'banana' did not parse as unit: At col 0, banana is not a valid unit.")
 
         # Using an unsupported unit
         with pytest.raises(ValueError) as exc:
