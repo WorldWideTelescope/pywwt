@@ -382,6 +382,7 @@ def test_image_setting_serialization():
     layer.opacity = 0.3
     layer.vmin = -1
     layer.vmax = 1
+    layer.cmap = 'plasma'
     layer_state = widget.quick_serialize()['layers'][0]
 
     assert layer_state['id'] == layer.id
@@ -390,6 +391,7 @@ def test_image_setting_serialization():
     assert layer_state['stretch_info']['vmin'] == -1
     assert layer_state['stretch_info']['vmax'] == 1
     assert layer_state['stretch_info']['stretch'] == 0
+    assert layer_state['stretch_info']['cmap'] == 'plasma'
 
     assert 'settings' in layer_state
     settings = layer_state['settings']
