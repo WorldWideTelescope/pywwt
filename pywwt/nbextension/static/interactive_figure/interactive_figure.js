@@ -167,10 +167,11 @@ function loadImageLayer(layerInfo) {
     var id = layerInfo['id'];
     var url = 'data/' + id + '.fits';
     var onFitsLoad = function (layer) {
-        var stertchInfo = layerInfo['stretch_info'];
-        wwtLayer.setImageScale(stertchInfo['stretch'],
-                               stertchInfo['vmin'],
-                               stertchInfo['vmax']);
+        var stretchInfo = layerInfo['stretch_info'];
+        wwtLayer.setImageScale(stretchInfo['stretch'],
+                               stretchInfo['vmin'],
+                               stretchInfo['vmax']);
+        wwtLayer.set_colorMapperName(stretchInfo['cmap']);
         layer.getFitsImage().transparentBlack = false;
         var settings = layerInfo['settings'];
         for (name in settings) {
