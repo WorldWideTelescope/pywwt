@@ -11,6 +11,12 @@
 pywwt: The AAS WorldWide Telescope from Python/Jupyter
 ======================================================
 
+🚀🚀 `Click here to try out pywwt in the cloud! <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Start%20Here.ipynb>`__ 🚀🚀
+
+*Note: our cloud servers usually start up quickly, but if they were recently
+updated you may have to wait a few minutes for the backing software images to
+be rebuilt.*
+
 About
 -----
 
