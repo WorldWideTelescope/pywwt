@@ -46,20 +46,28 @@ The quickest way to see what the pywwt can do is to try it out live, which you
 can do straight in your browser with our cloud-based Jupyter notebooks. Here
 are some examples:
 
-* `Plot earthquake data on the surface of the Earth
-  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/first-tutorials/planet_layers.ipynb>`_
-* `Load and manipulate a FITS image against multiple all-sky surveys
-  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/video-tutorials/fits_video.ipynb>`__
+* `Visualize Tabular Data from the NASA Exoplanet Archive
+  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/NASA%20Exoplanet%Archive.ipynb>`__
+* `Visualize Imagery of W5 and SN2011fe
+  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Visualizing%20Imagery.ipynb>`__
 
-To browse all interactive example notebooks, go to `our index page
-<http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/>`__.
-To suggest your own, visit the `pywwt-notebooks repository`_ on GitHub.
-
-.. _pywwt-notebooks repository: https://github.com/WorldWideTelescope/pywwt-notebooks
+To browse our complete collection of live example notebooks, go to `our index
+page
+<http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Start%20Here.ipynb>`__.
 
 *Note: it is usually fast to launch these notebooks, but if the code has been
 recently updated, you may have to wait a few minutes for the backing software
 images to be rebuilt.*
+
+`This YouTube video <https://www.youtube.com/watch?v=gi2oC4AYrWU>`__
+demonstrates the process and shows how you can run upload and run your own
+notebooks as well. (Note that while it shows an older version of these
+materials, the general procedure still holds.)
+
+Contributed tutorial notebooks are welcome! Visit the `pywwt-notebooks
+repository`_ on GitHub to suggest one.
+
+.. _pywwt-notebooks repository: https://github.com/WorldWideTelescope/pywwt-notebooks
 
 
 User guide
