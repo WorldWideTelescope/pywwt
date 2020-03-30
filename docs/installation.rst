@@ -82,8 +82,7 @@ In addition, if you want to use the Qt widget, you will need:
   <https://riverbankcomputing.com/software/pyqtwebengine/intro>`__ (both PyQt4
   and PyQt5 are supported)
 * `QtPy <https://pypi.org/project/QtPy/>`__ 1.2 or later
-* `flask <https://palletsprojects.com/p/flask/>`_
-* `flask-cors <https://github.com/corydolphin/flask-cors>`_
+* `tornado <https://www.tornadoweb.org/en/stable/>`_
 
 For the Jupyter widget, you will need:
 

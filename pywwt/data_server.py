@@ -1,5 +1,6 @@
 import os
 import time
+import asyncio
 import socket
 import logging
 from hashlib import md5
@@ -12,7 +13,7 @@ _data_server = None
 
 def get_data_server(verbose=True):
     """
-    This starts up a flask server and returns a handle to a DataServer
+    This starts up a tornado server and returns a handle to a DataServer
     object which can be used to register files to serve.
     """
 
@@ -21,32 +22,28 @@ def get_data_server(verbose=True):
     if _data_server is not None:
         return _data_server
 
-    from flask import Flask
-    from flask_cors import CORS
+    from tornado.ioloop import IOLoop
+    from tornado.web import RequestHandler, Application
+    from tornado.routing import PathMatches
 
-    class FlaskWrapper(Flask):
+    class WebServer(Application):
 
-        port = None
         host = None
+        port = None
 
-        def run(self, *args, **kwargs):
-            self.host = kwargs.get('host', None)
-            self.port = kwargs.get('port', None)
+        def run(self, host=None, port=8886):
+            self.host = host
+            self.port = port
             try:
-                super(FlaskWrapper, self).run(*args, **kwargs)
+                self.listen(port)
+                IOLoop.instance().start()
             finally:
                 self.host = None
                 self.port = None
 
-    app = FlaskWrapper('DataServer')
-    CORS(app)
-    if verbose:
-        log = logging.getLogger('werkzeug')
-        log.setLevel(logging.ERROR)
-
     class DataServer(object):
 
-        def __init__(self):
+        def start(self, app):
             self._files = {}
             self._thread = Thread(target=self.start_app)
             self._thread.daemon = True
@@ -64,15 +61,22 @@ def get_data_server(verbose=True):
             return self._app.host
 
         def start_app(self):
-            host = socket.gethostbyname('localhost')
-            for port in range(8000, 9000):
-                try:
-                    return app.run(host=host, port=port)
-                except Exception:
-                    pass
-            raise Exception("Could not start up data server")
 
-        def serve_file(self, filename, real_name=False, extension=''):
+            asyncio.set_event_loop(asyncio.new_event_loop())
+
+            host = socket.gethostbyname('localhost')
+
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.bind(('localhost', 0))
+            port = sock.getsockname()[1]
+            sock.close()
+
+            access_log = logging.getLogger("tornado.access")
+            access_log.setLevel('ERROR')
+
+            self._app.run(host=host, port=port)
+
+        def serve_file(self, filename, real_name=True, extension=''):
             with open(filename, 'rb') as f:
                 content = f.read()
             if real_name:
@@ -88,9 +92,13 @@ def get_data_server(verbose=True):
 
     ds = DataServer()
 
-    @app.route("/data/<hash>")
-    def data(hash):
-        return ds.get_file_contents(hash)
+    class DataHandler(RequestHandler):
+        async def get(self, hash):
+            self.write(ds.get_file_contents(hash))
+
+    app = WebServer([(PathMatches(r"/data/(?P<hash>\S+)"), DataHandler)])
+
+    ds.start(app)
 
     _data_server = ds
 
