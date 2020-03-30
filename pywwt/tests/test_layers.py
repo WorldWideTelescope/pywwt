@@ -178,7 +178,7 @@ class TestLayers:
 
         self.table['flux'].unit = 'm'
         layer = self.client.layers.add_table_layer(table=self.table,
-                                                  lon_att='ra', lat_att='dec', alt_att='flux')
+                                                   lon_att='ra', lat_att='dec', alt_att='flux')
 
         assert layer.lon_att == 'ra'
         assert layer.lon_unit is u.deg
@@ -213,11 +213,11 @@ class TestLayers:
         assert layer.alt_att == ''
 
     def test_line_endings(self):
-        self.table['ra'] = [1,2,3]
+        self.table['ra'] = [1, 2, 3]
         expected_str = "flux,dec,ra\r\n"\
-                        "2,4,1\r\n"\
-                        "3,5,2\r\n"\
-                        "4,6,3\r\n"
+                       "2,4,1\r\n"\
+                       "3,5,2\r\n"\
+                       "4,6,3\r\n"
         assert csv_table_win_newline(self.table) == expected_str
 
     def test_deprecated_api_call(self, capsys):
@@ -236,8 +236,6 @@ class TestLayers:
         assert len(self.client.layers) == 1
         assert str(self.client.layers) == ('Layer manager with 1 layers:\n\n'
                                            '  [0]: TableLayer with 3 markers\n')
-        assert len(w) == 1
-        assert issubclass(w[-1].category, DeprecationWarning)
 
     def test_cartesian_layer(self):
 
@@ -320,7 +318,7 @@ def test_table_layers_image(tmpdir, wwt_qt_client):
     table['dec'] = [84, 85, 86, 87, 88]
     table['ra'] = [250, 260, 270, 280, 290] * u.deg
 
-    layer1 = wwt.layers.add_table_layer(table=table)
+    layer1 = wwt.layers.add_table_layer(table=table)  # noqa
 
     # Case where we change the default values on initialization
 
@@ -330,7 +328,7 @@ def test_table_layers_image(tmpdir, wwt_qt_client):
     table['ra'] = [250, 260, 270, 280, 290] * u.deg
     table['other'] = [255, 265, 275, 285, 295] * u.deg
 
-    layer2 = wwt.layers.add_table_layer(table=table, color='red', lon_att='other', size_scale=100, opacity=0.5)
+    layer2 = wwt.layers.add_table_layer(table=table, color='red', lon_att='other', size_scale=100, opacity=0.5)  # noqa
 
     # Case where we change the values after initialization
 
@@ -357,7 +355,7 @@ def test_table_layers_image(tmpdir, wwt_qt_client):
     table['ra'] = [250, 260, 270, 280, 290] * u.deg
     table['other'] = [255, 265, 275, 285, 295] * u.deg
 
-    layer4 = wwt.layers.add_table_layer(table=table, cmap_att='other', size_att='flux', size_scale=100)
+    layer4 = wwt.layers.add_table_layer(table=table, cmap_att='other', size_att='flux', size_scale=100)  # noqa
 
     # Case with size and color encoding where we change the values after initialization
 
@@ -404,11 +402,11 @@ def test_table_layers_cartesian_image(tmpdir, wwt_qt_client):
     table['y'] = [0, 0.2, 0.4, 0.6, 0.8] * u.au
     table['z'] = [0, 0.1, 0.2, 0.3, 0.4] * u.au
 
-    layer1 = wwt.layers.add_table_layer(table=table, coord_type='rectangular', size_scale=100, frame='Sky')
+    layer1 = wwt.layers.add_table_layer(table=table, coord_type='rectangular', size_scale=100, frame='Sky')  # noqa
 
     table = Table()
     table['x'] = [1, 2, 3, 4, 5] * u.au
-    table['y'] = [-0.2, 0, 0.2, 0.4, 0.6 ] * u.au
+    table['y'] = [-0.2, 0, 0.2, 0.4, 0.6] * u.au
     table['z'] = [0, 0.2, 0.4, 0.6, 0.8] * u.au
 
     layer2 = wwt.layers.add_table_layer(table=table, coord_type='rectangular', frame='Sky')

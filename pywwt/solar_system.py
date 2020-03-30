@@ -16,7 +16,7 @@ class SolarSystem(HasTraits):
         super(SolarSystem, self).__init__()
         self.base_widget = base_wwt_widget
         self.observe(self._on_trait_change, type='change')
-        self._tracked_obj_id = 0 #Default to tracking sun
+        self._tracked_obj_id = 0  # Default to tracking sun
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
@@ -31,21 +31,23 @@ class SolarSystem(HasTraits):
                 new_value = new_value.value
 
             self.base_widget._send_msg(event='setting_set',
-                                setting=wwt_name,
-                                value=new_value)
+                                       setting=wwt_name,
+                                       value=new_value)
 
-    #cmb = Bool(False, help='Whether to show the cosmic microwave background in solar system mode (`bool`)').tag(wwt='solarSystemCMB') ###
-    cosmos = Bool(True, help='Whether to show data from the SDSS survey (`bool`)').tag(wwt='solarSystemCosmos') ###
-    #display = Bool(False, help='Whether to show the solar system while in solar system mode (`bool`)').tag(wwt='solarSystemOverlays') ###
+    # cmb = Bool(False, help='Whether to show the cosmic microwave background in solar system mode (`bool`)').tag(wwt='solarSystemCMB')
+    cosmos = Bool(True, help='Whether to show data from the SDSS survey (`bool`)').tag(wwt='solarSystemCosmos')
+    # display = Bool(False, help='Whether to show the solar system while in solar system mode (`bool`)').tag(wwt='solarSystemOverlays')
     lighting = Bool(True,
                     help='Whether to show the lighting effect of the Sun on the'
                          ' solar system (`bool`)').tag(wwt='solarSystemLighting')
     milky_way = Bool(True, help='Whether to show the galactic bulge in the '
                                 'background in solar system mode '
                                 '(`bool`)').tag(wwt='solarSystemMilkyWay')
-    #multi_res = Bool(False, help='Whether to show the multi-resolution textures for planets where available (`bool`)').tag(wwt='solarSystemMultiRes') ###
-    minor_orbits = Bool(False, help='Whether to show the orbits of minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorOrbits')
-    #minor_planets = Bool(False, help='Whether to show minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorPlanets') ###
+    # multi_res = Bool(False, help='Whether to show the multi-resolution textures for planets where available (`bool`)').tag(wwt='solarSystemMultiRes')
+    minor_orbits = Bool(False,
+                        help='Whether to show the orbits of minor planets '
+                             'in solar system mode (`bool`)').tag(wwt='solarSystemMinorOrbits')
+    # minor_planets = Bool(False, help='Whether to show minor planets in solar system mode (`bool`)').tag(wwt='solarSystemMinorPlanets')
     orbits = Bool(True,
                   help='Whether to show orbit paths when the solar system is '
                        'displayed (`bool`)').tag(wwt='solarSystemOrbits')

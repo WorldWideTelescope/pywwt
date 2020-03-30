@@ -1,5 +1,6 @@
 import requests
 
+
 class Instruments():
     """
     A supplemental class that enables tab-completion for available

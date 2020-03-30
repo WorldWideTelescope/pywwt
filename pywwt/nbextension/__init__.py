@@ -5,4 +5,3 @@ def _jupyter_nbextension_paths():
         'dest': 'pywwt',
         'require': 'pywwt/extension'
     }]
-

@@ -1,7 +1,7 @@
 import pytest
 
 from ..core import BaseWWTWidget
-from ..layers import  SIZE_COLUMN_NAME, CMAP_COLUMN_NAME
+from ..layers import SIZE_COLUMN_NAME, CMAP_COLUMN_NAME
 
 import numpy as np
 
@@ -18,8 +18,11 @@ STARDARD_WWT_SETTINGS = ['actualPlanetScale', 'showAltAzGrid', 'showConstellatio
                          'locationAltitude', 'locationLat', 'locationLng']
 
 
-# Mock class so that we test serialization without instantiating an actual widget
 class MockWWTWidget(BaseWWTWidget):
+    """
+    Mock class so that we test serialization without instantiating an actual widget
+    """
+
     def quick_serialize(self):
         return self._serialize_state(None, None, None)
 
@@ -29,6 +32,7 @@ class MockWWTWidget(BaseWWTWidget):
 
     def _serve_file(self, filename, extension=''):
         return filename
+
 
 def test_basic_serialization():
     widget = MockWWTWidget()
@@ -62,6 +66,7 @@ def test_basic_serialization():
     assert 'annotations' in test_state
     assert test_state['annotations'] == []
 
+
 def test_widget_settings_serialization():
     widget = MockWWTWidget()
     widget.actual_planet_scale = True
@@ -71,9 +76,9 @@ def test_widget_settings_serialization():
     widget.constellation_figure_color = '#24680b'
     widget.constellation_figures = False
     widget.constellation_selection = True
-    widget.constellation_selection_color = 'c' #cyan
+    widget.constellation_selection_color = 'c'  # cyan
     widget.crosshairs = True
-    widget.crosshairs_color = (128./255.,64./255.,16./255.)
+    widget.crosshairs_color = (128./255., 64./255., 16./255.)
     widget.ecliptic = False
     widget.ecliptic_grid = True
     widget.galactic_grid = False
@@ -83,36 +88,63 @@ def test_widget_settings_serialization():
     widget.location_altitude = 7*u.m
     widget.location_latitude = 12*u.deg
     widget.location_longitude = -18*u.deg
-    expected_settings = {'actualPlanetScale': True, 'showAltAzGrid': False, 'showConstellationBoundries': True,
-                         'constellationBoundryColor': '#ff0000', 'constellationFigureColor': '#24680b',
-                         'showConstellationFigures': False, 'showConstellationSelection': True,
-                         'constellationSelectionColor': '#00bfbf', 'showCrosshairs': True, 'crosshairsColor': '#804010',
-                         'showEcliptic': False, 'showEclipticGrid': True, 'showGalacticGrid': False,
-                         'galacticMode': True, 'showGrid': False, 'localHorizonMode': True, 'locationAltitude': 7,
-                         'locationLat': 12., 'locationLng': -18.}
+    expected_settings = {'actualPlanetScale': True,
+                         'showAltAzGrid': False,
+                         'showConstellationBoundries': True,
+                         'constellationBoundryColor': '#ff0000',
+                         'constellationFigureColor': '#24680b',
+                         'showConstellationFigures': False,
+                         'showConstellationSelection': True,
+                         'constellationSelectionColor': '#00bfbf',
+                         'showCrosshairs': True,
+                         'crosshairsColor': '#804010',
+                         'showEcliptic': False,
+                         'showEclipticGrid': True,
+                         'showGalacticGrid': False,
+                         'galacticMode': True,
+                         'showGrid': False,
+                         'localHorizonMode': True,
+                         'locationAltitude': 7,
+                         'locationLat': 12.,
+                         'locationLng': -18.}
     state = widget.quick_serialize()
     assert state['wwt_settings'] == expected_settings
 
 
 def test_mode_serialization():
-    view_mode_map = {'sky': 'sky', 'Sun': 'sun', 'Mercury': 'mercury', 'venus': 'venus', 'Earth': 'Bing Maps Aerial',
-                     'moon': 'moon', 'mars': 'Visible Imagery', 'jupiter': 'jupiter', 'callisto': 'callisto',
-                     'europa': 'europa', 'ganymede': 'ganymede', 'Io': 'io', 'saturn': 'saturn', 'Uranus': 'uranus',
-                     'neptune': 'neptune', 'Pluto': 'pluto', 'panorama': 'panorama',
-                     'Solar System': '3D Solar System View', 'milky way': '3D Solar System View',
+    view_mode_map = {'sky': 'sky',
+                     'Sun': 'sun',
+                     'Mercury': 'mercury',
+                     'venus': 'venus',
+                     'Earth': 'Bing Maps Aerial',
+                     'moon': 'moon',
+                     'mars': 'Visible Imagery',
+                     'jupiter': 'jupiter',
+                     'callisto': 'callisto',
+                     'europa': 'europa',
+                     'ganymede': 'ganymede',
+                     'Io': 'io',
+                     'saturn': 'saturn',
+                     'Uranus': 'uranus',
+                     'neptune': 'neptune',
+                     'Pluto': 'pluto',
+                     'panorama': 'panorama',
+                     'Solar System': '3D Solar System View',
+                     'milky way': '3D Solar System View',
                      'universe': '3D Solar System View'}
 
     widget = MockWWTWidget()
     for in_mode, out_mode in view_mode_map.items():
         widget.set_view(in_mode)
-        assert widget.quick_serialize()['view_settings']['mode'] == out_mode, 'Mismatch for requested mode: {0}'.format(in_mode)
+        assert widget.quick_serialize()['view_settings']['mode'] == out_mode, \
+            'Mismatch for requested mode: {0}'.format(in_mode)
 
 
 def test_3d_serialization():
     widget = MockWWTWidget()
     widget.set_view('milky way')
-    widget.solar_system.cosmos=True
-    widget.solar_system.lighting=False
+    widget.solar_system.cosmos = True
+    widget.solar_system.lighting = False
     widget.solar_system.milky_way = True
     widget.solar_system.minor_orbits = False
     widget.solar_system.orbits = True
@@ -120,10 +152,14 @@ def test_3d_serialization():
     widget.solar_system.scale = 8
     widget.solar_system.stars = True
 
-    expected_3d_settings = {'solarSystemCosmos':True, 'solarSystemLighting':False, 'solarSystemMilkyWay':True,
-                            'solarSystemMinorOrbits':False, 'solarSystemOrbits':True, 'solarSystemPlanets':False,
+    expected_3d_settings = {'solarSystemCosmos': True,
+                            'solarSystemLighting': False,
+                            'solarSystemMilkyWay': True,
+                            'solarSystemMinorOrbits': False,
+                            'solarSystemOrbits': True,
+                            'solarSystemPlanets': False,
                             'solarSystemScale': '8',  # The validation method casts the int to a string
-                            'solarSystemStars':True}
+                            'solarSystemStars': True}
 
     init_state = widget.quick_serialize()
     settings = init_state['wwt_settings']
@@ -135,13 +171,31 @@ def test_3d_serialization():
     assert 'tracked_object_id' in init_state['view_settings']
     assert init_state['view_settings']['tracked_object_id'] == 0
 
-    track_id_map = {'sun': 0, 'mercury': 1, 'venus': 2, 'mars': 3, 'jupiter': 4, 'saturn': 5, 'uranus': 6, 'neptune': 7,
-                    'pluto': 8, 'moon': 9, 'io': 10, 'europa': 11, 'ganymede': 12, 'callisto': 13, 'ioshadow': 14,
-                    'europashadow': 15, 'ganymedeshadow': 16, 'callistoshadow': 17, 'suneclipsed': 18, 'earth': 19}
+    track_id_map = {'sun': 0,
+                    'mercury': 1,
+                    'venus': 2,
+                    'mars': 3,
+                    'jupiter': 4,
+                    'saturn': 5,
+                    'uranus': 6,
+                    'neptune': 7,
+                    'pluto': 8,
+                    'moon': 9,
+                    'io': 10,
+                    'europa': 11,
+                    'ganymede': 12,
+                    'callisto': 13,
+                    'ioshadow': 14,
+                    'europashadow': 15,
+                    'ganymedeshadow': 16,
+                    'callistoshadow': 17,
+                    'suneclipsed': 18,
+                    'earth': 19}
 
     for obj_name, obj_id in track_id_map.items():
         widget.solar_system.track_object(obj_name)
-        assert widget.quick_serialize()['view_settings']['tracked_object_id'] == obj_id, "ID mismatch for {0}".format(obj_name)
+        assert widget.quick_serialize()['view_settings']['tracked_object_id'] == obj_id, \
+            "ID mismatch for {0}".format(obj_name)
 
 
 def test_add_remove_annotation_serialization():
@@ -168,7 +222,7 @@ def test_add_remove_annotation_serialization():
 def test_circle_annotation_serialization():
     widget = MockWWTWidget()
     circ = widget.add_circle(fill_color='#012345', radius=0.3*u.deg)
-    circ.set_center(SkyCoord(0.1*u.deg,0.2*u.deg))
+    circ.set_center(SkyCoord(0.1 * u.deg, 0.2 * u.deg))
     circ.fill = True
     circ.tag = 'Test Circ Tag'
     circ.line_color = 'orange'
@@ -176,8 +230,16 @@ def test_circle_annotation_serialization():
     circ.opacity = 0.7
     circ.label = 'Test Circ Label'
     circ.hover_label = True
-    expected_settings = {'radius': 0.3, 'fill': True, 'tag': 'Test Circ Tag', 'fillColor': '#012345', 'lineColor': '#ffa500',
-                         'lineWidth': 5, 'opacity': 0.7, 'label': 'Test Circ Label', 'showHoverLabel': True, 'skyRelative': True}
+    expected_settings = {'radius': 0.3,
+                         'fill': True,
+                         'tag': 'Test Circ Tag',
+                         'fillColor': '#012345',
+                         'lineColor': '#ffa500',
+                         'lineWidth': 5,
+                         'opacity': 0.7,
+                         'label': 'Test Circ Label',
+                         'showHoverLabel': True,
+                         'skyRelative': True}
 
     annot_state = widget.quick_serialize()['annotations'][0]
 
@@ -199,16 +261,16 @@ def test_circle_annotation_serialization():
     annot_state = widget.quick_serialize()['annotations'][0]
     assert annot_state['settings'] == expected_settings
 
-    #Check circle annotation with no specified center
+    # Check circle annotation with no specified center
     circ.remove()
     circ2 = widget.add_circle()
     center = widget.quick_serialize()['annotations'][0]['center']
     assert center['ra'] == pytest.approx(5.)
     assert center['dec'] == 10.
 
-    #Circle annotation with center in constructor
+    # Circle annotation with center in constructor
     circ2.remove()
-    widget.add_circle(center = SkyCoord(15*u.deg,16*u.deg))
+    widget.add_circle(center=SkyCoord(15 * u.deg, 16 * u.deg))
     center = widget.quick_serialize()['annotations'][0]['center']
     assert center['ra'] == 15
     assert center['dec'] == 16
@@ -216,25 +278,31 @@ def test_circle_annotation_serialization():
 
 def test_poly_annotation_setting():
     widget = MockWWTWidget()
-    poly = widget.add_polygon(fill = True, tag='Test Poly Tag')
+    poly = widget.add_polygon(fill=True, tag='Test Poly Tag')
     poly.fill_color = '#123456'
     poly.line_color = 'antiquewhite'
     poly.line_width = 9*u.pix
     poly.opacity = 0.9
     poly.label = 'Test Poly Label'
     poly.hover_label = False
-    poly.add_point(SkyCoord([1,2,3]*u.deg,[5,6,7]*u.deg))
-    poly.add_point(SkyCoord(4*u.deg,8*u.deg))
-    expected_settings = {'fill': True, 'tag': 'Test Poly Tag', 'fillColor': '#123456', 'lineColor': '#faebd7',
-                         'lineWidth': 9, 'opacity': 0.9, 'label': 'Test Poly Label', 'showHoverLabel': False}
+    poly.add_point(SkyCoord([1, 2, 3]*u.deg, [5, 6, 7]*u.deg))
+    poly.add_point(SkyCoord(4 * u.deg, 8 * u.deg))
+    expected_settings = {'fill': True,
+                         'tag': 'Test Poly Tag',
+                         'fillColor': '#123456',
+                         'lineColor': '#faebd7',
+                         'lineWidth': 9,
+                         'opacity': 0.9,
+                         'label': 'Test Poly Label',
+                         'showHoverLabel': False}
 
     annot_state = widget.quick_serialize()['annotations'][0]
 
     assert annot_state['id'] == poly.id
     assert annot_state['shape'] == 'polygon'
 
-    expected_ras = [1,2,3,4]
-    expected_decs = [5,6,7,8]
+    expected_ras = [1, 2, 3, 4]
+    expected_decs = [5, 6, 7, 8]
     assert 'points' in annot_state
     pts = annot_state['points']
     assert len(pts) == 4
@@ -245,26 +313,31 @@ def test_poly_annotation_setting():
     assert 'settings' in annot_state
     assert annot_state['settings'] == expected_settings
 
+
 def test_line_annotation_setting():
     widget = MockWWTWidget()
-    line = widget.add_line(color = '#abcde0')
+    line = widget.add_line(color='#abcde0')
     line.tag = 'Test Line Tag'
     line.width = 11*u.pix
     line.opacity = 0.2
     line.label = 'Test Line Label'
     line.hover_label = True
-    line.add_point(SkyCoord([2,4,6]*u.deg,[10,12,14]*u.deg))
-    line.add_point(SkyCoord(8*u.deg,16*u.deg))
-    expected_settings = {'tag': 'Test Line Tag', 'lineColor': '#abcde0', 'lineWidth': 11, 'opacity': 0.2,
-                         'label': 'Test Line Label', 'showHoverLabel': True}
+    line.add_point(SkyCoord([2, 4, 6] * u.deg, [10, 12, 14] * u.deg))
+    line.add_point(SkyCoord(8 * u.deg, 16 * u.deg))
+    expected_settings = {'tag': 'Test Line Tag',
+                         'lineColor': '#abcde0',
+                         'lineWidth': 11,
+                         'opacity': 0.2,
+                         'label': 'Test Line Label',
+                         'showHoverLabel': True}
 
     annot_state = widget.quick_serialize()['annotations'][0]
 
     assert annot_state['id'] == line.id
     assert annot_state['shape'] == 'line'
 
-    expected_ras = [2,4,6,8]
-    expected_decs = [10,12,14,16]
+    expected_ras = [2, 4, 6, 8]
+    expected_decs = [10, 12, 14, 16]
     assert 'points' in annot_state
     pts = annot_state['points']
     assert len(pts) == 4
@@ -309,7 +382,7 @@ def test_add_remove_layer_serialization():
     widget.layers.remove_layer(img2)
     state = widget.quick_serialize()
 
-    layer_ids = [table1.id,img1.id]
+    layer_ids = [table1.id, img1.id]
     assert len(state['layers']) == 2
     for layer in state['layers']:
         assert layer['id'] in layer_ids
@@ -318,6 +391,7 @@ def test_add_remove_layer_serialization():
     widget.reset()
     state = widget.quick_serialize()
     assert len(state['layers']) == 0
+
 
 def test_table_setting_serialization():
     widget = MockWWTWidget()
@@ -341,21 +415,31 @@ def test_table_setting_serialization():
     assert layer_state['frame'] == 'Earth'
 
     assert 'settings' in layer_state
-    expected_settings = {'lngColumn':'ra', 'raUnits': 'degrees',
-                         'latColumn': 'dec', 'altColumn': 'flux',
-                         'timeSeries': False, 'decay': 16 * u.day,
-                         'altUnit': None, 'altType': 'distance',
-                         'color': '#aacc00', 'scaleFactor': 14,
-                         'opacity': 0.75, 'plotType': 'square',
-                         'markerScale': 'world', 'showFarSide': True,
-                         'sizeColumn': -1, '_colorMap': 0,
-                         'colorMapColumn': -1,  'xAxisColumn': '',
-                         'yAxisColumn': '', 'zAxisColumn': '',
+    expected_settings = {'lngColumn': 'ra',
+                         'raUnits': 'degrees',
+                         'latColumn': 'dec',
+                         'altColumn': 'flux',
+                         'timeSeries': False,
+                         'decay': 16 * u.day,
+                         'altUnit': None,
+                         'altType': 'distance',
+                         'color': '#aacc00',
+                         'scaleFactor': 14,
+                         'opacity': 0.75,
+                         'plotType': 'square',
+                         'markerScale': 'world',
+                         'showFarSide': True,
+                         'sizeColumn': -1,
+                         '_colorMap': 0,
+                         'colorMapColumn': -1,
+                         'xAxisColumn': '',
+                         'yAxisColumn': '',
+                         'zAxisColumn': '',
                          'cartesianScale': None,
                          'coordinatesType': 'spherical'}
     assert layer_state['settings'] == expected_settings
 
-    #Check when we have colormap and scaling
+    # Check when we have colormap and scaling
     layer.cmap_att = 'flux'
     layer.size_att = 'dec'
     layer.alt_unit = u.Mpc
@@ -367,6 +451,7 @@ def test_table_setting_serialization():
     expected_settings['altUnit'] = 'megaParsecs'
 
     assert widget.quick_serialize()['layers'][0]['settings'] == expected_settings
+
 
 def test_image_setting_serialization():
     widget = MockWWTWidget()
@@ -400,4 +485,5 @@ def test_image_setting_serialization():
     stretches = {'linear': 0, 'log': 1, 'power': 2, 'sqrt': 3, 'histeq': 4}
     for stretch_name, stretch_id in stretches.items():
         layer.stretch = stretch_name
-        assert widget.quick_serialize()['layers'][0]['stretch_info']['stretch'] == stretch_id, "Stretch id mismatch for: {0}".format(stretch_name)
+        assert widget.quick_serialize()['layers'][0]['stretch_info']['stretch'] == stretch_id, \
+            "Stretch id mismatch for: {0}".format(stretch_name)

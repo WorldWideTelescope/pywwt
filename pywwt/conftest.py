@@ -42,6 +42,7 @@ if QT_INSTALLED and OPENGL_INSTALLED:
 
 _cached_opengl_renderer = ''
 
+
 def pytest_report_header(config):
     global _cached_opengl_renderer
 
@@ -88,7 +89,6 @@ def pytest_report_header(config):
 
 
 def pytest_unconfigure(config):
-
     if QT_INSTALLED:
         from .app import cleanup_qapp
         cleanup_qapp()

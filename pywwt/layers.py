@@ -24,7 +24,6 @@ from astropy.table import Column
 from astropy.time import Time
 from datetime import datetime
 
-from ipywidgets import HBox, Dropdown, FloatText, FloatSlider, link
 from traitlets import HasTraits, validate, observe
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
 from .utils import sanitize_image, validate_traits, ensure_utc
@@ -81,7 +80,7 @@ UI_COLORMAPS = OrderedDict([
 
 # Save string types for validating ISOT strings in time series tables
 if sys.version_info[0] == 2:
-    STR_TYPE = basestring
+    STR_TYPE = basestring  # noqa
     NP_STR_TYPE = np.string_
 else:
     STR_TYPE = str
@@ -176,7 +175,7 @@ def csv_table_win_newline(table):
     s = StringIO()
     table.write(s, format='ascii.basic', delimiter=',', comment=False)
     s.seek(0)
-    #Replace single \r or \n characters with \r\n
+    # Replace single \r or \n characters with \r\n
     return re.sub(r"(?<![\r\n])(\r|\n)(?![\r\n])", "\r\n", s.read())
 
 
@@ -299,7 +298,7 @@ class LayerManager(object):
 
         return layer_states
 
-    def _save_all_data_for_serialization (self, dir):
+    def _save_all_data_for_serialization(self, dir):
         for layer in self._layers:
             layer._save_data_for_serialization(dir)
 
@@ -506,7 +505,6 @@ class TableLayer(HasTraits):
         else:
             raise ValueError('alt_type should be one of {0}'.format('/'.join(str(x) for x in VALID_ALT_TYPES)))
 
-
     @validate('time_att')
     def _check_time_att(self, proposal):
         # Parse the time_att column and make sure it's in the proper format
@@ -514,11 +512,11 @@ class TableLayer(HasTraits):
         col = self.table[proposal['value']]
 
         if (all(isinstance(t, datetime) for t in col)
-              or all(isinstance(t, Time) for t in col)):
+                or all(isinstance(t, Time) for t in col)):
             return proposal['value']
 
         elif (isinstance(col, STR_TYPE)
-            or np.issubdtype(col.dtype, NP_STR_TYPE)):
+              or np.issubdtype(col.dtype, NP_STR_TYPE)):
 
             try:
                 Time(col, format='isot')
@@ -753,7 +751,7 @@ class TableLayer(HasTraits):
     @observe('time_att')
     def _on_time_att_change(self, *value):
 
-        if len(self.time_att) == 0 or self.time_series == False:
+        if len(self.time_att) == 0 or self.time_series is False:
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='startDateColumn', value=-1)
             return
@@ -883,9 +881,9 @@ class TableLayer(HasTraits):
         return state
 
     def _save_data_for_serialization(self, dir):
-        file_path = path.join(dir,"{0}.csv".format(self.id))
+        file_path = path.join(dir, "{0}.csv".format(self.id))
         table_str = csv_table_win_newline(self.table)
-        with open(file_path, 'wb') as file: # binary mode to preserve windows line endings
+        with open(file_path, 'wb') as file:  # binary mode to preserve windows line endings
             file.write(table_str.encode('ascii', errors='replace'))
 
     def __str__(self):
@@ -1030,7 +1028,8 @@ class ImageLayer(HasTraits):
                  'settings': {}
                  }
 
-        #A bit overkill for just the opacity, but more future-proof in case we add more wwt traits
+        # A bit overkill for just the opacity, but more future-proof in case
+        # we add more wwt traits
         for trait in self.traits().values():
             wwt_name = trait.metadata.get('wwt')
             if wwt_name:
@@ -1047,8 +1046,8 @@ class ImageLayer(HasTraits):
         return state
 
     def _save_data_for_serialization(self, dir):
-        file_path = path.join(dir,"{0}.fits".format(self.id))
-        shutil.copyfile(self._sanitized_image,file_path)
+        file_path = path.join(dir, "{0}.fits".format(self.id))
+        shutil.copyfile(self._sanitized_image, file_path)
 
     def __str__(self):
         return 'ImageLayer'

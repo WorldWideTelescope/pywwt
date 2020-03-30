@@ -89,8 +89,8 @@ class Color(TraitType):
         self.from_cwo = False
 
     def validate(self, obj, value):
-        if (isinstance(value, six.string_types)
-            or (isinstance(value, tuple) and len(value) == 3)):
+        if (isinstance(value, six.string_types) or
+                (isinstance(value, tuple) and len(value) == 3)):
             return to_hex(value)
         else:
             if self.from_cwo:

@@ -4,7 +4,7 @@
 # Python and Javascript parts so that we can re-use this for the Qt client.
 
 import sys
-PY2 = sys.version_info[0] == 2
+PY2 = sys.version_info[0] == 2  # noqa
 
 import ipywidgets as widgets
 from traitlets import Unicode, Float, default, link, directional_link
@@ -12,9 +12,9 @@ from traitlets import Unicode, Float, default, link, directional_link
 if not PY2:
     from ipyevents import Event as DOMListener
 
-from .core import BaseWWTWidget
-from .layers import ImageLayer
-from .jupyter_server import serve_file
+from .core import BaseWWTWidget  # noqa
+from .layers import ImageLayer  # noqa
+from .jupyter_server import serve_file  # noqa
 
 __all__ = ['WWTJupyterWidget']
 
@@ -107,7 +107,7 @@ class JupyterImageLayer(ImageLayer):
 
     @property
     def controls(self):
-        from .layers import VALID_STRETCHES, VALID_COLORMAPS, UI_COLORMAPS
+        from .layers import VALID_STRETCHES, UI_COLORMAPS
 
         if self._controls is not None:
             return self._controls

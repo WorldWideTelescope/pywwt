@@ -3,7 +3,6 @@ from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
 from astropy.time import Time
 from astropy.coordinates import SkyCoord
-from datetime import datetime
 
 # We import the trait classes from .traits since we do various customizations
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity
@@ -16,7 +15,6 @@ from .instruments import Instruments
 from .utils import ensure_utc
 
 import json
-import os
 import shutil
 import tempfile
 
@@ -128,11 +126,17 @@ class BaseWWTWidget(HasTraits):
                                    help='Whether to only show boundaries for '
                                         'the selected constellation '
                                         '(`bool`)').tag(wwt='showConstellationSelection', wwt_reset=True)
-    #constellation_pictures = Bool(False, help='Whether to show pictures of the constellations\' mythological representations (`bool`)').tag(wwt='showConstellationPictures', wwt_reset=True)
-    #constellation_labels = Bool(False, help='Whether to show labelss for constellations (`bool`)').tag(wwt='showConstellationLabels', wwt_reset=True)
+
+    # constellation_pictures = Bool(False,
+    #                               help='Whether to show pictures of the constellations\' '
+    #                                    'mythological representations '
+    #                                    '(`bool`)').tag(wwt='showConstellationPictures', wwt_reset=True)
+    # constellation_labels = Bool(False,
+    #                             help='Whether to show labelss for constellations '
+    #                                  '(`bool`)').tag(wwt='showConstellationLabels', wwt_reset=True)
 
     crosshairs = Bool(False, help='Whether to show crosshairs at the center of '
-                                 'the field (`bool`)').tag(wwt='showCrosshairs', wwt_reset=True)
+                                  'the field (`bool`)').tag(wwt='showCrosshairs', wwt_reset=True)
     crosshairs_color = Color('white',
                              help='The color of the crosshairs '
                                   '(`str` or `tuple`)').tag(wwt='crosshairsColor', wwt_reset=True)
@@ -260,10 +264,14 @@ class BaseWWTWidget(HasTraits):
                               'in the viewer (`bool`)').tag(wwt='galacticMode', wwt_reset=True)
     galactic_grid = Bool(False, help='Whether to show a grid relative to the '
                                      'galactic plane (`bool`)').tag(wwt='showGalacticGrid', wwt_reset=True)
-    #galactic_text = Bool(False, help='Whether to show labels for the galactic grid\'s text (`bool`)').tag(wwt='showGalacticGridText', wwt_reset=True)
+    # galactic_text = Bool(False,
+    #                      help='Whether to show labels for the galactic grid\'s text '
+    #                           '(`bool`)').tag(wwt='showGalacticGridText', wwt_reset=True)
     alt_az_grid = Bool(False, help='Whether to show an altitude-azimuth grid '
                                    '(`bool`)').tag(wwt='showAltAzGrid', wwt_reset=True)
-    #alt_az_text = Bool(False, help='Whether to show labels for the altitude-azimuth grid\'s text (`bool`)').tag(wwt='showAltAzGridText', wwt_reset=True)
+    # alt_az_text = Bool(False,
+    #                    help='Whether to show labels for the altitude-azimuth grid\'s text '
+    #                         '(`bool`)').tag(wwt='showAltAzGridText', wwt_reset=True)
 
     local_horizon_mode = Bool(False, help='Whether the view should be that of '
                                           'a local latitude, longitude, and '
@@ -274,8 +282,8 @@ class BaseWWTWidget(HasTraits):
                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude', wwt_reset=True)
     location_latitude = AstropyQuantity(47.633 * u.deg,
                                         help='The latitude of the viewing '
-                                              'location in local horizon mode '
-                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLat', wwt_reset=True)
+                                             'location in local horizon mode '
+                                             '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLat', wwt_reset=True)
     location_longitude = AstropyQuantity(122.133333 * u.deg,
                                          help='The longitude of the viewing '
                                               'location in local horizon mode '
@@ -589,7 +597,7 @@ class BaseWWTWidget(HasTraits):
             If left blank, the WWT viewport will fill the enitre height of the browser.
         """
         dest_root, dest_extension = os.path.splitext(dest)
-        if (dest_extension  and dest_extension != ".zip"):
+        if (dest_extension and dest_extension != ".zip"):
             raise ValueError("'dest' must be either a directory or a .zip file")
 
         is_compressed = dest_extension == '.zip'
@@ -610,10 +618,10 @@ class BaseWWTWidget(HasTraits):
         shutil.copy(os.path.join(nbexten_dir, 'wwt_json_api.js'), script_dir)
         shutil.copy(os.path.join(fig_src_dir, "interactive_figure.js"), script_dir)
 
-        self._serialize_to_json(os.path.join(figure_dir,'wwt_figure.json'), title, max_width, max_height)
+        self._serialize_to_json(os.path.join(figure_dir, 'wwt_figure.json'), title, max_width, max_height)
 
         if len(self.layers) > 0:
-            data_dir = os.path.join(figure_dir,'data')
+            data_dir = os.path.join(figure_dir, 'data')
             if not os.path.exists(data_dir):
                 os.mkdir(data_dir)
             self._save_added_data(data_dir)
@@ -662,8 +670,8 @@ class BaseWWTWidget(HasTraits):
 
     def _serialize_to_json(self, file, title, max_width, max_height):
         state = self._serialize_state(title, max_width, max_height)
-        with open(file,'w') as file_obj:
-            json.dump(state,file_obj)
+        with open(file, 'w') as file_obj:
+            json.dump(state, file_obj)
 
     def _save_added_data(self, dir):
         self.layers._save_all_data_for_serialization(dir)

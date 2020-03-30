@@ -43,6 +43,7 @@ def validate_traits(cls, traits):
                                mismatch,
                                '' if len(mismatch) > 1 else 'es'))
 
+
 def ensure_utc(tm, str_allowed):
     '''
     Helper function to convert a time object (Time, datetime, or UTC string
@@ -65,7 +66,7 @@ def ensure_utc(tm, str_allowed):
         utc_tm = tm.to_datetime(pytz.UTC).isoformat()
 
     else:
-        if str_allowed: # is an ISOT string
+        if str_allowed:  # is an ISOT string
             dt = Time(tm, format='isot').to_datetime(pytz.UTC)
             utc_tm = dt.isoformat()
         else:
