@@ -102,7 +102,7 @@ setup_args = dict(
     install_requires = [
         'numpy>=1.9',
         'matplotlib>1.5',
-        'astropy>=1.0',
+        'astropy>=1.0,!=4.0.1',
         'requests',
         'beautifulsoup4',
         'python-dateutil',
