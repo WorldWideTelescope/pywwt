@@ -220,7 +220,7 @@ function wwt_apply_json_message(wwt, msg) {
         // order.
 
         if (msg['version'] > layer._stretch_version) {
-          layer.setImageScale(msg['stretch'], msg['vmin'], msg['vmax']);
+          layer.setImageScalePhysical(msg['stretch'], msg['vmin'], msg['vmax']);
           layer._stretch_version = msg['version'];
           layer.getFitsImage().transparentBlack = false;
         }
@@ -329,7 +329,7 @@ function wwt_apply_json_message(wwt, msg) {
       } else if(name == 'color') {
         value = wwtlib.Color.fromHex(msg['value']);
       } else if(name == 'colorMapper') {
-        value = wwtlib.ColorMapContainer.fromNestedLists(msg['value']);
+        value = wwtlib.ColorMapContainer.fromArgbList(msg['value']);
       } else if(name == 'altUnit') {
         value = wwtlib.AltUnits[msg['value']];
       } else if(name == 'raUnits') {
