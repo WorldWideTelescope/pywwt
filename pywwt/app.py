@@ -16,5 +16,6 @@ def get_qapp():
 
 def cleanup_qapp():
     global app
-    app.quit()
-    app = None
+    if app is not None:
+        app.exit()
+        app = None

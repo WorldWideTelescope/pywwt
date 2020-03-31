@@ -88,7 +88,7 @@ def _compute_notebook_server_base_url():
     for s in list_running_servers():
         response = requests.get(
             requests.compat.urljoin(s['url'], 'api/sessions'),
-            params = {'token': s.get('token', '')}
+            params={'token': s.get('token', '')}
         )
 
         for n in json.loads(response.text):
@@ -99,6 +99,7 @@ def _compute_notebook_server_base_url():
 
 
 _server_base_url = None
+
 
 def get_notebook_server_base_url():
     """Get the "base_url" of the current Jupyter notebook server.
@@ -144,9 +145,9 @@ def load_jupyter_server_extension(nb_server_app):
         with open(CONFIG, 'w') as f:
             json.dump(config, f)
 
-    mimetypes.add_type('image/fits','.fits')
-    mimetypes.add_type('image/fits','.fts')
-    mimetypes.add_type('image/fits','.fit')
+    mimetypes.add_type('image/fits', '.fits')
+    mimetypes.add_type('image/fits', '.fts')
+    mimetypes.add_type('image/fits', '.fit')
 
     route_pattern = url_path_join(web_app.settings['base_url'], '/wwt/(.*)')
     web_app.add_handlers(host_pattern, [(route_pattern, WWTFileHandler)])

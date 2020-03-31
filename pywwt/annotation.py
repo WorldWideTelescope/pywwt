@@ -2,7 +2,6 @@ import uuid
 from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
 from astropy.coordinates import concatenate, SkyCoord
-import requests
 import numpy as np
 
 from .traits import (Color, ColorWithOpacity, Bool,
@@ -164,7 +163,7 @@ class Circle(Annotation):
 
     def _serialize_state(self):
         state = super(Circle, self)._serialize_state()
-        state['settings']['skyRelative'] =  self.radius.unit.is_equivalent(u.degree)
+        state['settings']['skyRelative'] = self.radius.unit.is_equivalent(u.degree)
         state['center'] = {'ra': self._center.ra.deg,
                            'dec': self._center.dec.deg}
         return state

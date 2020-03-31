@@ -3,14 +3,10 @@
 # because we instead use JSON messages to transmit any changes between the
 # Python and Javascript parts so that we can re-use this for the Qt client.
 
-import sys
-PY2 = sys.version_info[0] == 2
-
 import ipywidgets as widgets
 from traitlets import Unicode, Float, default, link, directional_link
 
-if not PY2:
-    from ipyevents import Event as DOMListener
+from ipyevents import Event as DOMListener
 
 from .core import BaseWWTWidget
 from .layers import ImageLayer
@@ -21,8 +17,7 @@ __all__ = ['WWTJupyterWidget']
 VIEW_MODULE_VERSION = '0.8.0'  # synchronize these with lib/wwt.js
 MODEL_MODULE_VERSION = '0.8.0'
 
-if not PY2:
-    dom_listener = DOMListener()
+dom_listener = DOMListener()
 
 
 @widgets.register
@@ -48,10 +43,9 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     def __init__(self):
         widgets.DOMWidget.__init__(self)
         BaseWWTWidget.__init__(self)
-        if not PY2:
-            dom_listener.source = self
-            dom_listener.prevent_default_action = True
-            dom_listener.watched_events = ['wheel']
+        dom_listener.source = self
+        dom_listener.prevent_default_action = True
+        dom_listener.watched_events = ['wheel']
         self._controls = None
 
     @default('layout')
@@ -107,7 +101,7 @@ class JupyterImageLayer(ImageLayer):
 
     @property
     def controls(self):
-        from .layers import VALID_STRETCHES, VALID_COLORMAPS, UI_COLORMAPS
+        from .layers import VALID_STRETCHES, UI_COLORMAPS
 
         if self._controls is not None:
             return self._controls

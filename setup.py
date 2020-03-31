@@ -99,10 +99,11 @@ setup_args = dict(
         'Framework :: Jupyter',
     ],
     include_package_data = True,
+    python_requires = '>=3.6',
     install_requires = [
         'numpy>=1.9',
         'matplotlib>1.5',
-        'astropy>=1.0',
+        'astropy>=1.0,!=4.0.1',
         'requests',
         'beautifulsoup4',
         'python-dateutil',
@@ -112,9 +113,7 @@ setup_args = dict(
         'traitlets',
         'reproject>=0.4',
         'qtpy',
-        'flask',
-        'flask-cors',
-        'six',
+        'tornado',
         'pytz',
     ],
     extras_require = {

@@ -60,35 +60,35 @@ class ImageryLayers():
         # (og_list) into a dict.
         for layer in og_list:
 
-            if re.search(r'(?i)gamma',layer) is not None:
+            if re.search(r'(?i)gamma', layer) is not None:
                 self._add2dict(self._layers, layer, 'gamma')
-                continue # automatically advance to next iteration
+                continue  # automatically advance to next iteration
 
-            if re.search(r'(?i)x(-|\s)?ray',layer) is not None:
+            if re.search(r'(?i)x(-|\s)?ray', layer) is not None:
                 self._add2dict(self._layers, layer, 'x')
                 continue
 
-            if (re.search(r'(?i)ultra(-|\s)?violet',layer) is not None or
-                re.search(r'(?i)[^\d\w]+uv|uv[^\d\w]+',layer) is not None):
+            if (re.search(r'(?i)ultra(-|\s)?violet', layer) is not None or
+                    re.search(r'(?i)[^\d\w]+uv|uv[^\d\w]+', layer) is not None):
                 self._add2dict(self._layers, layer, 'uv')
                 continue
 
-            if (re.search(r'(?i)optical',layer) is not None or
-                re.search(r'(?i)visible',layer) is not None):
+            if (re.search(r'(?i)optical', layer) is not None or
+                    re.search(r'(?i)visible', layer) is not None):
                 self._add2dict(self._layers, layer, 'visible')
                 continue
 
-            if (re.search(r'(?i)infrared',layer) is not None or
-                re.search(r'(?i)[^\d\w]+ir|ir[^\d\w]+',layer) is not None):
+            if (re.search(r'(?i)infrared', layer) is not None or
+                    re.search(r'(?i)[^\d\w]+ir|ir[^\d\w]+', layer) is not None):
                 self._add2dict(self._layers, layer, 'ir')
                 continue
 
-            if (re.search(r'(?i)microwave',layer) is not None or
-                re.search(r'(?i)[^\d\w]+cmb|cmb[^\d\w]+',layer) is not None):
+            if (re.search(r'(?i)microwave', layer) is not None or
+                    re.search(r'(?i)[^\d\w]+cmb|cmb[^\d\w]+', layer) is not None):
                 self._add2dict(self._layers, layer, 'micro')
                 continue
 
-            if re.search(r'(?i)radio',layer) is not None:
+            if re.search(r'(?i)radio', layer) is not None:
                 self._add2dict(self._layers, layer, 'radio')
                 continue
 
