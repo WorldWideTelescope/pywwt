@@ -220,7 +220,7 @@ class TestLayers:
                        "4,6,3\r\n"
         assert csv_table_win_newline(self.table) == expected_str
 
-    def test_deprecated_api_call(self, capsys):
+    def test_deprecated_api_call(self):
         """For the time being, test that the deprecated name for this function still
         works, but issues a warning
 
