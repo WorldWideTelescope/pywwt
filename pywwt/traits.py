@@ -5,7 +5,6 @@ from traitlets import (TraitType, TraitError,
                        Int as OriginalInt,
                        Unicode as OriginalUnicode)
 from astropy import units as u
-import six
 
 try:
     from matplotlib.colors import to_hex
@@ -89,7 +88,7 @@ class Color(TraitType):
         self.from_cwo = False
 
     def validate(self, obj, value):
-        if (isinstance(value, six.string_types) or
+        if (isinstance(value, str) or
                 (isinstance(value, tuple) and len(value) == 3)):
             return to_hex(value)
         else:

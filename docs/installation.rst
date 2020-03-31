@@ -60,7 +60,7 @@ If you install pywwt using pip or conda as described above, any required
 dependencies will get installed automatically (with the exception of PyQt/PySide
 if using pip). For the record, these dependencies are as follows:
 
-* `Python <https://www.python.org>`_ 2.7, or 3.5 or later
+* `Python <https://www.python.org>`_ 3.6 or later
 * `NumPy <https://www.numpy.org>`_ 1.9 or later
 * `Matplotlib <https://matplotlib.org>`_ 1.5 or later
 * `Astropy <https://www.astropy.org>`_ 1.0 or later
@@ -72,7 +72,6 @@ if using pip). For the record, these dependencies are as follows:
 * `ipyevents <https://github.com/mwcraig/ipyevents>`_
 * `traitlets <https://traitlets.readthedocs.io>`_
 * `reproject <https://reproject.readthedocs.io/>`_
-* `six <https://six.readthedocs.io/>`_
 * `pytz <http://pythonhosted.org/pytz>`_
 
 In addition, if you want to use the Qt widget, you will need:

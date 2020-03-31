@@ -99,6 +99,7 @@ setup_args = dict(
         'Framework :: Jupyter',
     ],
     include_package_data = True,
+    python_requires = '>=3.6',
     install_requires = [
         'numpy>=1.9',
         'matplotlib>1.5',
@@ -113,7 +114,6 @@ setup_args = dict(
         'reproject>=0.4',
         'qtpy',
         'tornado',
-        'six',
         'pytz',
     ],
     extras_require = {
