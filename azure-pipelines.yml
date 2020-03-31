@@ -30,8 +30,8 @@ jobs:
     - windows: py36-test
     - windows: py37-test
 
-    - macos: py36-test
-    - macos: py37-test
+    # - macos: py36-test
+    # - macos: py37-test
 
     - linux: py36-docs
     - windows: py37-docs
