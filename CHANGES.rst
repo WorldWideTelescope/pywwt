@@ -14,6 +14,8 @@
 - Incorporate time series behavior for data layers; add method that
   returns current time in the viewer. [#187]
 
+- Drop support for Python 2.7 and now require at least Python 3.6. [#259]
+
 0.7.0 (2019-09-20)
 ------------------
 
