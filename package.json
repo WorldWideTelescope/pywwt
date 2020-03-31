@@ -31,7 +31,7 @@
     "clean:nbextension": "rimraf pywwt/nbextension/static/index.js"
   },
   "dependencies": {
-    "@jupyter-widgets/base": "^2.0.1"
+    "@jupyter-widgets/base": "^2  || ^3"
   },
   "devDependencies": {
     "rimraf": "^2.6.2",
