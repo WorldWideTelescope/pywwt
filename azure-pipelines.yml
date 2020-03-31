@@ -1,17 +1,38 @@
+resources:
+  repositories:
+  - repository: OpenAstronomy
+    type: github
+    endpoint: WorldWideTelescope
+    name: OpenAstronomy/azure-pipelines-templates
+    ref: master
+
 jobs:
 
-- template: azure-template.yml
+- template: run-tox-env.yml@OpenAstronomy
   parameters:
-    name: Linux
-    os: linux
 
-- template: azure-template.yml
-  parameters:
-    name: Windows
-    os: windows
+    xvfb: true
+    coverage: codecov
+    libraries:
+      apt:
+        - libxkbcommon-x11-0
+        - libgl1-mesa-dev
 
-# Don't test on MacOS X for now
-# - template: azure-template.yml
-#   parameters:
-#     name: MacOSX
-#     os: macosx
+    envs:
+
+    - linux: codestyle
+      libraries: {}
+      coverage: 'false'
+
+    - linux: py36-test
+    - linux: py37-test
+
+    - windows: py36-test
+    - windows: py37-test
+
+    - macos: py36-test
+    - macos: py37-test
+
+    - linux: py36-docs
+    - windows: py37-docs
+    - macos: py37-docs
