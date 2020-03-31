@@ -225,13 +225,12 @@ class TestLayers:
         works, but issues a warning
 
         """
-        import warnings
 
         assert len(self.client.layers) == 0
         assert str(self.client.layers) == 'Layer manager with no layers'
 
-        with warnings.catch_warnings(record=True) as w:
-            layer1 = self.client.layers.add_data_layer(table=self.table)
+        with pytest.warns(DeprecationWarning):
+            self.client.layers.add_data_layer(table=self.table)
 
         assert len(self.client.layers) == 1
         assert str(self.client.layers) == ('Layer manager with 1 layers:\n\n'
