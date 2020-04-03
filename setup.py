@@ -7,10 +7,13 @@
 from __future__ import print_function
 import io
 import os
+import sys
+
 from glob import glob
 from os.path import join as pjoin
 
 
+sys.path.append('.')
 from setupbase import (
     create_cmdclass, install_npm, ensure_targets,
     find_packages, combine_commands, ensure_python,
@@ -24,7 +27,7 @@ from setuptools import setup
 name = 'pywwt'
 
 # Ensure a valid python version
-ensure_python('>=2.7')
+ensure_python('>=3.6')
 
 # Get our version
 version = get_version(pjoin(name, '_version.py'))
@@ -89,13 +92,10 @@ setup_args = dict(
         'License :: OSI Approved :: BSD License',
         'Topic :: Multimedia :: Graphics',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Framework :: Jupyter',
     ],
     include_package_data = True,

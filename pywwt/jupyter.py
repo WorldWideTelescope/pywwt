@@ -11,11 +11,12 @@ from ipyevents import Event as DOMListener
 from .core import BaseWWTWidget
 from .layers import ImageLayer
 from .jupyter_server import serve_file
+from . import __version__
 
 __all__ = ['WWTJupyterWidget']
 
-VIEW_MODULE_VERSION = '0.8.0'  # synchronize these with lib/wwt.js
-MODEL_MODULE_VERSION = '0.8.0'
+VIEW_MODULE_VERSION = __version__
+MODEL_MODULE_VERSION = __version__
 
 dom_listener = DOMListener()
 

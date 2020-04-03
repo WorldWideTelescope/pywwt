@@ -7,9 +7,14 @@ import pytest
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 
-from qtpy.QtWebEngineWidgets import WEBENGINE
+from pywwt.conftest import QT_INSTALLED
 
-from matplotlib.testing.compare import compare_images
+if QT_INSTALLED:
+    from qtpy.QtWebEngineWidgets import WEBENGINE
+else:
+    pytestmark = pytest.mark.skip
+
+from matplotlib.testing.compare import compare_images  # noqa
 
 M42 = SkyCoord.from_name('M42')
 

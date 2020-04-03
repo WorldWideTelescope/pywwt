@@ -7,6 +7,8 @@ try:
     import qtpy
 except ImportError:
     QT_INSTALLED = False
+except Exception:  # will catch PythonQtError
+    QT_INSTALLED = False
 else:
     QT_INSTALLED = True
 
@@ -96,24 +98,23 @@ def pytest_unconfigure(config):
 
 REFERENCE_TIME = datetime(2017, 2, 1, 0, 0, 0, 0)
 
+if QT_INSTALLED:
 
-@pytest.fixture(scope='session')
-def wwt_qt_client():
-    from .qt import WWTQtClient
-    wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
-    return wwt
+    @pytest.fixture(scope='session')
+    def wwt_qt_client():
+        from .qt import WWTQtClient
+        wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
+        return wwt
 
+    @pytest.fixture(scope='function')
+    def wwt_qt_client_isolated():
+        from .qt import WWTQtClient
+        wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
+        return wwt
 
-@pytest.fixture(scope='function')
-def wwt_qt_client_isolated():
-    from .qt import WWTQtClient
-    wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
-    return wwt
-
-
-@pytest.fixture(autouse=True)
-def reset_state(wwt_qt_client):
-    wwt_qt_client.reset()
-    wwt_qt_client.pause_time()
-    wwt_qt_client.set_current_time(REFERENCE_TIME)
-    yield  # This yields the test itself
+    @pytest.fixture(autouse=True)
+    def reset_state(wwt_qt_client):
+        wwt_qt_client.reset()
+        wwt_qt_client.pause_time()
+        wwt_qt_client.set_current_time(REFERENCE_TIME)
+        yield  # This yields the test itself

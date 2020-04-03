@@ -8,6 +8,8 @@ from astropy.table import Table
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 
+from pywwt.conftest import QT_INSTALLED  # noqa
+
 from .test_qt_widget import assert_widget_image
 
 from ..core import BaseWWTWidget
@@ -296,6 +298,7 @@ def test_guess_xyz_columns(colnames, expected):
     assert guess_xyz_columns(colnames) == expected
 
 
+@pytest.mark.skipif('not QT_INSTALLED')
 def test_table_layers_image(tmpdir, wwt_qt_client):
 
     # A series of tests that excercise the layer functionality and compare
@@ -380,6 +383,7 @@ def test_table_layers_image(tmpdir, wwt_qt_client):
         assert_widget_image(tmpdir, wwt, 'sky_layers.png')
 
 
+@pytest.mark.skipif('not QT_INSTALLED')
 def test_table_layers_cartesian_image(tmpdir, wwt_qt_client):
 
     # A series of tests that excercise the layer functionality and compare
@@ -421,6 +425,7 @@ def test_table_layers_cartesian_image(tmpdir, wwt_qt_client):
         assert_widget_image(tmpdir, wwt, 'sky_layers_cartesian.png')
 
 
+@pytest.mark.skipif('not QT_INSTALLED')
 def test_image_layer_equ(tmpdir, wwt_qt_client_isolated):
 
     # A series of tests that excercise the image layer functionality and compare
@@ -456,6 +461,7 @@ def test_image_layer_equ(tmpdir, wwt_qt_client_isolated):
         assert_widget_image(tmpdir, wwt, 'image_layer_equ.png')
 
 
+@pytest.mark.skipif('not QT_INSTALLED')
 def test_image_layer_gal(tmpdir, wwt_qt_client_isolated):
 
     # A series of tests that excercise the image layer functionality and compare

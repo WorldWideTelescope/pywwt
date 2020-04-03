@@ -13,10 +13,7 @@ date, using::
 to review the commit history. Then edit the following files to update the
 version numbers:
 
-* ``docs/conf.py``
 * ``pywwt/_version.py`` (make sure the string in the tuple is set to ``final``)
-* ``pywwt/jupyter.py``
-* ``lib/wwt.js``
 * ``package.json``
 
 At this point, commit all changes and use the following for the commit message::
@@ -42,29 +39,29 @@ Push the current branch to GitHub and create a pull request against
 ``master``. Get final validation that the CI likes the release commit, but do
 *not* merge the PR yet.
 
-Once you are satisfied that the release is good you can upload the release
-using twine::
-
-    twine upload pywwt-*.tar.gz pywwt-*-none-any.whl
-
-If you don't have twine installed, you can get it with ``pip install twine``.
-
-Next, go back to the root of the repository and publish the package to npm with::
-
-    git clean -fxd
-    npm install
-    npm publish
-
-At this point, you can tag the release with::
+Once you are satisfied that the release is good, you can merge in the pull
+request. Next, fetch the latest master branch from the repository and tag
+the release with::
 
     git tag -m v<version> v<version>
 
 If you have PGP keys set up, you can sign the tag by also including ``-s``.
 
+Push the tag to GitHub::
+
+    git push --tags
+
+Azure should now run the continuous integration on the tag and publish the packages
+to PyPI and npm. If not, resolve any issues, you can always delete the tag from
+the repository, fix any issues, and try again. Once the release is on PyPI and npm,
+you can proceed.
+
 If this release is a new minor series (``0.N.0``), create a new branch for point
 releases as well::
 
     git branch v0.N.x
+
+and push that branch to GitHub.
 
 Now change the versions in the files listed above to the next version. For the
 ``pywwt/_version.py`` file, change ``final`` to ``dev``. Commit the changes
@@ -82,13 +79,6 @@ ReadTheDocs::
 Here, ``wwt`` is the name of the Git remote corresponding to
 ``WorldWideTelescope/pywwit.git`` on GitHub. A ``-f`` flag may be necessary if
 the previous release had backports cherry-picked from ``master``.
-
-When the CI on your release branch has finished, merge it into ``master``.
-Push your release tag::
-
-    git push --tags
-
-If necessary, also push your ``v0.N.x`` point-release branch.
 
 Finally, create a new release on GitHub. Copy the release notes from
 ``CHANGES.rst``, adapting the ReStructuredText markup to Markdown.
