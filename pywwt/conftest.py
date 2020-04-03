@@ -98,7 +98,6 @@ def pytest_unconfigure(config):
 
 REFERENCE_TIME = datetime(2017, 2, 1, 0, 0, 0, 0)
 
-
 if QT_INSTALLED:
 
     @pytest.fixture(scope='session')
@@ -106,7 +105,6 @@ if QT_INSTALLED:
         from .qt import WWTQtClient
         wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
         return wwt
-
 
     @pytest.fixture(scope='function')
     def wwt_qt_client_isolated():

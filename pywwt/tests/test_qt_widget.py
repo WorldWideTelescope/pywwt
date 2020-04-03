@@ -14,7 +14,7 @@ if QT_INSTALLED:
 else:
     pytestmark = pytest.mark.skip
 
-from matplotlib.testing.compare import compare_images
+from matplotlib.testing.compare import compare_images  # noqa
 
 M42 = SkyCoord.from_name('M42')
 

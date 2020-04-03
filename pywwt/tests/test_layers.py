@@ -8,7 +8,7 @@ from astropy.table import Table
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 
-from pywwt.conftest import QT_INSTALLED
+from pywwt.conftest import QT_INSTALLED  # noqa
 
 from .test_qt_widget import assert_widget_image
 
