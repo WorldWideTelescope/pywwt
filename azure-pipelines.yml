@@ -40,7 +40,7 @@ jobs:
 - template: publish.yml@OpenAstronomy
   parameters:
     test_command: pytest -p no:warnings --pyargs pywwt
-    test_extras: test
+    test_extras: test,qt
     ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
       pypi_connection_name : 'pypi_endpoint'
       npm_connection_name : 'npm_endpoint'
