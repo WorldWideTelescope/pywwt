@@ -1,6 +1,7 @@
 include LICENSE.rst
 include README.rst
 include CHANGES.rst
+include pyproject.toml
 
 include setupbase.py
 include pytest.ini

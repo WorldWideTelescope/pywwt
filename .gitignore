@@ -68,3 +68,4 @@ distribute-*.tar.gz
 
 js/node_modules
 node_modules
+*.whl
