@@ -62,7 +62,8 @@ copyright = '2017, ' + author
 # built documents.
 #
 # The short X.Y version.
-version = '0.8.0.dev0'
+from pywwt import __version__ as version
+version = version
 # The full version, including alpha/beta/rc tags.
 release = version
 
