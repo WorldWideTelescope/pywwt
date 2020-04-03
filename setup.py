@@ -7,10 +7,13 @@
 from __future__ import print_function
 import io
 import os
+import sys
+
 from glob import glob
 from os.path import join as pjoin
 
 
+sys.path.append('.')
 from setupbase import (
     create_cmdclass, install_npm, ensure_targets,
     find_packages, combine_commands, ensure_python,
