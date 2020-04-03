@@ -23,6 +23,7 @@ jobs:
     - linux: codestyle
       libraries: {}
       coverage: 'false'
+      name: codestyle
 
     - linux: py36-test
       name: linux_py36_test
@@ -69,5 +70,6 @@ jobs:
     # We require the two main linux jobs to pass before we can do a release. We
     # don't require the other jobs to pass since they can sometimes be flakey.
     dependsOn:
+    - codestyle
     - linux_py36_test
     - linux_py37_test
