@@ -1,4 +1,4 @@
-0.8.0 (unreleased)
+0.8.0 (2020-04-03)
 ------------------
 
 - Improve performance when changing size parameters for tabular layers. In these
@@ -15,6 +15,8 @@
   returns current time in the viewer. [#187]
 
 - Drop support for Python 2.7 and now require at least Python 3.6. [#259]
+
+- Fix compatibility with Jupyter 2.0. [#260]
 
 0.7.0 (2019-09-20)
 ------------------
