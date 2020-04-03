@@ -52,7 +52,7 @@ Push the tag to GitHub::
     git push --tags
 
 Azure should now run the continuous integration on the tag and publish the packages
-to PyPI and npm. If not, resolve any issues, you can alwasy delete the tag from
+to PyPI and npm. If not, resolve any issues, you can always delete the tag from
 the repository, fix any issues, and try again. Once the release is on PyPI and npm,
 you can proceed.
 
