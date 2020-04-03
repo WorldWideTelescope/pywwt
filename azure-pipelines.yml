@@ -25,21 +25,39 @@ jobs:
       coverage: 'false'
 
     - linux: py36-test
+      name: linux_py36_test
+
     - linux: py37-test
+      name: linux_py37_test
 
     - windows: py36-test
+      name: windows_py36_test
+
     - windows: py37-test
+      name: windows_py37_test
 
     # - macos: py36-test
+    #   name: macos_py36_test
+
     # - macos: py37-test
+    #   name: macos_py37_test
 
     - linux: py36-docs
+      name: linux_py36_docs
+
     - windows: py37-docs
+      name: windows_py37_docs
+
     - macos: py37-docs
+      name: macos_py37_test
 
 - template: publish.yml@OpenAstronomy
   parameters:
     test_command: pytest -p no:warnings --pyargs pywwt
+    # Note that we don't include qt below in the test requirements as this can
+    # lead to segfaults since the publishing template doesn't handle virtual
+    # displays. However, we can make sure the publish step is only done if some
+    # of the main test configurations pass.
     test_extras: test
     ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
       pypi_connection_name : 'pypi_endpoint'
@@ -48,3 +66,8 @@ jobs:
     - sdist
     - wheels_universal
     - npm
+    # We require the two main linux jobs to pass before we can do a release. We
+    # don't require the other jobs to pass since they can sometimes be flakey.
+    dependsOn:
+    - linux_py36_test
+    - linux_py37_test
