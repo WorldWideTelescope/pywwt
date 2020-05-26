@@ -58,7 +58,7 @@ region of the sky, given a certain set of coordinates in the form of an astropy
 :class:`~astropy.coordinates.SkyCoord` object and a field of view (zoom level in
 astropy pixel units) for the viewer. You can read more about creating
 :class:`~astropy.coordinates.SkyCoord` objects `here
-<http://docs.astropy.org/en/stable/coordinates/index.html>`_. One of the useful
+<https://docs.astropy.org/en/stable/coordinates/index.html>`_. One of the useful
 features of this class is the ability to create coordinates based on an object
 name, so we can use this here to center on a particular object::
 

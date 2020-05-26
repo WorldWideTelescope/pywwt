@@ -69,7 +69,7 @@ class WWTWindowsClient(object):
         Changes the view depending on the supplied parameter.
         For a list of parameters see:
 
-        https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#move
+        https://docs.worldwidetelescope.org/lcapi-guide/1/lcapicommands/#move
 
         Parameters
         ----------
@@ -267,7 +267,7 @@ class WWTWindowsClient(object):
         Change user interface settings, without altering the
         layer data. For the settings list see:
 
-        https://worldwidetelescope.gitbook.io/layer-control-reference/lcapicommands#uisettings
+        https://docs.worldwidetelescope.org/lcapi-guide/1/lcapicommands/#uisettings
 
         Parameters
         ----------

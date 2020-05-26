@@ -11,7 +11,7 @@ used to show image-based data on the celestial sphere.
 
 The main layer type for point-data at the moment is
 :class:`~pywwt.layers.TableLayer`. This layer type can be created using an
-`astropy <http://docs.astropy.org/en/stable/table/index.html>`__
+`astropy <https://docs.astropy.org/en/stable/table/index.html>`__
 :class:`~astropy.table.Table` as well as a coordinate frame, which can be e.g.
 ``'Sky'`` or the name of one of the planets or satellites. The main layer type
 for images is :class:`~pywwt.layers.ImageLayer`.
@@ -24,7 +24,7 @@ Loading point data
 To start off, let's look at how to show a simple set positions on the sky. We'll
 use the `Open Exoplanet Catalogue <http://openexoplanetcatalogue.com>`_ as a
 first example. We start off by using `astropy.table
-<http://docs.astropy.org/en/stable/table/index.html>`_ to read in a
+<https://docs.astropy.org/en/stable/table/index.html>`_ to read in a
 comma-separated values (CSV) file of the data::
 
     >>> from astropy.table import Table
@@ -135,7 +135,7 @@ the time series attribute and specifying the proper column::
     >>> layer.time_att = 'time'
 
 (Please note that time columns must contain 
-`astropy <http://docs.astropy.org/en/stable/time/index.html>`__
+`astropy <https://docs.astropy.org/en/stable/time/index.html>`__
 :class:`~astropy.time.Time` objects, :class:`~datetime.datetime` objects,  or 
 `ISOT  
 <https://docs.astropy.org/en/stable/api/astropy.time.TimeISOT.html#astropy.time.

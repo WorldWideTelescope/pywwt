@@ -47,7 +47,7 @@ can do straight in your browser with our cloud-based Jupyter notebooks. Here
 are some examples:
 
 * `Visualize Tabular Data from the NASA Exoplanet Archive
-  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/NASA%20Exoplanet%Archive.ipynb>`__
+  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/NASA%20Exoplanet%20Archive.ipynb>`__
 * `Visualize Imagery of W5 and SN2011fe
   <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Visualizing%20Imagery.ipynb>`__
 
