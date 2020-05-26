@@ -127,7 +127,7 @@ a factor of 10000, use::
 It is also possible to specify a time in the viewer yourself through the 
 :meth:`~pywwt.BaseWWTWidget.set_current_time` method as long as the time
 provided is a :class:`~datetime.datetime` or an
-`astropy <http://docs.astropy.org/en/stable/time/index.html>`_
+`astropy <https://docs.astropy.org/en/stable/time/index.html>`_
 :class:`~astropy.time.Time` object::
 
     >>> from astropy.time import Time
