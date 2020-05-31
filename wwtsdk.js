@@ -1,624 +1,727 @@
-/**
-* WorldWide Telescope Web Client
-* Copyright 2014-2015 WorldWide Telescope
-* Licensed under MIT (https://github.com/WorldWideTelescope/wwt-web-client/blob/master/LICENSE.md)
-**/
+/* AAS WorldWide Telescope WebGL engine */
+/* eslint-disable */
+/* (this file ends up so big that eslint takes ~forever to run on it) */
+/* Licensed under the MIT License. */
+
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define([], factory);
+  } else if (typeof module === 'object' && module.exports) {
+    // Node. Does not work with strict CommonJS, but
+    // only CommonJS-like environments that support module.exports,
+    // like Node.
+    module.exports = factory();
+  } else {
+    // Browser globals (root is window)
+    root.wwtlib = factory();
+  }
+}(typeof self !== 'undefined' ? self : this, function () {
+
+// (umd_header.js intentionally incomplete -- it is concatenated to form index.js)
 /*! Script# Runtime
  * Designed and licensed for use and distribution with Script#-generated scripts.
  * Copyright (c) 2012, Nikhil Kothari, and the Script# Project.
  * More information at http://scriptsharp.com
  */
 
-"use strict";
+function _ss() {
+  "use strict";
 
-(function(global) {
-  function _ss() {
+  // Various Helpers/Utilities
 
-// Various Helpers/Utilities
-
-function _nop() {
-}
-
-function isValue(o) {
-  return (o !== null) && (o !== undefined);
-}
-
-function _value(args) {
-  for (var i = 2, l = args.length; i < l; i++) {
-    if (isValue(args[i])) {
-      return args[i];
-    }
-  }
-  return null;
-}
-function value(a, b) {
-  return isValue(a) ? a : isValue(b) ? b : _value(arguments);
-}
-
-function extend(o, items) {
-  for (var n in items) {
-    o[n] = items[n];
-  }
-  return o;
-}
-
-function parseBoolean(s) {
-  return (s.toLowerCase() == 'true');
-}
-
-function parseRegExp(s) {
-  if (s[0] == '/') {
-    var endSlashIndex = s.lastIndexOf('/');
-    if (endSlashIndex > 1) {
-      var expression = s.substring(1, endSlashIndex);
-      var flags = s.substr(endSlashIndex + 1);
-      return new RegExp(expression, flags);
-    }
+  function _nop() {
   }
 
-  return null;
-}
-
-function parseNumber(s) {
-  if (!s || !s.length) {
-    return 0;
-  }
-  if ((s.indexOf('.') >= 0) || (s.indexOf('e') >= 0) ||
-      endsWith(s, 'f') || endsWith(s, 'F')) {
-    return parseFloat(s);
-  }
-  return parseInt(s, 10);
-}
-
-function parseDate(s) {
-  var t = Date.parse(s);
-  return isNaN(t) ? undefined : new Date(t);
-}
-
-function truncate(n) {
-  return (n >= 0) ? Math.floor(n) : Math.ceil(n);
-}
-
-function now() {
-  return new Date();
-}
-
-function today() {
-  var d = new Date();
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-}
-
-function compareDates(d1, d2) {
-  return (d1 === d2) ? true : ((isValue(d1) && isValue(d2)) ? (d1.getTime() == d2.getTime()) : false);
-}
-
-function _popStackFrame(e) {
-  if (!isValue(e.stack) ||
-      !isValue(e.fileName) ||
-      !isValue(e.lineNumber)) {
-    return;
+  function isValue(o) {
+    return (o !== null) && (o !== undefined);
   }
 
-  var stackFrames = e.stack.split('\n');
-  var currentFrame = stackFrames[0];
-  var pattern = e.fileName + ':' + e.lineNumber;
-  while (isValue(currentFrame) && currentFrame.indexOf(pattern) === -1) {
-    stackFrames.shift();
-    currentFrame = stackFrames[0];
-  }
-
-  var nextFrame = stackFrames[1];
-  if (!isValue(nextFrame)) {
-    return;
-  }
-
-  var nextFrameParts = nextFrame.match(/@(.*):(\d+)$/);
-  if (!isValue(nextFrameParts)) {
-    return;
-  }
-
-  stackFrames.shift();
-  e.stack = stackFrames.join('\n');
-  e.fileName = nextFrameParts[1];
-  e.lineNumber = parseInt(nextFrameParts[2], 10);
-}
-
-function error(message, errorInfo, innerException) {
-  var e = new Error(message);
-  if (errorInfo) {
-    for (var v in errorInfo) {
-      e[v] = errorInfo[v];
-    }
-  }
-  if (innerException) {
-    e.innerException = innerException;
-  }
-
-  _popStackFrame(e);
-  return e;
-}
-
-function fail(message) {
-  console.assert(false, message);
-  if (global.navigator) {
-    eval('debugger;');
-  }
-}
-
-// Collections
-
-function toArray(obj) {
-  return obj ? (typeof obj == 'string' ? JSON.parse('(' + obj + ')') : Array.prototype.slice.call(obj)) : null;
-}
-function removeItem(a, item) {
-  var index = a.indexOf(item);
-  return index >= 0 ? (a.splice(index, 1), true) : false;
-}
-
-function clearKeys(obj) {
-  for (var key in obj) {
-    delete obj[key];
-  }
-}
-function keyExists(obj, key) {
-  return obj[key] !== undefined;
-}
-function keys(obj) {
-  if (Object.keys) {
-    return Object.keys(obj);
-  }
-  var keys = [];
-  for (var key in obj) {
-    keys.push(key);
-  }
-  return keys;
-}
-function keyCount(obj) {
-  return keys(obj).length;
-}
-
-function Enumerator(obj, keys) {
-  var index = -1;
-  var length = keys ? keys.length : obj.length;
-  var lookup = keys ? function() { return { key: keys[index], value: obj[keys[index]] }; } :
-                      function() { return obj[index]; };
-
-  this.current = null;
-  this.moveNext = function() {
-    index++;
-    this.current = lookup();
-    return index < length;
-  };
-  this.reset = function() {
-    index = -1;
-    this.current = null;
-  };
-}
-var _nopEnumerator = {
-  current: null,
-  moveNext: function() { return false; },
-  reset: _nop
-};
-
-function enumerate(o) {
-  if (!isValue(o)) {
-    return _nopEnumerator;
-  }
-  if (o.getEnumerator) {
-    return o.getEnumerator();
-  }
-  if (o.length !== undefined) {
-    return new Enumerator(o);
-  }
-  return new Enumerator(o, keys(o));
-}
-
-function Stack() {
-  this.count = 0;
-  this._items = [];
-}
-var Stack$ = {
-
-  clear: function() {
-    this._items.length = 0;
-    this.count = 0;
-  },
-  contains: function(item) {
-    for (var i = this.count - 1; i >= 0; i--) {
-      if (this._items[i] === item) {
-        return true;
+  function _value(args) {
+    for (var i = 2, l = args.length; i < l; i++) {
+      if (isValue(args[i])) {
+        return args[i];
       }
     }
-    return false;
-  },
-  getEnumerator: function() {
-    return new Enumerator(this._items.reverse());
-  },
-  peek: function() {
-    return this._items[this.count - 1];
-  },
-  push: function(item) {
-    this._items.push(item);
-    this.count++;
-  },
-  pop: function() {
-    if (this.count) {
-      this.count--;
-      return this._items.pop();
-    }
-    return undefined;
-  }
-}
-
-function Queue() {
-  this.count = 0;
-  this._items = [];
-  this._offset = 0;
-}
-function _cleanQueue(q) {
-  q._items = q._items.slice(q._offset);
-  q._offset = 0;
-}
-var Queue$ = {
-
-  clear: function() {
-    this._items.length = 0;
-    this._offset = 0;
-    this.count = 0;
-  },
-  contains: function(item) {
-    for (var i = this._offset, length = this._items.length; i <= length; i++) {
-      if (this._items[i] === item) {
-        return true;
-      }
-    }
-    return false;
-  },
-  dequeue: function() {
-    if (this.count) {
-      var item = this._items[this._offset];
-      if (++this._offset * 2 >= this._items.length) {
-        _cleanQueue(this);
-      }
-      this.count--;
-      return item;
-    }
-    return undefined;
-  },
-  enqueue: function(item) {
-    this._items.push(item);
-    this.count++;
-  },
-  getEnumerator: function() {
-    if (this._offset != 0) {
-      _cleanQueue(this);
-    }
-    return new Enumerator(this._items);
-  },
-  peek: function() {
-    return this._items.length ? this._items[this._offset] : undefined;
-  }
-}
-
-// String
-
-function string(arg1, arg2) {
-  if (typeof arg2 == 'number') {
-    return arg2 > 1 ? new Array(arg2 + 1).join(arg1) : arg1;
-  }
-  return Array.prototype.join.call(arguments, '');
-}
-
-function emptyString(s) {
-  return !s || !s.length;
-}
-
-function whitespace(s) {
-  return emptyString(s) || !s.replace(/^\s*/, '').length;
-}
-
-function compareStrings(s1, s2, ignoreCase) {
-  s1 = s1 || '', s2 = s2 || '';
-  ignoreCase ? (s1 = s1.toUpperCase(), s2 = s2.toUpperCase()) : 0;
-  return (s1 === s2) ? 0 : (s1 < s2) ? -1 : 1;
-}
-
-var _formatPlaceHolderRE = /(\{[^\}^\{]+\})/g;
-var _formatters = {};
-
-function format(cultureOrFormat) {
-  var culture = neutralCulture;
-  var format = cultureOrFormat;
-  var values = Array.prototype.slice.call(arguments, 1);
-
-  if (cultureOrFormat.constructor != String) {
-    culture = cultureOrFormat;
-    format = values[0];
-    values = values.slice(1);
-  }
-
-  return format.replace(_formatPlaceHolderRE,
-    function(str, match) {
-      var index = parseInt(match.substr(1), 10);
-      var value = values[index];
-      if (!isValue(value)) {
-        return '';
-      }
-
-      var formatter = _formatters[typeName(value)];
-      if (formatter) {
-        var formatSpec = '';
-        var formatIndex = match.indexOf(':');
-        if (formatIndex > 0) {
-          formatSpec = match.substring(formatIndex + 1, match.length - 1);
-        }
-        if (formatSpec && (formatSpec != 'i')) {
-          return formatter(value, formatSpec, culture);
-        }
-      }
-      return culture == neutralCulture ? value.toString() : value.toLocaleString();
-    });
-}
-
-function trim(s, tc) {
-  if (tc || !String.prototype.trim) {
-    tc = tc ? tc.join('') : null;
-    var r = tc ? new RegExp('^[' + tc + ']+|[' + tc + ']+$', 'g') : /^\s+|\s+$/g;
-    return s.replace(r, '');
-  }
-  return s.trim();
-}
-function trimStart(s, tc) {
-  var r = tc ? new RegExp('^[' + tc.join('') + ']+') : /^\s+/;
-  return s.replace(r, '');
-}
-function trimEnd(s, tc) {
-  var r = tc ? new RegExp('[' + tc.join('') + ']+$') : /\s+$/;
-  return s.replace(r, '');
-}
-function startsWith(s, prefix) {
-  if (emptyString(prefix)) {
-    return true;
-  }
-  if (emptyString(s) || (prefix.length > s.length)) {
-    return false;
-  }
-  return s.substr(0, prefix.length) == prefix;
-}
-function endsWith(s, suffix) {
-  if (emptyString(suffix)) {
-    return true;
-  }
-  if (emptyString(s) || (suffix.length > s.length)) {
-    return false;
-  }
-  return s.substr(-suffix.length) == suffix;
-}
-function padLeft(s, totalWidth, ch) {
-  return (s.length < totalWidth) ? string(ch || ' ', totalWidth - s.length) + s : s;
-}
-function padRight(s, totalWidth, ch) {
-  return (s.length < totalWidth) ? s + string(ch || ' ', totalWidth - s.length) : s;
-}
-function removeString(s, index, count) {
-  if (!count || ((index + count) > s.length)) {
-    return s.substr(0, index);
-  }
-  return s.substr(0, index) + s.substr(index + count);
-}
-function insertString(s, index, value) {
-  if (!value) {
-    return s;
-  }
-  if (!index) {
-    return value + s;
-  }
-  return s.substr(0, index) + value + s.substr(index);
-}
-function replaceString(s, oldValue, newValue) {
-  return s.split(oldValue).join(newValue || '');
-}
-
-// Delegate Functionality
-
-function _bindList(fnList) {
-  var d = function() {
-    var args = arguments;
-    var result = null;
-    for (var i = 0, l = fnList.length; i < l; i++) {
-      result = args.length ? fnList[i].apply(null, args) : fnList[i].call(null);
-    }
-    return result;
-  };
-  d._fnList = fnList;
-  return d;
-}
-
-function bind(fn, o) {
-  if (!o) {
-    return fn;
-  }
-
-  var name = null;
-  fn = typeof fn == 'string' ? o[name = fn] : fn;
-
-  var cache = name ? o.$$b || (o.$$b = {}) : null;
-  var binding = cache ? cache[name] : null;
-
-  if (!binding) {
-    // Create a function that invokes the specified function, in the
-    // context of the specified object.
-    binding = function() {
-      return fn.apply(o, arguments);
-    };
-
-    if (cache) {
-      cache[name] = binding;
-    }
-  }
-  return binding;
-}
-
-function bindAdd(binding, value) {
-  if (!binding) {
-    return value;
-  }
-  if (!value) {
-    return binding;
-  }
-
-  var fnList = [].concat(binding._fnList || binding, value);
-  return _bindList(fnList);
-}
-
-function bindSub(binding, value) {
-  if (!binding) {
     return null;
   }
-  if (!value) {
+
+  function value(a, b) {
+    return isValue(a) ? a : isValue(b) ? b : _value(arguments);
+  }
+
+  function extend(o, items) {
+    for (var n in items) {
+      o[n] = items[n];
+    }
+    return o;
+  }
+
+  function parseBoolean(s) {
+    return (s.toLowerCase() == 'true');
+  }
+
+  function parseRegExp(s) {
+    if (s[0] == '/') {
+      var endSlashIndex = s.lastIndexOf('/');
+      if (endSlashIndex > 1) {
+        var expression = s.substring(1, endSlashIndex);
+        var flags = s.substr(endSlashIndex + 1);
+        return new RegExp(expression, flags);
+      }
+    }
+
+    return null;
+  }
+
+  function parseNumber(s) {
+    if (!s || !s.length) {
+      return 0;
+    }
+    if ((s.indexOf('.') >= 0) || (s.indexOf('e') >= 0) ||
+      endsWith(s, 'f') || endsWith(s, 'F')) {
+      return parseFloat(s);
+    }
+    return parseInt(s, 10);
+  }
+
+  function parseDate(s) {
+    var t = Date.parse(s);
+    return isNaN(t) ? undefined : new Date(t);
+  }
+
+  function truncate(n) {
+    return (n >= 0) ? Math.floor(n) : Math.ceil(n);
+  }
+
+  function now() {
+    return new Date();
+  }
+
+  function today() {
+    var d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+
+  function compareDates(d1, d2) {
+    return (d1 === d2) ? true : ((isValue(d1) && isValue(d2)) ? (d1.getTime() == d2.getTime()) : false);
+  }
+
+  function _popStackFrame(e) {
+    if (!isValue(e.stack) ||
+      !isValue(e.fileName) ||
+      !isValue(e.lineNumber)) {
+      return;
+    }
+
+    var stackFrames = e.stack.split('\n');
+    var currentFrame = stackFrames[0];
+    var pattern = e.fileName + ':' + e.lineNumber;
+    while (isValue(currentFrame) && currentFrame.indexOf(pattern) === -1) {
+      stackFrames.shift();
+      currentFrame = stackFrames[0];
+    }
+
+    var nextFrame = stackFrames[1];
+    if (!isValue(nextFrame)) {
+      return;
+    }
+
+    var nextFrameParts = nextFrame.match(/@(.*):(\d+)$/);
+    if (!isValue(nextFrameParts)) {
+      return;
+    }
+
+    stackFrames.shift();
+    e.stack = stackFrames.join('\n');
+    e.fileName = nextFrameParts[1];
+    e.lineNumber = parseInt(nextFrameParts[2], 10);
+  }
+
+  function error(message, errorInfo, innerException) {
+    var e = new Error(message);
+    if (errorInfo) {
+      for (var v in errorInfo) {
+        e[v] = errorInfo[v];
+      }
+    }
+    if (innerException) {
+      e.innerException = innerException;
+    }
+
+    _popStackFrame(e);
+    return e;
+  }
+
+  function fail(message) {
+    console.assert(false, message);
+    if (global.navigator) {
+      eval('debugger;');
+    }
+  }
+
+  // Collections
+
+  function toArray(obj) {
+    return obj ? (typeof obj == 'string' ? JSON.parse('(' + obj + ')') : Array.prototype.slice.call(obj)) : null;
+  }
+
+  function removeItem(a, item) {
+    var index = a.indexOf(item);
+    return index >= 0 ? (a.splice(index, 1), true) : false;
+  }
+
+  function clearKeys(obj) {
+    for (var key in obj) {
+      delete obj[key];
+    }
+  }
+
+  function keyExists(obj, key) {
+    return obj[key] !== undefined;
+  }
+
+  function keys(obj) {
+    if (Object.keys) {
+      return Object.keys(obj);
+    }
+    var keys = [];
+    for (var key in obj) {
+      keys.push(key);
+    }
+    return keys;
+  }
+
+  function keyCount(obj) {
+    return keys(obj).length;
+  }
+
+  function Enumerator(obj, keys) {
+    var index = -1;
+    var length = keys ? keys.length : obj.length;
+    var lookup = keys ? function () { return { key: keys[index], value: obj[keys[index]] }; } :
+      function () { return obj[index]; };
+
+    this.current = null;
+    this.moveNext = function () {
+      index++;
+      this.current = lookup();
+      return index < length;
+    };
+    this.reset = function () {
+      index = -1;
+      this.current = null;
+    };
+  }
+
+  var _nopEnumerator = {
+    current: null,
+    moveNext: function () { return false; },
+    reset: _nop
+  };
+
+  function enumerate(o) {
+    if (!isValue(o)) {
+      return _nopEnumerator;
+    }
+    if (o.getEnumerator) {
+      return o.getEnumerator();
+    }
+    if (o.length !== undefined) {
+      return new Enumerator(o);
+    }
+    return new Enumerator(o, keys(o));
+  }
+
+  function Stack() {
+    this.count = 0;
+    this._items = [];
+  }
+
+  var Stack$ = {
+    clear: function () {
+      this._items.length = 0;
+      this.count = 0;
+    },
+    contains: function (item) {
+      for (var i = this.count - 1; i >= 0; i--) {
+        if (this._items[i] === item) {
+          return true;
+        }
+      }
+      return false;
+    },
+    getEnumerator: function () {
+      return new Enumerator(this._items.reverse());
+    },
+    peek: function () {
+      return this._items[this.count - 1];
+    },
+    push: function (item) {
+      this._items.push(item);
+      this.count++;
+    },
+    pop: function () {
+      if (this.count) {
+        this.count--;
+        return this._items.pop();
+      }
+      return undefined;
+    }
+  }
+
+  function Queue() {
+    this.count = 0;
+    this._items = [];
+    this._offset = 0;
+  }
+
+  function _cleanQueue(q) {
+    q._items = q._items.slice(q._offset);
+    q._offset = 0;
+  }
+
+  var Queue$ = {
+    clear: function () {
+      this._items.length = 0;
+      this._offset = 0;
+      this.count = 0;
+    },
+    contains: function (item) {
+      for (var i = this._offset, length = this._items.length; i <= length; i++) {
+        if (this._items[i] === item) {
+          return true;
+        }
+      }
+      return false;
+    },
+    dequeue: function () {
+      if (this.count) {
+        var item = this._items[this._offset];
+        if (++this._offset * 2 >= this._items.length) {
+          _cleanQueue(this);
+        }
+        this.count--;
+        return item;
+      }
+      return undefined;
+    },
+    enqueue: function (item) {
+      this._items.push(item);
+      this.count++;
+    },
+    getEnumerator: function () {
+      if (this._offset != 0) {
+        _cleanQueue(this);
+      }
+      return new Enumerator(this._items);
+    },
+    peek: function () {
+      return this._items.length ? this._items[this._offset] : undefined;
+    }
+  }
+
+  // String
+
+  function string(arg1, arg2) {
+    if (typeof arg2 == 'number') {
+      return arg2 > 1 ? new Array(arg2 + 1).join(arg1) : arg1;
+    }
+    return Array.prototype.join.call(arguments, '');
+  }
+
+  function emptyString(s) {
+    return !s || !s.length;
+  }
+
+  function whitespace(s) {
+    return emptyString(s) || !s.replace(/^\s*/, '').length;
+  }
+
+  function compareStrings(s1, s2, ignoreCase) {
+    s1 = s1 || '', s2 = s2 || '';
+    ignoreCase ? (s1 = s1.toUpperCase(), s2 = s2.toUpperCase()) : 0;
+    return (s1 === s2) ? 0 : (s1 < s2) ? -1 : 1;
+  }
+
+  var _formatPlaceHolderRE = /(\{[^\}^\{]+\})/g;
+  var _formatters = {};
+
+  function format(cultureOrFormat) {
+    var culture = neutralCulture;
+    var format = cultureOrFormat;
+    var values = Array.prototype.slice.call(arguments, 1);
+
+    if (cultureOrFormat.constructor != String) {
+      culture = cultureOrFormat;
+      format = values[0];
+      values = values.slice(1);
+    }
+
+    return format.replace(_formatPlaceHolderRE,
+      function (str, match) {
+        var index = parseInt(match.substr(1), 10);
+        var value = values[index];
+        if (!isValue(value)) {
+          return '';
+        }
+
+        var formatter = _formatters[typeName(value)];
+        if (formatter) {
+          var formatSpec = '';
+          var formatIndex = match.indexOf(':');
+          if (formatIndex > 0) {
+            formatSpec = match.substring(formatIndex + 1, match.length - 1);
+          }
+          if (formatSpec && (formatSpec != 'i')) {
+            return formatter(value, formatSpec, culture);
+          }
+        }
+        return culture == neutralCulture ? value.toString() : value.toLocaleString();
+      });
+  }
+
+  function trim(s, tc) {
+    if (tc || !String.prototype.trim) {
+      tc = tc ? tc.join('') : null;
+      var r = tc ? new RegExp('^[' + tc + ']+|[' + tc + ']+$', 'g') : /^\s+|\s+$/g;
+      return s.replace(r, '');
+    }
+    return s.trim();
+  }
+
+  function trimStart(s, tc) {
+    var r = tc ? new RegExp('^[' + tc.join('') + ']+') : /^\s+/;
+    return s.replace(r, '');
+  }
+
+  function trimEnd(s, tc) {
+    var r = tc ? new RegExp('[' + tc.join('') + ']+$') : /\s+$/;
+    return s.replace(r, '');
+  }
+
+  function startsWith(s, prefix) {
+    if (emptyString(prefix)) {
+      return true;
+    }
+    if (emptyString(s) || (prefix.length > s.length)) {
+      return false;
+    }
+    return s.substr(0, prefix.length) == prefix;
+  }
+
+  function endsWith(s, suffix) {
+    if (emptyString(suffix)) {
+      return true;
+    }
+    if (emptyString(s) || (suffix.length > s.length)) {
+      return false;
+    }
+    return s.substr(-suffix.length) == suffix;
+  }
+
+  function padLeft(s, totalWidth, ch) {
+    return (s.length < totalWidth) ? string(ch || ' ', totalWidth - s.length) + s : s;
+  }
+
+  function padRight(s, totalWidth, ch) {
+    return (s.length < totalWidth) ? s + string(ch || ' ', totalWidth - s.length) : s;
+  }
+
+  function removeString(s, index, count) {
+    if (!count || ((index + count) > s.length)) {
+      return s.substr(0, index);
+    }
+    return s.substr(0, index) + s.substr(index + count);
+  }
+
+  function insertString(s, index, value) {
+    if (!value) {
+      return s;
+    }
+    if (!index) {
+      return value + s;
+    }
+    return s.substr(0, index) + value + s.substr(index);
+  }
+
+  function replaceString(s, oldValue, newValue) {
+    return s.split(oldValue).join(newValue || '');
+  }
+
+  // Delegate Functionality
+
+  function _bindList(fnList) {
+    var d = function () {
+      var args = arguments;
+      var result = null;
+      for (var i = 0, l = fnList.length; i < l; i++) {
+        result = args.length ? fnList[i].apply(null, args) : fnList[i].call(null);
+      }
+      return result;
+    };
+    d._fnList = fnList;
+    return d;
+  }
+
+  function bind(fn, o) {
+    if (!o) {
+      return fn;
+    }
+
+    var name = null;
+    fn = typeof fn == 'string' ? o[name = fn] : fn;
+
+    var cache = name ? o.$$b || (o.$$b = {}) : null;
+    var binding = cache ? cache[name] : null;
+
+    if (!binding) {
+      // Create a function that invokes the specified function, in the
+      // context of the specified object.
+      binding = function () {
+        return fn.apply(o, arguments);
+      };
+
+      if (cache) {
+        cache[name] = binding;
+      }
+    }
     return binding;
   }
 
-  var fnList = binding._fnList || [binding];
-  var index = fnList.indexOf(value);
-  if (index >= 0) {
-    if (fnList.length == 1) {
-      return null;
+  function bindAdd(binding, value) {
+    if (!binding) {
+      return value;
+    }
+    if (!value) {
+      return binding;
     }
 
-    fnList = index ? fnList.slice(0, index).concat(fnList.slice(index + 1)) : fnList.slice(1);
+    var fnList = [].concat(binding._fnList || binding, value);
     return _bindList(fnList);
   }
-  return binding;
-}
 
+  function bindSub(binding, value) {
+    if (!binding) {
+      return null;
+    }
+    if (!value) {
+      return binding;
+    }
 
-function bindExport(fn, multiUse, name, root) {
-  // Generate a unique name if one is not specified
-  name = name || '__' + (new Date()).valueOf();
+    var fnList = binding._fnList || [binding];
+    var index = fnList.indexOf(value);
+    if (index >= 0) {
+      if (fnList.length == 1) {
+        return null;
+      }
 
-  // If unspecified, exported bindings go on the global object
-  // (so they are callable using a simple identifier).
-  root = root || global;
+      fnList = index ? fnList.slice(0, index).concat(fnList.slice(index + 1)) : fnList.slice(1);
+      return _bindList(fnList);
+    }
+    return binding;
+  }
 
-  var exp = {
-    name: name,
-    detach: function() {
-      root[name] = _nop;
+  function bindExport(fn, multiUse, name, root) {
+    // Generate a unique name if one is not specified
+    name = name || '__' + (new Date()).valueOf();
+
+    // If unspecified, exported bindings go on the global object
+    // (so they are callable using a simple identifier).
+    root = root || global;
+
+    var exp = {
+      name: name,
+      detach: function () {
+        root[name] = _nop;
+      },
+      dispose: function () {
+        try { delete root[name]; } catch (e) { root[name] = undefined; }
+      }
+    };
+
+    // Multi-use bindings are exported directly; for the rest a stub is exported, and the stub
+    // first auto-disposes, and then invokes the actual binding.
+    root[name] = multiUse ? fn : function () {
+      exp.dispose();
+      return fn.apply(null, arguments);
+    };
+
+    return exp;
+  }
+
+  // EventArgs
+
+  function EventArgs() {
+  }
+
+  EventArgs.Empty = new EventArgs();
+
+  function CancelEventArgs() {
+    this.cancel = false;
+  }
+
+  // Contracts
+
+  function IDisposable() { }
+  function IEnumerable() { }
+  function IEnumerator() { }
+  function IObserver() { }
+  function IApplication() { }
+  function IContainer() { }
+  function IObjectFactory() { }
+  function IEventManager() { }
+  function IInitializable() { }
+
+  // StringBuilder
+
+  function StringBuilder(s) {
+    this._parts = isValue(s) && s !== '' ? [s] : [];
+    this.isEmpty = this._parts.length == 0;
+  }
+
+  var StringBuilder$ = {
+    append: function (s) {
+      if (isValue(s) && s !== '') {
+        this._parts.push(s);
+        this.isEmpty = false;
+      }
+      return this;
     },
-    dispose: function() {
-      try { delete root[name]; } catch (e) { root[name] = undefined; }
-    }
-  };
 
-  // Multi-use bindings are exported directly; for the rest a stub is exported, and the stub
-  // first auto-disposes, and then invokes the actual binding.
-  root[name] = multiUse ? fn : function() {
-    exp.dispose();
-    return fn.apply(null, arguments);
-  };
-
-  return exp;
-}
-
-// EventArgs
-
-function EventArgs() {
-}
-EventArgs.Empty = new EventArgs();
-
-function CancelEventArgs() {
-  this.cancel = false;
-}
-
-// Contracts
-
-function IDisposable() { }
-function IEnumerable() { }
-function IEnumerator() { }
-function IObserver() { }
-function IApplication() { }
-function IContainer() { }
-function IObjectFactory() { }
-function IEventManager() { }
-function IInitializable() { }
-
-// StringBuilder
-
-function StringBuilder(s) {
-  this._parts = isValue(s) && s !== '' ? [s] : [];
-  this.isEmpty = this._parts.length == 0;
-}
-var StringBuilder$ = {
-  append: function(s) {
-    if (isValue(s) && s !== '') {
-      this._parts.push(s);
+    appendLine: function (s) {
+      this.append(s);
+      this.append('\r\n');
       this.isEmpty = false;
+      return this;
+    },
+
+    clear: function () {
+      this._parts = [];
+      this.isEmpty = true;
+    },
+
+    toString: function (s) {
+      return this._parts.join(s || '');
     }
-    return this;
-  },
+  };
 
-  appendLine: function(s) {
-    this.append(s);
-    this.append('\r\n');
-    this.isEmpty = false;
-    return this;
-  },
+  // Observable
 
-  clear: function() {
-    this._parts = [];
-    this.isEmpty = true;
-  },
-
-  toString: function(s) {
-    return this._parts.join(s || '');
+  var _observerStack = [];
+  var _observerRegistration = {
+    dispose: function () {
+      _observerStack.pop();
+    }
   }
-};
 
-// Observable
+  function _captureObservers(observers) {
+    var registeredObservers = _observerStack;
+    var observerCount = registeredObservers.length;
 
-var _observerStack = [];
-var _observerRegistration = {
-  dispose: function() {
-    _observerStack.pop();
+    if (observerCount) {
+      observers = observers || [];
+      for (var i = 0; i < observerCount; i++) {
+        var observer = registeredObservers[i];
+        if (observers.indexOf(observer) < 0) {
+          observers.push(observer);
+        }
+      }
+      return observers;
+    }
+    return null;
   }
-}
-function _captureObservers(observers) {
-  var registeredObservers = _observerStack;
-  var observerCount = registeredObservers.length;
 
-  if (observerCount) {
-    observers = observers || [];
-    for (var i = 0; i < observerCount; i++) {
-      var observer = registeredObservers[i];
-      if (observers.indexOf(observer) < 0) {
-        observers.push(observer);
+  function _invalidateObservers(observers) {
+    for (var i = 0, len = observers.length; i < len; i++) {
+      observers[i].invalidateObserver();
+    }
+  }
+
+  function Observable(v) {
+    this._v = v;
+    this._observers = null;
+  }
+
+  var Observable$ = {
+    getValue: function () {
+      this._observers = _captureObservers(this._observers);
+      return this._v;
+    },
+    setValue: function (v) {
+      if (this._v !== v) {
+        this._v = v;
+
+        var observers = this._observers;
+        if (observers) {
+          this._observers = null;
+          _invalidateObservers(observers);
+        }
       }
     }
-    return observers;
+  };
+
+  Observable.registerObserver = function (o) {
+    _observerStack.push(o);
+    return _observerRegistration;
   }
-  return null;
-}
-function _invalidateObservers(observers) {
-  for (var i = 0, len = observers.length; i < len; i++) {
-    observers[i].invalidateObserver();
+
+  function ObservableCollection(items) {
+    this._items = items || [];
+    this._observers = null;
   }
-}
 
-function Observable(v) {
-  this._v = v;
-  this._observers = null;
-}
-var Observable$ = {
-
-  getValue: function() {
-    this._observers = _captureObservers(this._observers);
-    return this._v;
-  },
-  setValue: function(v) {
-    if (this._v !== v) {
-      this._v = v;
-
+  var ObservableCollection$ = {
+    get_item: function (index) {
+      this._observers = _captureObservers(this._observers);
+      return this._items[index];
+    },
+    set_item: function (index, item) {
+      this._items[index] = item;
+      this._updated();
+    },
+    get_length: function () {
+      this._observers = _captureObservers(this._observers);
+      return this._items.length;
+    },
+    add: function (item) {
+      this._items.push(item);
+      this._updated();
+    },
+    clear: function () {
+      this._items.clear();
+      this._updated();
+    },
+    contains: function (item) {
+      return this._items.indexOf(item) >= 0;
+    },
+    getEnumerator: function () {
+      this._observers = _captureObservers(this._observers);
+      // TODO: Change this
+      return this._items.getEnumerator();
+    },
+    indexOf: function (item) {
+      return this._items.indexOf(item);
+    },
+    insert: function (index, item) {
+      this._items.insert(index, item);
+      this._updated();
+    },
+    remove: function (item) {
+      if (this._items.remove(item)) {
+        this._updated();
+        return true;
+      }
+      return false;
+    },
+    removeAt: function (index) {
+      this._items.splice(index, 1);
+      this._updated();
+    },
+    toArray: function () {
+      return this._items;
+    },
+    _updated: function () {
       var observers = this._observers;
       if (observers) {
         this._observers = null;
@@ -626,908 +729,843 @@ var Observable$ = {
       }
     }
   }
-};
-Observable.registerObserver = function(o) {
-  _observerStack.push(o);
-  return _observerRegistration;
-}
 
+  // Task
 
-function ObservableCollection(items) {
-  this._items = items || [];
-  this._observers = null;
-}
-var ObservableCollection$ = {
-
-  get_item: function (index) {
-    this._observers = _captureObservers(this._observers);
-    return this._items[index];
-  },
-  set_item: function(index, item) {
-    this._items[index] = item;
-    this._updated();
-  },
-  get_length: function() {
-    this._observers = _captureObservers(this._observers);
-    return this._items.length;
-  },
-  add: function(item) {
-    this._items.push(item);
-    this._updated();
-  },
-  clear: function() {
-    this._items.clear();
-    this._updated();
-  },
-  contains: function(item) {
-    return this._items.indexOf(item) >= 0;
-  },
-  getEnumerator: function() {
-    this._observers = _captureObservers(this._observers);
-    // TODO: Change this
-    return this._items.getEnumerator();
-  },
-  indexOf: function(item) {
-    return this._items.indexOf(item);
-  },
-  insert: function(index, item) {
-    this._items.insert(index, item);
-    this._updated();
-  },
-  remove: function(item) {
-    if (this._items.remove(item)) {
-      this._updated();
-      return true;
-    }
-    return false;
-  },
-  removeAt: function(index) {
-    this._items.splice(index, 1);
-    this._updated();
-  },
-  toArray: function() {
-    return this._items;
-  },
-  _updated: function() {
-    var observers = this._observers;
-    if (observers) {
-      this._observers = null;
-      _invalidateObservers(observers);
-    }
+  function Task(result) {
+    this._continuations = result !== undefined ?
+      (this.status = 'done', null) :
+      (this.status = 'pending', []);
+    this.result = result;
+    this.error = null;
   }
-}
 
-// Task
-
-function Task(result) {
-  this._continuations = result !== undefined ?
-                          (this.status = 'done', null) :
-                          (this.status = 'pending', []);
-  this.result = result;
-  this.error = null;
-}
-var Task$ = {
-  get_completed: function() {
-    return this.status != 'pending';
-  },
-  changeWith: function(continuation) {
-    var task = new Task();
-    this.continueWith(function(t) {
-      var error = t.error;
-      var result;
-      if (!error) {
-        try {
-          result = continuation(t);
+  var Task$ = {
+    get_completed: function () {
+      return this.status != 'pending';
+    },
+    changeWith: function (continuation) {
+      var task = new Task();
+      this.continueWith(function (t) {
+        var error = t.error;
+        var result;
+        if (!error) {
+          try {
+            result = continuation(t);
+          }
+          catch (e) {
+            error = e;
+          }
         }
-        catch (e) {
-          error = e;
-        }
-      }
-      _updateTask(task, result, error);
-    });
-    return task;
-  },
-  continueWith: function(continuation) {
-    if (this._continuations) {
-      this._continuations.push(continuation);
-    }
-    else {
-      var self = this;
-      setTimeout(function() { continuation(self); }, 0);
-    }
-    return this;
-  },
-  done: function(callback) {
-    return this.continueWith(function(t) {
-      if (t.status == 'done') {
-        callback(t.result);
-      }
-    });
-  },
-  fail: function(callback) {
-    return this.continueWith(function(t) {
-      if (t.status == 'failed') {
-        callback(t.error);
-      }
-    });
-  },
-  then: function(doneCallback, failCallback) {
-    return this.continueWith(function(t) {
-      t.status == 'done' ? doneCallback(t.result) : failCallback(t.error);
-    });
-  }
-};
-
-function _updateTask(task, result, error) {
-  if (task.status == 'pending') {
-    if (error) {
-      task.error = error;
-      task.status = 'failed';
-    }
-    else {
-      task.result = result;
-      task.status = 'done';
-    }
-
-    var continuations = task._continuations;
-    task._continuations = null;
-
-    for (var i = 0, c = continuations.length; i < c; i++) {
-      continuations[i](task);
-    }
-  }
-}
-
-function _joinTasks(tasks, any) {
-  tasks = toArray(tasks);
-
-  var count = tasks.length;
-
-  var interval = 0;
-  if ((count > 1) && (typeof tasks[0] == 'number')) {
-    interval = tasks[0];
-    tasks = tasks.slice(1);
-    count--;
-  }
-  if (Array.isArray(tasks[0])) {
-    tasks = tasks[0];
-    count = tasks.length;
-  }
-
-  var joinTask = new Task();
-  var seen = 0;
-
-  function continuation(t) {
-    if (joinTask.status == 'pending') {
-      seen++;
-      if (any) {
-        _updateTask(joinTask, t);
-      }
-      else if (seen == count) {
-        _updateTask(joinTask, true);
-      }
-    }
-  }
-
-  function timeout() {
-    if (joinTask.status == 'pending') {
-      if (any) {
-        _updateTask(joinTask, null);
+        _updateTask(task, result, error);
+      });
+      return task;
+    },
+    continueWith: function (continuation) {
+      if (this._continuations) {
+        this._continuations.push(continuation);
       }
       else {
-        _updateTask(joinTask, false);
+        var self = this;
+        setTimeout(function () { continuation(self); }, 0);
       }
-    }
-  }
-
-  if (interval != 0) {
-    setTimeout(timeout, interval);
-  }
-
-  for (var i = 0; i < count; i++) {
-    tasks[i].continueWith(continuation);
-  }
-
-  return joinTask;
-}
-Task.all = function() {
-  return _joinTasks(arguments, false);
-}
-Task.any = function() {
-  return _joinTasks(arguments, true);
-}
-Task.delay = function(timeout) {
-  var timerTask = new Task();
-
-  setTimeout(function() {
-    _updateTask(timerTask, true);
-  }, timeout);
-
-  return timerTask;
-}
-
-function deferred(result) {
-  var task = new Task(result);
-
-  return {
-    task: task,
-    resolve: function(result) {
-      _updateTask(task, result);
+      return this;
     },
-    reject: function(error) {
-      _updateTask(task, null, (error || new Error()));
+    done: function (callback) {
+      return this.continueWith(function (t) {
+        if (t.status == 'done') {
+          callback(t.result);
+        }
+      });
+    },
+    fail: function (callback) {
+      return this.continueWith(function (t) {
+        if (t.status == 'failed') {
+          callback(t.error);
+        }
+      });
+    },
+    then: function (doneCallback, failCallback) {
+      return this.continueWith(function (t) {
+        t.status == 'done' ? doneCallback(t.result) : failCallback(t.error);
+      });
     }
   };
-}
 
-// Culture
-
-var neutralCulture = {
-  name: '',
-  // numberFormat
-  nf: {
-    nan: 'NaN',           // naNSymbol
-    neg: '-',             // negativeSign
-    pos: '+',             // positiveSign
-    negInf: '-Infinity',  // negativeInfinityText
-    posInf: 'Infinity',   // positiveInfinityText
-    gw: [3],              // numberGroupSizes
-    dd: 2,                // numberDecimalDigits
-    ds: '.',              // numberDecimalSeparator
-    gs: ',',             // numberGroupSeparator
-
-    per: '%',             // percentSymbol
-    perGW: [3],           // percentGroupSizes
-    perDD: 2,             // percentDecimalDigits
-    perDS: '.',           // percentDecimalSeparator
-    perGS: ',',           // percentGroupSeparator
-    perPP: '{0} %',       // percentPositivePattern
-    perNP: '-{0} %',      // percentNegativePattern
-
-    cur: '$',             // currencySymbol
-    curGW: [3],           // currencyGroupSizes
-    curDD: 2,             // currencyDecimalDigits
-    curDS: '.',           // currencyDecimalSeparator
-    curGS: ',',           // currencyGroupSeparator
-    curNP: '(${0})',      // currencyNegativePattern
-    curPP: '${0}'         // currencyPositivePattern
-  },
-  // dateFormat
-  dtf: {
-    am: 'AM',             // amDesignator
-    pm: 'PM',             // pmDesignator
-
-    ds: '/',              // dateSeparator
-    ts: ':',              // timeSeparator
-
-    gmt: 'ddd, dd MMM yyyy HH:mm:ss \'GMT\'',   // gmtDateTimePattern
-    uni: 'yyyy-MM-dd HH:mm:ssZ',                // universalDateTimePattern
-    sort: 'yyyy-MM-ddTHH:mm:ss',                // sortableDateTimePattern
-    dt: 'dddd, MMMM dd, yyyy h:mm:ss tt',       // dateTimePattern
-
-    ld: 'dddd, MMMM dd, yyyy',                  // longDatePattern
-    sd: 'M/d/yyyy',                             // shortDatePattern
-
-    lt: 'h:mm:ss tt',                           // longTimePattern
-    st: 'h:mm tt',                              // shortTimePattern
-
-    day0: 0,                                    // firstDayOfWeek
-    day: ['Sunday', 'Monday', 'Tuesday',
-          'Wednesday', 'Thursday',
-          'Friday', 'Saturday'],                // dayNames
-    sday: ['Sun', 'Mon', 'Tue', 'Wed',
-           'Thu', 'Fri', 'Sat'],                // shortDayNames
-    mday: ['Su', 'Mo', 'Tu', 'We',
-           'Th', 'Fr', 'Sa'],                   // minimizedDayNames
-
-    mon: ['January', 'February', 'March',
-          'April', 'May', 'June', 'July',
-          'August', 'September', 'October',
-          'November', 'December', ''],          // monthNames
-    smon: ['Jan', 'Feb', 'Mar', 'Apr',
-           'May', 'Jun', 'Jul', 'Aug',
-           'Sep', 'Oct', 'Nov', 'Dec', '']      // shortMonthNames
-  }
-};
-
-var currentCulture = { name: 'en-us', dtf: neutralCulture.dtf, nf: neutralCulture.nf };
-
-// Formatting Helpers
-
-function _commaFormatNumber(number, groups, decimal, comma) {
-  var decimalPart = null;
-  var decimalIndex = number.indexOf(decimal);
-  if (decimalIndex > 0) {
-    decimalPart = number.substr(decimalIndex);
-    number = number.substr(0, decimalIndex);
-  }
-
-  var negative = number.startsWith('-');
-  if (negative) {
-    number = number.substr(1);
-  }
-
-  var groupIndex = 0;
-  var groupSize = groups[groupIndex];
-  if (number.length < groupSize) {
-    return decimalPart ? number + decimalPart : number;
-  }
-
-  var index = number.length;
-  var s = '';
-  var done = false;
-  while (!done) {
-    var length = groupSize;
-    var startIndex = index - length;
-    if (startIndex < 0) {
-      groupSize += startIndex;
-      length += startIndex;
-      startIndex = 0;
-      done = true;
-    }
-    if (!length) {
-      break;
-    }
-
-    var part = number.substr(startIndex, length);
-    if (s.length) {
-      s = part + comma + s;
-    }
-    else {
-      s = part;
-    }
-    index -= length;
-
-    if (groupIndex < groups.length - 1) {
-      groupIndex++;
-      groupSize = groups[groupIndex];
-    }
-  }
-
-  if (negative) {
-    s = '-' + s;
-  }
-  return decimalPart ? s + decimalPart : s;
-}
-
-_formatters['Number'] = function(number, format, culture) {
-  var nf = culture.nf;
-  var s = '';
-  var precision = -1;
-
-  if (format.length > 1) {
-    precision = parseInt(format.substr(1));
-  }
-
-  var fs = format.charAt(0);
-  switch (fs) {
-    case 'd': case 'D':
-      s = parseInt(Math.abs(number)).toString();
-      if (precision != -1) {
-        s = padLeft(s, precision, '0');
-      }
-      if (number < 0) {
-        s = '-' + s;
-      }
-      break;
-    case 'x': case 'X':
-      s = parseInt(Math.abs(number)).toString(16);
-      if (fs == 'X') {
-        s = s.toUpperCase();
-      }
-      if (precision != -1) {
-        s = padLeft(s, precision, '0');
-      }
-      break;
-    case 'e': case 'E':
-      if (precision == -1) {
-        s = number.toExponential();
+  function _updateTask(task, result, error) {
+    if (task.status == 'pending') {
+      if (error) {
+        task.error = error;
+        task.status = 'failed';
       }
       else {
-        s = number.toExponential(precision);
+        task.result = result;
+        task.status = 'done';
       }
-      if (fs == 'E') {
-        s = s.toUpperCase();
-      }
-      break;
-    case 'f': case 'F':
-    case 'n': case 'N':
-      if (precision == -1) {
-        precision = nf.dd;
-      }
-      s = number.toFixed(precision).toString();
-      if (precision && (nf.ds != '.')) {
-        var index = s.indexOf('.');
-        s = s.substr(0, index) + nf.ds + s.substr(index + 1);
-      }
-      if ((fs == 'n') || (fs == 'N')) {
-        s = _commaFormatNumber(s, nf.gw, nf.ds, nf.gs);
-      }
-      break;
-    case 'c': case 'C':
-      if (precision == -1) {
-        precision = nf.curDD;
-      }
-      s = Math.abs(number).toFixed(precision).toString();
-      if (precision && (nf.curDS != '.')) {
-        var index = s.indexOf('.');
-        s = s.substr(0, index) + nf.curDS + s.substr(index + 1);
-      }
-      s = _commaFormatNumber(s, nf.curGW, nf.curDS, nf.curGS);
-      if (number < 0) {
-        s = String.format(culture, nf.curNP, s);
-      }
-      else {
-        s = String.format(culture, nf.curPP, s);
-      }
-      break;
-    case 'p': case 'P':
-      if (precision == -1) {
-        precision = nf.perDD;
-      }
-      s = (Math.abs(number) * 100.0).toFixed(precision).toString();
-      if (precision && (nf.perDS != '.')) {
-        var index = s.indexOf('.');
-        s = s.substr(0, index) + nf.perDS + s.substr(index + 1);
-      }
-      s = _commaFormatNumber(s, nf.perGW, nf.perDS, nf.perGS);
-      if (number < 0) {
-        s = String.format(culture, nf.perNP, s);
-      }
-      else {
-        s = String.format(culture, nf.perPP, s);
-      }
-      break;
-  }
 
-  return s;
-}
+      var continuations = task._continuations;
+      task._continuations = null;
 
-
-var _dateFormatRE = /'.*?[^\\]'|dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yy|y|hh|h|HH|H|mm|m|ss|s|tt|t|fff|ff|f|zzz|zz|z/g;
-
-_formatters['Date'] = function(dt, format, culture) {
-  if (format == 'iso') {
-    return dt.toISOString();
-  }
-  else if (format.charAt(0) == 'i') {
-    var fnName = 'String';
-    switch (format) {
-      case 'id': fnName = 'DateString'; break;
-      case 'it': fnName = 'TimeString'; break;
+      for (var i = 0, c = continuations.length; i < c; i++) {
+        continuations[i](task);
+      }
     }
-    return culture == neutralCulture ? dt['to' + fnName]() : dt['toLocale' + fnName]();
   }
 
-  var dtf = culture.dtf;
+  function _joinTasks(tasks, any) {
+    tasks = toArray(tasks);
 
-  if (format.length == 1) {
-    switch (format) {
-      case 'f': format = dtf.ld + ' ' + dtf.st; break;
-      case 'F': format = dtf.dt; break;
+    var count = tasks.length;
 
-      case 'd': format = dtf.sd; break;
-      case 'D': format = dtf.ld; break;
+    var interval = 0;
+    if ((count > 1) && (typeof tasks[0] == 'number')) {
+      interval = tasks[0];
+      tasks = tasks.slice(1);
+      count--;
+    }
+    if (Array.isArray(tasks[0])) {
+      tasks = tasks[0];
+      count = tasks.length;
+    }
 
-      case 't': format = dtf.st; break;
-      case 'T': format = dtf.lt; break;
+    var joinTask = new Task();
+    var seen = 0;
 
-      case 'g': format = dtf.sd + ' ' + dtf.st; break;
-      case 'G': format = dtf.sd + ' ' + dtf.lt; break;
+    function continuation(t) {
+      if (joinTask.status == 'pending') {
+        seen++;
+        if (any) {
+          _updateTask(joinTask, t);
+        }
+        else if (seen == count) {
+          _updateTask(joinTask, true);
+        }
+      }
+    }
 
-      case 'R': case 'r':
-        dtf = neutralCulture.dtf;
-        format = dtf.gmt;
+    function timeout() {
+      if (joinTask.status == 'pending') {
+        if (any) {
+          _updateTask(joinTask, null);
+        }
+        else {
+          _updateTask(joinTask, false);
+        }
+      }
+    }
+
+    if (interval != 0) {
+      setTimeout(timeout, interval);
+    }
+
+    for (var i = 0; i < count; i++) {
+      tasks[i].continueWith(continuation);
+    }
+
+    return joinTask;
+  }
+  Task.all = function () {
+    return _joinTasks(arguments, false);
+  }
+  Task.any = function () {
+    return _joinTasks(arguments, true);
+  }
+  Task.delay = function (timeout) {
+    var timerTask = new Task();
+
+    setTimeout(function () {
+      _updateTask(timerTask, true);
+    }, timeout);
+
+    return timerTask;
+  }
+
+  function deferred(result) {
+    var task = new Task(result);
+
+    return {
+      task: task,
+      resolve: function (result) {
+        _updateTask(task, result);
+      },
+      reject: function (error) {
+        _updateTask(task, null, (error || new Error()));
+      }
+    };
+  }
+
+  // Culture
+
+  var neutralCulture = {
+    name: '',
+    // numberFormat
+    nf: {
+      nan: 'NaN',           // naNSymbol
+      neg: '-',             // negativeSign
+      pos: '+',             // positiveSign
+      negInf: '-Infinity',  // negativeInfinityText
+      posInf: 'Infinity',   // positiveInfinityText
+      gw: [3],              // numberGroupSizes
+      dd: 2,                // numberDecimalDigits
+      ds: '.',              // numberDecimalSeparator
+      gs: ',',             // numberGroupSeparator
+
+      per: '%',             // percentSymbol
+      perGW: [3],           // percentGroupSizes
+      perDD: 2,             // percentDecimalDigits
+      perDS: '.',           // percentDecimalSeparator
+      perGS: ',',           // percentGroupSeparator
+      perPP: '{0} %',       // percentPositivePattern
+      perNP: '-{0} %',      // percentNegativePattern
+
+      cur: '$',             // currencySymbol
+      curGW: [3],           // currencyGroupSizes
+      curDD: 2,             // currencyDecimalDigits
+      curDS: '.',           // currencyDecimalSeparator
+      curGS: ',',           // currencyGroupSeparator
+      curNP: '(${0})',      // currencyNegativePattern
+      curPP: '${0}'         // currencyPositivePattern
+    },
+    // dateFormat
+    dtf: {
+      am: 'AM',             // amDesignator
+      pm: 'PM',             // pmDesignator
+
+      ds: '/',              // dateSeparator
+      ts: ':',              // timeSeparator
+
+      gmt: 'ddd, dd MMM yyyy HH:mm:ss \'GMT\'',   // gmtDateTimePattern
+      uni: 'yyyy-MM-dd HH:mm:ssZ',                // universalDateTimePattern
+      sort: 'yyyy-MM-ddTHH:mm:ss',                // sortableDateTimePattern
+      dt: 'dddd, MMMM dd, yyyy h:mm:ss tt',       // dateTimePattern
+
+      ld: 'dddd, MMMM dd, yyyy',                  // longDatePattern
+      sd: 'M/d/yyyy',                             // shortDatePattern
+
+      lt: 'h:mm:ss tt',                           // longTimePattern
+      st: 'h:mm tt',                              // shortTimePattern
+
+      day0: 0,                                    // firstDayOfWeek
+      day: ['Sunday', 'Monday', 'Tuesday',
+        'Wednesday', 'Thursday',
+        'Friday', 'Saturday'],                // dayNames
+      sday: ['Sun', 'Mon', 'Tue', 'Wed',
+        'Thu', 'Fri', 'Sat'],                // shortDayNames
+      mday: ['Su', 'Mo', 'Tu', 'We',
+        'Th', 'Fr', 'Sa'],                   // minimizedDayNames
+
+      mon: ['January', 'February', 'March',
+        'April', 'May', 'June', 'July',
+        'August', 'September', 'October',
+        'November', 'December', ''],          // monthNames
+      smon: ['Jan', 'Feb', 'Mar', 'Apr',
+        'May', 'Jun', 'Jul', 'Aug',
+        'Sep', 'Oct', 'Nov', 'Dec', '']      // shortMonthNames
+    }
+  };
+
+  var currentCulture = { name: 'en-us', dtf: neutralCulture.dtf, nf: neutralCulture.nf };
+
+  // Formatting Helpers
+
+  function _commaFormatNumber(number, groups, decimal, comma) {
+    var decimalPart = null;
+    var decimalIndex = number.indexOf(decimal);
+    if (decimalIndex > 0) {
+      decimalPart = number.substr(decimalIndex);
+      number = number.substr(0, decimalIndex);
+    }
+
+    var negative = number.startsWith('-');
+    if (negative) {
+      number = number.substr(1);
+    }
+
+    var groupIndex = 0;
+    var groupSize = groups[groupIndex];
+    if (number.length < groupSize) {
+      return decimalPart ? number + decimalPart : number;
+    }
+
+    var index = number.length;
+    var s = '';
+    var done = false;
+    while (!done) {
+      var length = groupSize;
+      var startIndex = index - length;
+      if (startIndex < 0) {
+        groupSize += startIndex;
+        length += startIndex;
+        startIndex = 0;
+        done = true;
+      }
+      if (!length) {
         break;
-      case 'u': format = dtf.uni; break;
-      case 'U':
-        format = dtf.dt;
-        dt = new Date(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate(),
-                      dt.getUTCHours(), dt.getUTCMinutes(), dt.getUTCSeconds(), dt.getUTCMilliseconds());
-        break;
+      }
 
-      case 's': format = dtf.sort; break;
-    }
-  }
+      var part = number.substr(startIndex, length);
+      if (s.length) {
+        s = part + comma + s;
+      }
+      else {
+        s = part;
+      }
+      index -= length;
 
-  if (format.charAt(0) == '%') {
-    format = format.substr(1);
-  }
-
-  var sb = new StringBuilder();
-
-  _dateFormatRE.lastIndex = 0;
-  while (true) {
-    var index = _dateFormatRE.lastIndex;
-    var match = _dateFormatRE.exec(format);
-
-    sb.append(format.slice(index, match ? match.index : format.length));
-    if (!match) {
-      break;
+      if (groupIndex < groups.length - 1) {
+        groupIndex++;
+        groupSize = groups[groupIndex];
+      }
     }
 
-    var fs = match[0];
-    var part = fs;
+    if (negative) {
+      s = '-' + s;
+    }
+    return decimalPart ? s + decimalPart : s;
+  }
+
+  _formatters['Number'] = function (number, format, culture) {
+    var nf = culture.nf;
+    var s = '';
+    var precision = -1;
+
+    if (format.length > 1) {
+      precision = parseInt(format.substr(1));
+    }
+
+    var fs = format.charAt(0);
     switch (fs) {
-      case 'dddd':
-        part = dtf.day[dt.getDay()];
-        break;
-      case 'ddd':
-        part = dtf.sday[dt.getDay()];
-        break;
-      case 'dd':
-        part = padLeft(dt.getDate().toString(), 2, '0');
-        break;
-      case 'd':
-        part = dt.getDate();
-        break;
-      case 'MMMM':
-        part = dtf.mon[dt.getMonth()];
-        break;
-      case 'MMM':
-        part = dtf.smon[dt.getMonth()];
-        break;
-      case 'MM':
-        part = padLeft((dt.getMonth() + 1).toString(), 2, '0');
-        break;
-      case 'M':
-        part = (dt.getMonth() + 1);
-        break;
-      case 'yyyy':
-        part = dt.getFullYear();
-        break;
-      case 'yy':
-        part = padLeft((dt.getFullYear() % 100).toString(), 2, '0');
-        break;
-      case 'y':
-        part = (dt.getFullYear() % 100);
-        break;
-      case 'h': case 'hh':
-        part = dt.getHours() % 12;
-        if (!part) {
-          part = '12';
+      case 'd': case 'D':
+        s = parseInt(Math.abs(number)).toString();
+        if (precision != -1) {
+          s = padLeft(s, precision, '0');
         }
-        else if (fs == 'hh') {
-          part = padLeft(part.toString(), 2, '0');
+        if (number < 0) {
+          s = '-' + s;
         }
         break;
-      case 'HH':
-        part = padLeft(dt.getHours().toString(), 2, '0');
-        break;
-      case 'H':
-        part = dt.getHours();
-        break;
-      case 'mm':
-        part = padLeft(dt.getMinutes().toString(), 2, '0');
-        break;
-      case 'm':
-        part = dt.getMinutes();
-        break;
-      case 'ss':
-        part = padLeft(dt.getSeconds().toString(), 2, '0');
-        break;
-      case 's':
-        part = dt.getSeconds();
-        break;
-      case 't': case 'tt':
-        part = (dt.getHours() < 12) ? dtf.am : dtf.pm;
-        if (fs == 't') {
-          part = part.charAt(0);
+      case 'x': case 'X':
+        s = parseInt(Math.abs(number)).toString(16);
+        if (fs == 'X') {
+          s = s.toUpperCase();
+        }
+        if (precision != -1) {
+          s = padLeft(s, precision, '0');
         }
         break;
-      case 'fff':
-        part = padLeft(dt.getMilliseconds().toString(), 3, '0');
-        break;
-      case 'ff':
-        part = padLeft(dt.getMilliseconds().toString(), 3).substr(0, 2);
-        break;
-      case 'f':
-        part = padLeft(dt.getMilliseconds().toString(), 3).charAt(0);
-        break;
-      case 'z':
-        part = dt.getTimezoneOffset() / 60;
-        part = ((part >= 0) ? '-' : '+') + Math.floor(Math.abs(part));
-        break;
-      case 'zz': case 'zzz':
-        part = dt.getTimezoneOffset() / 60;
-        part = ((part >= 0) ? '-' : '+') + padLeft(Math.floor(Math.abs(part)).toString(), 2, '0');
-        if (fs == 'zzz') {
-          part += dtf.ts + padLeft(Math.abs(dt.getTimezoneOffset() % 60).toString(), 2, '0');
+      case 'e': case 'E':
+        if (precision == -1) {
+          s = number.toExponential();
+        }
+        else {
+          s = number.toExponential(precision);
+        }
+        if (fs == 'E') {
+          s = s.toUpperCase();
         }
         break;
-      default:
-        if (part.charAt(0) == '\'') {
-          part = part.substr(1, part.length - 2).replace(/\\'/g, '\'');
+      case 'f': case 'F':
+      case 'n': case 'N':
+        if (precision == -1) {
+          precision = nf.dd;
+        }
+        s = number.toFixed(precision).toString();
+        if (precision && (nf.ds != '.')) {
+          var index = s.indexOf('.');
+          s = s.substr(0, index) + nf.ds + s.substr(index + 1);
+        }
+        if ((fs == 'n') || (fs == 'N')) {
+          s = _commaFormatNumber(s, nf.gw, nf.ds, nf.gs);
+        }
+        break;
+      case 'c': case 'C':
+        if (precision == -1) {
+          precision = nf.curDD;
+        }
+        s = Math.abs(number).toFixed(precision).toString();
+        if (precision && (nf.curDS != '.')) {
+          var index = s.indexOf('.');
+          s = s.substr(0, index) + nf.curDS + s.substr(index + 1);
+        }
+        s = _commaFormatNumber(s, nf.curGW, nf.curDS, nf.curGS);
+        if (number < 0) {
+          s = String.format(culture, nf.curNP, s);
+        }
+        else {
+          s = String.format(culture, nf.curPP, s);
+        }
+        break;
+      case 'p': case 'P':
+        if (precision == -1) {
+          precision = nf.perDD;
+        }
+        s = (Math.abs(number) * 100.0).toFixed(precision).toString();
+        if (precision && (nf.perDS != '.')) {
+          var index = s.indexOf('.');
+          s = s.substr(0, index) + nf.perDS + s.substr(index + 1);
+        }
+        s = _commaFormatNumber(s, nf.perGW, nf.perDS, nf.perGS);
+        if (number < 0) {
+          s = String.format(culture, nf.perNP, s);
+        }
+        else {
+          s = String.format(culture, nf.perPP, s);
         }
         break;
     }
-    sb.append(part);
+
+    return s;
   }
 
-  return sb.toString();
-}
+  var _dateFormatRE = /'.*?[^\\]'|dddd|ddd|dd|d|MMMM|MMM|MM|M|yyyy|yy|y|hh|h|HH|H|mm|m|ss|s|tt|t|fff|ff|f|zzz|zz|z/g;
 
-// Type System
+  _formatters['Date'] = function (dt, format, culture) {
+    if (format == 'iso') {
+      return dt.toISOString();
+    }
+    else if (format.charAt(0) == 'i') {
+      var fnName = 'String';
+      switch (format) {
+        case 'id': fnName = 'DateString'; break;
+        case 'it': fnName = 'TimeString'; break;
+      }
+      return culture == neutralCulture ? dt['to' + fnName]() : dt['toLocale' + fnName]();
+    }
 
-var _modules = {};
+    var dtf = culture.dtf;
 
-var _classMarker = 'class';
-var _interfaceMarker = 'interface';
+    if (format.length == 1) {
+      switch (format) {
+        case 'f': format = dtf.ld + ' ' + dtf.st; break;
+        case 'F': format = dtf.dt; break;
 
-function createType(typeName, typeInfo, typeRegistry) {
-  // The typeInfo is either an array of information representing
-  // classes and interfaces, or an object representing enums and resources
-  // or a function, representing a record factory.
+        case 'd': format = dtf.sd; break;
+        case 'D': format = dtf.ld; break;
 
-  if (Array.isArray(typeInfo)) {
-    var type = typeInfo[0];
+        case 't': format = dtf.st; break;
+        case 'T': format = dtf.lt; break;
 
-    // A class is minimally the class type and an object representing
-    // its prototype members, and optionally the base type, and references
-    // to interfaces implemented by the class.
-    if (typeInfo.length >= 2) {
-      var baseType = typeInfo[2];
-      if (baseType) {
-        // Chain the prototype of the base type (using an anonymous type
-        // in case the base class is not creatable, or has side-effects).
-        var anonymous = function() {};
-        anonymous.prototype = baseType.prototype;
-        type.prototype = new anonymous();
-        type.prototype.constructor = type;
+        case 'g': format = dtf.sd + ' ' + dtf.st; break;
+        case 'G': format = dtf.sd + ' ' + dtf.lt; break;
+
+        case 'R': case 'r':
+          dtf = neutralCulture.dtf;
+          format = dtf.gmt;
+          break;
+        case 'u': format = dtf.uni; break;
+        case 'U':
+          format = dtf.dt;
+          dt = new Date(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate(),
+            dt.getUTCHours(), dt.getUTCMinutes(), dt.getUTCSeconds(), dt.getUTCMilliseconds());
+          break;
+
+        case 's': format = dtf.sort; break;
+      }
+    }
+
+    if (format.charAt(0) == '%') {
+      format = format.substr(1);
+    }
+
+    var sb = new StringBuilder();
+
+    _dateFormatRE.lastIndex = 0;
+    while (true) {
+      var index = _dateFormatRE.lastIndex;
+      var match = _dateFormatRE.exec(format);
+
+      sb.append(format.slice(index, match ? match.index : format.length));
+      if (!match) {
+        break;
       }
 
-      // Add the type's prototype members if there are any
-      typeInfo[1] && extend(type.prototype, typeInfo[1]);
-
-      type.$base = baseType || Object;
-      type.$interfaces = typeInfo.slice(3);
-      type.$type = _classMarker;
-    }
-    else {
-      type.$type = _interfaceMarker;
-    }
-
-    type.$name = typeName;
-    return typeRegistry[typeName] = type;
-  }
-
-  return typeInfo;
-}
-
-function isClass(fn) {
-  return fn.$type == _classMarker;
-}
-
-function isInterface(fn) {
-  return fn.$type == _interfaceMarker;
-}
-
-function typeOf(instance) {
-  var ctor;
-
-  // NOTE: We have to catch exceptions because the constructor
-  //       cannot be looked up on native COM objects
-  try {
-    ctor = instance.constructor;
-  }
-  catch (ex) {
-  }
-  return ctor || Object;
-}
-
-function type(s) {
-  var nsIndex = s.indexOf('.');
-  var ns = nsIndex > 0 ? _modules[s.substr(0, nsIndex)] : global;
-  var name = nsIndex > 0 ? s.substr(nsIndex + 1) : s;
-
-  return ns ? ns[name] : null;
-}
-
-var _typeNames = [
-  Number, 'Number',
-  String, 'String',
-  Boolean, 'Boolean',
-  Array, 'Array',
-  Date, 'Date',
-  RegExp, 'RegExp',
-  Function, 'Function'
-];
-function typeName(type) {
-  if (!(type instanceof Function)) {
-    type = type.constructor;
-  }
-  if (type.$name) {
-    return type.$name;
-  }
-  if (type.name) {
-    return type.name;
-  }
-  for (var i = 0, len = _typeNames.length; i < len; i += 2) {
-    if (type == _typeNames[i]) {
-      return _typeNames[i + 1];
-    }
-  }
-  return 'Object';
-}
-
-function canAssign(type, otherType) {
-  // Checks if the specified type is equal to otherType,
-  // or is a parent of otherType
-
-  if ((type == Object) || (type == otherType)) {
-    return true;
-  }
-  if (type.$type == _classMarker) {
-    var baseType = otherType.$base;
-    while (baseType) {
-      if (type == baseType) {
-        return true;
+      var fs = match[0];
+      var part = fs;
+      switch (fs) {
+        case 'dddd':
+          part = dtf.day[dt.getDay()];
+          break;
+        case 'ddd':
+          part = dtf.sday[dt.getDay()];
+          break;
+        case 'dd':
+          part = padLeft(dt.getDate().toString(), 2, '0');
+          break;
+        case 'd':
+          part = dt.getDate();
+          break;
+        case 'MMMM':
+          part = dtf.mon[dt.getMonth()];
+          break;
+        case 'MMM':
+          part = dtf.smon[dt.getMonth()];
+          break;
+        case 'MM':
+          part = padLeft((dt.getMonth() + 1).toString(), 2, '0');
+          break;
+        case 'M':
+          part = (dt.getMonth() + 1);
+          break;
+        case 'yyyy':
+          part = dt.getFullYear();
+          break;
+        case 'yy':
+          part = padLeft((dt.getFullYear() % 100).toString(), 2, '0');
+          break;
+        case 'y':
+          part = (dt.getFullYear() % 100);
+          break;
+        case 'h': case 'hh':
+          part = dt.getHours() % 12;
+          if (!part) {
+            part = '12';
+          }
+          else if (fs == 'hh') {
+            part = padLeft(part.toString(), 2, '0');
+          }
+          break;
+        case 'HH':
+          part = padLeft(dt.getHours().toString(), 2, '0');
+          break;
+        case 'H':
+          part = dt.getHours();
+          break;
+        case 'mm':
+          part = padLeft(dt.getMinutes().toString(), 2, '0');
+          break;
+        case 'm':
+          part = dt.getMinutes();
+          break;
+        case 'ss':
+          part = padLeft(dt.getSeconds().toString(), 2, '0');
+          break;
+        case 's':
+          part = dt.getSeconds();
+          break;
+        case 't': case 'tt':
+          part = (dt.getHours() < 12) ? dtf.am : dtf.pm;
+          if (fs == 't') {
+            part = part.charAt(0);
+          }
+          break;
+        case 'fff':
+          part = padLeft(dt.getMilliseconds().toString(), 3, '0');
+          break;
+        case 'ff':
+          part = padLeft(dt.getMilliseconds().toString(), 3).substr(0, 2);
+          break;
+        case 'f':
+          part = padLeft(dt.getMilliseconds().toString(), 3).charAt(0);
+          break;
+        case 'z':
+          part = dt.getTimezoneOffset() / 60;
+          part = ((part >= 0) ? '-' : '+') + Math.floor(Math.abs(part));
+          break;
+        case 'zz': case 'zzz':
+          part = dt.getTimezoneOffset() / 60;
+          part = ((part >= 0) ? '-' : '+') + padLeft(Math.floor(Math.abs(part)).toString(), 2, '0');
+          if (fs == 'zzz') {
+            part += dtf.ts + padLeft(Math.abs(dt.getTimezoneOffset() % 60).toString(), 2, '0');
+          }
+          break;
+        default:
+          if (part.charAt(0) == '\'') {
+            part = part.substr(1, part.length - 2).replace(/\\'/g, '\'');
+          }
+          break;
       }
-      baseType = baseType.$base;
+      sb.append(part);
     }
+
+    return sb.toString();
   }
-  else if (type.$type == _interfaceMarker) {
-    var baseType = otherType;
-    while (baseType) {
-      var interfaces = baseType.$interfaces;
-      if (interfaces && (interfaces.indexOf(type) >= 0)) {
-        return true;
+
+  // Type System
+
+  var _modules = {};
+
+  var _classMarker = 'class';
+  var _interfaceMarker = 'interface';
+
+  function createType(typeName, typeInfo, typeRegistry) {
+    // The typeInfo is either an array of information representing
+    // classes and interfaces, or an object representing enums and resources
+    // or a function, representing a record factory.
+
+    if (Array.isArray(typeInfo)) {
+      var type = typeInfo[0];
+
+      // A class is minimally the class type and an object representing
+      // its prototype members, and optionally the base type, and references
+      // to interfaces implemented by the class.
+      if (typeInfo.length >= 2) {
+        var baseType = typeInfo[2];
+        if (baseType) {
+          // Chain the prototype of the base type (using an anonymous type
+          // in case the base class is not creatable, or has side-effects).
+          var anonymous = function () { };
+          anonymous.prototype = baseType.prototype;
+          type.prototype = new anonymous();
+          type.prototype.constructor = type;
+        }
+
+        // Add the type's prototype members if there are any
+        typeInfo[1] && extend(type.prototype, typeInfo[1]);
+
+        type.$base = baseType || Object;
+        type.$interfaces = typeInfo.slice(3);
+        type.$type = _classMarker;
       }
-      baseType = baseType.$base;
+      else {
+        type.$type = _interfaceMarker;
+      }
+
+      type.$name = typeName;
+      return typeRegistry[typeName] = type;
     }
+
+    return typeInfo;
   }
-  return false;
-}
 
-function instanceOf(type, instance) {
-  // Checks if the specified instance is of the specified type
+  function isClass(fn) {
+    return fn.$type == _classMarker;
+  }
 
-  if (!isValue(instance)) {
+  function isInterface(fn) {
+    return fn.$type == _interfaceMarker;
+  }
+
+  function typeOf(instance) {
+    var ctor;
+
+    // NOTE: We have to catch exceptions because the constructor
+    //       cannot be looked up on native COM objects
+    try {
+      ctor = instance.constructor;
+    }
+    catch (ex) {
+    }
+    return ctor || Object;
+  }
+
+  function type(s) {
+    var nsIndex = s.indexOf('.');
+    var ns = nsIndex > 0 ? _modules[s.substr(0, nsIndex)] : global;
+    var name = nsIndex > 0 ? s.substr(nsIndex + 1) : s;
+
+    return ns ? ns[name] : null;
+  }
+
+  var _typeNames = [
+    Number, 'Number',
+    String, 'String',
+    Boolean, 'Boolean',
+    Array, 'Array',
+    Date, 'Date',
+    RegExp, 'RegExp',
+    Function, 'Function'
+  ];
+
+  function typeName(type) {
+    if (!(type instanceof Function)) {
+      type = type.constructor;
+    }
+    if (type.$name) {
+      return type.$name;
+    }
+    if (type.name) {
+      return type.name;
+    }
+    for (var i = 0, len = _typeNames.length; i < len; i += 2) {
+      if (type == _typeNames[i]) {
+        return _typeNames[i + 1];
+      }
+    }
+    return 'Object';
+  }
+
+  function canAssign(type, otherType) {
+    // Checks if the specified type is equal to otherType,
+    // or is a parent of otherType
+
+    if ((type == Object) || (type == otherType)) {
+      return true;
+    }
+    if (type.$type == _classMarker) {
+      var baseType = otherType.$base;
+      while (baseType) {
+        if (type == baseType) {
+          return true;
+        }
+        baseType = baseType.$base;
+      }
+    }
+    else if (type.$type == _interfaceMarker) {
+      var baseType = otherType;
+      while (baseType) {
+        var interfaces = baseType.$interfaces;
+        if (interfaces && (interfaces.indexOf(type) >= 0)) {
+          return true;
+        }
+        baseType = baseType.$base;
+      }
+    }
     return false;
   }
 
-  if ((type == Object) || (instance instanceof type)) {
-    return true;
-  }
+  function instanceOf(type, instance) {
+    // Checks if the specified instance is of the specified type
 
-  var instanceType = typeOf(instance);
-  return canAssign(type, instanceType);
-}
-
-function canCast(instance, type) {
-  return instanceOf(type, instance);
-}
-
-function safeCast(instance, type) {
-  return instanceOf(type, instance) ? instance : null;
-}
-
-function module(name, implementation, exports) {
-  var registry = _modules[name] = { $name: name };
-
-  if (implementation) {
-    for (var typeName in implementation) {
-      createType(typeName, implementation[typeName], registry);
+    if (!isValue(instance)) {
+      return false;
     }
-  }
 
-  var api = {};
-  if (exports) {
-    for (var typeName in exports) {
-      api[typeName] = createType(typeName, exports[typeName], registry);
+    if ((type == Object) || (instance instanceof type)) {
+      return true;
     }
+
+    var instanceType = typeOf(instance);
+    return canAssign(type, instanceType);
   }
 
-  return api;
+  function canCast(instance, type) {
+    return instanceOf(type, instance);
+  }
+
+  function safeCast(instance, type) {
+    return instanceOf(type, instance) ? instance : null;
+  }
+
+  function ss_module(name, implementation, exports) {
+    var registry = _modules[name] = { $name: name };
+
+    if (implementation) {
+      for (var typeName in implementation) {
+        createType(typeName, implementation[typeName], registry);
+      }
+    }
+
+    var api = {};
+    if (exports) {
+      for (var typeName in exports) {
+        api[typeName] = createType(typeName, exports[typeName], registry);
+      }
+    }
+
+    return api;
+  }
+
+  return extend(ss_module('ss', null, {
+    IDisposable: [IDisposable],
+    IEnumerable: [IEnumerable],
+    IEnumerator: [IEnumerator],
+    IObserver: [IObserver],
+    IApplication: [IApplication],
+    IContainer: [IContainer],
+    IObjectFactory: [IObjectFactory],
+    IEventManager: [IEventManager],
+    IInitializable: [IInitializable],
+    EventArgs: [EventArgs, {}],
+    CancelEventArgs: [CancelEventArgs, {}, EventArgs],
+    StringBuilder: [StringBuilder, StringBuilder$],
+    Stack: [Stack, Stack$],
+    Queue: [Queue, Queue$],
+    Observable: [Observable, Observable$],
+    ObservableCollection: [ObservableCollection, ObservableCollection$, null, IEnumerable],
+    Task: [Task, Task$]
+  }), {
+    version: '0.8',
+
+    isValue: isValue,
+    value: value,
+    extend: extend,
+    keys: keys,
+    keyCount: keyCount,
+    keyExists: keyExists,
+    clearKeys: clearKeys,
+    enumerate: enumerate,
+    array: toArray,
+    remove: removeItem,
+    boolean: parseBoolean,
+    regexp: parseRegExp,
+    number: parseNumber,
+    date: parseDate,
+    truncate: truncate,
+    now: now,
+    today: today,
+    compareDates: compareDates,
+    error: error,
+    string: string,
+    emptyString: emptyString,
+    whitespace: whitespace,
+    format: format,
+    compareStrings: compareStrings,
+    startsWith: startsWith,
+    endsWith: endsWith,
+    padLeft: padLeft,
+    padRight: padRight,
+    trim: trim,
+    trimStart: trimStart,
+    trimEnd: trimEnd,
+    insertString: insertString,
+    removeString: removeString,
+    replaceString: replaceString,
+    bind: bind,
+    bindAdd: bindAdd,
+    bindSub: bindSub,
+    bindExport: bindExport,
+    deferred: deferred,
+
+    module: ss_module,
+    modules: _modules,
+
+    isClass: isClass,
+    isInterface: isInterface,
+    typeOf: typeOf,
+    type: type,
+    typeName: typeName,
+    canCast: canCast,
+    safeCast: safeCast,
+    canAssign: canAssign,
+    instanceOf: instanceOf,
+
+    culture: {
+      neutral: neutralCulture,
+      current: currentCulture
+    },
+
+    fail: fail
+  });
 }
 
+var ss = _ss();
+// ScriptSharp generates a file that invokes define()
 
-  return extend(module('ss', null, {
-      IDisposable: [ IDisposable ],
-      IEnumerable: [ IEnumerable ],
-      IEnumerator: [ IEnumerator ],
-      IObserver: [ IObserver ],
-      IApplication: [ IApplication ],
-      IContainer: [ IContainer ],
-      IObjectFactory: [ IObjectFactory ],
-      IEventManager: [ IEventManager ],
-      IInitializable: [ IInitializable ],
-      EventArgs: [ EventArgs, { } ],
-      CancelEventArgs: [ CancelEventArgs, { }, EventArgs ],
-      StringBuilder: [ StringBuilder, StringBuilder$ ],
-      Stack: [ Stack, Stack$ ],
-      Queue: [ Queue, Queue$ ],
-      Observable: [ Observable, Observable$ ],
-      ObservableCollection: [ ObservableCollection, ObservableCollection$, null, IEnumerable ],
-      Task: [ Task, Task$ ]
-    }), {
-      version: '0.8',
+var _exports_object = null;
 
-      isValue: isValue,
-      value: value,
-      extend: extend,
-      keys: keys,
-      keyCount: keyCount,
-      keyExists: keyExists,
-      clearKeys: clearKeys,
-      enumerate: enumerate,
-      array: toArray,
-      remove: removeItem,
-      boolean: parseBoolean,
-      regexp: parseRegExp,
-      number: parseNumber,
-      date: parseDate,
-      truncate: truncate,
-      now: now,
-      today: today,
-      compareDates: compareDates,
-      error: error,
-      string: string,
-      emptyString: emptyString,
-      whitespace: whitespace,
-      format: format,
-      compareStrings: compareStrings,
-      startsWith: startsWith,
-      endsWith: endsWith,
-      padLeft: padLeft,
-      padRight: padRight,
-      trim: trim,
-      trimStart: trimStart,
-      trimEnd: trimEnd,
-      insertString: insertString,
-      removeString: removeString,
-      replaceString: replaceString,
-      bind: bind,
-      bindAdd: bindAdd,
-      bindSub: bindSub,
-      bindExport: bindExport,
-      deferred: deferred,
+function define(name, deps, factory) {
+  _exports_object = factory(ss);
+  _exports_object.ss = ss;
 
-      module: module,
-      modules: _modules,
-
-      isClass: isClass,
-      isInterface: isInterface,
-      typeOf: typeOf,
-      type: type,
-      typeName: typeName,
-      canCast: canCast,
-      safeCast: safeCast,
-      canAssign: canAssign,
-      instanceOf: instanceOf,
-
-      culture: {
-        neutral: neutralCulture,
-        current: currentCulture
-      },
-
-      fail: fail
-    });
-  }
-
-
-  function _export() {
-    var ss = _ss();
-    typeof exports == 'object' ? ss.extend(exports, ss) : global.ss = ss;
-  }
-
-  global.define ? global.define('ss', [], _ss) : _export();
-})(this);
+  // Gross hack to get Enums.parse() and Enums.toXml() to work. See
+  // wwtlib/Util.cs for the other half of this.
+  _exports_object.Enums._wwtlib = _exports_object;
+}
 
 "use strict";
 
-window.wwtlib = function(){
+define('wwtlib', ['ss'], function(ss) {
   var $global = this;
 
   // DAY_OF_WEEK
 
   var DAY_OF_WEEK = {
-    SUNDAY: 0,
-    MONDAY: 1,
-    TUESDAY: 2,
-    WEDNESDAY: 3,
-    THURSDAY: 4,
-    FRIDAY: 5,
+    SUNDAY: 0, 
+    MONDAY: 1, 
+    TUESDAY: 2, 
+    WEDNESDAY: 3, 
+    THURSDAY: 4, 
+    FRIDAY: 5, 
     SATURDAY: 6
   };
 
@@ -1535,23 +1573,133 @@ window.wwtlib = function(){
   // EO
 
   var EO = {
-    SUN: 0,
-    MERCURY: 1,
-    VENUS: 2,
-    MARS: 3,
-    JUPITER: 4,
-    SATURN: 5,
-    URANUS: 6,
-    NEPTUNE: 7,
+    SUN: 0, 
+    MERCURY: 1, 
+    VENUS: 2, 
+    MARS: 3, 
+    JUPITER: 4, 
+    SATURN: 5, 
+    URANUS: 6, 
+    NEPTUNE: 7, 
     PLUTO: 8
+  };
+
+
+  // wwtlib.URLRewriteMode
+
+  var URLRewriteMode = {
+    asIfAbsolute: 0, 
+    originRelative: 1
+  };
+
+
+  // wwtlib.SolarSystemObjects
+
+  var SolarSystemObjects = {
+    sun: 0, 
+    mercury: 1, 
+    venus: 2, 
+    mars: 3, 
+    jupiter: 4, 
+    saturn: 5, 
+    uranus: 6, 
+    neptune: 7, 
+    pluto: 8, 
+    moon: 9, 
+    io: 10, 
+    europa: 11, 
+    ganymede: 12, 
+    callisto: 13, 
+    ioShadow: 14, 
+    europaShadow: 15, 
+    ganymedeShadow: 16, 
+    callistoShadow: 17, 
+    sunEclipsed: 18, 
+    earth: 19, 
+    custom: 20, 
+    undefined: 65536
+  };
+
+
+  // wwtlib.InterpolationType
+
+  var InterpolationType = {
+    linear: 0, 
+    easeIn: 1, 
+    easeOut: 2, 
+    easeInOut: 3, 
+    exponential: 4, 
+    defaultV: 5
+  };
+
+
+  // wwtlib.PointType
+
+  var PointType = {
+    move: 0, 
+    line: 1, 
+    dash: 2, 
+    start: 3
+  };
+
+
+  // wwtlib.LocationHint
+
+  var LocationHint = {
+    slash: 0, 
+    backslash: 1, 
+    top: 2
+  };
+
+
+  // wwtlib.FolderGroup
+
+  var FolderGroup = {
+    explorer: 0, 
+    tour: 1, 
+    search: 2, 
+    constellation: 3, 
+    view: 4, 
+    goTo: 5, 
+    community: 6, 
+    context: 7, 
+    voTable: 8, 
+    imageStack: 9
+  };
+
+
+  // wwtlib.FolderRefreshType
+
+  var FolderRefreshType = {
+    interval: 0, 
+    conditionalGet: 1, 
+    viewChange: 2
+  };
+
+
+  // wwtlib.FolderType
+
+  var FolderType = {
+    earth: 0, 
+    planet: 1, 
+    sky: 2, 
+    panorama: 3
+  };
+
+
+  // wwtlib.ThumbnailSize
+
+  var ThumbnailSize = {
+    small: 0, 
+    big: 1
   };
 
 
   // wwtlib.CullMode
 
   var CullMode = {
-    none: 0,
-    counterClockwise: 2,
+    none: 0, 
+    counterClockwise: 2, 
     clockwise: 1
   };
 
@@ -1559,22 +1707,105 @@ window.wwtlib = function(){
   // wwtlib.PointScaleTypes
 
   var PointScaleTypes = {
-    linear: 0,
-    power: 1,
-    log: 2,
-    constant: 3,
+    linear: 0, 
+    power: 1, 
+    log: 2, 
+    constant: 3, 
     stellarMagnitude: 4
+  };
+
+
+  // wwtlib.ProjectionType
+
+  var ProjectionType = {
+    mercator: 0, 
+    equirectangular: 1, 
+    tangent: 2, 
+    tan: 2, 
+    toast: 3, 
+    spherical: 4, 
+    skyImage: 5, 
+    plotted: 6
+  };
+
+
+  // wwtlib.ImageSetType
+
+  var ImageSetType = {
+    earth: 0, 
+    planet: 1, 
+    sky: 2, 
+    panorama: 3, 
+    solarSystem: 4, 
+    sandbox: 5
+  };
+
+
+  // wwtlib.BandPass
+
+  var BandPass = {
+    gamma: 0, 
+    xRay: 1, 
+    ultraviolet: 2, 
+    visible: 3, 
+    hydrogenAlpha: 4, 
+    IR: 4, 
+    microwave: 5, 
+    radio: 6, 
+    visibleNight: 6
+  };
+
+
+  // wwtlib.Classification
+
+  var Classification = {
+    star: 1, 
+    supernova: 2, 
+    blackHole: 4, 
+    neutronStar: 8, 
+    doubleStar: 16, 
+    multipleStars: 32, 
+    asterism: 64, 
+    constellation: 128, 
+    openCluster: 256, 
+    globularCluster: 512, 
+    nebulousCluster: 1024, 
+    nebula: 2048, 
+    emissionNebula: 4096, 
+    planetaryNebula: 8192, 
+    reflectionNebula: 16384, 
+    darkNebula: 32768, 
+    giantMolecularCloud: 65536, 
+    supernovaRemnant: 131072, 
+    interstellarDust: 262144, 
+    quasar: 524288, 
+    galaxy: 1048576, 
+    spiralGalaxy: 2097152, 
+    irregularGalaxy: 4194304, 
+    ellipticalGalaxy: 8388608, 
+    knot: 16777216, 
+    plateDefect: 33554432, 
+    clusterOfGalaxies: 67108864, 
+    otherNGC: 134217728, 
+    unidentified: 268435456, 
+    solarSystem: 536870912, 
+    unfiltered: 1073741823, 
+    stellar: 63, 
+    stellarGroupings: 2032, 
+    nebulae: 523264, 
+    galactic: 133693440, 
+    other: 436207616
   };
 
 
   // wwtlib.DataTypes
 
   var DataTypes = {
-    byteT: 0,
-    int16T: 1,
-    int32T: 2,
-    floatT: 3,
-    doubleT: 4,
+    byteT: 0, 
+    int16T: 1, 
+    int32T: 2, 
+    floatT: 3, 
+    doubleT: 4, 
     none: 5
   };
 
@@ -1582,10 +1813,10 @@ window.wwtlib = function(){
   // wwtlib.ScaleTypes
 
   var ScaleTypes = {
-    linear: 0,
-    log: 1,
-    power: 2,
-    squareRoot: 3,
+    linear: 0, 
+    log: 1, 
+    power: 2, 
+    squareRoot: 3, 
     histogramEqualization: 4
   };
 
@@ -1593,15 +1824,15 @@ window.wwtlib = function(){
   // wwtlib.AltUnits
 
   var AltUnits = {
-    meters: 1,
-    feet: 2,
-    inches: 3,
-    miles: 4,
-    kilometers: 5,
-    astronomicalUnits: 6,
-    lightYears: 7,
-    parsecs: 8,
-    megaParsecs: 9,
+    meters: 1, 
+    feet: 2, 
+    inches: 3, 
+    miles: 4, 
+    kilometers: 5, 
+    astronomicalUnits: 6, 
+    lightYears: 7, 
+    parsecs: 8, 
+    megaParsecs: 9, 
     custom: 10
   };
 
@@ -1609,9 +1840,9 @@ window.wwtlib = function(){
   // wwtlib.FadeType
 
   var FadeType = {
-    fadeIn: 1,
-    fadeOut: 2,
-    both: 3,
+    fadeIn: 1, 
+    fadeOut: 2, 
+    both: 3, 
     none: 4
   };
 
@@ -1619,26 +1850,26 @@ window.wwtlib = function(){
   // wwtlib.ReferenceFrames
 
   var ReferenceFrames = {
-    sky: 0,
-    ecliptic: 1,
-    galactic: 2,
-    sun: 3,
-    mercury: 4,
-    venus: 5,
-    earth: 6,
-    mars: 7,
-    jupiter: 8,
-    saturn: 9,
-    uranus: 10,
-    neptune: 11,
-    pluto: 12,
-    moon: 13,
-    io: 14,
-    europa: 15,
-    ganymede: 16,
-    callisto: 17,
-    custom: 18,
-    identity: 19,
+    sky: 0, 
+    ecliptic: 1, 
+    galactic: 2, 
+    sun: 3, 
+    mercury: 4, 
+    venus: 5, 
+    earth: 6, 
+    mars: 7, 
+    jupiter: 8, 
+    saturn: 9, 
+    uranus: 10, 
+    neptune: 11, 
+    pluto: 12, 
+    moon: 13, 
+    io: 14, 
+    europa: 15, 
+    ganymede: 16, 
+    callisto: 17, 
+    custom: 18, 
+    identity: 19, 
     sandbox: 20
   };
 
@@ -1646,9 +1877,9 @@ window.wwtlib = function(){
   // wwtlib.ReferenceFrameTypes
 
   var ReferenceFrameTypes = {
-    fixedSherical: 0,
-    orbital: 1,
-    trajectory: 2,
+    fixedSherical: 0, 
+    orbital: 1, 
+    trajectory: 2, 
     synodic: 3
   };
 
@@ -1656,8 +1887,8 @@ window.wwtlib = function(){
   // wwtlib.CoordinatesTypes
 
   var CoordinatesTypes = {
-    spherical: 0,
-    rectangular: 1,
+    spherical: 0, 
+    rectangular: 1, 
     orbital: 2
   };
 
@@ -1665,10 +1896,10 @@ window.wwtlib = function(){
   // wwtlib.AltTypes
 
   var AltTypes = {
-    depth: 0,
-    altitude: 1,
-    distance: 2,
-    seaLevel: 3,
+    depth: 0, 
+    altitude: 1, 
+    distance: 2, 
+    seaLevel: 3, 
     terrain: 4
   };
 
@@ -1683,8 +1914,8 @@ window.wwtlib = function(){
   // wwtlib.ColorMaps
 
   var ColorMaps = {
-    same_For_All: 0,
-    group_by_Values: 2,
+    same_For_All: 0, 
+    group_by_Values: 2, 
     per_Column_Literal: 3
   };
 
@@ -1692,11 +1923,11 @@ window.wwtlib = function(){
   // wwtlib.PlotTypes
 
   var PlotTypes = {
-    gaussian: 0,
-    point: 1,
-    circle: 2,
-    square: 3,
-    pushPin: 4,
+    gaussian: 0, 
+    point: 1, 
+    circle: 2, 
+    square: 3, 
+    pushPin: 4, 
     custom: 5
   };
 
@@ -1704,7 +1935,7 @@ window.wwtlib = function(){
   // wwtlib.MarkerScales
 
   var MarkerScales = {
-    screen: 0,
+    screen: 0, 
     world: 1
   };
 
@@ -1712,7 +1943,7 @@ window.wwtlib = function(){
   // wwtlib.RAUnits
 
   var RAUnits = {
-    hours: 0,
+    hours: 0, 
     degrees: 1
   };
 
@@ -1720,18 +1951,18 @@ window.wwtlib = function(){
   // wwtlib.Primitives
 
   var Primitives = {
-    voBoolean: 1,
-    voBit: 2,
-    voUnsignedByte: 3,
-    voShort: 4,
-    voInt: 5,
-    voLong: 6,
-    voChar: 7,
-    voUnicodeChar: 8,
-    voFloat: 9,
-    voDouble: 10,
-    voFloatComplex: 11,
-    voDoubleComplex: 12,
+    voBoolean: 1, 
+    voBit: 2, 
+    voUnsignedByte: 3, 
+    voShort: 4, 
+    voInt: 5, 
+    voLong: 6, 
+    voChar: 7, 
+    voUnicodeChar: 8, 
+    voFloat: 9, 
+    voDouble: 10, 
+    voFloatComplex: 11, 
+    voDoubleComplex: 12, 
     voUndefined: 13
   };
 
@@ -1739,7 +1970,7 @@ window.wwtlib = function(){
   // wwtlib.Alignment
 
   var Alignment = {
-    center: 0,
+    center: 0, 
     left: 1
   };
 
@@ -1747,56 +1978,56 @@ window.wwtlib = function(){
   // wwtlib.StockSkyOverlayTypes
 
   var StockSkyOverlayTypes = {
-    empty: 0,
-    equatorialGrid: 1,
-    equatorialGridText: 2,
-    galacticGrid: 3,
-    galacticGridText: 4,
-    eclipticGrid: 5,
-    eclipticGridText: 6,
-    eclipticOverview: 7,
-    eclipticOverviewText: 8,
-    precessionChart: 9,
-    altAzGrid: 10,
-    altAzGridText: 11,
-    constellationFigures: 12,
-    constellationBoundaries: 13,
-    constellationFocusedOnly: 14,
-    constellationNames: 15,
-    constellationPictures: 16,
-    fadeToBlack: 17,
-    fadeToLogo: 18,
-    fadeToGradient: 19,
-    screenBroadcast: 20,
-    fadeRemoteOnly: 21,
-    skyGrids: 22,
-    constellations: 23,
-    solarSystemStars: 24,
-    solarSystemMilkyWay: 25,
-    solarSystemCosmos: 26,
-    solarSystemOrbits: 27,
-    solarSystemPlanets: 28,
-    solarSystemAsteroids: 29,
-    solarSystemLighting: 30,
-    solarSystemMinorOrbits: 31,
-    showEarthCloudLayer: 32,
-    showElevationModel: 33,
-    showAtmosphere: 34,
-    multiResSolarSystemBodies: 35,
-    auroraBorialis: 36,
-    earthCutAway: 37,
-    showSolarSystem: 38,
-    clouds8k: 39,
-    filedOfView: 40,
-    showISSModel: 41,
-    solarSystemCMB: 42,
-    mpcZone1: 43,
-    mpcZone2: 44,
-    mpcZone3: 45,
-    mpcZone4: 46,
-    mpcZone5: 47,
-    mpcZone6: 48,
-    mpcZone7: 49,
+    empty: 0, 
+    equatorialGrid: 1, 
+    equatorialGridText: 2, 
+    galacticGrid: 3, 
+    galacticGridText: 4, 
+    eclipticGrid: 5, 
+    eclipticGridText: 6, 
+    eclipticOverview: 7, 
+    eclipticOverviewText: 8, 
+    precessionChart: 9, 
+    altAzGrid: 10, 
+    altAzGridText: 11, 
+    constellationFigures: 12, 
+    constellationBoundaries: 13, 
+    constellationFocusedOnly: 14, 
+    constellationNames: 15, 
+    constellationPictures: 16, 
+    fadeToBlack: 17, 
+    fadeToLogo: 18, 
+    fadeToGradient: 19, 
+    screenBroadcast: 20, 
+    fadeRemoteOnly: 21, 
+    skyGrids: 22, 
+    constellations: 23, 
+    solarSystemStars: 24, 
+    solarSystemMilkyWay: 25, 
+    solarSystemCosmos: 26, 
+    solarSystemOrbits: 27, 
+    solarSystemPlanets: 28, 
+    solarSystemAsteroids: 29, 
+    solarSystemLighting: 30, 
+    solarSystemMinorOrbits: 31, 
+    showEarthCloudLayer: 32, 
+    showElevationModel: 33, 
+    showAtmosphere: 34, 
+    multiResSolarSystemBodies: 35, 
+    auroraBorialis: 36, 
+    earthCutAway: 37, 
+    showSolarSystem: 38, 
+    clouds8k: 39, 
+    filedOfView: 40, 
+    showISSModel: 41, 
+    solarSystemCMB: 42, 
+    mpcZone1: 43, 
+    mpcZone2: 44, 
+    mpcZone3: 45, 
+    mpcZone4: 46, 
+    mpcZone5: 47, 
+    mpcZone6: 48, 
+    mpcZone7: 49, 
     orbitFilters: 50
   };
 
@@ -1804,7 +2035,7 @@ window.wwtlib = function(){
   // wwtlib.OverlayAnchor
 
   var OverlayAnchor = {
-    sky: 0,
+    sky: 0, 
     screen: 1
   };
 
@@ -1812,7 +2043,7 @@ window.wwtlib = function(){
   // wwtlib.AudioType
 
   var AudioType = {
-    music: 0,
+    music: 0, 
     voice: 1
   };
 
@@ -1820,12 +2051,12 @@ window.wwtlib = function(){
   // wwtlib.ShapeType
 
   var ShapeType = {
-    circle: 0,
-    rectagle: 1,
-    star: 2,
-    donut: 3,
-    arrow: 4,
-    line: 5,
+    circle: 0, 
+    rectagle: 1, 
+    star: 2, 
+    donut: 3, 
+    arrow: 4, 
+    line: 5, 
     openRectagle: 6
   };
 
@@ -1833,12 +2064,12 @@ window.wwtlib = function(){
   // wwtlib.LoopTypes
 
   var LoopTypes = {
-    loop: 0,
-    upDown: 1,
-    down: 2,
-    upDownOnce: 3,
-    once: 4,
-    begin: 5,
+    loop: 0, 
+    upDown: 1, 
+    down: 2, 
+    upDownOnce: 3, 
+    once: 4, 
+    begin: 5, 
     end: 6
   };
 
@@ -1846,17 +2077,17 @@ window.wwtlib = function(){
   // wwtlib.SelectionAnchor
 
   var SelectionAnchor = {
-    topLeft: 0,
-    top: 1,
-    topRight: 2,
-    right: 3,
-    bottomRight: 4,
-    bottom: 5,
-    bottomLeft: 6,
-    left: 7,
-    rotate: 8,
-    move: 9,
-    center: 10,
+    topLeft: 0, 
+    top: 1, 
+    topRight: 2, 
+    right: 3, 
+    bottomRight: 4, 
+    bottom: 5, 
+    bottomLeft: 6, 
+    left: 7, 
+    rotate: 8, 
+    move: 9, 
+    center: 10, 
     none: 11
   };
 
@@ -1864,10 +2095,10 @@ window.wwtlib = function(){
   // wwtlib.TextBorderStyle
 
   var TextBorderStyle = {
-    none: 0,
-    tight: 1,
-    small: 2,
-    medium: 3,
+    none: 0, 
+    tight: 1, 
+    small: 2, 
+    medium: 3, 
     large: 4
   };
 
@@ -1875,10 +2106,10 @@ window.wwtlib = function(){
   // wwtlib.UserLevel
 
   var UserLevel = {
-    beginner: 0,
-    intermediate: 1,
-    advanced: 2,
-    educator: 3,
+    beginner: 0, 
+    intermediate: 1, 
+    advanced: 2, 
+    educator: 3, 
     professional: 4
   };
 
@@ -1886,11 +2117,11 @@ window.wwtlib = function(){
   // wwtlib.TransitionType
 
   var TransitionType = {
-    slew: 0,
-    crossFade: 1,
-    crossCut: 2,
-    fadeOutIn: 3,
-    fadeIn: 4,
+    slew: 0, 
+    crossFade: 1, 
+    crossCut: 2, 
+    fadeOutIn: 3, 
+    fadeIn: 4, 
     fadeOut: 5
   };
 
@@ -1898,199 +2129,199 @@ window.wwtlib = function(){
   // wwtlib.Keys
 
   var Keys = {
-    modifiers: -65536,
-    none: 0,
-    lButton: 1,
-    rButton: 2,
-    cancel: 3,
-    mButton: 4,
-    xButton1: 5,
-    xButton2: 6,
-    back: 8,
-    tab: 9,
-    lineFeed: 10,
-    clearKey: 12,
-    returnKey: 13,
-    enter: 13,
-    shiftKey: 16,
-    controlKey: 17,
-    menu: 18,
-    pause: 19,
-    capital: 20,
-    capsLock: 20,
-    kanaMode: 21,
-    hanguelMode: 21,
-    hangulMode: 21,
-    junjaMode: 23,
-    finalMode: 24,
-    hanjaMode: 25,
-    kanjiMode: 25,
-    escape: 27,
-    imeConvert: 28,
-    imeNonconvert: 29,
-    imeAccept: 30,
-    imeAceept: 30,
-    imeModeChange: 31,
-    space: 32,
-    prior: 33,
-    pageUp: 33,
-    next: 34,
-    pageDown: 34,
-    end: 35,
-    home: 36,
-    left: 37,
-    up: 38,
-    right: 39,
-    down: 40,
-    select: 41,
-    print: 42,
-    execute: 43,
-    snapshot: 44,
-    printScreen: 44,
-    insertKey: 45,
-    deleteKey: 46,
-    help: 47,
-    d0: 48,
-    d1: 49,
-    d2: 50,
-    d3: 51,
-    d4: 52,
-    d5: 53,
-    d6: 54,
-    d7: 55,
-    d8: 56,
-    d9: 57,
-    a: 65,
-    b: 66,
-    c: 67,
-    d: 68,
-    e: 69,
-    f: 70,
-    g: 71,
-    h: 72,
-    i: 73,
-    j: 74,
-    k: 75,
-    l: 76,
-    m: 77,
-    n: 78,
-    o: 79,
-    p: 80,
-    q: 81,
-    r: 82,
-    s: 83,
-    t: 84,
-    u: 85,
-    v: 86,
-    w: 87,
-    x: 88,
-    y: 89,
-    z: 90,
-    lWin: 91,
-    rWin: 92,
-    apps: 93,
-    sleep: 95,
-    numPad0: 96,
-    numPad1: 97,
-    numPad2: 98,
-    numPad3: 99,
-    numPad4: 100,
-    numPad5: 101,
-    numPad6: 102,
-    numPad7: 103,
-    numPad8: 104,
-    numPad9: 105,
-    multiply: 106,
-    add: 107,
-    separator: 108,
-    subtract: 109,
-    decimal: 110,
-    divide: 111,
-    f1: 112,
-    f2: 113,
-    f3: 114,
-    f4: 115,
-    f5: 116,
-    f6: 117,
-    f7: 118,
-    f8: 119,
-    f9: 120,
-    f10: 121,
-    f11: 122,
-    f12: 123,
-    f13: 124,
-    f14: 125,
-    f15: 126,
-    f16: 127,
-    f17: 128,
-    f18: 129,
-    f19: 130,
-    f20: 131,
-    f21: 132,
-    f22: 133,
-    f23: 134,
-    f24: 135,
-    numLock: 144,
-    scroll: 145,
-    lShiftKey: 160,
-    rShiftKey: 161,
-    lControlKey: 162,
-    rControlKey: 163,
-    lMenu: 164,
-    rMenu: 165,
-    browserBack: 166,
-    browserForward: 167,
-    browserRefresh: 168,
-    browserStop: 169,
-    browserSearch: 170,
-    browserFavorites: 171,
-    browserHome: 172,
-    volumeMute: 173,
-    volumeDown: 174,
-    volumeUp: 175,
-    mediaNextTrack: 176,
-    mediaPreviousTrack: 177,
-    mediaStop: 178,
-    mediaPlayPause: 179,
-    launchMail: 180,
-    selectMedia: 181,
-    launchApplication1: 182,
-    launchApplication2: 183,
-    oemSemicolon: 186,
-    oem1: 186,
-    oemplus: 187,
-    oemcomma: 188,
-    oemMinus: 189,
-    oemPeriod: 190,
-    oemQuestion: 191,
-    oem2: 191,
-    oemtilde: 192,
-    oem3: 192,
-    oemOpenBrackets: 219,
-    oem4: 219,
-    oemPipe: 220,
-    oem5: 220,
-    oemCloseBrackets: 221,
-    oem6: 221,
-    oemQuotes: 222,
-    oem7: 222,
-    oem8: 223,
-    oemBackslash: 226,
-    oem102: 226,
-    processKey: 229,
-    packet: 231,
-    attn: 246,
-    crsel: 247,
-    exsel: 248,
-    eraseEof: 249,
-    play: 250,
-    zoom: 251,
-    noName: 252,
-    pa1: 253,
-    oemClear: 254,
-    keyCode: 65535,
-    shift: 65536,
-    control: 131072,
+    modifiers: -65536, 
+    none: 0, 
+    lButton: 1, 
+    rButton: 2, 
+    cancel: 3, 
+    mButton: 4, 
+    xButton1: 5, 
+    xButton2: 6, 
+    back: 8, 
+    tab: 9, 
+    lineFeed: 10, 
+    clearKey: 12, 
+    returnKey: 13, 
+    enter: 13, 
+    shiftKey: 16, 
+    controlKey: 17, 
+    menu: 18, 
+    pause: 19, 
+    capital: 20, 
+    capsLock: 20, 
+    kanaMode: 21, 
+    hanguelMode: 21, 
+    hangulMode: 21, 
+    junjaMode: 23, 
+    finalMode: 24, 
+    hanjaMode: 25, 
+    kanjiMode: 25, 
+    escape: 27, 
+    imeConvert: 28, 
+    imeNonconvert: 29, 
+    imeAccept: 30, 
+    imeAceept: 30, 
+    imeModeChange: 31, 
+    space: 32, 
+    prior: 33, 
+    pageUp: 33, 
+    next: 34, 
+    pageDown: 34, 
+    end: 35, 
+    home: 36, 
+    left: 37, 
+    up: 38, 
+    right: 39, 
+    down: 40, 
+    select: 41, 
+    print: 42, 
+    execute: 43, 
+    snapshot: 44, 
+    printScreen: 44, 
+    insertKey: 45, 
+    deleteKey: 46, 
+    help: 47, 
+    d0: 48, 
+    d1: 49, 
+    d2: 50, 
+    d3: 51, 
+    d4: 52, 
+    d5: 53, 
+    d6: 54, 
+    d7: 55, 
+    d8: 56, 
+    d9: 57, 
+    a: 65, 
+    b: 66, 
+    c: 67, 
+    d: 68, 
+    e: 69, 
+    f: 70, 
+    g: 71, 
+    h: 72, 
+    i: 73, 
+    j: 74, 
+    k: 75, 
+    l: 76, 
+    m: 77, 
+    n: 78, 
+    o: 79, 
+    p: 80, 
+    q: 81, 
+    r: 82, 
+    s: 83, 
+    t: 84, 
+    u: 85, 
+    v: 86, 
+    w: 87, 
+    x: 88, 
+    y: 89, 
+    z: 90, 
+    lWin: 91, 
+    rWin: 92, 
+    apps: 93, 
+    sleep: 95, 
+    numPad0: 96, 
+    numPad1: 97, 
+    numPad2: 98, 
+    numPad3: 99, 
+    numPad4: 100, 
+    numPad5: 101, 
+    numPad6: 102, 
+    numPad7: 103, 
+    numPad8: 104, 
+    numPad9: 105, 
+    multiply: 106, 
+    add: 107, 
+    separator: 108, 
+    subtract: 109, 
+    decimal: 110, 
+    divide: 111, 
+    f1: 112, 
+    f2: 113, 
+    f3: 114, 
+    f4: 115, 
+    f5: 116, 
+    f6: 117, 
+    f7: 118, 
+    f8: 119, 
+    f9: 120, 
+    f10: 121, 
+    f11: 122, 
+    f12: 123, 
+    f13: 124, 
+    f14: 125, 
+    f15: 126, 
+    f16: 127, 
+    f17: 128, 
+    f18: 129, 
+    f19: 130, 
+    f20: 131, 
+    f21: 132, 
+    f22: 133, 
+    f23: 134, 
+    f24: 135, 
+    numLock: 144, 
+    scroll: 145, 
+    lShiftKey: 160, 
+    rShiftKey: 161, 
+    lControlKey: 162, 
+    rControlKey: 163, 
+    lMenu: 164, 
+    rMenu: 165, 
+    browserBack: 166, 
+    browserForward: 167, 
+    browserRefresh: 168, 
+    browserStop: 169, 
+    browserSearch: 170, 
+    browserFavorites: 171, 
+    browserHome: 172, 
+    volumeMute: 173, 
+    volumeDown: 174, 
+    volumeUp: 175, 
+    mediaNextTrack: 176, 
+    mediaPreviousTrack: 177, 
+    mediaStop: 178, 
+    mediaPlayPause: 179, 
+    launchMail: 180, 
+    selectMedia: 181, 
+    launchApplication1: 182, 
+    launchApplication2: 183, 
+    oemSemicolon: 186, 
+    oem1: 186, 
+    oemplus: 187, 
+    oemcomma: 188, 
+    oemMinus: 189, 
+    oemPeriod: 190, 
+    oemQuestion: 191, 
+    oem2: 191, 
+    oemtilde: 192, 
+    oem3: 192, 
+    oemOpenBrackets: 219, 
+    oem4: 219, 
+    oemPipe: 220, 
+    oem5: 220, 
+    oemCloseBrackets: 221, 
+    oem6: 221, 
+    oemQuotes: 222, 
+    oem7: 222, 
+    oem8: 223, 
+    oemBackslash: 226, 
+    oem102: 226, 
+    processKey: 229, 
+    packet: 231, 
+    attn: 246, 
+    crsel: 247, 
+    exsel: 248, 
+    eraseEof: 249, 
+    play: 250, 
+    zoom: 251, 
+    noName: 252, 
+    pa1: 253, 
+    oemClear: 254, 
+    keyCode: 65535, 
+    shift: 65536, 
+    control: 131072, 
     alt: 262144
   };
 
@@ -2112,210 +2343,10 @@ window.wwtlib = function(){
   // wwtlib.StateType
 
   var StateType = {
-    pending: 0,
-    received: 1,
+    pending: 0, 
+    received: 1, 
     error: 2
   };
-
-
-  // wwtlib.SolarSystemObjects
-
-  var SolarSystemObjects = {
-    sun: 0,
-    mercury: 1,
-    venus: 2,
-    mars: 3,
-    jupiter: 4,
-    saturn: 5,
-    uranus: 6,
-    neptune: 7,
-    pluto: 8,
-    moon: 9,
-    io: 10,
-    europa: 11,
-    ganymede: 12,
-    callisto: 13,
-    ioShadow: 14,
-    europaShadow: 15,
-    ganymedeShadow: 16,
-    callistoShadow: 17,
-    sunEclipsed: 18,
-    earth: 19,
-    custom: 20,
-    undefined: 65536
-  };
-
-
-  // wwtlib.InterpolationType
-
-  var InterpolationType = {
-    linear: 0,
-    easeIn: 1,
-    easeOut: 2,
-    easeInOut: 3,
-    exponential: 4,
-    defaultV: 5
-  };
-
-
-  // wwtlib.PointType
-
-  var PointType = {
-    move: 0,
-    line: 1,
-    dash: 2,
-    start: 3
-  };
-
-
-  // wwtlib.LocationHint
-
-  var LocationHint = {
-    slash: 0,
-    backslash: 1,
-    top: 2
-  };
-
-
-  // wwtlib.FolderGroup
-
-  var FolderGroup = {
-    explorer: 0,
-    tour: 1,
-    search: 2,
-    constellation: 3,
-    view: 4,
-    goTo: 5,
-    community: 6,
-    context: 7,
-    voTable: 8,
-    imageStack: 9
-  };
-
-
-  // wwtlib.FolderRefreshType
-
-  var FolderRefreshType = {
-    interval: 0,
-    conditionalGet: 1,
-    viewChange: 2
-  };
-
-
-  // wwtlib.FolderType
-
-  var FolderType = {
-    earth: 0,
-    planet: 1,
-    sky: 2,
-    panorama: 3
-  };
-
-
-  // wwtlib.ThumbnailSize
-
-  var ThumbnailSize = {
-    small: 0,
-    big: 1
-  };
-
-
-  // wwtlib.ProjectionType
-
-  var ProjectionType = {
-    mercator: 0,
-    equirectangular: 1,
-    tangent: 2,
-    tan: 2,
-    toast: 3,
-    spherical: 4,
-    skyImage: 5,
-    plotted: 6
-  };
-
-
-  // wwtlib.ImageSetType
-
-  var ImageSetType = {
-    earth: 0,
-    planet: 1,
-    sky: 2,
-    panorama: 3,
-    solarSystem: 4,
-    sandbox: 5
-  };
-
-
-  // wwtlib.BandPass
-
-  var BandPass = {
-    gamma: 0,
-    xRay: 1,
-    ultraviolet: 2,
-    visible: 3,
-    hydrogenAlpha: 4,
-    IR: 4,
-    microwave: 5,
-    radio: 6,
-    visibleNight: 6
-  };
-
-
-  // wwtlib.Classification
-
-  var Classification = {
-    star: 1,
-    supernova: 2,
-    blackHole: 4,
-    neutronStar: 8,
-    doubleStar: 16,
-    multipleStars: 32,
-    asterism: 64,
-    constellation: 128,
-    openCluster: 256,
-    globularCluster: 512,
-    nebulousCluster: 1024,
-    nebula: 2048,
-    emissionNebula: 4096,
-    planetaryNebula: 8192,
-    reflectionNebula: 16384,
-    darkNebula: 32768,
-    giantMolecularCloud: 65536,
-    supernovaRemnant: 131072,
-    interstellarDust: 262144,
-    quasar: 524288,
-    galaxy: 1048576,
-    spiralGalaxy: 2097152,
-    irregularGalaxy: 4194304,
-    ellipticalGalaxy: 8388608,
-    knot: 16777216,
-    plateDefect: 33554432,
-    clusterOfGalaxies: 67108864,
-    otherNGC: 134217728,
-    unidentified: 268435456,
-    solarSystem: 536870912,
-    unfiltered: 1073741823,
-    stellar: 63,
-    stellarGroupings: 2032,
-    nebulae: 523264,
-    galactic: 133693440,
-    other: 436207616
-  };
-
-
-  // wwtlib.IUIServicesCallbacks
-
-  function IUIServicesCallbacks() { }
-
-
-  // wwtlib.ISettings
-
-  function ISettings() { }
-
-
-  // wwtlib.IUndoStep
-
-  function IUndoStep() { }
 
 
   // wwtlib.IFolder
@@ -2341,6 +2372,21 @@ window.wwtlib = function(){
   // wwtlib.IViewMover
 
   function IViewMover() { }
+
+
+  // wwtlib.IUIServicesCallbacks
+
+  function IUIServicesCallbacks() { }
+
+
+  // wwtlib.ISettings
+
+  function ISettings() { }
+
+
+  // wwtlib.IUndoStep
+
+  function IUndoStep() { }
 
 
   // GFX
@@ -7290,6 +7336,336 @@ window.wwtlib = function(){
   };
 
 
+  // wwtlib.URLHelpers
+
+  function URLHelpers() {
+    this._force_https = false;
+    this._origin_protocol = window.location.protocol;
+    this._origin_domain = window.location.hostname;
+    this._force_https = (this._origin_protocol === 'https:');
+    this._domain_handling = {};
+    this._domain_handling['worldwidetelescope.org'] = 0;
+    this._domain_handling['www.worldwidetelescope.org'] = 0;
+    this._domain_handling['cdn.worldwidetelescope.org'] = 0;
+    this._domain_handling['content.worldwidetelescope.org'] = 0;
+    this._domain_handling['beta.worldwidetelescope.org'] = 0;
+    this._domain_handling['beta-cdn.worldwidetelescope.org'] = 0;
+    this._domain_handling['wwtstaging.azurewebsites.net'] = 0;
+    this._domain_handling['localhost'] = 1;
+    this._domain_handling['127.0.0.1'] = 1;
+    switch (this._origin_domain) {
+      case 'worldwidetelescope.org':
+      case 'www.worldwidetelescope.org':
+      case 'cdn.worldwidetelescope.org':
+        this._core_static_baseurl = this._origin_protocol + '//cdn.worldwidetelescope.org';
+        this._core_dynamic_baseurl = this._origin_protocol + '//worldwidetelescope.org';
+        break;
+      case 'beta.worldwidetelescope.org':
+      case 'beta-cdn.worldwidetelescope.org':
+        this._core_static_baseurl = this._origin_protocol + '//beta-cdn.worldwidetelescope.org';
+        this._core_dynamic_baseurl = this._origin_protocol + '//beta.worldwidetelescope.org';
+        break;
+      default:
+        this._core_static_baseurl = this._origin_protocol + '//cdn.worldwidetelescope.org';
+        this._core_dynamic_baseurl = this._origin_protocol + '//worldwidetelescope.org';
+        break;
+    }
+    this._engine_asset_baseurl = this._origin_protocol + '//web.wwtassets.org/engine/assets';
+    this._flagship_static_lcpaths = {};
+    this._flagship_static_lcpaths['/wwtweb/2massoct.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/bingdemtile.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/bingdemtile2.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/catalog.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/catalog2.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/dem.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/dembath.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/demmars.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/demtile.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/dss.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/dsstoast.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/dusttoast.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/earthblend.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/earthmerbath.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/fixedaltitudedemtile.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/g360.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/galex4far.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/galex4near.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/galextoast.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/gettile.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/gettour.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/gettourfile.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/gettours.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/glimpse.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/halphatoast.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/hirise.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/hirisedem2.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/hirisedem3.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/jupiter.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/mandel.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/mandel1.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/mars.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/marsdem.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/marshirise.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/marsmoc.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/martiantile.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/martiantile2.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/mipsgal.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/moondem.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/moonoct.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/moontoast.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/moontoastdem.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/postmars.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/postmarsdem.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/postmarsdem2.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/rasstoast.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/sdsstoast.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/sdsstoast2.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/sdsstoast2.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/thumbnail.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/tiles.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/tiles2.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/tilesthumb.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/twomasstoast.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/tychooct.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/veblend.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/vlsstoast.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/wmap.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/wmsmoon.aspx'] = true;
+    this._flagship_static_lcpaths['/wwtweb/wmstoast.aspx'] = true;
+  }
+  var URLHelpers$ = {
+    rewrite: function(url, rwmode) {
+      var lc = url.toLowerCase();
+      var lcproto;
+      var url_no_protocol;
+      if (ss.startsWith(lc, 'http://')) {
+        lcproto = 'http:';
+        url_no_protocol = url.substring(7);
+      }
+      else if (ss.startsWith(lc, 'https://')) {
+        lcproto = 'https:';
+        url_no_protocol = url.substring(8);
+      }
+      else if (ss.startsWith(lc, '//')) {
+        lcproto = '';
+        url_no_protocol = url.substring(2);
+      }
+      else if (ss.startsWith(lc, 'blob:')) {
+        return url;
+      }
+      else {
+        switch (rwmode) {
+          case 0:
+          default:
+            lcproto = '';
+            url_no_protocol = url;
+            break;
+          case 1:
+            url = (new URL(url, window.location.href)).toString();
+            return this.rewrite(url, 0);
+        }
+      }
+      var domain;
+      var rest;
+      var slash_index = url_no_protocol.indexOf('/');
+      if (slash_index < 0) {
+        domain = url_no_protocol;
+        rest = '/';
+      }
+      else {
+        domain = url_no_protocol.substring(0, slash_index);
+        rest = url_no_protocol.substring(slash_index);
+      }
+      var lcdomain = domain.toLowerCase();
+      var lcpath = rest.toLowerCase().split('?')[0];
+      if (!ss.keyExists(this._domain_handling, lcdomain)) {
+        this._domain_handling[lcdomain] = 2;
+      }
+      var mode = this._domain_handling[lcdomain];
+      switch (mode) {
+        case 1:
+          return url;
+        case 2:
+        default:
+          if (this._force_https && lcproto !== 'https:') {
+            return 'https://' + domain + rest;
+          }
+          return url;
+        case 3:
+          if (!lcproto) {
+            url = 'http://' + url;
+          }
+          url = ss.replaceString(ss.replaceString(encodeURIComponent(url), '%7B', '{'), '%7D', '}');
+          return this._core_dynamic_baseurl + '/webserviceproxy.aspx?targeturl=' + url;
+        case 0:
+          var is_static = false;
+          if (ss.startsWith(lcpath, '/data/')) {
+            is_static = true;
+          }
+          else if (ss.keyExists(this._flagship_static_lcpaths, lcpath)) {
+            is_static = true;
+          }
+          else if (ss.startsWith(lcpath, '/content/')) {
+            is_static = true;
+          }
+          else if (ss.startsWith(lcpath, '/engine/assets/')) {
+            is_static = true;
+          }
+          if (is_static) {
+            return this._core_static_baseurl + rest;
+          }
+          return this._core_dynamic_baseurl + rest;
+      }
+    },
+    activateProxy: function(url) {
+      var lc = url.toLowerCase();
+      var url_no_protocol;
+      if (ss.startsWith(lc, 'http://')) {
+        url_no_protocol = url.substring(7);
+      }
+      else if (ss.startsWith(lc, 'https://')) {
+        url_no_protocol = url.substring(8);
+      }
+      else if (ss.startsWith(lc, '//')) {
+        url_no_protocol = url.substring(2);
+      }
+      else {
+        url_no_protocol = url;
+      }
+      var lcdomain;
+      var slash_index = url_no_protocol.indexOf('/');
+      if (slash_index < 0) {
+        lcdomain = url_no_protocol;
+      }
+      else {
+        lcdomain = url_no_protocol.substring(0, slash_index).toLowerCase();
+      }
+      if (!ss.keyExists(this._domain_handling, lcdomain)) {
+        this._domain_handling[lcdomain] = 2;
+      }
+      var mode = this._domain_handling[lcdomain];
+      if (!mode) {
+        return null;
+      }
+      this._domain_handling[lcdomain] = 3;
+      return this.rewrite(url, 0);
+    },
+    engineAssetUrl: function(subpath) {
+      return ss.format('{0}/{1}', this._engine_asset_baseurl, subpath);
+    },
+    coreDynamicUrl: function(subpath) {
+      return ss.format('{0}/{1}', this._core_dynamic_baseurl, subpath);
+    },
+    coreStaticUrl: function(subpath) {
+      return ss.format('{0}/{1}', this._core_static_baseurl, subpath);
+    }
+  };
+
+
+  // wwtlib.Annotation
+
+  function Annotation() {
+    this.addedToPrimitives = false;
+    this.annotationDirty = true;
+    this._opacity = 1;
+    this._showHoverLabel = false;
+  }
+  Annotation.prepBatch = function(renderContext) {
+    if (Annotation.pointList == null || Annotation.batchDirty) {
+      Annotation.pointList = new PointList(renderContext);
+      Annotation.lineList = new LineList();
+      Annotation.triangleList = new TriangleList();
+      Annotation.lineList.set_depthBuffered(false);
+      Annotation.triangleList.depthBuffered = false;
+    }
+  };
+  Annotation.drawBatch = function(renderContext) {
+    Annotation.batchDirty = false;
+    if (renderContext.gl == null) {
+      return;
+    }
+    if (Annotation.pointList != null) {
+      Annotation.pointList.draw(renderContext, 1, false);
+    }
+    if (Annotation.lineList != null) {
+      Annotation.lineList.drawLines(renderContext, 1);
+    }
+    if (Annotation.triangleList != null) {
+      Annotation.triangleList.draw(renderContext, 1, 0);
+    }
+  };
+  Annotation.separation = function(Alpha1, Delta1, Alpha2, Delta2) {
+    Delta1 = Delta1 / 180 * Math.PI;
+    Delta2 = Delta2 / 180 * Math.PI;
+    Alpha1 = Alpha1 / 12 * Math.PI;
+    Alpha2 = Alpha2 / 12 * Math.PI;
+    var x = Math.cos(Delta1) * Math.sin(Delta2) - Math.sin(Delta1) * Math.cos(Delta2) * Math.cos(Alpha2 - Alpha1);
+    var y = Math.cos(Delta2) * Math.sin(Alpha2 - Alpha1);
+    var z = Math.sin(Delta1) * Math.sin(Delta2) + Math.cos(Delta1) * Math.cos(Delta2) * Math.cos(Alpha2 - Alpha1);
+    var vvalue = Math.atan2(Math.sqrt(x * x + y * y), z);
+    vvalue = vvalue / Math.PI * 180;
+    if (vvalue < 0) {
+      vvalue += 180;
+    }
+    return vvalue;
+  };
+  Annotation.colorToUint = function(col) {
+    return (col.a) << 24 | (col.r << 16) | (col.g) << 8 | col.b;
+  };
+  Annotation.colorToUintAlpha = function(col, opacity) {
+    return opacity << 24 | col.r << 16 | col.g << 8 | col.b;
+  };
+  var Annotation$ = {
+    draw: function(renderContext) {
+    },
+    get_opacity: function() {
+      return this._opacity;
+    },
+    set_opacity: function(value) {
+      this._opacity = value;
+      return value;
+    },
+    get_id: function() {
+      return this._id;
+    },
+    set_id: function(value) {
+      this._id = value;
+      return value;
+    },
+    get_tag: function() {
+      return this._tag;
+    },
+    set_tag: function(value) {
+      this._tag = value;
+      return value;
+    },
+    get_label: function() {
+      return this._label;
+    },
+    set_label: function(value) {
+      this._label = value;
+      return value;
+    },
+    get_showHoverLabel: function() {
+      return this._showHoverLabel;
+    },
+    set_showHoverLabel: function(value) {
+      this._showHoverLabel = value;
+      return value;
+    },
+    hitTest: function(renderContext, RA, dec, x, y) {
+      return false;
+    },
+    get_center: function() {
+      return this.center;
+    },
+    set_center: function(value) {
+      this.center = value;
+      return value;
+    }
+  };
+
+
   // wwtlib.AstroRaDec
 
   function AstroRaDec(ra, dec, dist, shadow, eclipsed) {
@@ -7468,6 +7844,4146 @@ window.wwtlib = function(){
   };
   var AstroCalc$ = {
 
+  };
+
+
+  // wwtlib.BlendState
+
+  function BlendState() {
+    this._state = false;
+    this._targetState = false;
+    this._delayTime = 0;
+    this._switchedTime = new Date(1990, 0, 0, 0, 0, 0, 0);
+    this._state = false;
+    this._targetState = this._state;
+    this._delayTime = 1000;
+  }
+  BlendState.create = function(initialState, delayTime) {
+    var temp = new BlendState();
+    temp._state = initialState;
+    temp._targetState = initialState;
+    temp._delayTime = delayTime;
+    return temp;
+  };
+  var BlendState$ = {
+    get_state: function() {
+      if (this._targetState !== this._state) {
+        var ts = ss.now() - this._switchedTime;
+        if (ts > this._delayTime) {
+          this._state = this._targetState;
+        }
+        return true;
+      }
+      return this._state;
+    },
+    set_state: function(value) {
+      this._switchedTime = new Date(1990, 0, 0, 0, 0, 0, 0);
+      this._state = value;
+      this._targetState = this._state;
+      return value;
+    },
+    get_targetState: function() {
+      return this._targetState;
+    },
+    set_targetState: function(value) {
+      if (this._targetState !== value) {
+        this._switchedTime = ss.now();
+        this._targetState = value;
+      }
+      return value;
+    },
+    get_opacity: function() {
+      if (this._targetState !== this._state) {
+        var ts = ss.now() - this._switchedTime;
+        if (ts > this._delayTime) {
+          this._state = this._targetState;
+        }
+        else {
+          var opacity = (ts / this._delayTime);
+          return (this._targetState) ? opacity : 1 - opacity;
+        }
+      }
+      return (this._state) ? 1 : 0;
+    },
+    get_delayTime: function() {
+      return this._delayTime;
+    },
+    set_delayTime: function(value) {
+      this._delayTime = value;
+      return value;
+    }
+  };
+
+
+  // wwtlib.CameraParameters
+
+  function CameraParameters() {
+    this.lat = 0;
+    this.lng = 0;
+    this.zoom = 0;
+    this.rotation = 0;
+    this.angle = 0;
+    this.raDec = false;
+    this.opacity = 0;
+    this.target = 0;
+    this.zoom = 360;
+    this.viewTarget = new Vector3d();
+  }
+  CameraParameters.create = function(lat, lng, zoom, rotation, angle, opactity) {
+    var temp = new CameraParameters();
+    temp.lat = lat;
+    temp.lng = lng;
+    temp.zoom = zoom;
+    temp.rotation = rotation;
+    temp.angle = angle;
+    temp.raDec = false;
+    temp.opacity = opactity;
+    temp.viewTarget = Vector3d.create(0, 0, 0);
+    temp.target = 20;
+    temp.targetReferenceFrame = '';
+    return temp;
+  };
+  CameraParameters.logN = function(num, b) {
+    return Math.log(num) / Math.log(b);
+  };
+  CameraParameters.sinh = function(v) {
+    return (Math.exp(v) - Math.exp(-v)) / 2;
+  };
+  CameraParameters.interpolate = function(from, to, alphaIn, type, fastDirectionMove) {
+    var result = new CameraParameters();
+    var alpha = CameraParameters.easeCurve(alphaIn, type);
+    var alphaBIn = Math.min(1, alphaIn * 2);
+    var alphaB = CameraParameters.easeCurve(alphaBIn, type);
+    result.angle = to.angle * alpha + from.angle * (1 - alpha);
+    result.rotation = to.rotation * alpha + from.rotation * (1 - alpha);
+    if (fastDirectionMove) {
+      result.lat = to.lat * alphaB + from.lat * (1 - alphaB);
+      result.lng = to.lng * alphaB + from.lng * (1 - alphaB);
+    }
+    else {
+      result.lat = to.lat * alpha + from.lat * (1 - alpha);
+      result.lng = to.lng * alpha + from.lng * (1 - alpha);
+    }
+    result.zoom = Math.pow(2, CameraParameters.logN(to.zoom, 2) * alpha + CameraParameters.logN(from.zoom, 2) * (1 - alpha));
+    result.opacity = (to.opacity * alpha + from.opacity * (1 - alpha));
+    result.viewTarget = Vector3d.lerp(from.viewTarget, to.viewTarget, alpha);
+    result.targetReferenceFrame = to.targetReferenceFrame;
+    if (to.target === from.target) {
+      result.target = to.target;
+    }
+    else {
+      result.target = 20;
+    }
+    return result;
+  };
+  CameraParameters.interpolateGreatCircle = function(from, to, alphaIn, type, fastDirectionMove) {
+    var result = new CameraParameters();
+    var alpha = CameraParameters.easeCurve(alphaIn, type);
+    var alphaBIn = Math.min(1, alphaIn * 2);
+    var alphaB = CameraParameters.easeCurve(alphaBIn, type);
+    result.angle = to.angle * alpha + from.angle * (1 - alpha);
+    result.rotation = to.rotation * alpha + from.rotation * (1 - alpha);
+    var left = Coordinates.geoTo3dDouble(from.lat, from.lng);
+    var right = Coordinates.geoTo3dDouble(to.lat, to.lng);
+    var mid = Vector3d.slerp(left, right, alpha);
+    var midV2 = Coordinates.cartesianToLatLng(mid);
+    result.lat = midV2.y;
+    result.lng = midV2.x;
+    result.zoom = Math.pow(2, CameraParameters.logN(to.zoom, 2) * alpha + CameraParameters.logN(from.zoom, 2) * (1 - alpha));
+    result.opacity = (to.opacity * alpha + from.opacity * (1 - alpha));
+    result.viewTarget = Vector3d.lerp(from.viewTarget, to.viewTarget, alpha);
+    result.targetReferenceFrame = to.targetReferenceFrame;
+    if (to.target === from.target) {
+      result.target = to.target;
+    }
+    else {
+      result.target = 20;
+    }
+    return result;
+  };
+  CameraParameters.easeCurve = function(alpha, type) {
+    switch (type) {
+      case 0:
+        return alpha;
+      case 4:
+        return Math.pow(alpha, 2);
+      case 1:
+        return ((1 - alpha) * CameraParameters.sinh(alpha / (0.1085712344 * 2)) / 100) + alpha * alpha;
+      case 2:
+        return (alpha * (1 - CameraParameters.sinh((1 - alpha) / (0.1085712344 * 2)) / 100)) + (1 - alpha) * alpha;
+      case 3:
+        if (alpha < 0.5) {
+          return CameraParameters.sinh(alpha / 0.1085712344) / 100;
+        }
+        else {
+          return 1 - (CameraParameters.sinh((1 - alpha) / 0.1085712344) / 100);
+        }
+      default:
+        return alpha;
+    }
+  };
+  var CameraParameters$ = {
+    copy: function() {
+      var temp = new CameraParameters();
+      temp.lat = this.lat;
+      temp.lng = this.lng;
+      temp.zoom = this.zoom;
+      temp.rotation = this.rotation;
+      temp.angle = this.angle;
+      temp.raDec = this.raDec;
+      temp.opacity = this.opacity;
+      temp.viewTarget = this.viewTarget.copy();
+      temp.target = this.target;
+      temp.targetReferenceFrame = this.targetReferenceFrame;
+      return temp;
+    },
+    get_RA: function() {
+      return ((((180 - (this.lng - 180)) / 360) * 24) % 24);
+    },
+    set_RA: function(value) {
+      this.lng = 180 - (value / 24 * 360) - 180;
+      this.raDec = true;
+      return value;
+    },
+    get_dec: function() {
+      return this.lat;
+    },
+    set_dec: function(value) {
+      this.lat = value;
+      return value;
+    },
+    equals: function(obj) {
+      if (ss.canCast(obj, CameraParameters)) {
+        var cam = obj;
+        if (Math.abs(cam.angle - this.angle) > 0.01 || Math.abs(cam.lat - this.lat) > (cam.zoom / 10000) || Math.abs(cam.get_RA() - this.get_RA()) > (cam.zoom / 1000) || Math.abs(cam.rotation - this.rotation) > 0.1 || Math.abs(cam.zoom - this.zoom) > (Math.abs(cam.zoom) / 1000)) {
+          return false;
+        }
+        return true;
+      }
+      else {
+        return false;
+      }
+    }
+  };
+
+
+  // wwtlib.Color
+
+  function Color() {
+    this.a = 255;
+    this.b = 255;
+    this.g = 255;
+    this.r = 255;
+    this.name = '';
+  }
+  Color.fromArgb = function(a, r, g, b) {
+    var temp = new Color();
+    temp.a = a;
+    temp.r = r;
+    temp.g = g;
+    temp.b = b;
+    return temp;
+  };
+  Color._fromArgbColor = function(a, col) {
+    var temp = new Color();
+    temp.a = a;
+    temp.r = col.r;
+    temp.g = col.g;
+    temp.b = col.b;
+    return temp;
+  };
+  Color.fromName = function(name) {
+    var temp = Color.load(name);
+    return temp;
+  };
+  Color.load = function(color) {
+    var a = 255, r = 255, g = 255, b = 255;
+    var pieces = color.split(':');
+    if (pieces.length === 5) {
+      a = parseInt(pieces[1]);
+      r = parseInt(pieces[2]);
+      g = parseInt(pieces[3]);
+      b = parseInt(pieces[4]);
+    }
+    else if (pieces.length === 2) {
+      return Color.fromName(pieces[1].toLowerCase());
+    }
+    else if (pieces.length === 1 && ss.startsWith(pieces[0], '#')) {
+      return Color.fromHex(pieces[0]);
+    }
+    else if (pieces.length === 1 && pieces[0].length === 8) {
+      return Color.fromSimpleHex(pieces[0]);
+    }
+    else if (pieces.length === 1) {
+      return Color._fromWindowsNamedColor(pieces[0]);
+    }
+    return Color.fromArgb(a, r, g, b);
+  };
+  Color._fromWindowsNamedColor = function(color) {
+    switch (color.toLowerCase()) {
+      case 'activeborder':
+        return Color.fromArgb(255, 180, 180, 180);
+      case 'activecaption':
+        return Color.fromArgb(255, 153, 180, 209);
+      case 'activecaptiontext':
+        return Color.fromArgb(255, 0, 0, 0);
+      case 'appworkspace':
+        return Color.fromArgb(255, 171, 171, 171);
+      case 'control':
+        return Color.fromArgb(255, 240, 240, 240);
+      case 'controldark':
+        return Color.fromArgb(255, 160, 160, 160);
+      case 'controldarkdark':
+        return Color.fromArgb(255, 105, 105, 105);
+      case 'controllight':
+        return Color.fromArgb(255, 227, 227, 227);
+      case 'controllightlight':
+        return Color.fromArgb(255, 255, 255, 255);
+      case 'controltext':
+        return Color.fromArgb(255, 0, 0, 0);
+      case 'desktop':
+        return Color.fromArgb(255, 255, 255, 255);
+      case 'graytext':
+        return Color.fromArgb(255, 109, 109, 109);
+      case 'highlight':
+        return Color.fromArgb(255, 51, 153, 255);
+      case 'highlighttext':
+        return Color.fromArgb(255, 255, 255, 255);
+      case 'hottrack':
+        return Color.fromArgb(255, 0, 102, 204);
+      case 'inactiveborder':
+        return Color.fromArgb(255, 244, 247, 252);
+      case 'inactivecaption':
+        return Color.fromArgb(255, 191, 205, 219);
+      case 'inactivecaptiontext':
+        return Color.fromArgb(255, 0, 0, 0);
+      case 'info':
+        return Color.fromArgb(255, 255, 255, 225);
+      case 'infotext':
+        return Color.fromArgb(255, 0, 0, 0);
+      case 'menu':
+        return Color.fromArgb(255, 240, 240, 240);
+      case 'menutext':
+        return Color.fromArgb(255, 0, 0, 0);
+      case 'scrollbar':
+        return Color.fromArgb(255, 200, 200, 200);
+      case 'window':
+        return Color.fromArgb(255, 255, 255, 255);
+      case 'windowframe':
+        return Color.fromArgb(255, 100, 100, 100);
+      case 'windowtext':
+        return Color.fromArgb(255, 0, 0, 0);
+      case 'transparent':
+        return Color.fromArgb(0, 255, 255, 255);
+      case 'aliceblue':
+        return Color.fromArgb(255, 240, 248, 255);
+      case 'antiquewhite':
+        return Color.fromArgb(255, 250, 235, 215);
+      case 'aqua':
+        return Color.fromArgb(255, 0, 255, 255);
+      case 'aquamarine':
+        return Color.fromArgb(255, 127, 255, 212);
+      case 'azure':
+        return Color.fromArgb(255, 240, 255, 255);
+      case 'beige':
+        return Color.fromArgb(255, 245, 245, 220);
+      case 'bisque':
+        return Color.fromArgb(255, 255, 228, 196);
+      case 'black':
+        return Color.fromArgb(255, 0, 0, 0);
+      case 'blanchedalmond':
+        return Color.fromArgb(255, 255, 235, 205);
+      case 'blue':
+        return Color.fromArgb(255, 0, 0, 255);
+      case 'blueviolet':
+        return Color.fromArgb(255, 138, 43, 226);
+      case 'brown':
+        return Color.fromArgb(255, 165, 42, 42);
+      case 'burlywood':
+        return Color.fromArgb(255, 222, 184, 135);
+      case 'cadetblue':
+        return Color.fromArgb(255, 95, 158, 160);
+      case 'chartreuse':
+        return Color.fromArgb(255, 127, 255, 0);
+      case 'chocolate':
+        return Color.fromArgb(255, 210, 105, 30);
+      case 'coral':
+        return Color.fromArgb(255, 255, 127, 80);
+      case 'cornflowerblue':
+        return Color.fromArgb(255, 100, 149, 237);
+      case 'cornsilk':
+        return Color.fromArgb(255, 255, 248, 220);
+      case 'crimson':
+        return Color.fromArgb(255, 220, 20, 60);
+      case 'cyan':
+        return Color.fromArgb(255, 0, 255, 255);
+      case 'darkblue':
+        return Color.fromArgb(255, 0, 0, 139);
+      case 'darkcyan':
+        return Color.fromArgb(255, 0, 139, 139);
+      case 'darkgoldenrod':
+        return Color.fromArgb(255, 184, 134, 11);
+      case 'darkgray':
+        return Color.fromArgb(255, 169, 169, 169);
+      case 'darkgreen':
+        return Color.fromArgb(255, 0, 100, 0);
+      case 'darkkhaki':
+        return Color.fromArgb(255, 189, 183, 107);
+      case 'darkmagenta':
+        return Color.fromArgb(255, 139, 0, 139);
+      case 'darkolivegreen':
+        return Color.fromArgb(255, 85, 107, 47);
+      case 'darkorange':
+        return Color.fromArgb(255, 255, 140, 0);
+      case 'darkorchid':
+        return Color.fromArgb(255, 153, 50, 204);
+      case 'darkred':
+        return Color.fromArgb(255, 139, 0, 0);
+      case 'darksalmon':
+        return Color.fromArgb(255, 233, 150, 122);
+      case 'darkseagreen':
+        return Color.fromArgb(255, 143, 188, 139);
+      case 'darkslateblue':
+        return Color.fromArgb(255, 72, 61, 139);
+      case 'darkslategray':
+        return Color.fromArgb(255, 47, 79, 79);
+      case 'darkturquoise':
+        return Color.fromArgb(255, 0, 206, 209);
+      case 'darkviolet':
+        return Color.fromArgb(255, 148, 0, 211);
+      case 'deeppink':
+        return Color.fromArgb(255, 255, 20, 147);
+      case 'deepskyblue':
+        return Color.fromArgb(255, 0, 191, 255);
+      case 'dimgray':
+        return Color.fromArgb(255, 105, 105, 105);
+      case 'dodgerblue':
+        return Color.fromArgb(255, 30, 144, 255);
+      case 'firebrick':
+        return Color.fromArgb(255, 178, 34, 34);
+      case 'floralwhite':
+        return Color.fromArgb(255, 255, 250, 240);
+      case 'forestgreen':
+        return Color.fromArgb(255, 34, 139, 34);
+      case 'fuchsia':
+        return Color.fromArgb(255, 255, 0, 255);
+      case 'gainsboro':
+        return Color.fromArgb(255, 220, 220, 220);
+      case 'ghostwhite':
+        return Color.fromArgb(255, 248, 248, 255);
+      case 'gold':
+        return Color.fromArgb(255, 255, 215, 0);
+      case 'goldenrod':
+        return Color.fromArgb(255, 218, 165, 32);
+      case 'gray':
+        return Color.fromArgb(255, 128, 128, 128);
+      case 'green':
+        return Color.fromArgb(255, 0, 128, 0);
+      case 'greenyellow':
+        return Color.fromArgb(255, 173, 255, 47);
+      case 'honeydew':
+        return Color.fromArgb(255, 240, 255, 240);
+      case 'hotpink':
+        return Color.fromArgb(255, 255, 105, 180);
+      case 'indianred':
+        return Color.fromArgb(255, 205, 92, 92);
+      case 'indigo':
+        return Color.fromArgb(255, 75, 0, 130);
+      case 'ivory':
+        return Color.fromArgb(255, 255, 255, 240);
+      case 'khaki':
+        return Color.fromArgb(255, 240, 230, 140);
+      case 'lavender':
+        return Color.fromArgb(255, 230, 230, 250);
+      case 'lavenderblush':
+        return Color.fromArgb(255, 255, 240, 245);
+      case 'lawngreen':
+        return Color.fromArgb(255, 124, 252, 0);
+      case 'lemonchiffon':
+        return Color.fromArgb(255, 255, 250, 205);
+      case 'lightblue':
+        return Color.fromArgb(255, 173, 216, 230);
+      case 'lightcoral':
+        return Color.fromArgb(255, 240, 128, 128);
+      case 'lightcyan':
+        return Color.fromArgb(255, 224, 255, 255);
+      case 'lightgoldenrodyellow':
+        return Color.fromArgb(255, 250, 250, 210);
+      case 'lightgray':
+        return Color.fromArgb(255, 211, 211, 211);
+      case 'lightgreen':
+        return Color.fromArgb(255, 144, 238, 144);
+      case 'lightpink':
+        return Color.fromArgb(255, 255, 182, 193);
+      case 'lightsalmon':
+        return Color.fromArgb(255, 255, 160, 122);
+      case 'lightseagreen':
+        return Color.fromArgb(255, 32, 178, 170);
+      case 'lightskyblue':
+        return Color.fromArgb(255, 135, 206, 250);
+      case 'lightslategray':
+        return Color.fromArgb(255, 119, 136, 153);
+      case 'lightsteelblue':
+        return Color.fromArgb(255, 176, 196, 222);
+      case 'lightyellow':
+        return Color.fromArgb(255, 255, 255, 224);
+      case 'lime':
+        return Color.fromArgb(255, 0, 255, 0);
+      case 'limegreen':
+        return Color.fromArgb(255, 50, 205, 50);
+      case 'linen':
+        return Color.fromArgb(255, 250, 240, 230);
+      case 'magenta':
+        return Color.fromArgb(255, 255, 0, 255);
+      case 'maroon':
+        return Color.fromArgb(255, 128, 0, 0);
+      case 'mediumaquamarine':
+        return Color.fromArgb(255, 102, 205, 170);
+      case 'mediumblue':
+        return Color.fromArgb(255, 0, 0, 205);
+      case 'mediumorchid':
+        return Color.fromArgb(255, 186, 85, 211);
+      case 'mediumpurple':
+        return Color.fromArgb(255, 147, 112, 219);
+      case 'mediumseagreen':
+        return Color.fromArgb(255, 60, 179, 113);
+      case 'mediumslateblue':
+        return Color.fromArgb(255, 123, 104, 238);
+      case 'mediumspringgreen':
+        return Color.fromArgb(255, 0, 250, 154);
+      case 'mediumturquoise':
+        return Color.fromArgb(255, 72, 209, 204);
+      case 'mediumvioletred':
+        return Color.fromArgb(255, 199, 21, 133);
+      case 'midnightblue':
+        return Color.fromArgb(255, 25, 25, 112);
+      case 'mintcream':
+        return Color.fromArgb(255, 245, 255, 250);
+      case 'mistyrose':
+        return Color.fromArgb(255, 255, 228, 225);
+      case 'moccasin':
+        return Color.fromArgb(255, 255, 228, 181);
+      case 'navajowhite':
+        return Color.fromArgb(255, 255, 222, 173);
+      case 'navy':
+        return Color.fromArgb(255, 0, 0, 128);
+      case 'oldlace':
+        return Color.fromArgb(255, 253, 245, 230);
+      case 'olive':
+        return Color.fromArgb(255, 128, 128, 0);
+      case 'olivedrab':
+        return Color.fromArgb(255, 107, 142, 35);
+      case 'orange':
+        return Color.fromArgb(255, 255, 165, 0);
+      case 'orangered':
+        return Color.fromArgb(255, 255, 69, 0);
+      case 'orchid':
+        return Color.fromArgb(255, 218, 112, 214);
+      case 'palegoldenrod':
+        return Color.fromArgb(255, 238, 232, 170);
+      case 'palegreen':
+        return Color.fromArgb(255, 152, 251, 152);
+      case 'paleturquoise':
+        return Color.fromArgb(255, 175, 238, 238);
+      case 'palevioletred':
+        return Color.fromArgb(255, 219, 112, 147);
+      case 'papayawhip':
+        return Color.fromArgb(255, 255, 239, 213);
+      case 'peachpuff':
+        return Color.fromArgb(255, 255, 218, 185);
+      case 'peru':
+        return Color.fromArgb(255, 205, 133, 63);
+      case 'pink':
+        return Color.fromArgb(255, 255, 192, 203);
+      case 'plum':
+        return Color.fromArgb(255, 221, 160, 221);
+      case 'powderblue':
+        return Color.fromArgb(255, 176, 224, 230);
+      case 'purple':
+        return Color.fromArgb(255, 128, 0, 128);
+      case 'red':
+        return Color.fromArgb(255, 255, 0, 0);
+      case 'rosybrown':
+        return Color.fromArgb(255, 188, 143, 143);
+      case 'royalblue':
+        return Color.fromArgb(255, 65, 105, 225);
+      case 'saddlebrown':
+        return Color.fromArgb(255, 139, 69, 19);
+      case 'salmon':
+        return Color.fromArgb(255, 250, 128, 114);
+      case 'sandybrown':
+        return Color.fromArgb(255, 244, 164, 96);
+      case 'seagreen':
+        return Color.fromArgb(255, 46, 139, 87);
+      case 'seashell':
+        return Color.fromArgb(255, 255, 245, 238);
+      case 'sienna':
+        return Color.fromArgb(255, 160, 82, 45);
+      case 'silver':
+        return Color.fromArgb(255, 192, 192, 192);
+      case 'skyblue':
+        return Color.fromArgb(255, 135, 206, 235);
+      case 'slateblue':
+        return Color.fromArgb(255, 106, 90, 205);
+      case 'slategray':
+        return Color.fromArgb(255, 112, 128, 144);
+      case 'snow':
+        return Color.fromArgb(255, 255, 250, 250);
+      case 'springgreen':
+        return Color.fromArgb(255, 0, 255, 127);
+      case 'steelblue':
+        return Color.fromArgb(255, 70, 130, 180);
+      case 'tan':
+        return Color.fromArgb(255, 210, 180, 140);
+      case 'teal':
+        return Color.fromArgb(255, 0, 128, 128);
+      case 'thistle':
+        return Color.fromArgb(255, 216, 191, 216);
+      case 'tomato':
+        return Color.fromArgb(255, 255, 99, 71);
+      case 'turquoise':
+        return Color.fromArgb(255, 64, 224, 208);
+      case 'violet':
+        return Color.fromArgb(255, 238, 130, 238);
+      case 'wheat':
+        return Color.fromArgb(255, 245, 222, 179);
+      case 'white':
+        return Color.fromArgb(255, 255, 255, 255);
+      case 'whitesmoke':
+        return Color.fromArgb(255, 245, 245, 245);
+      case 'yellow':
+        return Color.fromArgb(255, 255, 255, 0);
+      case 'yellowgreen':
+        return Color.fromArgb(255, 154, 205, 50);
+      case 'buttonface':
+        return Color.fromArgb(255, 240, 240, 240);
+      case 'buttonhighlight':
+        return Color.fromArgb(255, 255, 255, 255);
+      case 'buttonshadow':
+        return Color.fromArgb(255, 160, 160, 160);
+      case 'gradientactivecaption':
+        return Color.fromArgb(255, 185, 209, 234);
+      case 'gradientinactivecaption':
+        return Color.fromArgb(255, 215, 228, 242);
+      case 'menubar':
+        return Color.fromArgb(255, 240, 240, 240);
+      case 'menuhighlight':
+        return Color.fromArgb(255, 51, 153, 255);
+    }
+    return Color.fromArgb(255, 255, 255, 255);
+  };
+  Color.fromHex = function(data) {
+    var r = Util.fromHex(data.substr(1, 2));
+    var g = Util.fromHex(data.substr(3, 2));
+    var b = Util.fromHex(data.substr(5, 2));
+    var a = 255;
+    return Color.fromArgb(a, r, g, b);
+  };
+  Color.fromSimpleHex = function(data) {
+    var a = Util.fromHex(data.substr(0, 2));
+    var r = Util.fromHex(data.substr(2, 2));
+    var g = Util.fromHex(data.substr(4, 2));
+    var b = Util.fromHex(data.substr(6, 2));
+    return Color.fromArgb(a, r, g, b);
+  };
+  Color.fromInt = function(color) {
+    var r = (color & 4278190080) >>> 24;
+    var g = (color & 16711680) >>> 16;
+    var b = (color & 65280) >>> 8;
+    var a = (color & 255);
+    return Color.fromArgb(a, r, g, b);
+  };
+  var Color$ = {
+    toFormat: function() {
+      if (ss.emptyString(this.name)) {
+        return ss.format('rgb({0},{1},{2})', this.r.toString(), this.g.toString(), this.b.toString());
+      }
+      else {
+        return this.name;
+      }
+    },
+    save: function() {
+      if (!ss.emptyString(this.name)) {
+        return ss.format('{0}:{1}', 0, this.name);
+      }
+      else {
+        return ss.format('{0}:{1}:{2}:{3}:{4}', 1, this.a, this.r, this.g, this.b);
+      }
+    },
+    toString: function() {
+      if (ss.emptyString(this.name)) {
+        return ss.format('#{0}{1}{2}', Util.toHex(this.r), Util.toHex(this.g), Util.toHex(this.b));
+      }
+      else {
+        return this.name;
+      }
+    },
+    toSimpleHex: function() {
+      if (ss.emptyString(this.name)) {
+        return ss.format('{0}{1}{2}{3}', Util.toHex(this.a), Util.toHex(this.r), Util.toHex(this.g), Util.toHex(this.b));
+      }
+      else {
+        return this.name;
+      }
+    },
+    _clone: function() {
+      return Color.fromArgb(this.a, this.r, this.g, this.b);
+    }
+  };
+
+
+  // wwtlib.Colors
+
+  function Colors() {
+  }
+  Colors.get_black = function() {
+    return Color.fromArgb(255, 0, 0, 0);
+  };
+  Colors.get_blue = function() {
+    return Color.fromArgb(255, 0, 0, 255);
+  };
+  Colors.get_brown = function() {
+    return Color.fromArgb(255, 165, 42, 42);
+  };
+  Colors.get_cyan = function() {
+    return Color.fromArgb(255, 0, 255, 255);
+  };
+  Colors.get_darkGray = function() {
+    return Color.fromArgb(255, 169, 169, 169);
+  };
+  Colors.get_gray = function() {
+    return Color.fromArgb(255, 128, 128, 128);
+  };
+  Colors.get_green = function() {
+    return Color.fromArgb(255, 0, 255, 0);
+  };
+  Colors.get_lightGray = function() {
+    return Color.fromArgb(255, 211, 211, 211);
+  };
+  Colors.get_magenta = function() {
+    return Color.fromArgb(255, 255, 0, 255);
+  };
+  Colors.get_orange = function() {
+    return Color.fromArgb(255, 255, 165, 0);
+  };
+  Colors.get_purple = function() {
+    return Color.fromArgb(255, 128, 0, 128);
+  };
+  Colors.get_red = function() {
+    return Color.fromArgb(255, 255, 0, 0);
+  };
+  Colors.get_transparent = function() {
+    return Color.fromArgb(0, 255, 255, 255);
+  };
+  Colors.get_white = function() {
+    return Color.fromArgb(255, 255, 255, 255);
+  };
+  Colors.get_yellow = function() {
+    return Color.fromArgb(255, 255, 255, 0);
+  };
+  var Colors$ = {
+
+  };
+
+
+  // wwtlib.Constellations
+
+  function Constellations() {
+    this._pointCount = 0;
+    this._boundry = false;
+    this._noInterpollation = false;
+    this.readOnly = false;
+    this.radius = 1;
+    this._drawCount = 0;
+    this._constellationVertexBuffers = {};
+  }
+  Constellations.createBasic = function(name) {
+    var temp = new Constellations();
+    temp._name = name;
+    temp._url = null;
+    temp.lines = [];
+    var $enum1 = ss.enumerate(ss.keys(Constellations.fullNames));
+    while ($enum1.moveNext()) {
+      var abbrv = $enum1.current;
+      temp.lines.push(new Lineset(abbrv));
+    }
+    return temp;
+  };
+  Constellations.create = function(name, url, boundry, noInterpollation, resource) {
+    var temp = new Constellations();
+    temp._noInterpollation = noInterpollation;
+    temp._boundry = boundry;
+    temp._name = name;
+    temp._url = url;
+    temp.getFile();
+    return temp;
+  };
+  Constellations.drawConstellationNames = function(renderContext, opacity, drawColor) {
+    if (Constellations._namesBatch == null) {
+      Constellations.initializeConstellationNames();
+      if (Constellations._namesBatch == null) {
+        return;
+      }
+    }
+    Constellations._namesBatch.draw(renderContext, opacity, drawColor);
+  };
+  Constellations.initializeConstellationNames = function() {
+    if (Constellations.constellationCentroids == null) {
+      return;
+    }
+    Constellations._namesBatch = new Text3dBatch(80);
+    var $enum1 = ss.enumerate(ss.keys(Constellations.constellationCentroids));
+    while ($enum1.moveNext()) {
+      var key = $enum1.current;
+      var centroid = Constellations.constellationCentroids[key];
+      var center = Coordinates.raDecTo3dAu(centroid.get_RA(), centroid.get_dec(), 1);
+      var up = Vector3d.create(0, 1, 0);
+      var name = centroid.get_name();
+      if (centroid.get_name() === 'Triangulum Australe') {
+        name = ss.replaceString(name, ' ', '\n   ');
+      }
+      Constellations._namesBatch.add(new Text3d(center, up, name, 80, 0.000125));
+    }
+  };
+  Constellations.drawArtwork = function(renderContext) {
+    if (Constellations.artwork == null) {
+      if (Constellations._artFile == null) {
+        Constellations._artFile = new Folder();
+        Constellations._artFile.loadFromUrl(URLHelpers.singleton.coreStaticUrl('wwtweb/catalog.aspx?W=hevelius'), Constellations._onArtReady);
+      }
+      return;
+    }
+    Constellations._maxSeperation = Math.max(0.5, Math.cos((renderContext.get_fovAngle() * 2) / 180 * Math.PI));
+    var $enum1 = ss.enumerate(Constellations.artwork);
+    while ($enum1.moveNext()) {
+      var place = $enum1.current;
+      var bs = Constellations.pictureBlendStates[place.get_constellation()];
+      bs.set_targetState(Settings.get_active().get_constellationArtFilter().isSet(place.get_constellation()));
+      if (bs.get_state()) {
+        var reverse = false;
+        var centroid = Constellations.constellationCentroids[place.get_constellation()];
+        if (centroid != null) {
+          var pos = Coordinates.raDecTo3d((reverse) ? -centroid.get_RA() - 6 : centroid.get_RA(), (reverse) ? centroid.get_dec() : centroid.get_dec());
+          if (Vector3d.dot(renderContext.get_viewPoint(), pos) > Constellations._maxSeperation) {
+            renderContext.drawImageSet(place.get_studyImageset(), 100);
+          }
+        }
+      }
+    }
+  };
+  Constellations._onArtReady = function() {
+    Constellations._artFile.childLoadCallback(Constellations._loadArtList);
+  };
+  Constellations._loadArtList = function() {
+    Constellations.artwork = Constellations._artFile.get_places();
+  };
+  Constellations._loadNames = function() {
+    if (Constellations._webFileConstNames.get_state() === 2) {
+      alert(Constellations._webFileConstNames.get_message());
+    }
+    else if (Constellations._webFileConstNames.get_state() === 1) {
+      Constellations._centroidsReady(Constellations._webFileConstNames.getText());
+    }
+  };
+  Constellations._centroidsReady = function(file) {
+    Constellations.constellationCentroids = {};
+    Constellations.fullNames = {};
+    Constellations.abbreviations = {};
+    Constellations.bitIDs = {};
+    var rows = file.split('\r\n');
+    var id = 0;
+    var line;
+    var $enum1 = ss.enumerate(rows);
+    while ($enum1.moveNext()) {
+      var row = $enum1.current;
+      line = row;
+      var data = line.split(',');
+      Constellations.fullNames[data[1]] = data[0];
+      Constellations.abbreviations[data[0]] = data[1];
+      Constellations.bitIDs[data[1]] = id++;
+      Constellations.pictureBlendStates[data[1]] = BlendState.create(true, 1000);
+      Constellations.constellationCentroids[data[1]] = Place.create(data[0], parseFloat(data[3]), parseFloat(data[2]), 128, data[1], 2, 360);
+    }
+    WWTControl.set_renderNeeded(true);
+    ConstellationFilter.buildConstellationFilters();
+  };
+  Constellations.fullName = function(name) {
+    if (ss.keyExists(Constellations.fullNames, name)) {
+      return Constellations.fullNames[name];
+    }
+    return name;
+  };
+  Constellations.abbreviation = function(name) {
+    if (Constellations.abbreviations != null && !ss.emptyString(name) && ss.keyExists(Constellations.abbreviations, name)) {
+      return Constellations.abbreviations[name];
+    }
+    return name;
+  };
+  var Constellations$ = {
+    get_name: function() {
+      return this._name;
+    },
+    set_name: function(value) {
+      this._name = value;
+      return value;
+    },
+    getFile: function() {
+      this._webFile = new WebFile(this._url);
+      this._webFile.onStateChange = ss.bind('fileStateChange', this);
+      this._webFile.send();
+    },
+    fileStateChange: function() {
+      if (this._webFile.get_state() === 2) {
+        alert(this._webFile.get_message());
+      }
+      else if (this._webFile.get_state() === 1) {
+        this._loadConstellationData(this._webFile.getText());
+      }
+    },
+    _loadConstellationData: function(data) {
+      if (this._boundry && !this._noInterpollation) {
+        Constellations.boundries = {};
+      }
+      this.lines = [];
+      var lineSet = null;
+      try {
+        var rows = data.split('\r\n');
+        var abrv;
+        var abrvOld = '';
+        var ra;
+        var dec;
+        var lastRa = 0;
+        var type = 0;
+        var $enum1 = ss.enumerate(rows);
+        while ($enum1.moveNext()) {
+          var row = $enum1.current;
+          var line = row;
+          if (line.substr(11, 2) === '- ') {
+            line = line.substr(0, 11) + ' -' + line.substr(13, (line.length - 13));
+          }
+          if (line.substr(11, 2) === '+ ') {
+            line = line.substr(0, 11) + ' +' + line.substr(13, (line.length - 13));
+          }
+          dec = parseFloat(line.substr(11, 10));
+          if (this._noInterpollation) {
+            ra = parseFloat(line.substr(0, 10));
+          }
+          else {
+            ra = parseFloat(line.substr(0, 10));
+          }
+          abrv = ss.trim(line.substr(23, 4));
+          if (!this._boundry) {
+            if (!!ss.trim(line.substr(28, 1))) {
+              type = parseInt(line.substr(28, 1));
+            }
+          }
+          else {
+            if (this._noInterpollation && line.substr(28, 1) !== 'O') {
+              continue;
+            }
+          }
+          if (abrv !== abrvOld) {
+            type = 3;
+            lineSet = new Lineset(abrv);
+            this.lines.push(lineSet);
+            if (this._boundry && !this._noInterpollation) {
+              Constellations.boundries[abrv] = lineSet;
+            }
+            abrvOld = abrv;
+            lastRa = 0;
+          }
+          if (this._noInterpollation) {
+            if (Math.abs(ra - lastRa) > 12) {
+              ra = ra - (24 * (((ra - lastRa) < 0) ? -1 : 1));
+            }
+            lastRa = ra;
+          }
+          var starName = null;
+          if (line.length > 30) {
+            starName = ss.trim(line.substr(30));
+          }
+          if (starName == null || starName !== 'Empty') {
+            lineSet.add(ra, dec, type, starName);
+          }
+          this._pointCount++;
+          type = 1;
+        }
+      }
+      catch ($e2) {
+        var i = 0;
+      }
+      WWTControl.set_renderNeeded(true);
+    },
+    draw: function(renderContext, showOnlySelected, focusConsteallation, clearExisting) {
+      Constellations._maxSeperation = Math.max(0.6, Math.cos((renderContext.get_fovAngle() * 2) / 180 * Math.PI));
+      this._drawCount = 0;
+      var lsSelected = null;
+      if (this.lines == null || Constellations.constellationCentroids == null) {
+        return;
+      }
+      Constellations._constToDraw = focusConsteallation;
+      var $enum1 = ss.enumerate(this.lines);
+      while ($enum1.moveNext()) {
+        var ls = $enum1.current;
+        if (Constellations._constToDraw === ls.get_name() && this._boundry) {
+          lsSelected = ls;
+        }
+        else if (!showOnlySelected || !this._boundry) {
+          this._drawSingleConstellation(renderContext, ls, 1);
+        }
+      }
+      if (lsSelected != null) {
+        this._drawSingleConstellation(renderContext, lsSelected, 1);
+      }
+    },
+    _drawSingleConstellation: function(renderContext, ls, opacity) {
+      var reverse = false;
+      var centroid = Constellations.constellationCentroids[ls.get_name()];
+      if (centroid != null) {
+        var pos = Coordinates.raDecTo3d((reverse) ? -centroid.get_RA() - 6 : centroid.get_RA(), (reverse) ? centroid.get_dec() : centroid.get_dec());
+        if (Vector3d.dot(renderContext.get_viewPoint(), pos) < Constellations._maxSeperation) {
+          return;
+        }
+      }
+      if (!ss.keyExists(this._constellationVertexBuffers, ls.get_name())) {
+        var count = ls.points.length;
+        var linelist = new SimpleLineList();
+        linelist.set_depthBuffered(false);
+        this._constellationVertexBuffers[ls.get_name()] = linelist;
+        var currentPoint = new Vector3d();
+        var temp;
+        for (var i = 0; i < count; i++) {
+          if (!ls.points[i].pointType || !i) {
+            currentPoint = Coordinates.raDecTo3d(ls.points[i].RA, ls.points[i].dec);
+          }
+          else {
+            temp = Coordinates.raDecTo3d(ls.points[i].RA, ls.points[i].dec);
+            linelist.addLine(currentPoint, temp);
+            currentPoint = temp;
+          }
+        }
+        if (this._boundry) {
+          temp = Coordinates.raDecTo3d(ls.points[0].RA, ls.points[0].dec);
+          linelist.addLine(currentPoint, temp);
+        }
+      }
+      var col = 'red';
+      if (this._boundry) {
+        if (Constellations._constToDraw !== ls.get_name()) {
+          col = Settings.get_globalSettings().get_constellationBoundryColor();
+        }
+        else {
+          col = Settings.get_globalSettings().get_constellationSelectionColor();
+        }
+      }
+      else {
+        col = Settings.get_globalSettings().get_constellationFigureColor();
+      }
+      this._constellationVertexBuffers[ls.get_name()].drawLines(renderContext, opacity, Color.load(col));
+    },
+    _drawSingleConstellationOld: function(renderContext, ls) {
+      var reverse = false;
+      var centroid = Constellations.constellationCentroids[ls.get_name()];
+      if (centroid != null) {
+        var pos = Coordinates.raDecTo3d((reverse) ? -centroid.get_RA() - 6 : centroid.get_RA(), (reverse) ? centroid.get_dec() : centroid.get_dec());
+        if (Vector3d.dot(renderContext.get_viewPoint(), pos) < Constellations._maxSeperation) {
+          return;
+        }
+      }
+      this._drawCount++;
+      var col;
+      if (this._boundry) {
+        if (Constellations._constToDraw !== ls.get_name()) {
+          col = Settings.get_globalSettings().get_constellationBoundryColor();
+        }
+        else {
+          col = Settings.get_globalSettings().get_constellationSelectionColor();
+        }
+      }
+      else {
+        col = Settings.get_globalSettings().get_constellationFigureColor();
+      }
+      if (renderContext.gl == null) {
+        var ctx = renderContext.device;
+        var count = ls.points.length;
+        var lastPoint = new Vector3d();
+        ctx.save();
+        var linePending = false;
+        ctx.beginPath();
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 0.25;
+        for (var i = 0; i < count; i++) {
+          if (!ls.points[i].pointType || !i) {
+            if (linePending) {
+              ctx.stroke();
+            }
+            lastPoint = renderContext.WVP.transform(Coordinates.raDecTo3d(ls.points[i].RA, ls.points[i].dec));
+            ctx.moveTo(lastPoint.x, lastPoint.y);
+          }
+          else {
+            var newPoint = renderContext.WVP.transform(Coordinates.raDecTo3d(ls.points[i].RA, ls.points[i].dec));
+            ctx.lineTo(newPoint.x, newPoint.y);
+            linePending = true;
+          }
+        }
+        if (this._boundry) {
+          ctx.closePath();
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+      else {
+      }
+    },
+    findConstellationForPoint: function(ra, dec) {
+      if (dec > 88.402 || this.lines == null) {
+        return 'UMI';
+      }
+      var $enum1 = ss.enumerate(this.lines);
+      while ($enum1.moveNext()) {
+        var ls = $enum1.current;
+        var count = ls.points.length;
+        var i;
+        var j;
+        var inside = false;
+        for (i = 0, j = count - 1; i < count; j = i++) {
+          if ((((ls.points[i].dec <= dec) && (dec < ls.points[j].dec)) || ((ls.points[j].dec <= dec) && (dec < ls.points[i].dec))) && (ra < (ls.points[j].RA - ls.points[i].RA) * (dec - ls.points[i].dec) / (ls.points[j].dec - ls.points[i].dec) + ls.points[i].RA)) {
+            inside = !inside;
+          }
+        }
+        if (inside) {
+          return ls.get_name();
+        }
+      }
+      if (ra > 0) {
+        return this.findConstellationForPoint(ra - 24, dec);
+      }
+      if (dec > 65.5) {
+        return 'UMI';
+      }
+      if (dec < -65.5) {
+        return 'OCT';
+      }
+      return 'Error';
+    }
+  };
+
+
+  // wwtlib.Lineset
+
+  function Lineset(name) {
+    this._name = name;
+    this.points = [];
+  }
+  var Lineset$ = {
+    get_name: function() {
+      return this._name;
+    },
+    set_name: function(value) {
+      this._name = value;
+      return value;
+    },
+    add: function(ra, dec, pointType, name) {
+      this.points.push(new Linepoint(ra, dec, pointType, name));
+    }
+  };
+
+
+  // wwtlib.Linepoint
+
+  function Linepoint(ra, dec, type, name) {
+    this.RA = 0;
+    this.dec = 0;
+    this.pointType = 0;
+    this.name = null;
+    this.RA = ra;
+    this.dec = dec;
+    this.pointType = type;
+    this.name = name;
+  }
+  var Linepoint$ = {
+    toString: function() {
+      if (ss.emptyString(this.name)) {
+        return Coordinates.formatDMS((((this.RA / 360) * 24 + 12) % 24)) + ', ' + Coordinates.formatDMS(this.dec) + ', ' + this.pointType.toString();
+      }
+      else {
+        return this.name + ', ' + this.pointType.toString();
+      }
+    }
+  };
+
+
+  // wwtlib.ConstellationFilter
+
+  function ConstellationFilter() {
+    this.bits = new Array(3);
+    this.oldBits = new Array(3);
+    this.blendState = BlendState.create(false, 1000);
+    this.internal = false;
+    this.settingsOwned = false;
+    for (var i = 0; i < 3; i++) {
+      this.bits[i] = ~this.bits[i];
+      this.oldBits[i] = this.bits[i];
+    }
+  }
+  ConstellationFilter.buildConstellationFilters = function() {
+    var all = ConstellationFilter.get_allConstellation();
+    all.internal = true;
+    ConstellationFilter.families['AllConstellation'] = all;
+    ConstellationFilter.families['Zodiacal'] = ConstellationFilter.get_zodiacal();
+    ConstellationFilter.families['Ursa Major Family'] = ConstellationFilter.get_ursaMajorFamily();
+    ConstellationFilter.families['Perseus Family'] = ConstellationFilter.get_perseusFamily();
+    ConstellationFilter.families['Hercules Family'] = ConstellationFilter.get_herculesFamily();
+    ConstellationFilter.families['Orion Family'] = ConstellationFilter.get_orionFamily();
+    ConstellationFilter.families['Heavenly Waters'] = ConstellationFilter.get_heavenlyWaters();
+    ConstellationFilter.families['Bayer Family'] = ConstellationFilter.get_bayerFamily();
+    ConstellationFilter.families['La Caille Family'] = ConstellationFilter.get_laCaileFamily();
+  };
+  ConstellationFilter.saveCustomFilters = function() {
+    var sb = new ss.StringBuilder();
+    var $dict1 = ConstellationFilter.families;
+    for (var $key2 in $dict1) {
+      var kv = { key: $key2, value: $dict1[$key2] };
+      if (!kv.value.internal) {
+        sb.append(kv.key);
+        sb.append(';');
+        sb.appendLine(kv.value.toString());
+      }
+    }
+  };
+  ConstellationFilter.get_allConstellation = function() {
+    var all = new ConstellationFilter();
+    all.setAll(true);
+    return all;
+  };
+  ConstellationFilter.get_zodiacal = function() {
+    var zodiacal = new ConstellationFilter();
+    zodiacal.set('ARI', true);
+    zodiacal.set('TAU', true);
+    zodiacal.set('GEM', true);
+    zodiacal.set('CNC', true);
+    zodiacal.set('LEO', true);
+    zodiacal.set('VIR', true);
+    zodiacal.set('LIB', true);
+    zodiacal.set('SCO', true);
+    zodiacal.set('SGR', true);
+    zodiacal.set('CAP', true);
+    zodiacal.set('AQR', true);
+    zodiacal.set('PSC', true);
+    zodiacal.internal = true;
+    return zodiacal;
+  };
+  ConstellationFilter.get_ursaMajorFamily = function() {
+    var uma = new ConstellationFilter();
+    uma.set('UMA', true);
+    uma.set('UMI', true);
+    uma.set('DRA', true);
+    uma.set('CVN', true);
+    uma.set('BOO', true);
+    uma.set('COM', true);
+    uma.set('CRB', true);
+    uma.set('CAM', true);
+    uma.set('LYN', true);
+    uma.set('LMI', true);
+    uma.internal = true;
+    return uma;
+  };
+  ConstellationFilter.get_perseusFamily = function() {
+    var Perseus = new ConstellationFilter();
+    Perseus.set('CAS', true);
+    Perseus.set('CEP', true);
+    Perseus.set('AND', true);
+    Perseus.set('PER', true);
+    Perseus.set('PEG', true);
+    Perseus.set('CET', true);
+    Perseus.set('AUR', true);
+    Perseus.set('LAC', true);
+    Perseus.set('TRI', true);
+    Perseus.internal = true;
+    return Perseus;
+  };
+  ConstellationFilter.get_herculesFamily = function() {
+    var hercules = new ConstellationFilter();
+    hercules.set('HER', true);
+    hercules.set('SGE', true);
+    hercules.set('AQL', true);
+    hercules.set('LYR', true);
+    hercules.set('CYG', true);
+    hercules.set('VUL', true);
+    hercules.set('HYA', true);
+    hercules.set('SEX', true);
+    hercules.set('CRT', true);
+    hercules.set('CRV', true);
+    hercules.set('OPH', true);
+    hercules.set('SER1', true);
+    hercules.set('SER2', true);
+    hercules.set('SCT', true);
+    hercules.set('CEN', true);
+    hercules.set('LUP', true);
+    hercules.set('CRA', true);
+    hercules.set('ARA', true);
+    hercules.set('TRA', true);
+    hercules.set('CRU', true);
+    hercules.internal = true;
+    return hercules;
+  };
+  ConstellationFilter.get_orionFamily = function() {
+    var orion = new ConstellationFilter();
+    orion.set('ORI', true);
+    orion.set('CMA', true);
+    orion.set('CMI', true);
+    orion.set('MON', true);
+    orion.set('LEP', true);
+    orion.internal = true;
+    return orion;
+  };
+  ConstellationFilter.get_heavenlyWaters = function() {
+    var waters = new ConstellationFilter();
+    waters.set('DEL', true);
+    waters.set('EQU', true);
+    waters.set('ERI', true);
+    waters.set('PSA', true);
+    waters.set('CAR', true);
+    waters.set('PUP', true);
+    waters.set('VEL', true);
+    waters.set('PYX', true);
+    waters.set('COL', true);
+    waters.internal = true;
+    return waters;
+  };
+  ConstellationFilter.get_bayerFamily = function() {
+    var bayer = new ConstellationFilter();
+    bayer.set('HYA', true);
+    bayer.set('DOR', true);
+    bayer.set('VOL', true);
+    bayer.set('APS', true);
+    bayer.set('PAV', true);
+    bayer.set('GRU', true);
+    bayer.set('PHE', true);
+    bayer.set('TUC', true);
+    bayer.set('IND', true);
+    bayer.set('CHA', true);
+    bayer.set('MUS', true);
+    bayer.internal = true;
+    return bayer;
+  };
+  ConstellationFilter.get_laCaileFamily = function() {
+    var LaCaile = new ConstellationFilter();
+    LaCaile.set('NOR', true);
+    LaCaile.set('CIR', true);
+    LaCaile.set('TEL', true);
+    LaCaile.set('MIC', true);
+    LaCaile.set('SCL', true);
+    LaCaile.set('FOR', true);
+    LaCaile.set('CAE', true);
+    LaCaile.set('HOR', true);
+    LaCaile.set('OCT', true);
+    LaCaile.set('MEN', true);
+    LaCaile.set('RET', true);
+    LaCaile.set('PIC', true);
+    LaCaile.set('ANT', true);
+    LaCaile.internal = true;
+    return LaCaile;
+  };
+  ConstellationFilter.parse = function(val) {
+    var parts = (val).split(',');
+    var cf = new ConstellationFilter();
+    try {
+      for (var i = 0; i < 3; i++) {
+        cf.bits[i] = parseInt(parts[i]);
+      }
+    }
+    catch ($e1) {
+    }
+    return cf;
+  };
+  var ConstellationFilter$ = {
+    _saveBits: function() {
+      for (var i = 0; i < 3; i++) {
+        this.oldBits[i] = this.bits[i];
+      }
+    },
+    _isChanged: function() {
+      for (var i = 0; i < 3; i++) {
+        if (this.oldBits[i] !== this.bits[i]) {
+          return true;
+        }
+      }
+      return false;
+    },
+    _checkChanged: function() {
+      if (this._isChanged()) {
+        this._fireChanged();
+      }
+    },
+    isEnabled: function(abbrev) {
+      var bitID = Constellations.bitIDs[abbrev];
+      var index = bitID / 32;
+      bitID = bitID % 32;
+      return this.blendState.get_state() && !!((1 << bitID) & this.bits[index]);
+    },
+    isSet: function(abbrev) {
+      this._saveBits();
+      var bitID = Constellations.bitIDs[abbrev];
+      var index = ss.truncate((bitID / 32));
+      bitID = bitID % 32;
+      return !!((1 << bitID) & this.bits[index]);
+    },
+    set: function(abbrev, state) {
+      this._saveBits();
+      var bitID = Constellations.bitIDs[abbrev];
+      var index = bitID / 32;
+      bitID = bitID % 32;
+      if (state) {
+        this.bits[index] = this.bits[index] | (1 << bitID);
+      }
+      else {
+        this.bits[index] = this.bits[index] ^ (1 << bitID);
+      }
+      this._checkChanged();
+    },
+    setAll: function(state) {
+      this._saveBits();
+      for (var bitID = 0; bitID < 89; bitID++) {
+        var index = bitID / 32;
+        var bit = bitID % 32;
+        if (state) {
+          this.bits[index] = this.bits[index] | (1 << bit);
+        }
+        else {
+          this.bits[index] = this.bits[index] ^ (1 << bit);
+        }
+      }
+      this._checkChanged();
+    },
+    setBits: function(bits) {
+      this._saveBits();
+      for (var i = 0; i < 3; i++) {
+        this.bits[i] = (bits[i * 4]) + ((bits[i * 4 + 1]) << 8) + ((bits[i * 4 + 2]) << 16) + ((bits[i * 4 + 3]) << 24);
+      }
+      this._checkChanged();
+    },
+    getBits: function() {
+      var bits = new Array(12);
+      var index = 0;
+      for (var i = 0; i < 3; i++) {
+        bits[index++] = this.bits[i];
+        bits[index++] = (this.bits[i] >> 8);
+        bits[index++] = (this.bits[i] >> 16);
+        bits[index++] = (this.bits[i] >> 24);
+      }
+      return bits;
+    },
+    cloneFilter: function(filter) {
+      this._saveBits();
+      for (var i = 0; i < 3; i++) {
+        this.bits[i] = filter.bits[i];
+      }
+      this._checkChanged();
+    },
+    clone: function() {
+      var newFilter = new ConstellationFilter();
+      newFilter.cloneFilter(this);
+      return newFilter;
+    },
+    combine: function(filter) {
+      this._saveBits();
+      for (var i = 0; i < 3; i++) {
+        this.bits[i] = this.bits[i] | filter.bits[i];
+      }
+      this._checkChanged();
+    },
+    remove: function(filter) {
+      this._saveBits();
+      for (var i = 0; i < 3; i++) {
+        this.bits[i] = this.bits[i] & ~filter.bits[i];
+      }
+      this._checkChanged();
+    },
+    _fireChanged: function() {
+      if (this.settingsOwned) {
+      }
+    },
+    toString: function() {
+      return ss.format('{0},{1},{2}', this.bits[0], this.bits[1], this.bits[2]);
+    }
+  };
+
+
+  // wwtlib.PositionTexture
+
+  function PositionTexture() {
+    this.tu = 0;
+    this.tv = 0;
+    this.position = new Vector3d();
+  }
+  PositionTexture.createPos = function(pos, u, v) {
+    var temp = new PositionTexture();
+    temp.tu = u * Tile.uvMultiple;
+    temp.tv = v * Tile.uvMultiple;
+    temp.position = pos;
+    return temp;
+  };
+  PositionTexture.createPosRaw = function(pos, u, v) {
+    var temp = new PositionTexture();
+    temp.tu = u;
+    temp.tv = v;
+    temp.position = pos;
+    return temp;
+  };
+  PositionTexture.createPosSize = function(pos, u, v, width, height) {
+    var temp = new PositionTexture();
+    temp.tu = u * width;
+    temp.tv = v * height;
+    temp.position = pos;
+    return temp;
+  };
+  PositionTexture.create = function(xvalue, yvalue, zvalue, u, v) {
+    var temp = new PositionTexture();
+    temp.position = Vector3d.create(xvalue, yvalue, zvalue);
+    temp.tu = u * Tile.uvMultiple;
+    temp.tv = v * Tile.uvMultiple;
+    return temp;
+  };
+  var PositionTexture$ = {
+    copy: function() {
+      var temp = new PositionTexture();
+      temp.position = Vector3d.makeCopy(this.position);
+      temp.tu = this.tu;
+      temp.tv = this.tv;
+      return temp;
+    },
+    toString: function() {
+      return ss.format('{0}, {1}, {2}, {3}, {4}', this.position.x, this.position.y, this.position.z, this.tu, this.tv);
+    }
+  };
+
+
+  // wwtlib.PositionColoredTextured
+
+  function PositionColoredTextured() {
+    this.tu = 0;
+    this.tv = 0;
+    this.color = new Color();
+    this.position = new Vector3d();
+  }
+  PositionColoredTextured.createPos = function(pos, u, v) {
+    var temp = new PositionColoredTextured();
+    temp.tu = u * Tile.uvMultiple;
+    temp.tv = v * Tile.uvMultiple;
+    temp.position = pos;
+    return temp;
+  };
+  PositionColoredTextured.createPosRaw = function(pos, u, v) {
+    var temp = new PositionColoredTextured();
+    temp.tu = u;
+    temp.tv = v;
+    temp.position = pos;
+    return temp;
+  };
+  PositionColoredTextured.createPosSize = function(pos, u, v, width, height) {
+    var temp = new PositionColoredTextured();
+    temp.tu = u * width;
+    temp.tv = v * height;
+    temp.position = pos;
+    return temp;
+  };
+  PositionColoredTextured.create = function(xvalue, yvalue, zvalue, u, v) {
+    var temp = new PositionTexture();
+    temp.position = Vector3d.create(xvalue, yvalue, zvalue);
+    temp.tu = u * Tile.uvMultiple;
+    temp.tv = v * Tile.uvMultiple;
+    return temp;
+  };
+  var PositionColoredTextured$ = {
+    copy: function() {
+      var temp = new PositionTexture();
+      temp.position = Vector3d.makeCopy(this.position);
+      temp.tu = this.tu;
+      temp.tv = this.tv;
+      return temp;
+    },
+    toString: function() {
+      return ss.format('{0}, {1}, {2}, {3}, {4}', this.position.x, this.position.y, this.position.z, this.tu, this.tv);
+    }
+  };
+
+
+  // wwtlib.PositionColored
+
+  function PositionColored(pos, color) {
+    this.color = new Color();
+    this.color = color._clone();
+    this.position = pos.copy();
+  }
+  var PositionColored$ = {
+    copy: function() {
+      var temp = new PositionColored(this.position, this.color);
+      return temp;
+    },
+    toString: function() {
+      return ss.format('{0}, {1}, {2}, {3}', this.position.x, this.position.y, this.position.z, this.color.toString());
+    }
+  };
+
+
+  // wwtlib.PositionNormalTexturedTangent
+
+  function PositionNormalTexturedTangent(position, normal, texCoord, tangent) {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+    this.nx = 0;
+    this.ny = 0;
+    this.nz = 0;
+    this.tu = 0;
+    this.tv = 0;
+    this.tanx = 0;
+    this.tany = 0;
+    this.tanz = 0;
+    this.x = position.x;
+    this.y = position.y;
+    this.z = position.z;
+    this.nx = normal.x;
+    this.ny = normal.y;
+    this.nz = normal.z;
+    this.tu = texCoord.x;
+    this.tv = texCoord.y;
+    this.tanx = tangent.x;
+    this.tany = tangent.y;
+    this.tanz = tangent.z;
+  }
+  var PositionNormalTexturedTangent$ = {
+    get_normal: function() {
+      return Vector3d.create(this.nx, this.ny, this.nz);
+    },
+    set_normal: function(value) {
+      this.nx = value.x;
+      this.ny = value.y;
+      this.nz = value.z;
+      return value;
+    },
+    get_position: function() {
+      return Vector3d.create(this.x, this.y, this.z);
+    },
+    set_position: function(value) {
+      this.x = value.x;
+      this.y = value.y;
+      this.z = value.z;
+      return value;
+    },
+    get_texCoord: function() {
+      return Vector2d.create(this.tu, this.tv);
+    },
+    set_texCoord: function(value) {
+      this.tu = value.x;
+      this.tv = value.y;
+      return value;
+    },
+    get_tangent: function() {
+      return Vector3d.create(this.tanx, this.tany, this.tanz);
+    },
+    set_tangent: function(value) {
+      this.tanx = value.x;
+      this.tany = value.y;
+      this.tanz = value.z;
+      return value;
+    },
+    toString: function() {
+      return ss.format('X={0}, Y={1}, Z={2}, Nx={3}, Ny={4}, Nz={5}, U={6}, V={7}, TanX={8}, TanY={9}, TanZ={10}', this.x, this.y, this.z, this.nx, this.ny, this.nz, this.tu, this.tv, this.tanx, this.tany, this.tanz);
+    }
+  };
+
+
+  // wwtlib.Vector3d
+
+  function Vector3d() {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+  }
+  Vector3d.create = function(valueX, valueY, valueZ) {
+    var temp = new Vector3d();
+    temp.x = valueX;
+    temp.y = valueY;
+    temp.z = valueZ;
+    return temp;
+  };
+  Vector3d.makeCopy = function(value) {
+    var temp = new Vector3d();
+    temp.x = value.x;
+    temp.y = value.y;
+    temp.z = value.z;
+    return temp;
+  };
+  Vector3d.negate = function(vec) {
+    return Vector3d.create(-vec.x, -vec.y, -vec.z);
+  };
+  Vector3d.midPoint = function(left, right) {
+    var result = Vector3d.create((left.x + right.x) / 2, (left.y + right.y) / 2, (left.z + right.z) / 2);
+    result.normalize();
+    return result;
+  };
+  Vector3d.midPointByLength = function(left, right) {
+    var result = Vector3d.create((left.x + right.x) / 2, (left.y + right.y) / 2, (left.z + right.z) / 2);
+    result.normalize();
+    result.multiply(left.length());
+    return result;
+  };
+  Vector3d.get_empty = function() {
+    return Vector3d.create(0, 0, 0);
+  };
+  Vector3d.addVectors = function(left, right) {
+    return Vector3d.create(left.x + right.x, left.y + right.y, left.z + right.z);
+  };
+  Vector3d.cross = function(left, right) {
+    return Vector3d.create(left.y * right.z - left.z * right.y, left.z * right.x - left.x * right.z, left.x * right.y - left.y * right.x);
+  };
+  Vector3d.dot = function(left, right) {
+    return left.x * right.x + left.y * right.y + left.z * right.z;
+  };
+  Vector3d.getLength = function(source) {
+    return Math.sqrt(source.x * source.x + source.y * source.y + source.z * source.z);
+  };
+  Vector3d.getLengthSq = function(source) {
+    return source.x * source.x + source.y * source.y + source.z * source.z;
+  };
+  Vector3d.lerp = function(left, right, interpolater) {
+    return Vector3d.create(left.x * (1 - interpolater) + right.x * interpolater, left.y * (1 - interpolater) + right.y * interpolater, left.z * (1 - interpolater) + right.z * interpolater);
+  };
+  Vector3d.midpoint = function(left, right) {
+    var tmp = Vector3d.create(left.x * (0.5) + right.x * 0.5, left.y * (0.5) + right.y * 0.5, left.z * (0.5) + right.z * 0.5);
+    tmp.normalize();
+    return tmp;
+  };
+  Vector3d.slerp = function(left, right, interpolater) {
+    var dot = Vector3d.dot(left, right);
+    while (dot < 0.98) {
+      var middle = Vector3d.midpoint(left, right);
+      if (interpolater > 0.5) {
+        left = middle;
+        interpolater -= 0.5;
+        interpolater *= 2;
+      }
+      else {
+        right = middle;
+        interpolater *= 2;
+      }
+      dot = Vector3d.dot(left, right);
+    }
+    var tmp = Vector3d.lerp(left, right, interpolater);
+    tmp.normalize();
+    return tmp;
+  };
+  Vector3d.multiplyScalar = function(source, f) {
+    var result = source.copy();
+    result.multiply(f);
+    return result;
+  };
+  Vector3d.scale = function(source, scalingFactor) {
+    var result = source;
+    result.multiply(scalingFactor);
+    return result;
+  };
+  Vector3d.subtractVectors = function(left, right) {
+    var result = left.copy();
+    result.subtract(right);
+    return result;
+  };
+  Vector3d.parse = function(data) {
+    var newVector = new Vector3d();
+    var list = data.split(',');
+    if (list.length === 3) {
+      newVector.x = parseFloat(list[0]);
+      newVector.y = parseFloat(list[1]);
+      newVector.z = parseFloat(list[2]);
+    }
+    return newVector;
+  };
+  Vector3d._transformCoordinate = function(vector3d, mat) {
+    return mat.transform(vector3d);
+  };
+  var Vector3d$ = {
+    set: function(valueX, valueY, valueZ) {
+      this.x = valueX;
+      this.y = valueY;
+      this.z = valueZ;
+    },
+    copy: function() {
+      var temp = new Vector3d();
+      temp.x = this.x;
+      temp.y = this.y;
+      temp.z = this.z;
+      return temp;
+    },
+    round: function() {
+      this.x = ss.truncate((this.x * 65536)) / 65536;
+      this.y = ss.truncate((this.y * 65536)) / 65536;
+      this.z = ss.truncate((this.z * 65536)) / 65536;
+    },
+    add: function(source) {
+      this.x += source.x;
+      this.y += source.y;
+      this.z += source.z;
+    },
+    length: function() {
+      return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+    },
+    lengthSq: function() {
+      return this.x * this.x + this.y * this.y + this.z * this.z;
+    },
+    multiply: function(s) {
+      this.x *= s;
+      this.y *= s;
+      this.z *= s;
+    },
+    normalize: function() {
+      var length = this.length();
+      if (!!length) {
+        this.x /= length;
+        this.y /= length;
+        this.z /= length;
+      }
+    },
+    rotateX: function(radians) {
+      var zTemp;
+      var yTemp;
+      yTemp = this.y * Math.cos(radians) - this.z * Math.sin(radians);
+      zTemp = this.y * Math.sin(radians) + this.z * Math.cos(radians);
+      this.z = zTemp;
+      this.y = yTemp;
+    },
+    rotateZ: function(radians) {
+      var xTemp;
+      var yTemp;
+      xTemp = this.x * Math.cos(radians) - this.y * Math.sin(radians);
+      yTemp = this.x * Math.sin(radians) + this.y * Math.cos(radians);
+      this.y = yTemp;
+      this.x = xTemp;
+    },
+    rotateY: function(radians) {
+      var zTemp;
+      var xTemp;
+      zTemp = this.z * Math.cos(radians) - this.x * Math.sin(radians);
+      xTemp = this.z * Math.sin(radians) + this.x * Math.cos(radians);
+      this.x = xTemp;
+      this.z = zTemp;
+    },
+    subtract: function(source) {
+      this.x -= source.x;
+      this.y -= source.y;
+      this.z -= source.z;
+    },
+    toString: function() {
+      return ss.format('{0}, {1}, {2}', this.x, this.y, this.z);
+    },
+    toSpherical: function() {
+      var ascention;
+      var declination;
+      var radius = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+      var XZ = Math.sqrt(this.x * this.x + this.z * this.z);
+      declination = Math.asin(this.y / radius);
+      if (!XZ) {
+        ascention = 0;
+      }
+      else if (0 <= this.x) {
+        ascention = Math.asin(this.z / XZ);
+      }
+      else {
+        ascention = Math.PI - Math.asin(this.z / XZ);
+      }
+      return Vector2d.create(((ascention + Math.PI) % (2 * Math.PI)), (declination + (Math.PI / 2)));
+    },
+    toRaDec: function() {
+      var point = this.toSpherical();
+      point.x = point.x / Math.PI * 12;
+      point.y = (point.y / Math.PI * 180) - 90;
+      return point;
+    },
+    distanceToLine: function(x1, x2) {
+      var t1 = Vector3d.subtractVectors(x2, x1);
+      var t2 = Vector3d.subtractVectors(x1, this);
+      var t3 = Vector3d.cross(t1, t2);
+      var d1 = t3.length();
+      var t4 = Vector3d.subtractVectors(x2, x1);
+      var d2 = t4.length();
+      return d1 / d2;
+    },
+    _transformByMatrics: function(lookAtAdjust) {
+      var temp = lookAtAdjust.transform(this);
+      this.x = temp.x;
+      this.y = temp.y;
+      this.z = temp.z;
+    }
+  };
+
+
+  // wwtlib.Vector2d
+
+  function Vector2d() {
+    this.x = 0;
+    this.y = 0;
+  }
+  Vector2d.lerp = function(left, right, interpolater) {
+    return Vector2d.create(left.x * (1 - interpolater) + right.x * interpolater, left.y * (1 - interpolater) + right.y * interpolater);
+  };
+  Vector2d.cartesianToSpherical2 = function(vector) {
+    var rho = Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
+    var longitude = Math.atan2(vector.z, vector.x);
+    var latitude = Math.asin(vector.y / rho);
+    return Vector2d.create(longitude / Math.PI * 180, latitude / Math.PI * 180);
+  };
+  Vector2d.average3d = function(left, right) {
+    var pntLeft = Coordinates.geoTo3dDouble(left.y, left.x);
+    var pntRight = Coordinates.geoTo3dDouble(right.y, right.x);
+    var pntOut = Vector3d.addVectors(pntLeft, pntRight);
+    pntOut.multiply(0.5);
+    pntOut.normalize();
+    return Vector2d.cartesianToSpherical2(pntOut);
+  };
+  Vector2d.create = function(x, y) {
+    var temp = new Vector2d();
+    temp.x = x;
+    temp.y = y;
+    return temp;
+  };
+  Vector2d.subtract = function(left, right) {
+    return Vector2d.create(left.x - right.x, left.y - right.y);
+  };
+  var Vector2d$ = {
+    distance3d: function(pointB) {
+      var pnt1 = Coordinates.geoTo3dDouble(pointB.y, pointB.x);
+      var pnt2 = Coordinates.geoTo3dDouble(this.y, this.x);
+      var pntDiff = Vector3d.subtractVectors(pnt1, pnt2);
+      return pntDiff.length() / Math.PI * 180;
+    },
+    get_length: function() {
+      return Math.sqrt(this.x * this.x + this.y * this.y);
+    },
+    normalize: function() {
+      var length = this.get_length();
+      if (!!length) {
+        this.x /= length;
+        this.y /= length;
+      }
+    },
+    extend: function(factor) {
+      this.x = this.x * factor;
+      this.y = this.y * factor;
+    }
+  };
+
+
+  // wwtlib.Matrix3d
+
+  function Matrix3d() {
+    this._m11 = 0;
+    this._m12 = 0;
+    this._m13 = 0;
+    this._m14 = 0;
+    this._m21 = 0;
+    this._m22 = 0;
+    this._m23 = 0;
+    this._m24 = 0;
+    this._m31 = 0;
+    this._m32 = 0;
+    this._m33 = 0;
+    this._m34 = 0;
+    this._offsetX = 0;
+    this._offsetY = 0;
+    this._offsetZ = 0;
+    this._m44 = 0;
+    this._isNotKnownToBeIdentity = false;
+  }
+  Matrix3d.create = function(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, offsetX, offsetY, offsetZ, m44) {
+    var temp = new Matrix3d();
+    temp._m11 = m11;
+    temp._m12 = m12;
+    temp._m13 = m13;
+    temp._m14 = m14;
+    temp._m21 = m21;
+    temp._m22 = m22;
+    temp._m23 = m23;
+    temp._m24 = m24;
+    temp._m31 = m31;
+    temp._m32 = m32;
+    temp._m33 = m33;
+    temp._m34 = m34;
+    temp._offsetX = offsetX;
+    temp._offsetY = offsetY;
+    temp._offsetZ = offsetZ;
+    temp._m44 = m44;
+    temp._isNotKnownToBeIdentity = true;
+    return temp;
+  };
+  Matrix3d.get_identity = function() {
+    var temp = new Matrix3d();
+    temp.set(Matrix3d._s_identity);
+    return temp;
+  };
+  Matrix3d.multiplyMatrix = function(matrix1, matrix2) {
+    if (matrix1.get__isDistinguishedIdentity()) {
+      return matrix2;
+    }
+    if (matrix2.get__isDistinguishedIdentity()) {
+      return matrix1;
+    }
+    return Matrix3d.create((((matrix1._m11 * matrix2._m11) + (matrix1._m12 * matrix2._m21)) + (matrix1._m13 * matrix2._m31)) + (matrix1._m14 * matrix2._offsetX), (((matrix1._m11 * matrix2._m12) + (matrix1._m12 * matrix2._m22)) + (matrix1._m13 * matrix2._m32)) + (matrix1._m14 * matrix2._offsetY), (((matrix1._m11 * matrix2._m13) + (matrix1._m12 * matrix2._m23)) + (matrix1._m13 * matrix2._m33)) + (matrix1._m14 * matrix2._offsetZ), (((matrix1._m11 * matrix2._m14) + (matrix1._m12 * matrix2._m24)) + (matrix1._m13 * matrix2._m34)) + (matrix1._m14 * matrix2._m44), (((matrix1._m21 * matrix2._m11) + (matrix1._m22 * matrix2._m21)) + (matrix1._m23 * matrix2._m31)) + (matrix1._m24 * matrix2._offsetX), (((matrix1._m21 * matrix2._m12) + (matrix1._m22 * matrix2._m22)) + (matrix1._m23 * matrix2._m32)) + (matrix1._m24 * matrix2._offsetY), (((matrix1._m21 * matrix2._m13) + (matrix1._m22 * matrix2._m23)) + (matrix1._m23 * matrix2._m33)) + (matrix1._m24 * matrix2._offsetZ), (((matrix1._m21 * matrix2._m14) + (matrix1._m22 * matrix2._m24)) + (matrix1._m23 * matrix2._m34)) + (matrix1._m24 * matrix2._m44), (((matrix1._m31 * matrix2._m11) + (matrix1._m32 * matrix2._m21)) + (matrix1._m33 * matrix2._m31)) + (matrix1._m34 * matrix2._offsetX), (((matrix1._m31 * matrix2._m12) + (matrix1._m32 * matrix2._m22)) + (matrix1._m33 * matrix2._m32)) + (matrix1._m34 * matrix2._offsetY), (((matrix1._m31 * matrix2._m13) + (matrix1._m32 * matrix2._m23)) + (matrix1._m33 * matrix2._m33)) + (matrix1._m34 * matrix2._offsetZ), (((matrix1._m31 * matrix2._m14) + (matrix1._m32 * matrix2._m24)) + (matrix1._m33 * matrix2._m34)) + (matrix1._m34 * matrix2._m44), (((matrix1._offsetX * matrix2._m11) + (matrix1._offsetY * matrix2._m21)) + (matrix1._offsetZ * matrix2._m31)) + (matrix1._m44 * matrix2._offsetX), (((matrix1._offsetX * matrix2._m12) + (matrix1._offsetY * matrix2._m22)) + (matrix1._offsetZ * matrix2._m32)) + (matrix1._m44 * matrix2._offsetY), (((matrix1._offsetX * matrix2._m13) + (matrix1._offsetY * matrix2._m23)) + (matrix1._offsetZ * matrix2._m33)) + (matrix1._m44 * matrix2._offsetZ), (((matrix1._offsetX * matrix2._m14) + (matrix1._offsetY * matrix2._m24)) + (matrix1._offsetZ * matrix2._m34)) + (matrix1._m44 * matrix2._m44));
+  };
+  Matrix3d.lookAtLH = function(cameraPosition, cameraTarget, cameraUpVector) {
+    var zaxis = Vector3d.subtractVectors(cameraTarget, cameraPosition);
+    zaxis.normalize();
+    var xaxis = Vector3d.cross(cameraUpVector, zaxis);
+    xaxis.normalize();
+    var yaxis = Vector3d.cross(zaxis, xaxis);
+    var mat = Matrix3d.create(xaxis.x, yaxis.x, zaxis.x, 0, xaxis.y, yaxis.y, zaxis.y, 0, xaxis.z, yaxis.z, zaxis.z, 0, -Vector3d.dot(xaxis, cameraPosition), -Vector3d.dot(yaxis, cameraPosition), -Vector3d.dot(zaxis, cameraPosition), 1);
+    return mat;
+  };
+  Matrix3d._createIdentity = function() {
+    var matrixd = Matrix3d.create(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+    matrixd.set__isDistinguishedIdentity(true);
+    return matrixd;
+  };
+  Matrix3d.equals = function(matrix1, matrix2) {
+    if (matrix1.get__isDistinguishedIdentity() || matrix2.get__isDistinguishedIdentity()) {
+      return (matrix1.get_isIdentity() === matrix2.get_isIdentity());
+    }
+    if ((((matrix1.get_m11() === matrix2.get_m11() && matrix1.get_m12() === matrix2.get_m12()) && (matrix1.get_m13() === matrix2.get_m13() && matrix1.get_m14() === matrix2.get_m14())) && ((matrix1.get_m21() === matrix2.get_m21() && matrix1.get_m22() === matrix2.get_m22()) && (matrix1.get_m23() === matrix2.get_m23() && matrix1.get_m24() === matrix2.get_m24()))) && (((matrix1.get_m31() === matrix2.get_m31() && matrix1.get_m32() === matrix2.get_m32()) && (matrix1.get_m33() === matrix2.get_m33() && matrix1.get_m34() === matrix2.get_m34())) && ((matrix1.get_offsetX() === matrix2.get_offsetX() && matrix1.get_offsetY() === matrix2.get_offsetY()) && matrix1.get_offsetZ() === matrix2.get_offsetZ()))) {
+      return matrix1.get_m44() === matrix2.get_m44();
+    }
+    return false;
+  };
+  Matrix3d.fromMatrix2d = function(mat) {
+    var mat3d = Matrix3d._createIdentity();
+    mat3d.set_m11(mat.m11);
+    mat3d.set_m12(mat.m12);
+    mat3d.set_m13(mat.m13);
+    mat3d.set_m21(mat.m21);
+    mat3d.set_m22(mat.m22);
+    mat3d.set_m23(mat.m23);
+    mat3d.set_m31(mat.m31);
+    mat3d.set_m32(mat.m32);
+    mat3d.set_m33(mat.m33);
+    mat3d._isNotKnownToBeIdentity = true;
+    return mat3d;
+  };
+  Matrix3d.rotationYawPitchRoll = function(heading, pitch, roll) {
+    var matX = Matrix3d._rotationX(pitch);
+    var matY = Matrix3d._rotationY(heading);
+    var matZ = Matrix3d._rotationZ(roll);
+    return Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(matY, matX), matZ);
+  };
+  Matrix3d._rotationY = function(p) {
+    var v = p;
+    var matNew = Matrix3d.get_identity();
+    matNew._m11 = Math.cos(v);
+    matNew._m22 = 1;
+    matNew._m31 = Math.sin(v);
+    matNew._m13 = -Math.sin(v);
+    matNew._m33 = Math.cos(v);
+    matNew._isNotKnownToBeIdentity = true;
+    return matNew;
+  };
+  Matrix3d._rotationX = function(p) {
+    var v = p;
+    var matNew = Matrix3d.get_identity();
+    matNew._m11 = 1;
+    matNew._m22 = Math.cos(v);
+    matNew._m32 = -Math.sin(v);
+    matNew._m23 = Math.sin(v);
+    matNew._m33 = Math.cos(v);
+    matNew._isNotKnownToBeIdentity = true;
+    return matNew;
+  };
+  Matrix3d._rotationZ = function(p) {
+    var v = p;
+    var matNew = Matrix3d.get_identity();
+    matNew._m11 = Math.cos(v);
+    matNew._m21 = -Math.sin(v);
+    matNew._m12 = Math.sin(v);
+    matNew._m22 = Math.cos(v);
+    matNew._m33 = 1;
+    matNew._isNotKnownToBeIdentity = true;
+    return matNew;
+  };
+  Matrix3d._scaling = function(x, y, z) {
+    var matNew = Matrix3d.get_identity();
+    matNew._m11 = x;
+    matNew._m22 = y;
+    matNew._m33 = z;
+    matNew._isNotKnownToBeIdentity = true;
+    return matNew;
+  };
+  Matrix3d._translationXYZ = function(x, y, z) {
+    var matNew = Matrix3d.get_identity();
+    matNew.set_offsetX(x);
+    matNew.set_offsetY(y);
+    matNew.set_offsetZ(z);
+    matNew._isNotKnownToBeIdentity = true;
+    return matNew;
+  };
+  Matrix3d.perspectiveFovLH = function(fieldOfViewY, aspectRatio, znearPlane, zfarPlane) {
+    var h = 1 / Math.tan(fieldOfViewY / 2);
+    var w = h / aspectRatio;
+    return Matrix3d.create(w, 0, 0, 0, 0, h, 0, 0, 0, 0, zfarPlane / (zfarPlane - znearPlane), 1, 0, 0, -znearPlane * zfarPlane / (zfarPlane - znearPlane), 0);
+  };
+  Matrix3d.perspectiveOffCenterLH = function(left, right, bottom, top, znearPlane, zfarPlane) {
+    return Matrix3d.create(2 * znearPlane / (right - left), 0, 0, 0, 0, 2 * znearPlane / (top - bottom), 0, 0, (left + right) / (left - right), (top + bottom) / (bottom - top), zfarPlane / (zfarPlane - znearPlane), 1, 0, 0, znearPlane * zfarPlane / (znearPlane - zfarPlane), 0);
+  };
+  Matrix3d.invertMatrix = function(matrix3d) {
+    var mat = matrix3d.clone();
+    mat.invert();
+    return mat;
+  };
+  Matrix3d.translation = function(vector3d) {
+    return Matrix3d._translationXYZ(vector3d.x, vector3d.y, vector3d.z);
+  };
+  Matrix3d.getMapMatrix = function(center, fieldWidth, fieldHeight, rotation) {
+    var offsetX = 0;
+    var offsetY = 0;
+    offsetX = -((center.get_lng() + 180 - (fieldWidth / 2)) / 360);
+    offsetY = -(1 - ((center.get_lat() + 90 + (fieldHeight / 2)) / 180));
+    var mat = new Matrix2d();
+    var scaleX = 0;
+    var scaleY = 0;
+    scaleX = 360 / fieldWidth;
+    scaleY = 180 / fieldHeight;
+    mat = Matrix2d.multiply(mat, Matrix2d.translation(offsetX, offsetY));
+    mat = Matrix2d.multiply(mat, Matrix2d.scaling(scaleX, scaleY));
+    if (!!rotation) {
+      mat = Matrix2d.multiply(mat, Matrix2d.translation(-0.5, -0.5));
+      mat = Matrix2d.multiply(mat, Matrix2d.rotation(rotation));
+      mat = Matrix2d.multiply(mat, Matrix2d.translation(0.5, 0.5));
+    }
+    return Matrix3d.fromMatrix2d(mat);
+  };
+  var Matrix3d$ = {
+    clone: function() {
+      var tmp = new Matrix3d();
+      tmp.set(this);
+      return tmp;
+    },
+    setIdentity: function() {
+      this.set(Matrix3d._s_identity);
+    },
+    set: function(mat) {
+      this._m11 = mat._m11;
+      this._m12 = mat._m12;
+      this._m13 = mat._m13;
+      this._m14 = mat._m14;
+      this._m21 = mat._m21;
+      this._m22 = mat._m22;
+      this._m23 = mat._m23;
+      this._m24 = mat._m24;
+      this._m31 = mat._m31;
+      this._m32 = mat._m32;
+      this._m33 = mat._m33;
+      this._m34 = mat._m34;
+      this._offsetX = mat._offsetX;
+      this._offsetY = mat._offsetY;
+      this._offsetZ = mat._offsetZ;
+      this._m44 = mat._m44;
+      this._isNotKnownToBeIdentity = true;
+    },
+    floatArray: function() {
+      var array = new Array(16);
+      array[0] = this._m11;
+      array[1] = this._m12;
+      array[2] = this._m13;
+      array[3] = this._m14;
+      array[4] = this._m21;
+      array[5] = this._m22;
+      array[6] = this._m23;
+      array[7] = this._m24;
+      array[8] = this._m31;
+      array[9] = this._m32;
+      array[10] = this._m33;
+      array[11] = this._m34;
+      array[12] = this._offsetX;
+      array[13] = this._offsetY;
+      array[14] = this._offsetZ;
+      array[15] = this._m44;
+      return array;
+    },
+    get_isIdentity: function() {
+      if (this.get__isDistinguishedIdentity()) {
+        return true;
+      }
+      if (((((this._m11 === 1) && (!this._m12)) && ((!this._m13) && (!this._m14))) && (((!this._m21) && (this._m22 === 1)) && ((!this._m23) && (!this._m24)))) && ((((!this._m31) && (!this._m32)) && ((this._m33 === 1) && (!this._m34))) && (((!this._offsetX) && (!this._offsetY)) && ((!this._offsetZ) && (this._m44 === 1))))) {
+        this.set__isDistinguishedIdentity(true);
+        return true;
+      }
+      return false;
+    },
+    prepend: function(matrix) {
+      this.set(Matrix3d.multiplyMatrix(matrix, this));
+    },
+    append: function(matrix) {
+      this._multiply(matrix);
+    },
+    scale: function(scale) {
+      if (this.get__isDistinguishedIdentity()) {
+        this._setScaleMatrix(scale);
+      }
+      else {
+        this._m11 *= scale.x;
+        this._m12 *= scale.y;
+        this._m13 *= scale.z;
+        this._m21 *= scale.x;
+        this._m22 *= scale.y;
+        this._m23 *= scale.z;
+        this._m31 *= scale.x;
+        this._m32 *= scale.y;
+        this._m33 *= scale.z;
+        this._offsetX *= scale.x;
+        this._offsetY *= scale.y;
+        this._offsetZ *= scale.z;
+      }
+    },
+    scalePrepend: function(scale) {
+      if (this.get__isDistinguishedIdentity()) {
+        this._setScaleMatrix(scale);
+      }
+      else {
+        this._m11 *= scale.x;
+        this._m12 *= scale.x;
+        this._m13 *= scale.x;
+        this._m14 *= scale.x;
+        this._m21 *= scale.y;
+        this._m22 *= scale.y;
+        this._m23 *= scale.y;
+        this._m24 *= scale.y;
+        this._m31 *= scale.z;
+        this._m32 *= scale.z;
+        this._m33 *= scale.z;
+        this._m34 *= scale.z;
+      }
+    },
+    scaleAt: function(scale, center) {
+      if (this.get__isDistinguishedIdentity()) {
+        this._setScaleMatrixCenter(scale, center);
+      }
+      else {
+        var num = this._m14 * center.x;
+        this._m11 = num + (scale.x * (this._m11 - num));
+        num = this._m14 * center.y;
+        this._m12 = num + (scale.y * (this._m12 - num));
+        num = this._m14 * center.z;
+        this._m13 = num + (scale.z * (this._m13 - num));
+        num = this._m24 * center.x;
+        this._m21 = num + (scale.x * (this._m21 - num));
+        num = this._m24 * center.y;
+        this._m22 = num + (scale.y * (this._m22 - num));
+        num = this._m24 * center.z;
+        this._m23 = num + (scale.z * (this._m23 - num));
+        num = this._m34 * center.x;
+        this._m31 = num + (scale.x * (this._m31 - num));
+        num = this._m34 * center.y;
+        this._m32 = num + (scale.y * (this._m32 - num));
+        num = this._m34 * center.z;
+        this._m33 = num + (scale.z * (this._m33 - num));
+        num = this._m44 * center.x;
+        this._offsetX = num + (scale.x * (this._offsetX - num));
+        num = this._m44 * center.y;
+        this._offsetY = num + (scale.y * (this._offsetY - num));
+        num = this._m44 * center.z;
+        this._offsetZ = num + (scale.z * (this._offsetZ - num));
+      }
+    },
+    scaleAtPrepend: function(scale, center) {
+      if (this.get__isDistinguishedIdentity()) {
+        this._setScaleMatrixCenter(scale, center);
+      }
+      else {
+        var num3 = center.x - (center.x * scale.x);
+        var num2 = center.y - (center.y * scale.y);
+        var num = center.z - (center.z * scale.z);
+        this._offsetX += ((this._m11 * num3) + (this._m21 * num2)) + (this._m31 * num);
+        this._offsetY += ((this._m12 * num3) + (this._m22 * num2)) + (this._m32 * num);
+        this._offsetZ += ((this._m13 * num3) + (this._m23 * num2)) + (this._m33 * num);
+        this._m44 += ((this._m14 * num3) + (this._m24 * num2)) + (this._m34 * num);
+        this._m11 *= scale.x;
+        this._m12 *= scale.x;
+        this._m13 *= scale.x;
+        this._m14 *= scale.x;
+        this._m21 *= scale.y;
+        this._m22 *= scale.y;
+        this._m23 *= scale.y;
+        this._m24 *= scale.y;
+        this._m31 *= scale.z;
+        this._m32 *= scale.z;
+        this._m33 *= scale.z;
+        this._m34 *= scale.z;
+      }
+    },
+    translate: function(offset) {
+      if (this.get__isDistinguishedIdentity()) {
+        this._setTranslationMatrix(offset);
+      }
+      else {
+        this._m11 += this._m14 * offset.x;
+        this._m12 += this._m14 * offset.y;
+        this._m13 += this._m14 * offset.z;
+        this._m21 += this._m24 * offset.x;
+        this._m22 += this._m24 * offset.y;
+        this._m23 += this._m24 * offset.z;
+        this._m31 += this._m34 * offset.x;
+        this._m32 += this._m34 * offset.y;
+        this._m33 += this._m34 * offset.z;
+        this._offsetX += this._m44 * offset.x;
+        this._offsetY += this._m44 * offset.y;
+        this._offsetZ += this._m44 * offset.z;
+      }
+    },
+    translatePrepend: function(offset) {
+      if (this.get__isDistinguishedIdentity()) {
+        this._setTranslationMatrix(offset);
+      }
+      else {
+        this._offsetX += ((this._m11 * offset.x) + (this._m21 * offset.y)) + (this._m31 * offset.z);
+        this._offsetY += ((this._m12 * offset.x) + (this._m22 * offset.y)) + (this._m32 * offset.z);
+        this._offsetZ += ((this._m13 * offset.x) + (this._m23 * offset.y)) + (this._m33 * offset.z);
+        this._m44 += ((this._m14 * offset.x) + (this._m24 * offset.y)) + (this._m34 * offset.z);
+      }
+    },
+    transform: function(point) {
+      var temp = new Vector3d();
+      if (!this.get__isDistinguishedIdentity()) {
+        var x = point.x;
+        var y = point.y;
+        var z = point.z;
+        temp.x = (((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX;
+        temp.y = (((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY;
+        temp.z = (((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ;
+        if (!this.get_isAffine()) {
+          var num4 = (((x * this._m14) + (y * this._m24)) + (z * this._m34)) + this._m44;
+          temp.x /= num4;
+          temp.y /= num4;
+          temp.z /= num4;
+        }
+      }
+      return temp;
+    },
+    _transformTo: function(input, output) {
+      output.x = (((input.x * this._m11) + (input.y * this._m21)) + (input.z * this._m31)) + this._offsetX;
+      output.y = (((input.x * this._m12) + (input.y * this._m22)) + (input.z * this._m32)) + this._offsetY;
+      output.z = (((input.x * this._m13) + (input.y * this._m23)) + (input.z * this._m33)) + this._offsetZ;
+      var num4 = (((input.x * this._m14) + (input.y * this._m24)) + (input.z * this._m34)) + this._m44;
+      output.x /= num4;
+      output.y /= num4;
+      output.z /= num4;
+    },
+    transformArray: function(points) {
+      if (points != null) {
+        for (var i = 0; i < points.length; i++) {
+          this._multiplyPoint(points[i]);
+        }
+      }
+    },
+    projectArrayToScreen: function(input, output) {
+      if (input != null && output != null) {
+        var affine = this.get_isAffine();
+        for (var i = 0; i < input.length; i++) {
+          var x = input[i].x;
+          var y = input[i].y;
+          var z = input[i].z;
+          if (affine) {
+            output[i].x = ((((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX);
+            output[i].y = ((((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY);
+            output[i].z = (((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ;
+          }
+          else {
+            var num4 = (((x * this._m14) + (y * this._m24)) + (z * this._m34)) + this._m44;
+            output[i].x = (((((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX) / num4);
+            output[i].y = (((((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY) / num4);
+            output[i].z = ((((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ) / num4;
+          }
+        }
+      }
+    },
+    projectToScreen: function(input, width, height) {
+      var output = new Vector3d();
+      var x = input.x;
+      var y = input.y;
+      var z = input.z;
+      if (this.get_isAffine()) {
+        output.x = (((((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX) + 0.5) * width;
+        output.y = (-((((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY) + 0.5) * height;
+        output.z = (((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ;
+      }
+      else {
+        var num4 = (((x * this._m14) + (y * this._m24)) + (z * this._m34)) + this._m44;
+        output.x = ((((((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX) / num4) + 0.5) * width;
+        output.y = (-(((((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY) / num4) + 0.5) * height;
+        output.z = ((((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ) / num4;
+      }
+      return output;
+    },
+    get_isAffine: function() {
+      if (this.get__isDistinguishedIdentity()) {
+        return true;
+      }
+      if (((!this._m14) && (!this._m24)) && (!this._m34)) {
+        return (this._m44 === 1);
+      }
+      return false;
+    },
+    get_determinant: function() {
+      if (this.get__isDistinguishedIdentity()) {
+        return 1;
+      }
+      if (this.get_isAffine()) {
+        return this._getNormalizedAffineDeterminant();
+      }
+      var num6 = (this._m13 * this._m24) - (this._m23 * this._m14);
+      var num5 = (this._m13 * this._m34) - (this._m33 * this._m14);
+      var num4 = (this._m13 * this._m44) - (this._offsetZ * this._m14);
+      var num3 = (this._m23 * this._m34) - (this._m33 * this._m24);
+      var num2 = (this._m23 * this._m44) - (this._offsetZ * this._m24);
+      var num = (this._m33 * this._m44) - (this._offsetZ * this._m34);
+      var num10 = ((this._m22 * num5) - (this._m32 * num6)) - (this._m12 * num3);
+      var num9 = ((this._m12 * num2) - (this._m22 * num4)) + (this._offsetY * num6);
+      var num8 = ((this._m32 * num4) - (this._offsetY * num5)) - (this._m12 * num);
+      var num7 = ((this._m22 * num) - (this._m32 * num2)) + (this._offsetY * num3);
+      return ((((this._offsetX * num10) + (this._m31 * num9)) + (this._m21 * num8)) + (this._m11 * num7));
+    },
+    get_hasInverse: function() {
+      return !DoubleUtilities.isZero(this.get_determinant());
+    },
+    invert: function() {
+      if (!this._invertCore()) {
+        return;
+      }
+    },
+    transpose: function() {
+      var that = new Matrix3d();
+      that.set(this);
+      this._m12 = that._m21;
+      this._m13 = that._m31;
+      this._m14 = that._offsetX;
+      this._m23 = that._m32;
+      this._m24 = that._offsetY;
+      this._m34 = that._offsetZ;
+      this._m21 = that._m12;
+      this._m31 = that._m13;
+      this._offsetX = that._m14;
+      this._m32 = that._m23;
+      this._offsetY = that._m24;
+      this._offsetZ = that._m34;
+    },
+    get_m11: function() {
+      if (this.get__isDistinguishedIdentity()) {
+        return 1;
+      }
+      return this._m11;
+    },
+    set_m11: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m11 = value;
+      return value;
+    },
+    get_m12: function() {
+      return this._m12;
+    },
+    set_m12: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m12 = value;
+      return value;
+    },
+    get_m13: function() {
+      return this._m13;
+    },
+    set_m13: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m13 = value;
+      return value;
+    },
+    get_m14: function() {
+      return this._m14;
+    },
+    set_m14: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m14 = value;
+      return value;
+    },
+    get_m21: function() {
+      return this._m21;
+    },
+    set_m21: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m21 = value;
+      return value;
+    },
+    get_m22: function() {
+      if (this.get__isDistinguishedIdentity()) {
+        return 1;
+      }
+      return this._m22;
+    },
+    set_m22: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m22 = value;
+      return value;
+    },
+    get_m23: function() {
+      return this._m23;
+    },
+    set_m23: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m23 = value;
+      return value;
+    },
+    get_m24: function() {
+      return this._m24;
+    },
+    set_m24: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m24 = value;
+      return value;
+    },
+    get_m31: function() {
+      return this._m31;
+    },
+    set_m31: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m31 = value;
+      return value;
+    },
+    get_m32: function() {
+      return this._m32;
+    },
+    set_m32: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m32 = value;
+      return value;
+    },
+    get_m33: function() {
+      if (this.get__isDistinguishedIdentity()) {
+        return 1;
+      }
+      return this._m33;
+    },
+    set_m33: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m33 = value;
+      return value;
+    },
+    get_m34: function() {
+      return this._m34;
+    },
+    set_m34: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m34 = value;
+      return value;
+    },
+    get_m41: function() {
+      return this.get_offsetX();
+    },
+    set_m41: function(value) {
+      this.set_offsetX(value);
+      return value;
+    },
+    get_m42: function() {
+      return this.get_offsetY();
+    },
+    set_m42: function(value) {
+      this.set_offsetY(value);
+      return value;
+    },
+    get_m43: function() {
+      return this.get_offsetZ();
+    },
+    set_m43: function(value) {
+      this.set_offsetZ(value);
+      return value;
+    },
+    get_offsetX: function() {
+      return this._offsetX;
+    },
+    set_offsetX: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._offsetX = value;
+      return value;
+    },
+    get_offsetY: function() {
+      return this._offsetY;
+    },
+    set_offsetY: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._offsetY = value;
+      return value;
+    },
+    get_offsetZ: function() {
+      return this._offsetZ;
+    },
+    set_offsetZ: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._offsetZ = value;
+      return value;
+    },
+    get_m44: function() {
+      if (this.get__isDistinguishedIdentity()) {
+        return 1;
+      }
+      return this._m44;
+    },
+    set_m44: function(value) {
+      if (this.get__isDistinguishedIdentity()) {
+        this.set(Matrix3d._s_identity);
+        this.set__isDistinguishedIdentity(false);
+      }
+      this._m44 = value;
+      return value;
+    },
+    _setScaleMatrix: function(scale) {
+      this._m11 = scale.x;
+      this._m22 = scale.y;
+      this._m33 = scale.z;
+      this._m44 = 1;
+      this.set__isDistinguishedIdentity(false);
+    },
+    _setScaleMatrixCenter: function(scale, center) {
+      this._m11 = scale.x;
+      this._m22 = scale.y;
+      this._m33 = scale.z;
+      this._m44 = 1;
+      this._offsetX = center.x - (center.x * scale.x);
+      this._offsetY = center.y - (center.y * scale.y);
+      this._offsetZ = center.z - (center.z * scale.z);
+      this.set__isDistinguishedIdentity(false);
+    },
+    _setTranslationMatrix: function(offset) {
+      this._m11 = this._m22 = this._m33 = this._m44 = 1;
+      this._offsetX = offset.x;
+      this._offsetY = offset.y;
+      this._offsetZ = offset.z;
+      this.set__isDistinguishedIdentity(false);
+    },
+    _multiplyPoint: function(point) {
+      if (!this.get__isDistinguishedIdentity()) {
+        var x = point.x;
+        var y = point.y;
+        var z = point.z;
+        point.x = (((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX;
+        point.y = (((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY;
+        point.z = (((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ;
+        if (!this.get_isAffine()) {
+          var num4 = (((x * this._m14) + (y * this._m24)) + (z * this._m34)) + this._m44;
+          point.x /= num4;
+          point.y /= num4;
+          point.z /= num4;
+        }
+      }
+    },
+    multiplyVector: function(vector) {
+      if (!this.get__isDistinguishedIdentity()) {
+        var x = vector.x;
+        var y = vector.y;
+        var z = vector.z;
+        vector.x = ((x * this._m11) + (y * this._m21)) + (z * this._m31);
+        vector.y = ((x * this._m12) + (y * this._m22)) + (z * this._m32);
+        vector.z = ((x * this._m13) + (y * this._m23)) + (z * this._m33);
+      }
+    },
+    _getNormalizedAffineDeterminant: function() {
+      var num3 = (this._m12 * this._m23) - (this._m22 * this._m13);
+      var num2 = (this._m32 * this._m13) - (this._m12 * this._m33);
+      var num = (this._m22 * this._m33) - (this._m32 * this._m23);
+      return (((this._m31 * num3) + (this._m21 * num2)) + (this._m11 * num));
+    },
+    _normalizedAffineInvert: function() {
+      var num11 = (this._m12 * this._m23) - (this._m22 * this._m13);
+      var num10 = (this._m32 * this._m13) - (this._m12 * this._m33);
+      var num9 = (this._m22 * this._m33) - (this._m32 * this._m23);
+      var num8 = ((this._m31 * num11) + (this._m21 * num10)) + (this._m11 * num9);
+      if (DoubleUtilities.isZero(num8)) {
+        return false;
+      }
+      var num20 = (this._m21 * this._m13) - (this._m11 * this._m23);
+      var num19 = (this._m11 * this._m33) - (this._m31 * this._m13);
+      var num18 = (this._m31 * this._m23) - (this._m21 * this._m33);
+      var num7 = (this._m11 * this._m22) - (this._m21 * this._m12);
+      var num6 = (this._m11 * this._m32) - (this._m31 * this._m12);
+      var num5 = (this._m11 * this._offsetY) - (this._offsetX * this._m12);
+      var num4 = (this._m21 * this._m32) - (this._m31 * this._m22);
+      var num3 = (this._m21 * this._offsetY) - (this._offsetX * this._m22);
+      var num2 = (this._m31 * this._offsetY) - (this._offsetX * this._m32);
+      var num17 = ((this._m23 * num5) - (this._offsetZ * num7)) - (this._m13 * num3);
+      var num16 = ((this._m13 * num2) - (this._m33 * num5)) + (this._offsetZ * num6);
+      var num15 = ((this._m33 * num3) - (this._offsetZ * num4)) - (this._m23 * num2);
+      var num14 = num7;
+      var num13 = -num6;
+      var num12 = num4;
+      var num = 1 / num8;
+      this._m11 = num9 * num;
+      this._m12 = num10 * num;
+      this._m13 = num11 * num;
+      this._m21 = num18 * num;
+      this._m22 = num19 * num;
+      this._m23 = num20 * num;
+      this._m31 = num12 * num;
+      this._m32 = num13 * num;
+      this._m33 = num14 * num;
+      this._offsetX = num15 * num;
+      this._offsetY = num16 * num;
+      this._offsetZ = num17 * num;
+      return true;
+    },
+    _invertCore: function() {
+      if (!this.get__isDistinguishedIdentity()) {
+        if (this.get_isAffine()) {
+          return this._normalizedAffineInvert();
+        }
+        var num7 = (this._m13 * this._m24) - (this._m23 * this._m14);
+        var num6 = (this._m13 * this._m34) - (this._m33 * this._m14);
+        var num5 = (this._m13 * this._m44) - (this._offsetZ * this._m14);
+        var num4 = (this._m23 * this._m34) - (this._m33 * this._m24);
+        var num3 = (this._m23 * this._m44) - (this._offsetZ * this._m24);
+        var num2 = (this._m33 * this._m44) - (this._offsetZ * this._m34);
+        var num12 = ((this._m22 * num6) - (this._m32 * num7)) - (this._m12 * num4);
+        var num11 = ((this._m12 * num3) - (this._m22 * num5)) + (this._offsetY * num7);
+        var num10 = ((this._m32 * num5) - (this._offsetY * num6)) - (this._m12 * num2);
+        var num9 = ((this._m22 * num2) - (this._m32 * num3)) + (this._offsetY * num4);
+        var num8 = (((this._offsetX * num12) + (this._m31 * num11)) + (this._m21 * num10)) + (this._m11 * num9);
+        if (DoubleUtilities.isZero(num8)) {
+          return false;
+        }
+        var num24 = ((this._m11 * num4) - (this._m21 * num6)) + (this._m31 * num7);
+        var num23 = ((this._m21 * num5) - (this._offsetX * num7)) - (this._m11 * num3);
+        var num22 = ((this._m11 * num2) - (this._m31 * num5)) + (this._offsetX * num6);
+        var num21 = ((this._m31 * num3) - (this._offsetX * num4)) - (this._m21 * num2);
+        num7 = (this._m11 * this._m22) - (this._m21 * this._m12);
+        num6 = (this._m11 * this._m32) - (this._m31 * this._m12);
+        num5 = (this._m11 * this._offsetY) - (this._offsetX * this._m12);
+        num4 = (this._m21 * this._m32) - (this._m31 * this._m22);
+        num3 = (this._m21 * this._offsetY) - (this._offsetX * this._m22);
+        num2 = (this._m31 * this._offsetY) - (this._offsetX * this._m32);
+        var num20 = ((this._m13 * num4) - (this._m23 * num6)) + (this._m33 * num7);
+        var num19 = ((this._m23 * num5) - (this._offsetZ * num7)) - (this._m13 * num3);
+        var num18 = ((this._m13 * num2) - (this._m33 * num5)) + (this._offsetZ * num6);
+        var num17 = ((this._m33 * num3) - (this._offsetZ * num4)) - (this._m23 * num2);
+        var num16 = ((this._m24 * num6) - (this._m34 * num7)) - (this._m14 * num4);
+        var num15 = ((this._m14 * num3) - (this._m24 * num5)) + (this._m44 * num7);
+        var num14 = ((this._m34 * num5) - (this._m44 * num6)) - (this._m14 * num2);
+        var num13 = ((this._m24 * num2) - (this._m34 * num3)) + (this._m44 * num4);
+        var num = 1 / num8;
+        this._m11 = num9 * num;
+        this._m12 = num10 * num;
+        this._m13 = num11 * num;
+        this._m14 = num12 * num;
+        this._m21 = num21 * num;
+        this._m22 = num22 * num;
+        this._m23 = num23 * num;
+        this._m24 = num24 * num;
+        this._m31 = num13 * num;
+        this._m32 = num14 * num;
+        this._m33 = num15 * num;
+        this._m34 = num16 * num;
+        this._offsetX = num17 * num;
+        this._offsetY = num18 * num;
+        this._offsetZ = num19 * num;
+        this._m44 = num20 * num;
+      }
+      return true;
+    },
+    get__isDistinguishedIdentity: function() {
+      return !this._isNotKnownToBeIdentity;
+    },
+    set__isDistinguishedIdentity: function(value) {
+      this._isNotKnownToBeIdentity = !value;
+      return value;
+    },
+    _multiply: function(mat) {
+      this.set(Matrix3d.multiplyMatrix(this, mat));
+    }
+  };
+
+
+  // wwtlib.Matrix2d
+
+  function Matrix2d() {
+    this.m11 = 1;
+    this.m12 = 0;
+    this.m13 = 0;
+    this.m21 = 0;
+    this.m22 = 1;
+    this.m23 = 0;
+    this.m31 = 0;
+    this.m32 = 0;
+    this.m33 = 1;
+  }
+  Matrix2d.create = function(m11, m12, m13, m21, m22, m23, m31, m32, m33) {
+    var mat = new Matrix2d();
+    mat.m11 = m11;
+    mat.m12 = m12;
+    mat.m13 = m13;
+    mat.m21 = m21;
+    mat.m22 = m22;
+    mat.m23 = m23;
+    mat.m31 = m31;
+    mat.m32 = m32;
+    mat.m33 = m33;
+    return mat;
+  };
+  Matrix2d.rotation = function(angle) {
+    var mat = new Matrix2d();
+    mat.m11 = Math.cos(angle);
+    mat.m21 = -Math.sin(angle);
+    mat.m12 = Math.sin(angle);
+    mat.m22 = Math.cos(angle);
+    return mat;
+  };
+  Matrix2d.translation = function(x, y) {
+    var mat = new Matrix2d();
+    mat.m31 = x;
+    mat.m32 = y;
+    return mat;
+  };
+  Matrix2d.scaling = function(x, y) {
+    var mat = new Matrix2d();
+    mat.m11 = x;
+    mat.m22 = y;
+    return mat;
+  };
+  Matrix2d.multiply = function(matrix1, matrix2) {
+    return Matrix2d.create((((matrix1.m11 * matrix2.m11) + (matrix1.m12 * matrix2.m21)) + (matrix1.m13 * matrix2.m31)), (((matrix1.m11 * matrix2.m12) + (matrix1.m12 * matrix2.m22)) + (matrix1.m13 * matrix2.m32)), (((matrix1.m11 * matrix2.m13) + (matrix1.m12 * matrix2.m23)) + (matrix1.m13 * matrix2.m33)), (((matrix1.m21 * matrix2.m11) + (matrix1.m22 * matrix2.m21)) + (matrix1.m23 * matrix2.m31)), (((matrix1.m21 * matrix2.m12) + (matrix1.m22 * matrix2.m22)) + (matrix1.m23 * matrix2.m32)), (((matrix1.m21 * matrix2.m13) + (matrix1.m22 * matrix2.m23)) + (matrix1.m23 * matrix2.m33)), (((matrix1.m31 * matrix2.m11) + (matrix1.m32 * matrix2.m21)) + (matrix1.m33 * matrix2.m31)), (((matrix1.m31 * matrix2.m12) + (matrix1.m32 * matrix2.m22)) + (matrix1.m33 * matrix2.m32)), (((matrix1.m31 * matrix2.m13) + (matrix1.m32 * matrix2.m23)) + (matrix1.m33 * matrix2.m33)));
+  };
+  Matrix2d.rotateAt = function(angle, pnt) {
+    var matT0 = Matrix2d.translation(-pnt.x, -pnt.y);
+    var matR = Matrix2d.rotation(angle);
+    var matT1 = Matrix2d.translation(pnt.x, pnt.y);
+    return Matrix2d.multiply(Matrix2d.multiply(matT0, matR), matT1);
+  };
+  var Matrix2d$ = {
+    _transformPoints: function(points) {
+      var $enum1 = ss.enumerate(points);
+      while ($enum1.moveNext()) {
+        var pnt = $enum1.current;
+        this.multiplyPoint(pnt);
+      }
+    },
+    multiplyPoint: function(point) {
+      var x = point.x;
+      var y = point.y;
+      point.x = (((x * this.m11) + (y * this.m21)) + this.m31);
+      point.y = (((x * this.m12) + (y * this.m22)) + this.m32);
+    }
+  };
+
+
+  // wwtlib.DoubleUtilities
+
+  function DoubleUtilities() {
+  }
+  DoubleUtilities.isZero = function(value) {
+    return (Math.abs(value) < 2.22044604925031E-50);
+  };
+  DoubleUtilities.isOne = function(value) {
+    return (Math.abs(value - 1) < 2.22044604925031E-50);
+  };
+  DoubleUtilities.radiansToDegrees = function(radians) {
+    return radians * 180 / Math.PI;
+  };
+  DoubleUtilities.degreesToRadians = function(degrees) {
+    return degrees * Math.PI / 180;
+  };
+  DoubleUtilities.clamp = function(x, min, max) {
+    return Math.max(min, Math.min(x, max));
+  };
+
+
+  // wwtlib.PlaneD
+
+  function PlaneD(valuePointA, valuePointB, valuePointC, valuePointD) {
+    this.a = 0;
+    this.b = 0;
+    this.c = 0;
+    this.d = 0;
+    this.a = valuePointA;
+    this.b = valuePointB;
+    this.c = valuePointC;
+    this.d = valuePointD;
+  }
+  var PlaneD$ = {
+    normalize: function() {
+      var length = Math.sqrt(this.a * this.a + this.b * this.b + this.c * this.c);
+      this.a /= length;
+      this.b /= length;
+      this.c /= length;
+      this.d /= length;
+    },
+    dot: function(v) {
+      return this.b * v.y + this.c * v.z + this.d * v.w + this.a * v.x;
+    }
+  };
+
+
+  // wwtlib.Vector4d
+
+  function Vector4d(valueX, valueY, valueZ, valueW) {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+    this.w = 0;
+    this.x = valueX;
+    this.y = valueY;
+    this.z = valueZ;
+    this.w = valueW;
+  }
+  var Vector4d$ = {
+
+  };
+
+
+  // wwtlib.PositionNormalTexturedX2
+
+  function PositionNormalTexturedX2() {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+    this.nx = 0;
+    this.ny = 0;
+    this.nz = 0;
+    this.tu = 0;
+    this.tv = 0;
+    this.tu1 = 0;
+    this.tv1 = 0;
+  }
+  PositionNormalTexturedX2.create2UV = function(pos, nor, u, v, u1, v1) {
+    var temp = new PositionNormalTexturedX2();
+    temp.x = pos.x;
+    temp.y = pos.y;
+    temp.z = pos.z;
+    temp.nx = nor.x;
+    temp.ny = nor.y;
+    temp.nz = nor.z;
+    temp.tu = u;
+    temp.tv = v;
+    temp.tu1 = u1;
+    temp.tv1 = v1;
+    return temp;
+  };
+  PositionNormalTexturedX2.create = function(pos, nor, u, v) {
+    var temp = new PositionNormalTexturedX2();
+    temp.x = pos.x;
+    temp.y = pos.y;
+    temp.z = pos.z;
+    temp.nx = nor.x;
+    temp.ny = nor.y;
+    temp.nz = nor.z;
+    temp.tu = u;
+    temp.tv = v;
+    var result = Coordinates.cartesianToSpherical2(nor);
+    temp.tu1 = ((result.get_lng() + 180) / 360);
+    temp.tv1 = (1 - ((result.get_lat() + 90) / 180));
+    return temp;
+  };
+  PositionNormalTexturedX2.createLong2UV = function(xvalue, yvalue, zvalue, nxvalue, nyvalue, nzvalue, u, v, u1, v1) {
+    var temp = new PositionNormalTexturedX2();
+    temp.x = xvalue;
+    temp.y = yvalue;
+    temp.z = zvalue;
+    temp.nx = nxvalue;
+    temp.ny = nyvalue;
+    temp.nz = nzvalue;
+    temp.tu = u;
+    temp.tv = v;
+    temp.tu1 = u1;
+    temp.tv1 = v1;
+    return temp;
+  };
+  PositionNormalTexturedX2.get_strideSize = function() {
+    return 40;
+  };
+  var PositionNormalTexturedX2$ = {
+    get_lat: function() {
+      return (1 - this.tv1) * 180 - 90;
+    },
+    set_lat: function(value) {
+      this.tv1 = (1 - ((value + 90) / 180));
+      return value;
+    },
+    get_lng: function() {
+      return this.tu1 * 360 - 180;
+    },
+    set_lng: function(value) {
+      this.tu1 = ((value + 180) / 360);
+      return value;
+    },
+    createLong: function(xvalue, yvalue, zvalue, nxvalue, nyvalue, nzvalue, u, v) {
+      var temp = new PositionNormalTexturedX2();
+      temp.x = xvalue;
+      temp.y = yvalue;
+      temp.z = zvalue;
+      temp.nx = nxvalue;
+      temp.ny = nyvalue;
+      temp.nz = nzvalue;
+      temp.tu = u;
+      temp.tv = v;
+      var result = Coordinates.cartesianToSpherical2(Vector3d.create(this.nx, this.ny, this.nz));
+      temp.tu1 = ((result.get_lng() + 180) / 360);
+      temp.tv1 = (1 - ((result.get_lat() + 90) / 180));
+      return temp;
+    },
+    get_normal: function() {
+      return Vector3d.create(this.nx, this.ny, this.nz);
+    },
+    set_normal: function(value) {
+      this.nx = value.x;
+      this.ny = value.y;
+      this.nz = value.z;
+      return value;
+    },
+    get_position: function() {
+      return Vector3d.create(this.x, this.y, this.y);
+    },
+    set_position: function(value) {
+      this.x = value.x;
+      this.y = value.y;
+      this.z = value.z;
+      return value;
+    },
+    toString: function() {
+      return ss.format('X={0}, Y={1}, Z={2}, Nx={3}, Ny={4}, Nz={5}, U={6}, V={7}, U1={8}, U2={9}', this.x, this.y, this.z, this.nx, this.ny, this.nz, this.tu, this.tv, this.tu1, this.tv1);
+    }
+  };
+
+
+  // wwtlib.PositionNormalTextured
+
+  function PositionNormalTextured() {
+    this.x = 0;
+    this.y = 0;
+    this.z = 0;
+    this.nx = 0;
+    this.ny = 0;
+    this.nz = 0;
+    this.tu = 0;
+    this.tv = 0;
+  }
+  PositionNormalTextured.createShort = function(pos, nor, u, v) {
+    var temp = new PositionNormalTextured();
+    temp.x = pos.x;
+    temp.y = pos.y;
+    temp.z = pos.z;
+    temp.nx = nor.x;
+    temp.ny = nor.y;
+    temp.nz = nor.z;
+    temp.tu = u;
+    temp.tv = v;
+    return temp;
+  };
+  PositionNormalTextured._create = function(x, y, z, nx, ny, nz, tu, tv) {
+    var temp = new PositionNormalTextured();
+    temp.x = x;
+    temp.y = y;
+    temp.z = z;
+    temp.nx = nx;
+    temp.ny = ny;
+    temp.nz = nz;
+    temp.tu = tu;
+    temp.tv = tv;
+    return temp;
+  };
+  PositionNormalTextured.createUV = function(pos, nor, uv) {
+    var temp = new PositionNormalTextured();
+    temp.x = pos.x;
+    temp.y = pos.y;
+    temp.z = pos.z;
+    temp.nx = nor.x;
+    temp.ny = nor.y;
+    temp.nz = nor.z;
+    temp.tu = uv.x;
+    temp.tv = uv.y;
+    return temp;
+  };
+  var PositionNormalTextured$ = {
+    createLong: function(xvalue, yvalue, zvalue, nxvalue, nyvalue, nzvalue, u, v) {
+      var temp = new PositionNormalTexturedX2();
+      temp.x = xvalue;
+      temp.y = yvalue;
+      temp.z = zvalue;
+      temp.nx = nxvalue;
+      temp.ny = nyvalue;
+      temp.nz = nzvalue;
+      temp.tu = u;
+      temp.tv = v;
+      return temp;
+    },
+    get_normal: function() {
+      return Vector3d.create(this.nx, this.ny, this.nz);
+    },
+    set_normal: function(value) {
+      this.nx = value.x;
+      this.ny = value.y;
+      this.nz = value.z;
+      return value;
+    },
+    get_position: function() {
+      return Vector3d.create(this.x, this.y, this.z);
+    },
+    set_position: function(value) {
+      this.x = value.x;
+      this.y = value.y;
+      this.z = value.z;
+      return value;
+    },
+    toString: function() {
+      return ss.format('X={0}, Y={1}, Z={2}, Nx={3}, Ny={4}, Nz={5}, U={6}, V={7}, U1={8}, U2={9}', this.x, this.y, this.z, this.nx, this.ny, this.nz, this.tu, this.tv);
+    }
+  };
+
+
+  // wwtlib.SphereHull
+
+  function SphereHull() {
+    this.radius = 0;
+  }
+  SphereHull._create = function(Center, Radius) {
+    var temp = new SphereHull();
+    temp.center = Center;
+    temp.radius = Radius;
+    return temp;
+  };
+  var SphereHull$ = {
+
+  };
+
+
+  // wwtlib.ConvexHull
+
+  function ConvexHull() {
+  }
+  ConvexHull.findEnclosingSphereFast = function(points) {
+    var result = new SphereHull();
+    var count = points.length;
+    var center = Vector3d.zero;
+    for (var i = 0; i < count; ++i) {
+      center.add(points[i]);
+    }
+    center.multiply(1 / count);
+    var radius = 0;
+    for (var i = 0; i < count; ++i) {
+      var distance = Vector3d.getLengthSq(Vector3d.subtractVectors(points[i], center));
+      if (distance > radius) {
+        radius = distance;
+      }
+    }
+    radius = Math.sqrt(radius);
+    result.center = center;
+    result.radius = radius;
+    return result;
+  };
+  ConvexHull.findEnclosingSphere = function(list) {
+    var Center = new Vector3d();
+    var Radius = 0;
+    var count = list.length;
+    var i;
+    var dx;
+    var dy;
+    var dz;
+    var rad_sq;
+    var xspan;
+    var yspan;
+    var zspan;
+    var maxspan;
+    var old_to_p;
+    var old_to_p_sq;
+    var old_to_new;
+    var xmin = new Vector3d();
+    var xmax = new Vector3d();
+    var ymin = new Vector3d();
+    var ymax = new Vector3d();
+    var zmin = new Vector3d();
+    var zmax = new Vector3d();
+    var dia1 = new Vector3d();
+    var dia2 = new Vector3d();
+    xmin.x = ymin.y = zmin.z = 100000000;
+    xmax.x = ymax.y = zmax.z = -1000000000;
+    for (i = 0; i < count; i++) {
+      var current = list[i];
+      if (current.x < xmin.x) {
+        xmin = current;
+      }
+      if (current.x > xmax.x) {
+        xmax = current;
+      }
+      if (current.y < ymin.y) {
+        ymin = current;
+      }
+      if (current.y > ymax.y) {
+        ymax = current;
+      }
+      if (current.z < zmin.z) {
+        zmin = current;
+      }
+      if (current.z > zmax.z) {
+        zmax = current;
+      }
+    }
+    dx = xmax.x - xmin.x;
+    dy = xmax.y - xmin.y;
+    dz = xmax.z - xmin.z;
+    xspan = dx * dx + dy * dy + dz * dz;
+    dx = ymax.x - ymin.x;
+    dy = ymax.y - ymin.y;
+    dz = ymax.z - ymin.z;
+    yspan = dx * dx + dy * dy + dz * dz;
+    dx = zmax.x - zmin.x;
+    dy = zmax.y - zmin.y;
+    dz = zmax.z - zmin.z;
+    zspan = dx * dx + dy * dy + dz * dz;
+    dia1 = xmin;
+    dia2 = xmax;
+    maxspan = xspan;
+    if (yspan > maxspan) {
+      maxspan = yspan;
+      dia1 = ymin;
+      dia2 = ymax;
+    }
+    if (zspan > maxspan) {
+      dia1 = zmin;
+      dia2 = zmax;
+    }
+    Center.x = (dia1.x + dia2.x) / 2;
+    Center.y = (dia1.y + dia2.y) / 2;
+    Center.z = (dia1.z + dia2.z) / 2;
+    dx = dia2.x - Center.x;
+    dy = dia2.y - Center.y;
+    dz = dia2.z - Center.z;
+    rad_sq = dx * dx + dy * dy + dz * dz;
+    Radius = Math.sqrt(rad_sq);
+    for (i = 0; i < count; i++) {
+      var current = list[i];
+      dx = current.x - Center.x;
+      dy = current.y - Center.y;
+      dz = current.z - Center.z;
+      old_to_p_sq = dx * dx + dy * dy + dz * dz;
+      if (old_to_p_sq > rad_sq) {
+        old_to_p = Math.sqrt(old_to_p_sq);
+        Radius = (Radius + old_to_p) / 2;
+        rad_sq = Radius * Radius;
+        old_to_new = old_to_p - Radius;
+        Center.x = (Radius * Center.x + old_to_new * current.x) / old_to_p;
+        Center.y = (Radius * Center.y + old_to_new * current.y) / old_to_p;
+        Center.z = (Radius * Center.z + old_to_new * current.z) / old_to_p;
+      }
+    }
+    return SphereHull._create(Center, Radius);
+  };
+  var ConvexHull$ = {
+
+  };
+
+
+  // wwtlib.Folder
+
+  function Folder() {
+    this.parent = null;
+    this.isProxy = false;
+    this._versionDependent = false;
+    this._readOnly = true;
+    this._dirty = false;
+    this._thumbnail = null;
+    this._proxyFolder = null;
+    this._lastUpdate = new Date();
+    this._childList = [];
+    this._itemsField = [];
+    this._imagesets = [];
+    this._tours = [];
+    this._folders = [];
+    this._places = [];
+    this._groupField = 0;
+    this._refreshTypeField = 0;
+    this._refreshTypeFieldSpecified = false;
+    this._browseableField = true;
+    this._browseableFieldSpecified = false;
+    this._searchableField = false;
+    this._typeField = 0;
+    this._communityIdField = 0;
+    this._componentIdField = 0;
+    this._permissionField = 0;
+  }
+  var Folder$ = {
+    toString: function() {
+      return this._nameField;
+    },
+    get_versionDependent: function() {
+      return this._versionDependent;
+    },
+    set_versionDependent: function(value) {
+      this._versionDependent = value;
+      var $enum1 = ss.enumerate(this._folders);
+      while ($enum1.moveNext()) {
+        var folder = $enum1.current;
+        folder.set_versionDependent(this._versionDependent);
+      }
+      return value;
+    },
+    get_readOnly: function() {
+      return this._readOnly;
+    },
+    set_readOnly: function(value) {
+      this._readOnly = value;
+      return value;
+    },
+    get_dirty: function() {
+      return this._dirty;
+    },
+    set_dirty: function(value) {
+      this._dirty = value;
+      return value;
+    },
+    loadFromUrl: function(url, complete) {
+      this._onComplete = complete;
+      this._webFile = new WebFile(URLHelpers.singleton.rewrite(url, 1));
+      this._webFile.onStateChange = ss.bind('_loadData', this);
+      this._webFile.send();
+    },
+    _loadData: function() {
+      if (this._webFile.get_state() === 2) {
+        alert(this._webFile.get_message());
+      }
+      else if (this._webFile.get_state() === 1) {
+        var node = Util.selectSingleNode(this._webFile.getXml(), 'Folder');
+        if (node == null) {
+          var doc = this._webFile.getXml();
+          if (doc != null) {
+            node = Util.selectSingleNode(doc, 'Folder');
+          }
+        }
+        if (node != null) {
+          this._clearChildren();
+          this._parseXML(node);
+        }
+        if (this._onComplete != null) {
+          this._onComplete();
+        }
+      }
+    },
+    _clearChildren: function() {
+      this._folders.length = 0;
+      this._tours.length = 0;
+      this._places.length = 0;
+      this.get_imagesets().length = 0;
+    },
+    _parseXML: function(node) {
+      if (node.attributes.getNamedItem('Name') != null) {
+        this._nameField = node.attributes.getNamedItem('Name').nodeValue;
+      }
+      else {
+        this._nameField = '';
+      }
+      if (node.attributes.getNamedItem('Url') != null) {
+        this._urlField = node.attributes.getNamedItem('Url').nodeValue;
+      }
+      if (node.attributes.getNamedItem('Thumbnail') != null) {
+        this._thumbnailUrlField = node.attributes.getNamedItem('Thumbnail').nodeValue;
+      }
+      var $enum1 = ss.enumerate(node.childNodes);
+      while ($enum1.moveNext()) {
+        var child = $enum1.current;
+        switch (child.nodeName) {
+          case 'Folder':
+            var temp = new Folder();
+            temp.parent = this;
+            temp._parseXML(child);
+            this._folders.push(temp);
+            break;
+          case 'Place':
+            this._places.push(Place._fromXml(child));
+            break;
+          case 'ImageSet':
+            this.get_imagesets().push(Imageset.fromXMLNode(child));
+            break;
+          case 'Tour':
+            this.get_tours().push(Tour._fromXml(child));
+            break;
+        }
+      }
+    },
+    addChildFolder: function(child) {
+      this._folders.push(child);
+      this._dirty = true;
+    },
+    removeChildFolder: function(child) {
+      ss.remove(this._folders, child);
+      this._dirty = true;
+    },
+    addChildPlace: function(child) {
+      this._places.push(child);
+      this._dirty = true;
+    },
+    removeChildPlace: function(child) {
+      ss.remove(this._places, child);
+      this._dirty = true;
+    },
+    get_thumbnail: function() {
+      return this._thumbnail;
+    },
+    set_thumbnail: function(value) {
+      this._thumbnail = value;
+      return value;
+    },
+    get_bounds: function() {
+      return this._bounds;
+    },
+    set_bounds: function(value) {
+      this._bounds = value;
+      return value;
+    },
+    get_isImage: function() {
+      return false;
+    },
+    get_isTour: function() {
+      return false;
+    },
+    get_isFolder: function() {
+      return true;
+    },
+    get_isCloudCommunityItem: function() {
+      return !!this._communityIdField || this._permissionField > 0;
+    },
+    refresh: function() {
+      if (this._proxyFolder == null) {
+        this._proxyFolder = new Folder();
+        this._proxyFolder.isProxy = true;
+        this._proxyFolder.parent = this.parent;
+      }
+      this._proxyFolder.loadFromUrl(this._urlField, this._childReadyCallback);
+      this._childReadyCallback = null;
+    },
+    childLoadCallback: function(callback) {
+      this._childReadyCallback = callback;
+      var temp = this.get_children();
+      if (this._proxyFolder == null) {
+        callback();
+      }
+    },
+    get_children: function() {
+      if (ss.emptyString(this._urlField)) {
+        this._childList.length = 0;
+        if (this.parent != null) {
+          var folderUp = new FolderUp();
+          folderUp.parent = this.parent;
+          this._childList.push(folderUp);
+        }
+        if (this.get_folders() != null) {
+          var $enum1 = ss.enumerate(this.get_folders());
+          while ($enum1.moveNext()) {
+            var folder = $enum1.current;
+            this._childList.push(folder);
+          }
+        }
+        if (this.get_imagesets() != null) {
+          var $enum2 = ss.enumerate(this.get_imagesets());
+          while ($enum2.moveNext()) {
+            var imset = $enum2.current;
+            this._childList.push(imset);
+          }
+        }
+        if (this.get_places() != null) {
+          var $enum3 = ss.enumerate(this.get_places());
+          while ($enum3.moveNext()) {
+            var place = $enum3.current;
+            this._childList.push(place);
+          }
+        }
+        if (this.get_tours() != null) {
+          var $enum4 = ss.enumerate(this.get_tours());
+          while ($enum4.moveNext()) {
+            var tour = $enum4.current;
+            this._childList.push(tour);
+          }
+        }
+        return this._childList;
+      }
+      else {
+        var ts = (this._lastUpdate - ss.now()) / 1000;
+        if (true || this.get_refreshType() === 1 || this._proxyFolder == null || (!this.get_refreshType() && (parseInt(this._refreshIntervalField) < ts))) {
+          this.refresh();
+        }
+        if (this._proxyFolder != null) {
+          return this._proxyFolder.get_children();
+        }
+        else {
+          return null;
+        }
+      }
+    },
+    get_msrCommunityId: function() {
+      return this._communityIdField;
+    },
+    set_msrCommunityId: function(value) {
+      this._communityIdField = value;
+      return value;
+    },
+    get_msrComponentId: function() {
+      return this._componentIdField;
+    },
+    set_msrComponentId: function(value) {
+      this._componentIdField = value;
+      return value;
+    },
+    get_permission: function() {
+      return this._permissionField;
+    },
+    set_permission: function(value) {
+      this._permissionField = value;
+      return value;
+    },
+    get_folders: function() {
+      return this._folders;
+    },
+    set_folders: function(value) {
+      this._folders = value;
+      return value;
+    },
+    get_places: function() {
+      return this._places;
+    },
+    set_places: function(value) {
+      this._places = value;
+      return value;
+    },
+    get_imagesets: function() {
+      return this._imagesets;
+    },
+    set_imagesets: function(value) {
+      this._imagesets = value;
+      return value;
+    },
+    get_tours: function() {
+      return this._tours;
+    },
+    set_tours: function(value) {
+      this._tours = value;
+      return value;
+    },
+    get_name: function() {
+      if (this._nameField == null) {
+        return '';
+      }
+      else {
+        return this._nameField;
+      }
+    },
+    set_name: function(value) {
+      this._nameField = value;
+      return value;
+    },
+    get_group: function() {
+      return this._groupField;
+    },
+    set_group: function(value) {
+      this._groupField = value;
+      return value;
+    },
+    get_url: function() {
+      return this._urlField;
+    },
+    set_url: function(value) {
+      this._urlField = value;
+      return value;
+    },
+    get_thumbnailUrl: function() {
+      if (ss.emptyString(this._thumbnailUrlField)) {
+        return URLHelpers.singleton.coreStaticUrl('wwtweb/thumbnail.aspx?name=folder');
+      }
+      return this._thumbnailUrlField;
+    },
+    set_thumbnailUrl: function(value) {
+      this._thumbnailUrlField = value;
+      return value;
+    },
+    get_refreshType: function() {
+      return this._refreshTypeField;
+    },
+    set_refreshType: function(value) {
+      this._refreshTypeField = value;
+      this.set_refreshTypeSpecified(true);
+      return value;
+    },
+    get_refreshTypeSpecified: function() {
+      return this._refreshTypeFieldSpecified;
+    },
+    set_refreshTypeSpecified: function(value) {
+      this._refreshTypeFieldSpecified = value;
+      return value;
+    },
+    get_refreshInterval: function() {
+      return this._refreshIntervalField;
+    },
+    set_refreshInterval: function(value) {
+      this._refreshIntervalField = value;
+      return value;
+    },
+    get_browseable: function() {
+      return this._browseableField;
+    },
+    set_browseable: function(value) {
+      this._browseableField = value;
+      this._browseableFieldSpecified = true;
+      return value;
+    },
+    get_browseableSpecified: function() {
+      return this._browseableFieldSpecified;
+    },
+    set_browseableSpecified: function(value) {
+      this._browseableFieldSpecified = value;
+      return value;
+    },
+    get_searchable: function() {
+      return this._searchableField;
+    },
+    set_searchable: function(value) {
+      this._searchableField = value;
+      return value;
+    },
+    get_type: function() {
+      return this._typeField;
+    },
+    set_type: function(value) {
+      this._typeField = value;
+      return value;
+    },
+    get_subType: function() {
+      return this._subTypeField;
+    },
+    set_subType: function(value) {
+      this._subTypeField = value;
+      return value;
+    }
+  };
+
+
+  // wwtlib.FolderBrowser
+
+  function FolderBrowser() {
+    this._items = [];
+    this.top = 10;
+    this.left = 10;
+    this._indexTouchDown = -1;
+    this._mouseDown = false;
+    this._lastX = 0;
+    this._lastY = 0;
+    this._ignoreClick = false;
+    this._thumbnailSize = 0;
+    this._horzSpacing = 110;
+    this._vertSpacing = 75;
+    this._thumbHeight = 65;
+    this._thumbWidth = 110;
+    this._horzMultiple = 110;
+    this._rowCount = 1;
+    this._colCount = 6;
+    this._dragging = false;
+    this._startIndex = 0;
+    this._startOffset = 0;
+    this._selectedItem = -1;
+    this._hoverItem = -1;
+    this.showAddButton = false;
+    this.width = 0;
+    this.height = 0;
+    this._addButtonHover = false;
+    this.imageClicked = false;
+  }
+  FolderBrowser.create = function() {
+    var temp = new FolderBrowser();
+    temp.height = 85;
+    temp.width = 1920;
+    temp.canvas = document.createElement('canvas');
+    temp.canvas.width = temp.width;
+    temp.canvas.height = temp.height;
+    temp.setup();
+    temp.loadImages();
+    return temp;
+  };
+  var FolderBrowser$ = {
+    setup: function() {
+      this.canvas.addEventListener('click', ss.bind('onClick', this), false);
+      this.canvas.addEventListener('dblclick', ss.bind('onDoubleClick', this), false);
+      this.canvas.addEventListener('mousemove', ss.bind('onMouseMove', this), false);
+      this.canvas.addEventListener('mouseup', ss.bind('onMouseUp', this), false);
+      this.canvas.addEventListener('mousedown', ss.bind('onMouseDown', this), false);
+      this.canvas.addEventListener('touchstart', ss.bind('onTouchStart', this), false);
+      this.canvas.addEventListener('touchmove', ss.bind('onTouchMove', this), false);
+      this.canvas.addEventListener('touchend', ss.bind('onTouchEnd', this), false);
+      this.canvas.addEventListener('mouseout', ss.bind('onMouseUp', this), false);
+    },
+    onTouchStart: function(e) {
+      var ev = e;
+      ev.preventDefault();
+      this._mouseDown = true;
+      this._lastX = ev.targetTouches[0].pageX;
+      this._lastY = ev.targetTouches[0].pageY;
+      this._indexTouchDown = this._getItemIndexFromCursor(Vector2d.create(ev.targetTouches[0].pageX, ev.targetTouches[0].pageY));
+    },
+    onTouchMove: function(e) {
+      var ev = e;
+      ev.preventDefault();
+      if (this._mouseDown) {
+        var curX = ev.targetTouches[0].pageX - this._lastX;
+        var curY = ev.targetTouches[0].pageY - this._lastY;
+        if (this._mouseDown) {
+          this._dragging = true;
+        }
+        if (!this._dragging) {
+          var newHover = this._getItemIndexFromCursor(Vector2d.create(ev.targetTouches[0].pageX, ev.targetTouches[0].pageY));
+          if (this._hoverItem !== newHover) {
+            this._hoverItem = newHover;
+          }
+        }
+        else {
+          var tiles = Math.round(((ev.targetTouches[0].pageX - this._lastX) + this._startOffset) / this._horzSpacing);
+          var offset = Math.round(((ev.targetTouches[0].pageX - this._lastX) + this._startOffset) - (tiles * this._horzSpacing));
+          this._startOffset = offset;
+          this._startIndex -= tiles;
+          if (this._startIndex < 0) {
+            this._startOffset -= (this._horzSpacing * this._startIndex);
+            this._startIndex = 0;
+          }
+          this._lastX = ev.targetTouches[0].pageX;
+          this._lastY = ev.targetTouches[0].pageY;
+        }
+        this.refresh();
+      }
+    },
+    onTouchEnd: function(e) {
+      var ev = e;
+      ev.preventDefault();
+      if (this._dragging) {
+        this._dragging = false;
+        this._ignoreClick = true;
+      }
+      else if (this._indexTouchDown > -1 && this._mouseDown) {
+        this._handleClick(this._indexTouchDown);
+      }
+      this._startOffset = 0;
+      this._mouseDown = false;
+      this.refresh();
+    },
+    onClick: function(e) {
+      if (!this._ignoreClick) {
+        var index = this._getItemIndexFromCursor(Vector2d.create(e.offsetX, e.offsetY));
+        this._handleClick(index);
+      }
+      else {
+        this._ignoreClick = false;
+      }
+    },
+    _handleClick: function(index) {
+      var $this = this;
+
+      if (index > -1) {
+        if (ss.canCast(this._items[index], Place)) {
+          var place = this._items[index];
+          WWTControl.singleton.gotoTarget(place, false, false, true);
+          return;
+        }
+        if (ss.canCast(this._items[index], Imageset)) {
+          var imageset = this._items[index];
+          WWTControl.singleton.renderContext.set_backgroundImageset(imageset);
+          return;
+        }
+        if (ss.canCast(this._items[index], Tour)) {
+          var tour = this._items[index];
+          WWTControl.singleton.playTour(tour.get_tourUrl());
+          return;
+        }
+        if (ss.canCast(this._items[index], Folder)) {
+          var folder = this._items[index];
+          this._startIndex = 0;
+          folder.childLoadCallback(function() {
+            $this._items = folder.get_children();
+            $this.refresh();
+          });
+          return;
+        }
+        if (ss.canCast(this._items[index], FolderUp)) {
+          var folderUp = this._items[index];
+          if (folderUp.parent != null) {
+            this._startIndex = 0;
+            folderUp.parent.childLoadCallback(function() {
+              $this._items = folderUp.parent.get_children();
+              $this.refresh();
+            });
+          }
+          return;
+        }
+      }
+      return;
+    },
+    onDoubleClick: function(e) {
+      RenderTriangle.renderingOn = !RenderTriangle.renderingOn;
+    },
+    onGestureChange: function(e) {
+      var g = e;
+      this._mouseDown = false;
+      var delta = g.scale;
+    },
+    onMouseDown: function(e) {
+      this._mouseDown = true;
+      this._lastX = Mouse.offsetX(this.canvas, e);
+      this._lastY = Mouse.offsetY(this.canvas, e);
+    },
+    onMouseMove: function(e) {
+      if (this._mouseDown) {
+        this._dragging = true;
+      }
+      if (!this._dragging) {
+        var newHover = this._getItemIndexFromCursor(Vector2d.create(Mouse.offsetX(this.canvas, e), Mouse.offsetY(this.canvas, e)));
+        if (this._hoverItem !== newHover) {
+          this._hoverItem = newHover;
+        }
+      }
+      else {
+        var tiles = Math.round(((Mouse.offsetX(this.canvas, e) - this._lastX) + this._startOffset) / this._horzSpacing);
+        var offset = Math.round(((Mouse.offsetX(this.canvas, e) - this._lastX) + this._startOffset) - (tiles * this._horzSpacing));
+        this._startOffset = offset;
+        this._startIndex -= tiles;
+        if (this._startIndex < 0) {
+          this._startOffset -= (this._horzSpacing * this._startIndex);
+          this._startIndex = 0;
+        }
+        this._lastX = Mouse.offsetX(this.canvas, e);
+        this._lastY = Mouse.offsetY(this.canvas, e);
+      }
+      this.refresh();
+    },
+    onMouseUp: function(e) {
+      if (this._dragging) {
+        this._startOffset = 0;
+        this._dragging = false;
+        this._ignoreClick = true;
+      }
+      this._mouseDown = false;
+      this.refresh();
+    },
+    loadImages: function() {
+      var $this = this;
+
+      if (!FolderBrowser._imagesLoaded && !FolderBrowser._downloading) {
+        FolderBrowser._imageLoadCount = 0;
+        FolderBrowser._imagesLoaded = false;
+        FolderBrowser._downloading = true;
+        FolderBrowser._bmpBackground = document.createElement('img');
+        FolderBrowser._bmpBackground.src = 'images/thumbBackground.png';
+        FolderBrowser._bmpBackground.addEventListener('load', function(e) {
+          FolderBrowser._imageLoadCount++;
+          if (FolderBrowser._imageLoadCount === 5) {
+            FolderBrowser._downloading = false;
+            FolderBrowser._imagesLoaded = true;
+            $this.refresh();
+          }
+        }, false);
+        FolderBrowser._bmpBackgroundHover = document.createElement('img');
+        FolderBrowser._bmpBackgroundHover.src = 'images/thumbBackgroundHover.png';
+        FolderBrowser._bmpBackgroundHover.addEventListener('load', function(e) {
+          FolderBrowser._imageLoadCount++;
+          if (FolderBrowser._imageLoadCount === 5) {
+            FolderBrowser._downloading = false;
+            FolderBrowser._imagesLoaded = true;
+            $this.refresh();
+          }
+        }, false);
+        FolderBrowser._bmpBackgroundWide = document.createElement('img');
+        FolderBrowser._bmpBackgroundWide.src = 'images/thumbBackgroundWide.png';
+        FolderBrowser._bmpBackgroundWide.addEventListener('load', function(e) {
+          FolderBrowser._imageLoadCount++;
+          if (FolderBrowser._imageLoadCount === 5) {
+            FolderBrowser._downloading = false;
+            FolderBrowser._imagesLoaded = true;
+            $this.refresh();
+          }
+        }, false);
+        FolderBrowser._bmpBackgroundWideHover = document.createElement('img');
+        FolderBrowser._bmpBackgroundWideHover.src = 'images/thumbBackgroundWideHover.png';
+        FolderBrowser._bmpBackgroundWideHover.addEventListener('load', function(e) {
+          FolderBrowser._imageLoadCount++;
+          if (FolderBrowser._imageLoadCount === 5) {
+            FolderBrowser._downloading = false;
+            FolderBrowser._imagesLoaded = true;
+            $this.refresh();
+          }
+        }, false);
+        FolderBrowser._bmpDropInsertMarker = document.createElement('img');
+        FolderBrowser._bmpDropInsertMarker.src = 'images/dragInsertMarker.png';
+        FolderBrowser._bmpDropInsertMarker.addEventListener('load', function(e) {
+          FolderBrowser._imageLoadCount++;
+          if (FolderBrowser._imageLoadCount === 5) {
+            FolderBrowser._downloading = false;
+            FolderBrowser._imagesLoaded = true;
+            $this.refresh();
+          }
+        }, false);
+      }
+    },
+    get_thumbnailSize: function() {
+      return this._thumbnailSize;
+    },
+    set_thumbnailSize: function(value) {
+      this._thumbnailSize = value;
+      switch (value) {
+        case 1:
+          this._horzSpacing = 180;
+          this._vertSpacing = 75;
+          this._thumbHeight = 65;
+          this._thumbWidth = 180;
+          break;
+        case 0:
+          this._horzSpacing = 110;
+          this._vertSpacing = 75;
+          this._thumbHeight = 65;
+          this._thumbWidth = 110;
+          break;
+      }
+      this._updatePaginator();
+      this.refresh();
+      return value;
+    },
+    refresh: function() {
+      if (this.width !== window.innerWidth) {
+        this.width = window.innerWidth;
+        this.canvas.width = this.canvas.width;
+      }
+      this.paint();
+    },
+    get_rowCount: function() {
+      return this._rowCount;
+    },
+    set_rowCount: function(value) {
+      if (this._rowCount !== value) {
+        this._rowCount = value;
+        this._updatePaginator();
+      }
+      return value;
+    },
+    _updatePaginator: function() {
+    },
+    get_colCount: function() {
+      return this._colCount;
+    },
+    set_colCount: function(value) {
+      if (this._colCount !== value) {
+        this._colCount = value;
+        this._updatePaginator();
+      }
+      return value;
+    },
+    get_itemsPerPage: function() {
+      return this._rowCount * this._colCount;
+    },
+    get_currentPage: function() {
+      return this._startIndex / this.get_itemsPerPage();
+    },
+    get_pageCount: function() {
+      return Math.max(1, ((this._items.length + this.get_itemsPerPage() - 1) + ((this.showAddButton) ? 1 : 0)) / this.get_itemsPerPage());
+    },
+    paint: function() {
+      var $this = this;
+
+      var g = this.canvas.getContext('2d');
+      g.fillStyle = 'rgb(20, 22, 31)';
+      g.fillRect(0, 0, this.width, this.height);
+      if (!FolderBrowser._imagesLoaded) {
+        return;
+      }
+      var netHeight = (this.height - 10 * 2);
+      var netWidth = (this.width - 10 * 2);
+      this.set_rowCount(Math.round(Math.max(netHeight / this._thumbHeight, 1)));
+      this.set_colCount(Math.round(Math.max(netWidth / this._horzSpacing, 1)));
+      this._horzMultiple = (netWidth + 13) / this.get_colCount();
+      this._startIndex = Math.round((this._startIndex / this.get_itemsPerPage()) * this.get_itemsPerPage());
+      var rectf;
+      var index = this._startIndex;
+      for (var y = 0; y < this._rowCount; y++) {
+        for (var x = 0; x < this._colCount; x++) {
+          if (index >= this._items.length) {
+            if (!this._items.length || this.showAddButton) {
+              rectf = Rectangle.create(this.left + x * this._horzMultiple + 3 + this._startOffset, this.top + y * this._vertSpacing, this._thumbWidth - 10, 60);
+              g.drawImage((this._thumbnailSize === 1) ? FolderBrowser._bmpBackgroundWide : FolderBrowser._bmpBackground, ss.truncate((x * this._horzMultiple)) + this._startOffset, y * this._vertSpacing);
+            }
+            break;
+          }
+          rectf = Rectangle.create(this.left + x * this._horzMultiple + 3 + this._startOffset, this.top + y * this._vertSpacing, this._thumbWidth - 14, 60);
+          var textBrush = 'white';
+          if (index === this._hoverItem || (index === this._selectedItem && this._hoverItem === -1)) {
+            g.drawImage((this._thumbnailSize === 1) ? FolderBrowser._bmpBackgroundWideHover : FolderBrowser._bmpBackgroundHover, this.left + ss.truncate((x * this._horzMultiple)) + this._startOffset, this.top + y * this._vertSpacing);
+            textBrush = 'yellow';
+          }
+          else {
+            g.drawImage((this._thumbnailSize === 1) ? FolderBrowser._bmpBackgroundWide : FolderBrowser._bmpBackground, this.left + ss.truncate((x * this._horzMultiple)) + this._startOffset, this.top + y * this._vertSpacing);
+          }
+          this._items[index].set_bounds(Rectangle.create((this.left + x * this._horzMultiple) + this._startOffset, this.top + (y * this._vertSpacing), ss.truncate(this._horzMultiple), this._vertSpacing));
+          try {
+            var bmpThumb = this._items[index].get_thumbnail();
+            if (bmpThumb != null) {
+              g.drawImage(bmpThumb, this.left + (x * this._horzMultiple) + 2 + this._startOffset, this.top + y * this._vertSpacing + 3);
+              g.strokeStyle = 'rgb(0,0,0)';
+              g.rect(this.left + ss.truncate((x * this._horzMultiple)) + 2 + this._startOffset, this.top + y * this._vertSpacing + 3, this._items[index].get_thumbnail().width, this._items[index].get_thumbnail().height);
+            }
+            else {
+              this._items[index].set_thumbnail(document.createElement('img'));
+              this._items[index].get_thumbnail().src = this._items[index].get_thumbnailUrl();
+              this._items[index].get_thumbnail().addEventListener('load', function(e) {
+                $this.refresh();
+              }, false);
+            }
+          }
+          catch ($e1) {
+          }
+          g.fillStyle = textBrush;
+          g.strokeStyle = textBrush;
+          g.lineWidth = 1;
+          g.font = 'normal 8pt Arial';
+          g.fillText(this._items[index].get_name(), rectf.x, rectf.y + rectf.height, rectf.width);
+          index++;
+        }
+        if (index >= this._items.length) {
+          break;
+        }
+      }
+    },
+    _getItemIndexFromCursor: function(testPointIn) {
+      var testPoint = Vector2d.create(testPointIn.x + this.left, testPointIn.y + this.top);
+      this.imageClicked = false;
+      var index = -1;
+      var xpos = ss.truncate((testPoint.x / this._horzMultiple));
+      var xPart = ss.truncate((testPoint.x % this._horzMultiple));
+      if (xpos >= this._colCount) {
+        return -1;
+      }
+      if (xpos < 0) {
+        return -1;
+      }
+      var ypos = ss.truncate((testPoint.y / this._vertSpacing));
+      var yPart = ss.truncate((testPoint.y % this._vertSpacing));
+      if (ypos >= this._rowCount) {
+        return -1;
+      }
+      if (ypos < 0) {
+        return -1;
+      }
+      index = this._startIndex + ypos * this._colCount + xpos;
+      if (index === this._items.length) {
+        this._addButtonHover = true;
+      }
+      else {
+        this._addButtonHover = false;
+      }
+      if (index > this._items.length - 1) {
+        return -1;
+      }
+      if ((this._items[index]).get_isImage() && yPart < 16 && xPart > 78) {
+        this.imageClicked = true;
+      }
+      return index;
+    },
+    _addItems: function(list) {
+      this._items = list;
+    }
+  };
+
+
+  // wwtlib.FolderUp
+
+  function FolderUp() {
+    this.parent = null;
+    this._bounds = new Rectangle();
+  }
+  var FolderUp$ = {
+    get_name: function() {
+      return 'Up Level';
+    },
+    get_thumbnail: function() {
+      return this._thumbnail;
+    },
+    set_thumbnail: function(value) {
+      this._thumbnail = value;
+      return value;
+    },
+    get_thumbnailUrl: function() {
+      return URLHelpers.singleton.coreStaticUrl('wwtweb/thumbnail.aspx?name=folderup');
+    },
+    set_thumbnailUrl: function(value) {
+      return value;
+    },
+    get_bounds: function() {
+      return this._bounds;
+    },
+    set_bounds: function(value) {
+      this._bounds = value;
+      return value;
+    },
+    get_isImage: function() {
+      return false;
+    },
+    get_isTour: function() {
+      return false;
+    },
+    get_isFolder: function() {
+      return false;
+    },
+    get_isCloudCommunityItem: function() {
+      return false;
+    },
+    get_readOnly: function() {
+      return false;
+    },
+    get_children: function() {
+      if (this.parent == null) {
+        return [];
+      }
+      else {
+        return this.parent.get_children();
+      }
+    }
   };
 
 
@@ -8056,7 +12572,7 @@ window.wwtlib = function(){
           this._starProfile.addEventListener('load', function(e) {
             $this._imageReady = true;
           }, false);
-          this._starProfile.src = '/webclient/images/StarProfileAlpha.png';
+          this._starProfile.src = URLHelpers.singleton.engineAssetUrl('StarProfileAlpha.png');
           this._worldList = new Array(this._points.length);
           this._transformedList = new Array(this._points.length);
           var index = 0;
@@ -8077,7 +12593,7 @@ window.wwtlib = function(){
         else {
           if (!this._pointBuffers.length) {
             if (PointList.starTexture == null) {
-              PointList.starTexture = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/StarProfileAlpha.png');
+              PointList.starTexture = Planets.loadPlanetTexture(URLHelpers.singleton.engineAssetUrl('StarProfileAlpha.png'));
             }
             var count = this._points.length;
             var pointBuffer = null;
@@ -9705,14 +14221,16 @@ window.wwtlib = function(){
         }, false);
         this.imageElement.addEventListener('error', function(e) {
           if (!$this.imageElement.hasAttribute('proxyattempt')) {
-            $this.imageElement.src = Util.getProxiedUrl($this.URL);
             $this.imageElement.setAttribute('proxyattempt', true);
+            var new_url = URLHelpers.singleton.activateProxy($this.URL);
+            if (new_url != null) {
+              $this.imageElement.src = new_url;
+              return;
+            }
           }
-          else {
-            $this._downloading = false;
-            $this._ready = false;
-            $this._errored = true;
-          }
+          $this._downloading = false;
+          $this._ready = false;
+          $this._errored = true;
         }, false);
         xdomimg.crossOrigin = 'anonymous';
         this.imageElement.src = this.URL;
@@ -9753,7 +14271,7 @@ window.wwtlib = function(){
   }
   Grids._createGalaxyImage = function(renderContext) {
     if (Grids._milkyWayImage == null) {
-      Grids._milkyWayImage = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/milkywaybar.jpg');
+      Grids._milkyWayImage = Planets.loadPlanetTexture(URLHelpers.singleton.engineAssetUrl('milkywaybar.jpg'));
     }
     var subdivs = 50;
     var lat, lng;
@@ -9842,7 +14360,7 @@ window.wwtlib = function(){
   };
   Grids.initStarVertexBuffer = function(renderContext) {
     if (!Grids._starsDownloading) {
-      Grids.getStarFile('http://worldwidetelescope.org/wwtweb/catalog.aspx?Q=hipparcos');
+      Grids.getStarFile(URLHelpers.singleton.coreStaticUrl('wwtweb/catalog.aspx?Q=hipparcos'));
       Grids._starsDownloading = true;
     }
     if (Grids._starSprites == null && Grids._starCount > 0) {
@@ -9933,7 +14451,7 @@ window.wwtlib = function(){
           while (num.length < 4) {
             num = '0' + num;
           }
-          var name = ss.format('http://cdn.worldwidetelescope.org/webclient/images/gal_{0}.jpg', num);
+          var name = ss.format(URLHelpers.singleton.engineAssetUrl('galimg/gal_{0}.jpg'), num);
           Grids._galaxyTextures[i] = Planets.loadPlanetTexture(name);
         }
       }
@@ -10009,7 +14527,7 @@ window.wwtlib = function(){
   };
   Grids._downloadCosmosFile = function() {
     if (!Grids._downloadingGalaxy) {
-      Grids.getGalaxyFile('http://worldwidetelescope.org/wwtweb/catalog.aspx?Q=cosmosnewbin');
+      Grids.getGalaxyFile(URLHelpers.singleton.coreStaticUrl('wwtweb/catalog.aspx?Q=cosmosnewbin'));
       Grids._downloadingGalaxy = true;
     }
     return false;
@@ -10639,6 +15157,799 @@ window.wwtlib = function(){
   };
 
 
+  // wwtlib.Imageset
+
+  function Imageset() {
+    this._projection = 0;
+    this._imageSetID = 0;
+    this._baseTileDegrees = 0;
+    this._widthFactor = 1;
+    this.demUrl = '';
+    this._levels = 0;
+    this._mercator = false;
+    this._bottomsUp = false;
+    this._baseLevel = 1;
+    this._quadTreeTileMap = '0123';
+    this._centerX = 0;
+    this._centerY = 0;
+    this._rotation = 0;
+    this._meanRadius = 0;
+    this._dataSetType = 0;
+    this._bandPass = 3;
+    this._altUrl = '';
+    this._singleImage = false;
+    this._matrixComputed = false;
+    this._name = '';
+    this._sparse = false;
+    this._thumbnailUrl = '';
+    this._generic = false;
+    this._defaultSet = false;
+    this._elevationModel = false;
+    this._offsetX = 0;
+    this._offsetY = 0;
+  }
+  Imageset.getTileKey = function(imageset, level, x, y) {
+    return imageset.get_imageSetID().toString() + '\\' + level.toString() + '\\' + y.toString() + '_' + x.toString();
+  };
+  Imageset.getNewTile = function(imageset, level, x, y, parent) {
+    switch (imageset.get_projection()) {
+      case 0:
+        var newTile = MercatorTile.create(level, x, y, imageset, parent);
+        return newTile;
+      case 1:
+        return EquirectangularTile.create(level, x, y, imageset, parent);
+      case 3:
+      default:
+        return ToastTile.create(level, x, y, imageset, parent);
+      case 5:
+        return SkyImageTile.create(level, x, y, imageset, parent);
+      case 6:
+        return PlotTile.create(level, x, y, imageset, parent);
+      case 2:
+        var newTile = TangentTile.create(level, x, y, imageset, parent);
+        return newTile;
+    }
+  };
+  Imageset.fromXMLNode = function(node) {
+    try {
+      var type = 2;
+      var projection = 2;
+      if (node.attributes.getNamedItem('DataSetType') != null) {
+        type = Enums.parse('ImageSetType', node.attributes.getNamedItem('DataSetType').nodeValue);
+      }
+      var bandPass = 3;
+      bandPass = Enums.parse('BandPass', node.attributes.getNamedItem('BandPass').nodeValue);
+      var wf = 1;
+      if (node.attributes.getNamedItem('WidthFactor') != null) {
+        wf = parseInt(node.attributes.getNamedItem('WidthFactor').nodeValue);
+      }
+      if (node.attributes.getNamedItem('Generic') == null || !ss.boolean(node.attributes.getNamedItem('Generic').nodeValue)) {
+        projection = Enums.parse('ProjectionType', node.attributes.getNamedItem('Projection').nodeValue);
+        var fileType = node.attributes.getNamedItem('FileType').nodeValue;
+        if (!ss.startsWith(fileType, '.')) {
+          fileType = '.' + fileType;
+        }
+        var thumbnailUrl = '';
+        var thumbUrl = Util.selectSingleNode(node, 'ThumbnailUrl');
+        if (thumbUrl != null) {
+          if (ss.emptyString(thumbUrl.text)) {
+            var cn = thumbUrl;
+            thumbnailUrl = cn.textContent;
+          }
+          else {
+            thumbnailUrl = thumbUrl.text;
+          }
+        }
+        var stockSet = false;
+        var elevationModel = false;
+        if (node.attributes.getNamedItem('StockSet') != null) {
+          stockSet = ss.boolean(node.attributes.getNamedItem('StockSet').nodeValue);
+        }
+        if (node.attributes.getNamedItem('ElevationModel') != null) {
+          elevationModel = ss.boolean(node.attributes.getNamedItem('ElevationModel').nodeValue);
+        }
+        var demUrl = '';
+        if (node.attributes.getNamedItem('DemUrl') != null) {
+          demUrl = node.attributes.getNamedItem('DemUrl').nodeValue;
+        }
+        var alturl = '';
+        if (node.attributes.getNamedItem('AltUrl') != null) {
+          alturl = node.attributes.getNamedItem('AltUrl').nodeValue;
+        }
+        var offsetX = 0;
+        if (node.attributes.getNamedItem('OffsetX') != null) {
+          offsetX = parseFloat(node.attributes.getNamedItem('OffsetX').nodeValue);
+        }
+        var offsetY = 0;
+        if (node.attributes.getNamedItem('OffsetY') != null) {
+          offsetY = parseFloat(node.attributes.getNamedItem('OffsetY').nodeValue);
+        }
+        var creditText = '';
+        var credits = Util.selectSingleNode(node, 'Credits');
+        if (credits != null) {
+          creditText = Util.getInnerText(credits);
+        }
+        var creditsUrl = '';
+        credits = Util.selectSingleNode(node, 'CreditsUrl');
+        if (credits != null) {
+          creditsUrl = Util.getInnerText(credits);
+        }
+        var meanRadius = 0;
+        if (node.attributes.getNamedItem('MeanRadius') != null) {
+          meanRadius = parseFloat(node.attributes.getNamedItem('MeanRadius').nodeValue);
+        }
+        var referenceFrame = null;
+        if (node.attributes.getNamedItem('ReferenceFrame') != null) {
+          referenceFrame = node.attributes.getNamedItem('ReferenceFrame').nodeValue;
+        }
+        var name = '';
+        if (node.attributes.getNamedItem('Name') != null) {
+          name = node.attributes.getNamedItem('Name').nodeValue;
+        }
+        var url = '';
+        if (node.attributes.getNamedItem('Url') != null) {
+          url = node.attributes.getNamedItem('Url').nodeValue;
+        }
+        var baseTileLevel = 0;
+        if (node.attributes.getNamedItem('BaseTileLevel') != null) {
+          baseTileLevel = parseInt(node.attributes.getNamedItem('BaseTileLevel').nodeValue);
+        }
+        var tileLevels = 0;
+        if (node.attributes.getNamedItem('TileLevels') != null) {
+          tileLevels = parseInt(node.attributes.getNamedItem('TileLevels').nodeValue);
+        }
+        var baseDegreesPerTile = 0;
+        if (node.attributes.getNamedItem('BaseDegreesPerTile') != null) {
+          baseDegreesPerTile = parseFloat(node.attributes.getNamedItem('BaseDegreesPerTile').nodeValue);
+        }
+        var bottomsUp = false;
+        if (node.attributes.getNamedItem('BottomsUp') != null) {
+          bottomsUp = ss.boolean(node.attributes.getNamedItem('BottomsUp').nodeValue);
+        }
+        var quadTreeMap = '';
+        if (node.attributes.getNamedItem('QuadTreeMap') != null) {
+          quadTreeMap = node.attributes.getNamedItem('QuadTreeMap').nodeValue;
+        }
+        var centerX = 0;
+        if (node.attributes.getNamedItem('CenterX') != null) {
+          centerX = parseFloat(node.attributes.getNamedItem('CenterX').nodeValue);
+        }
+        var centerY = 0;
+        if (node.attributes.getNamedItem('CenterY') != null) {
+          centerY = parseFloat(node.attributes.getNamedItem('CenterY').nodeValue);
+        }
+        var rotation = 0;
+        if (node.attributes.getNamedItem('Rotation') != null) {
+          rotation = parseFloat(node.attributes.getNamedItem('Rotation').nodeValue);
+        }
+        var sparse = false;
+        if (node.attributes.getNamedItem('Sparse') != null) {
+          sparse = ss.boolean(node.attributes.getNamedItem('Sparse').nodeValue);
+        }
+        return Imageset.create(name, url, type, bandPass, projection, Math.abs(Util.getHashCode(url)), baseTileLevel, tileLevels, 256, baseDegreesPerTile, fileType, bottomsUp, quadTreeMap, centerX, centerY, rotation, sparse, thumbnailUrl, stockSet, elevationModel, wf, offsetX, offsetY, creditText, creditsUrl, demUrl, alturl, meanRadius, referenceFrame);
+      }
+      else {
+        return Imageset.createGeneric(type, bandPass);
+      }
+    }
+    catch ($e1) {
+      return null;
+    }
+  };
+  Imageset.saveToXml = function(xmlWriter, imageset, alternateUrl) {
+    xmlWriter._writeStartElement('ImageSet');
+    xmlWriter._writeAttributeString('Generic', imageset.get_generic().toString());
+    xmlWriter._writeAttributeString('DataSetType', Enums.toXml('ImageSetType', imageset.get_dataSetType()));
+    xmlWriter._writeAttributeString('BandPass', Enums.toXml('BandPass', imageset.get_bandPass()));
+    if (!imageset.get_generic()) {
+      xmlWriter._writeAttributeString('Name', imageset.get_name());
+      if (ss.emptyString(alternateUrl)) {
+        xmlWriter._writeAttributeString('Url', imageset.get_url());
+      }
+      else {
+        xmlWriter._writeAttributeString('Url', alternateUrl);
+      }
+      xmlWriter._writeAttributeString('DemUrl', imageset.get_demUrl());
+      xmlWriter._writeAttributeString('BaseTileLevel', imageset.get_baseLevel().toString());
+      xmlWriter._writeAttributeString('TileLevels', imageset.get_levels().toString());
+      xmlWriter._writeAttributeString('BaseDegreesPerTile', imageset.get_baseTileDegrees().toString());
+      xmlWriter._writeAttributeString('FileType', imageset.get_extension());
+      xmlWriter._writeAttributeString('BottomsUp', imageset.get_bottomsUp().toString());
+      xmlWriter._writeAttributeString('Projection', Enums.toXml('ProjectionType', imageset.get_projection()));
+      xmlWriter._writeAttributeString('QuadTreeMap', imageset.get_quadTreeTileMap());
+      xmlWriter._writeAttributeString('CenterX', imageset.get_centerX().toString());
+      xmlWriter._writeAttributeString('CenterY', imageset.get_centerY().toString());
+      xmlWriter._writeAttributeString('OffsetX', imageset.get_offsetX().toString());
+      xmlWriter._writeAttributeString('OffsetY', imageset.get_offsetY().toString());
+      xmlWriter._writeAttributeString('Rotation', imageset.get_rotation().toString());
+      xmlWriter._writeAttributeString('Sparse', imageset.get_sparse().toString());
+      xmlWriter._writeAttributeString('ElevationModel', imageset.get_elevationModel().toString());
+      xmlWriter._writeAttributeString('StockSet', imageset.get_defaultSet().toString());
+      xmlWriter._writeAttributeString('WidthFactor', imageset.get_widthFactor().toString());
+      xmlWriter._writeAttributeString('MeanRadius', imageset.get_meanRadius().toString());
+      xmlWriter._writeAttributeString('ReferenceFrame', imageset.get_referenceFrame());
+      if (ss.emptyString(alternateUrl)) {
+        xmlWriter._writeElementString('ThumbnailUrl', imageset.get_thumbnailUrl());
+      }
+      else {
+        xmlWriter._writeElementString('ThumbnailUrl', imageset.get_url());
+      }
+    }
+    xmlWriter._writeEndElement();
+  };
+  Imageset.createGeneric = function(dataSetType, bandPass) {
+    var temp = new Imageset();
+    temp._generic = true;
+    temp._name = 'Generic';
+    temp._sparse = false;
+    temp._dataSetType = dataSetType;
+    temp._bandPass = bandPass;
+    temp._quadTreeTileMap = '';
+    temp.url = '';
+    temp._levels = 0;
+    temp._baseTileDegrees = 0;
+    temp._imageSetID = 0;
+    temp._extension = '';
+    temp._projection = 1;
+    temp._bottomsUp = false;
+    temp._baseLevel = 0;
+    temp._mercator = (!temp._projection);
+    temp._centerX = 0;
+    temp._centerY = 0;
+    temp._rotation = 0;
+    temp._thumbnailUrl = '';
+    temp._matrix = Matrix3d.get_identity();
+    temp._matrix._multiply(Matrix3d._rotationX((temp.get_rotation() / 180 * Math.PI)));
+    temp._matrix._multiply(Matrix3d._rotationZ((temp.get_centerY() / 180 * Math.PI)));
+    temp._matrix._multiply(Matrix3d._rotationY((((360 - temp.get_centerX()) + 180) / 180 * Math.PI)));
+    return temp;
+  };
+  Imageset.create = function(name, url, dataSetType, bandPass, projection, imageSetID, baseLevel, levels, tileSize, baseTileDegrees, extension, bottomsUp, quadTreeMap, centerX, centerY, rotation, sparse, thumbnailUrl, defaultSet, elevationModel, wf, offsetX, offsetY, credits, creditsUrl, demUrlIn, alturl, meanRadius, referenceFrame) {
+    var temp = new Imageset();
+    temp.set_referenceFrame(referenceFrame);
+    temp.set_meanRadius(meanRadius);
+    temp._altUrl = alturl;
+    temp.demUrl = demUrlIn;
+    temp._creditsText = credits;
+    temp._creditsUrl = creditsUrl;
+    temp._offsetY = offsetY;
+    temp._offsetX = offsetX;
+    temp._widthFactor = wf;
+    temp._elevationModel = elevationModel;
+    temp._defaultSet = defaultSet;
+    temp._name = name;
+    temp._sparse = sparse;
+    temp._dataSetType = dataSetType;
+    temp._bandPass = bandPass;
+    temp._quadTreeTileMap = quadTreeMap;
+    temp.url = url;
+    temp._levels = levels;
+    temp._baseTileDegrees = baseTileDegrees;
+    temp._imageSetID = imageSetID;
+    temp._extension = extension;
+    temp._projection = projection;
+    temp._bottomsUp = bottomsUp;
+    temp._baseLevel = baseLevel;
+    temp._mercator = (!projection);
+    temp._centerX = centerX;
+    temp._centerY = centerY;
+    temp._rotation = rotation;
+    temp._thumbnailUrl = thumbnailUrl;
+    temp._computeMatrix();
+    return temp;
+  };
+  var Imageset$ = {
+    get_wcsImage: function() {
+      return this._wcsImage;
+    },
+    set_wcsImage: function(value) {
+      this._wcsImage = value;
+      return value;
+    },
+    get_projection: function() {
+      return this._projection;
+    },
+    set_projection: function(value) {
+      this._projection = value;
+      return value;
+    },
+    get_referenceFrame: function() {
+      return this._referenceFrame;
+    },
+    set_referenceFrame: function(value) {
+      this._referenceFrame = value;
+      return value;
+    },
+    get_imageSetID: function() {
+      return this._imageSetID;
+    },
+    set_imageSetID: function(value) {
+      this._imageSetID = value;
+      return value;
+    },
+    get_baseTileDegrees: function() {
+      return this._baseTileDegrees;
+    },
+    set_baseTileDegrees: function(value) {
+      this._baseTileDegrees = value;
+      return value;
+    },
+    get_widthFactor: function() {
+      return this._widthFactor;
+    },
+    set_widthFactor: function(value) {
+      this._widthFactor = value;
+      return value;
+    },
+    getHashCode: function() {
+      return Util.getHashCode(this.get_url());
+    },
+    get_url: function() {
+      return this.url;
+    },
+    set_url: function(value) {
+      this.url = value;
+      return value;
+    },
+    get_demUrl: function() {
+      if (ss.emptyString(this.demUrl) && !this._projection) {
+        return URLHelpers.singleton.coreStaticUrl('wwtweb/BingDemTile.aspx?Q={0},{1},{2}');
+      }
+      return this.demUrl;
+    },
+    set_demUrl: function(value) {
+      this.demUrl = value;
+      return value;
+    },
+    get_extension: function() {
+      return this._extension;
+    },
+    set_extension: function(value) {
+      this._extension = value;
+      return value;
+    },
+    get_levels: function() {
+      return this._levels;
+    },
+    set_levels: function(value) {
+      this._levels = value;
+      return value;
+    },
+    get_bottomsUp: function() {
+      return this._bottomsUp;
+    },
+    set_bottomsUp: function(value) {
+      this._bottomsUp = value;
+      return value;
+    },
+    get_mercator: function() {
+      return this._mercator;
+    },
+    set_mercator: function(value) {
+      this._mercator = value;
+      return value;
+    },
+    get_baseLevel: function() {
+      return this._baseLevel;
+    },
+    set_baseLevel: function(value) {
+      this._baseLevel = value;
+      return value;
+    },
+    get_quadTreeTileMap: function() {
+      return this._quadTreeTileMap;
+    },
+    set_quadTreeTileMap: function(value) {
+      this._quadTreeTileMap = value;
+      return value;
+    },
+    get_centerX: function() {
+      return this._centerX;
+    },
+    set_centerX: function(value) {
+      if (this._centerX !== value) {
+        this._centerX = value;
+        this._computeMatrix();
+      }
+      return value;
+    },
+    get_centerY: function() {
+      return this._centerY;
+    },
+    set_centerY: function(value) {
+      if (this._centerY !== value) {
+        this._centerY = value;
+        this._computeMatrix();
+      }
+      return value;
+    },
+    get_rotation: function() {
+      return this._rotation;
+    },
+    set_rotation: function(value) {
+      if (this._rotation !== value) {
+        this._rotation = value;
+        this._computeMatrix();
+      }
+      return value;
+    },
+    get_meanRadius: function() {
+      return this._meanRadius;
+    },
+    set_meanRadius: function(value) {
+      this._meanRadius = value;
+      return value;
+    },
+    get_bandPass: function() {
+      return this._bandPass;
+    },
+    set_bandPass: function(value) {
+      this._bandPass = value;
+      return value;
+    },
+    get_dataSetType: function() {
+      return this._dataSetType;
+    },
+    set_dataSetType: function(value) {
+      this._dataSetType = value;
+      return value;
+    },
+    get_altUrl: function() {
+      return this._altUrl;
+    },
+    set_altUrl: function(value) {
+      this._altUrl = value;
+      return value;
+    },
+    get_singleImage: function() {
+      return this._singleImage;
+    },
+    set_singleImage: function(value) {
+      this._singleImage = value;
+      return value;
+    },
+    toString: function() {
+      if (this.get_defaultSet()) {
+        return this._name + ' *';
+      }
+      else {
+        return this._name;
+      }
+    },
+    get_stockImageSet: function() {
+      if (this._generic || !this._defaultSet) {
+        return this;
+      }
+      else {
+        return Imageset.createGeneric(this.get_dataSetType(), this.get_bandPass());
+      }
+    },
+    equals: function(obj) {
+      if (obj == null) {
+        return false;
+      }
+      if (!(ss.canCast(obj, Imageset))) {
+        return false;
+      }
+      var b = obj;
+      return (Util.getHashCode(b.get_url()) === Util.getHashCode(this.get_url()) && b.get_dataSetType() === this.get_dataSetType() && b.get_bandPass() === this.get_bandPass() && b.get_generic() === this.get_generic());
+    },
+    get_matrix: function() {
+      if (!this._matrixComputed) {
+        this._computeMatrix();
+      }
+      return this._matrix;
+    },
+    set_matrix: function(value) {
+      this._matrix = value;
+      return value;
+    },
+    _computeMatrix: function() {
+      this._matrixComputed = true;
+      this._matrix = Matrix3d.get_identity();
+      this._matrix._multiply(Matrix3d._rotationX((this.get_rotation() / 180 * Math.PI)));
+      this._matrix._multiply(Matrix3d._rotationZ((this.get_centerY() / 180 * Math.PI)));
+      this._matrix._multiply(Matrix3d._rotationY(((360 - this.get_centerX()) / 180 * Math.PI)));
+    },
+    get_name: function() {
+      return this._name;
+    },
+    set_name: function(value) {
+      this._name = value;
+      return value;
+    },
+    get_sparse: function() {
+      return this._sparse;
+    },
+    set_sparse: function(value) {
+      this._sparse = value;
+      return value;
+    },
+    get_thumbnailUrl: function() {
+      return this._thumbnailUrl;
+    },
+    set_thumbnailUrl: function(value) {
+      this._thumbnailUrl = value;
+      return value;
+    },
+    get_generic: function() {
+      return this._generic;
+    },
+    set_generic: function(value) {
+      this._generic = value;
+      return value;
+    },
+    get_elevationModel: function() {
+      return this._elevationModel;
+    },
+    set_elevationModel: function(value) {
+      this._elevationModel = value;
+      return value;
+    },
+    get_defaultSet: function() {
+      return this._defaultSet;
+    },
+    set_defaultSet: function(value) {
+      this._defaultSet = value;
+      return value;
+    },
+    get_offsetX: function() {
+      return this._offsetX;
+    },
+    set_offsetX: function(value) {
+      this._offsetX = value;
+      return value;
+    },
+    get_offsetY: function() {
+      return this._offsetY;
+    },
+    set_offsetY: function(value) {
+      this._offsetY = value;
+      return value;
+    },
+    get_creditsText: function() {
+      return this._creditsText;
+    },
+    set_creditsText: function(value) {
+      this._creditsText = value;
+      return value;
+    },
+    get_creditsUrl: function() {
+      return this._creditsUrl;
+    },
+    set_creditsUrl: function(value) {
+      this._creditsUrl = value;
+      return value;
+    },
+    get_isMandelbrot: function() {
+      return false;
+    },
+    get_thumbnail: function() {
+      return this._thumbnail;
+    },
+    set_thumbnail: function(value) {
+      this._thumbnail = value;
+      return value;
+    },
+    get_bounds: function() {
+      return this._bounds;
+    },
+    set_bounds: function(value) {
+      this._bounds = value;
+      return value;
+    },
+    get_isImage: function() {
+      return true;
+    },
+    get_isTour: function() {
+      return false;
+    },
+    get_isFolder: function() {
+      return false;
+    },
+    get_isCloudCommunityItem: function() {
+      return false;
+    },
+    get_readOnly: function() {
+      return false;
+    },
+    get_children: function() {
+      return [];
+    }
+  };
+
+
+  // wwtlib.ViewMoverKenBurnsStyle
+
+  function ViewMoverKenBurnsStyle(from, to, time, fromDateTime, toDateTime, type) {
+    this.interpolationType = 0;
+    this.fastDirectionMove = false;
+    this._toTargetTime = 0;
+    this._dateTimeSpan = 0;
+    this._complete = false;
+    this._midpointFired = false;
+    this.interpolationType = type;
+    if (Math.abs(from.lng - to.lng) > 180) {
+      if (from.lng > to.lng) {
+        from.lng -= 360;
+      }
+      else {
+        from.lng += 360;
+      }
+    }
+    this._fromDateTime = fromDateTime;
+    this._toDateTime = toDateTime;
+    this._dateTimeSpan = toDateTime - fromDateTime;
+    this._from = from.copy();
+    this._to = to.copy();
+    this._fromTime = ss.now();
+    this._toTargetTime = time;
+  }
+  var ViewMoverKenBurnsStyle$ = {
+    get_complete: function() {
+      return this._complete;
+    },
+    get_currentPosition: function() {
+      var elapsed = ss.now() - this._fromTime;
+      var elapsedSeconds = (elapsed) / 1000;
+      var alpha = elapsedSeconds / this._toTargetTime;
+      if (!this._midpointFired && alpha >= 0.5) {
+        this._midpointFired = true;
+        if (this._midpoint != null) {
+          this._midpoint();
+        }
+      }
+      if (alpha >= 1) {
+        alpha = 1;
+        this._complete = true;
+        return this._to.copy();
+      }
+      if (Settings.get_active().get_galacticMode() && WWTControl.singleton.renderContext.space) {
+        return CameraParameters.interpolateGreatCircle(this._from, this._to, alpha, this.interpolationType, this.fastDirectionMove);
+      }
+      return CameraParameters.interpolate(this._from, this._to, alpha, this.interpolationType, this.fastDirectionMove);
+    },
+    get_currentDateTime: function() {
+      var elapsed = ss.now() - this._fromTime;
+      var elapsedSeconds = (elapsed) / 1000;
+      var alpha = elapsedSeconds / this._toTargetTime;
+      var delta = this._dateTimeSpan * alpha;
+      var retDate = new Date(this._fromDateTime.getTime() + ss.truncate(delta));
+      return retDate;
+    },
+    get_midpoint: function() {
+      return this._midpoint;
+    },
+    set_midpoint: function(value) {
+      this._midpoint = value;
+      return value;
+    },
+    get_moveTime: function() {
+      return this._toTargetTime;
+    }
+  };
+
+
+  // wwtlib.ViewMoverSlew
+
+  function ViewMoverSlew() {
+    this._upTargetTime = 0;
+    this._downTargetTime = 0;
+    this._toTargetTime = 0;
+    this._upTimeFactor = 0.6;
+    this._downTimeFactor = 0.6;
+    this._travelTimeFactor = 7;
+    this._midpointFired = false;
+    this._complete = false;
+  }
+  ViewMoverSlew.create = function(from, to) {
+    var temp = new ViewMoverSlew();
+    temp.init(from, to);
+    return temp;
+  };
+  ViewMoverSlew.createUpDown = function(from, to, upDowFactor) {
+    var temp = new ViewMoverSlew();
+    temp._upTimeFactor = temp._downTimeFactor = upDowFactor;
+    temp.init(from.copy(), to.copy());
+    return temp;
+  };
+  var ViewMoverSlew$ = {
+    init: function(from, to) {
+      if (Math.abs(from.lng - to.lng) > 180) {
+        if (from.lng > to.lng) {
+          from.lng -= 360;
+        }
+        else {
+          from.lng += 360;
+        }
+      }
+      if (to.zoom <= 0) {
+        to.zoom = 360;
+      }
+      if (from.zoom <= 0) {
+        from.zoom = 360;
+      }
+      this._from = from;
+      this._to = to;
+      this._fromTime = ss.now();
+      var zoomUpTarget = 360;
+      var travelTime;
+      var lngDist = Math.abs(from.lng - to.lng);
+      var latDist = Math.abs(from.lat - to.lat);
+      var distance = Math.sqrt(latDist * latDist + lngDist * lngDist);
+      zoomUpTarget = (distance / 3) * 20;
+      if (zoomUpTarget > 360) {
+        zoomUpTarget = 360;
+      }
+      if (zoomUpTarget < from.zoom) {
+        zoomUpTarget = from.zoom;
+      }
+      travelTime = (distance / 180) * (360 / zoomUpTarget) * this._travelTimeFactor;
+      var rotateTime = Math.max(Math.abs(from.angle - to.angle), Math.abs(from.rotation - to.rotation));
+      var logDistUp = Math.max(Math.abs(Util.logN(zoomUpTarget, 2) - Util.logN(from.zoom, 2)), rotateTime);
+      this._upTargetTime = this._upTimeFactor * logDistUp;
+      this._downTargetTime = this._upTargetTime + travelTime;
+      var logDistDown = Math.abs(Util.logN(zoomUpTarget, 2) - Util.logN(to.zoom, 2));
+      this._toTargetTime = this._downTargetTime + Math.max((this._downTimeFactor * logDistDown), rotateTime);
+      this._fromTop = from.copy();
+      this._fromTop.zoom = zoomUpTarget;
+      this._fromTop.angle = (from.angle + to.angle) / 2;
+      this._fromTop.rotation = (from.rotation + to.rotation) / 2;
+      this._toTop = to.copy();
+      this._toTop.zoom = this._fromTop.zoom;
+      this._toTop.angle = this._fromTop.angle;
+      this._toTop.rotation = this._fromTop.rotation;
+    },
+    get_complete: function() {
+      return this._complete;
+    },
+    get_currentPosition: function() {
+      var elapsed = ss.now() - this._fromTime;
+      var elapsedSeconds = (elapsed) / 1000;
+      if (elapsedSeconds < this._upTargetTime) {
+        return CameraParameters.interpolate(this._from, this._fromTop, elapsedSeconds / this._upTargetTime, 3, false);
+      }
+      else if (elapsedSeconds < this._downTargetTime) {
+        elapsedSeconds -= this._upTargetTime;
+        if (Settings.get_active().get_galacticMode() && WWTControl.singleton.renderContext.space) {
+          return CameraParameters.interpolateGreatCircle(this._fromTop, this._toTop, elapsedSeconds / (this._downTargetTime - this._upTargetTime), 3, false);
+        }
+        return CameraParameters.interpolate(this._fromTop, this._toTop, elapsedSeconds / (this._downTargetTime - this._upTargetTime), 3, false);
+      }
+      else {
+        if (!this._midpointFired) {
+          this._midpointFired = true;
+          if (this._midpoint != null) {
+            this._midpoint();
+          }
+        }
+        elapsedSeconds -= this._downTargetTime;
+        var alpha = elapsedSeconds / (this._toTargetTime - this._downTargetTime);
+        if (alpha > 1) {
+          alpha = 1;
+          this._complete = true;
+          return this._to.copy();
+        }
+        return CameraParameters.interpolate(this._toTop, this._to, alpha, 3, false);
+      }
+    },
+    get_currentDateTime: function() {
+      SpaceTimeController.updateClock();
+      return SpaceTimeController.get_now();
+    },
+    get_midpoint: function() {
+      return this._midpoint;
+    },
+    set_midpoint: function(value) {
+      this._midpoint = value;
+      return value;
+    },
+    get_moveTime: function() {
+      return this._toTargetTime;
+    }
+  };
+
+
   // wwtlib.KeplerVertex
 
   function KeplerVertex() {
@@ -10939,7 +16250,7 @@ window.wwtlib = function(){
     updateData: function(data, purgeOld, purgeAll, hasHeader) {
       return true;
     },
-    upadteData: function(data, purgeOld, purgeAll, hasHeader) {  // back-compat
+    upadteData: function(data, purgeOld, purgeAll, hasHeader) {
       return this.updateData(data, purgeOld, purgeAll, hasHeader);
     },
     canCopyToClipboard: function() {
@@ -11245,7 +16556,7 @@ window.wwtlib = function(){
       iss.frame.oblateness = 0;
       iss.frame.showOrbitPath = true;
       var isstle = new Array(0);
-      var url = 'http://worldwidetelescope.org/wwtweb/isstle.aspx';
+      var url = URLHelpers.singleton.coreDynamicUrl('wwtweb/isstle.aspx');
       var webFile;
       webFile = new WebFile(url);
       webFile.onStateChange = function() {
@@ -15107,7 +20418,7 @@ window.wwtlib = function(){
   VoTable.loadFromUrl = function(url, complete) {
     var temp = new VoTable();
     temp._onComplete = complete;
-    temp._webFile = new WebFile(Util.getProxiedUrl(url));
+    temp._webFile = new WebFile(URLHelpers.singleton.rewrite(url, 1));
     temp._webFile.onStateChange = ss.bind('_loadData', temp);
     temp._webFile.send();
     return temp;
@@ -15612,6 +20923,20 @@ window.wwtlib = function(){
   };
 
 
+  // wwtlib.MainView
+
+  function MainView() {
+  }
+  MainView._drawTest = function() {
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'rgb(80,0,0)';
+    ctx.fillRect(120, 120, 165, 160);
+    ctx.fillStyle = 'rgba(0, 0, 160, 0.5)';
+    ctx.fillRect(140, 140, 165, 160);
+  };
+
+
   // wwtlib.MinorPlanets
 
   function MinorPlanets() {
@@ -15659,7 +20984,7 @@ window.wwtlib = function(){
     }
     if (MinorPlanets._mpcVertexBuffer == null) {
       if (MinorPlanets.starTexture == null) {
-        MinorPlanets.starTexture = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/starProfileAlpha.png');
+        MinorPlanets.starTexture = Planets.loadPlanetTexture(URLHelpers.singleton.engineAssetUrl('StarProfileAlpha.png'));
       }
       for (var i = 0; i < 7; i++) {
         MinorPlanets._mpcBlendStates[i] = BlendState.create(false, 1000);
@@ -15685,7 +21010,7 @@ window.wwtlib = function(){
     }
   };
   MinorPlanets._startInit = function() {
-    MinorPlanets.getMpcFile('http://cdn.worldwidetelescope.org/wwtweb/catalog.aspx?Q=mpcbin');
+    MinorPlanets.getMpcFile(URLHelpers.singleton.coreStaticUrl('wwtweb/catalog.aspx?Q=mpcbin'));
   };
   MinorPlanets.initMPCVertexBuffer = function() {
     try {
@@ -15737,6 +21062,413 @@ window.wwtlib = function(){
   };
   var MinorPlanets$ = {
 
+  };
+
+
+  // wwtlib.Place
+
+  function Place() {
+    this._camParams = CameraParameters.create(0, 0, -1, 0, 0, 100);
+    this._location3d = Vector3d.create(0, 0, 0);
+    this.htmlDescription = '';
+    this._constellation = '';
+    this._classification = 1048576;
+    this._type = 2;
+    this._magnitude = 0;
+    this._distnace = 0;
+    this.angularSize = 60;
+    this.annotation = '';
+    this._thumbNail = null;
+    this._studyImageset = null;
+    this._backgroundImageSet = null;
+    this._searchDistance = 0;
+    this._elevation = 50;
+  }
+  Place.create = function(name, lat, lng, classification, constellation, type, zoomFactor) {
+    var temp = new Place();
+    temp.set_zoomLevel(zoomFactor);
+    temp._constellation = constellation;
+    temp._name = name;
+    if (type === 2 || type === 4) {
+      temp._camParams.set_RA(lng);
+    }
+    else {
+      temp.set_lng(lng);
+    }
+    temp.set_lat(lat);
+    temp.set_classification(classification);
+    temp.set_type(type);
+    return temp;
+  };
+  Place.createCameraParams = function(name, camParams, classification, constellation, type, target) {
+    var temp = new Place();
+    temp._constellation = constellation;
+    temp._name = name;
+    temp.set_classification(classification);
+    temp._camParams = camParams;
+    temp.set_type(type);
+    temp.set_target(target);
+    return temp;
+  };
+  Place._fromXml = function(place) {
+    var newPlace = new Place();
+    newPlace._name = place.attributes.getNamedItem('Name').nodeValue;
+    if (place.attributes.getNamedItem('MSRComponentId') != null && place.attributes.getNamedItem('Permission') != null && place.attributes.getNamedItem('Url') != null) {
+      newPlace.set_url(place.attributes.getNamedItem('Url').nodeValue);
+      newPlace.set_thumbnailUrl(place.attributes.getNamedItem('Thumbnail').nodeValue);
+      return newPlace;
+    }
+    if (place.attributes.getNamedItem('DataSetType') != null) {
+      newPlace._type = Enums.parse('ImageSetType', place.attributes.getNamedItem('DataSetType').nodeValue);
+    }
+    if (newPlace.get_type() === 2) {
+      newPlace._camParams.set_RA(parseFloat(place.attributes.getNamedItem('RA').nodeValue));
+      newPlace._camParams.set_dec(parseFloat(place.attributes.getNamedItem('Dec').nodeValue));
+    }
+    else {
+      newPlace.set_lat(parseFloat(place.attributes.getNamedItem('Lat').nodeValue));
+      newPlace.set_lng(parseFloat(place.attributes.getNamedItem('Lng').nodeValue));
+    }
+    if (place.attributes.getNamedItem('Constellation') != null) {
+      newPlace._constellation = place.attributes.getNamedItem('Constellation').nodeValue;
+    }
+    if (place.attributes.getNamedItem('Classification') != null) {
+      newPlace._classification = Enums.parse('Classification', place.attributes.getNamedItem('Classification').nodeValue);
+    }
+    if (place.attributes.getNamedItem('Magnitude') != null) {
+      newPlace._magnitude = parseFloat(place.attributes.getNamedItem('Magnitude').nodeValue);
+    }
+    if (place.attributes.getNamedItem('AngularSize') != null) {
+      newPlace.angularSize = parseFloat(place.attributes.getNamedItem('AngularSize').nodeValue);
+    }
+    if (place.attributes.getNamedItem('ZoomLevel') != null) {
+      newPlace.set_zoomLevel(parseFloat(place.attributes.getNamedItem('ZoomLevel').nodeValue));
+    }
+    if (place.attributes.getNamedItem('Rotation') != null) {
+      newPlace._camParams.rotation = parseFloat(place.attributes.getNamedItem('Rotation').nodeValue);
+    }
+    if (place.attributes.getNamedItem('Annotation') != null) {
+      newPlace.annotation = place.attributes.getNamedItem('Annotation').nodeValue;
+    }
+    if (place.attributes.getNamedItem('Angle') != null) {
+      newPlace._camParams.angle = parseFloat(place.attributes.getNamedItem('Angle').nodeValue);
+    }
+    if (place.attributes.getNamedItem('Opacity') != null) {
+      newPlace._camParams.opacity = parseFloat(place.attributes.getNamedItem('Opacity').nodeValue);
+    }
+    else {
+      newPlace._camParams.opacity = 100;
+    }
+    newPlace.set_target(65536);
+    if (place.attributes.getNamedItem('Target') != null) {
+      newPlace.set_target(Enums.parse('SolarSystemObjects', place.attributes.getNamedItem('Target').nodeValue));
+    }
+    if (place.attributes.getNamedItem('ViewTarget') != null) {
+      newPlace._camParams.viewTarget = Vector3d.parse(place.attributes.getNamedItem('ViewTarget').nodeValue);
+    }
+    if (place.attributes.getNamedItem('TargetReferenceFrame') != null) {
+      newPlace._camParams.targetReferenceFrame = place.attributes.getNamedItem('TargetReferenceFrame').nodeValue;
+    }
+    var descriptionNode = Util.selectSingleNode(place, 'Description');
+    if (descriptionNode != null) {
+      newPlace.htmlDescription = descriptionNode.nodeValue;
+    }
+    var backgroundImageSet = Util.selectSingleNode(place, 'BackgroundImageSet');
+    if (backgroundImageSet != null) {
+      var imageSet = Util.selectSingleNode(backgroundImageSet, 'ImageSet');
+      newPlace._backgroundImageSet = Imageset.fromXMLNode(imageSet);
+    }
+    var study = Util.selectSingleNode(place, 'ForegroundImageSet');
+    if (study != null) {
+      var imageSet = Util.selectSingleNode(study, 'ImageSet');
+      newPlace._studyImageset = Imageset.fromXMLNode(imageSet);
+    }
+    study = Util.selectSingleNode(place, 'ImageSet');
+    if (study != null) {
+      newPlace._studyImageset = Imageset.fromXMLNode(study);
+    }
+    return newPlace;
+  };
+  Place._properCaps = function(name) {
+    var list = name.split(' ');
+    var ProperName = '';
+    var $enum1 = ss.enumerate(list);
+    while ($enum1.moveNext()) {
+      var part = $enum1.current;
+      ProperName = ProperName + part.substr(0, 1).toUpperCase() + ((part.length > 1) ? part.substr(1).toLowerCase() : '') + ' ';
+    }
+    return ss.trim(ProperName);
+  };
+  var Place$ = {
+    get_tag: function() {
+      return this._tag;
+    },
+    set_tag: function(value) {
+      this._tag = value;
+      return value;
+    },
+    get_url: function() {
+      return this._url;
+    },
+    set_url: function(value) {
+      this._url = value;
+      return value;
+    },
+    get_thumbnail: function() {
+      return this._thumbnail;
+    },
+    set_thumbnail: function(value) {
+      this._thumbnail = value;
+      return value;
+    },
+    get_name: function() {
+      return this.get_names()[0];
+    },
+    get_names: function() {
+      if (ss.emptyString(this._name)) {
+        return ''.split(';');
+      }
+      return this._name.split(';');
+    },
+    set_names: function(value) {
+      this._name = UiTools.getNamesStringFromArray(value);
+      return value;
+    },
+    get_camParams: function() {
+      if (this.get_classification() === 536870912 && this._camParams.target !== 20) {
+        var raDec = Planets.getPlanetLocation(this.get_name());
+        this._camParams.set_RA(raDec.RA);
+        this._camParams.set_dec(raDec.dec);
+        this._distnace = raDec.distance;
+      }
+      return this._camParams;
+    },
+    set_camParams: function(value) {
+      this._camParams = value;
+      return value;
+    },
+    updatePlanetLocation: function(jNow) {
+      this._camParams.viewTarget = Planets.getPlanet3dLocationJD(this.get_target(), jNow);
+      if (this.get_target() !== 65536 && this.get_target() !== 20) {
+        this._camParams.viewTarget = Planets.getPlanetTargetPoint(this.get_target(), this.get_lat(), this.get_lng(), jNow);
+      }
+    },
+    get_location3d: function() {
+      if (this.get_classification() === 536870912 || (!this._location3d.x && !this._location3d.y && !this._location3d.z)) {
+        this._location3d = Coordinates.raDecTo3d(this.get_RA(), this.get_dec());
+      }
+      return this._location3d;
+    },
+    get_lat: function() {
+      return this.get_camParams().lat;
+    },
+    set_lat: function(value) {
+      this._camParams.lat = value;
+      return value;
+    },
+    get_lng: function() {
+      return this.get_camParams().lng;
+    },
+    set_lng: function(value) {
+      this._camParams.lng = value;
+      return value;
+    },
+    get_opacity: function() {
+      return this.get_camParams().opacity;
+    },
+    set_opacity: function(value) {
+      this._camParams.opacity = value;
+      return value;
+    },
+    get_constellation: function() {
+      return this._constellation;
+    },
+    set_constellation: function(value) {
+      this._constellation = value;
+      return value;
+    },
+    get_classification: function() {
+      return this._classification;
+    },
+    set_classification: function(value) {
+      this._classification = value;
+      return value;
+    },
+    get_type: function() {
+      return this._type;
+    },
+    set_type: function(value) {
+      this._type = value;
+      return value;
+    },
+    get_magnitude: function() {
+      return this._magnitude;
+    },
+    set_magnitude: function(value) {
+      this._magnitude = value;
+      return value;
+    },
+    get_distance: function() {
+      return this._distnace;
+    },
+    set_distance: function(value) {
+      this._distnace = value;
+      return value;
+    },
+    get_zoomLevel: function() {
+      return this.get_camParams().zoom;
+    },
+    set_zoomLevel: function(value) {
+      this._camParams.zoom = value;
+      return value;
+    },
+    get_annotation: function() {
+      return this.annotation;
+    },
+    set_annotation: function(value) {
+      this.annotation = value;
+      return value;
+    },
+    get_studyImageset: function() {
+      return this._studyImageset;
+    },
+    set_studyImageset: function(value) {
+      this._studyImageset = value;
+      return value;
+    },
+    get_backgroundImageset: function() {
+      return this._backgroundImageSet;
+    },
+    set_backgroundImageset: function(value) {
+      if (value != null) {
+        this.set_type(value.get_dataSetType());
+      }
+      this._backgroundImageSet = value;
+      return value;
+    },
+    get_searchDistance: function() {
+      return this._searchDistance;
+    },
+    set_searchDistance: function(value) {
+      this._searchDistance = value;
+      return value;
+    },
+    get_elevation: function() {
+      return this._elevation;
+    },
+    set_elevation: function(value) {
+      this._elevation = value;
+      return value;
+    },
+    get_thumbnailUrl: function() {
+      if (ss.emptyString(this._thumbnailField)) {
+        if (this._studyImageset != null && !ss.emptyString(this._studyImageset.get_thumbnailUrl())) {
+          return this._studyImageset.get_thumbnailUrl();
+        }
+        if (this._backgroundImageSet != null && !ss.emptyString(this._backgroundImageSet.get_thumbnailUrl())) {
+          return this._backgroundImageSet.get_thumbnailUrl();
+        }
+        var name = this.get_name();
+        if (name.indexOf(';') > -1) {
+          name = name.substr(0, name.indexOf(';'));
+        }
+        if (this.get_classification() === 1) {
+          return URLHelpers.singleton.coreStaticUrl('wwtweb/thumbnail.aspx?name=star');
+        }
+        return URLHelpers.singleton.coreStaticUrl('wwtweb/thumbnail.aspx?name=' + name.toLowerCase());
+      }
+      return this._thumbnailField;
+    },
+    set_thumbnailUrl: function(value) {
+      this._thumbnailField = value;
+      return value;
+    },
+    get_RA: function() {
+      return this.get_camParams().get_RA();
+    },
+    set_RA: function(value) {
+      this._camParams.set_RA(value);
+      return value;
+    },
+    get_dec: function() {
+      return this.get_camParams().get_dec();
+    },
+    set_dec: function(value) {
+      this._camParams.set_dec(value);
+      return value;
+    },
+    toString: function() {
+      return this._name;
+    },
+    _saveToXml: function(xmlWriter, elementName) {
+      xmlWriter._writeStartElement(elementName);
+      xmlWriter._writeAttributeString('Name', this._name);
+      xmlWriter._writeAttributeString('DataSetType', Enums.toXml('ImageSetType', this._type));
+      if (this.get_type() === 2) {
+        xmlWriter._writeAttributeString('RA', this._camParams.get_RA().toString());
+        xmlWriter._writeAttributeString('Dec', this._camParams.get_dec().toString());
+      }
+      else {
+        xmlWriter._writeAttributeString('Lat', this.get_lat().toString());
+        xmlWriter._writeAttributeString('Lng', this.get_lng().toString());
+      }
+      xmlWriter._writeAttributeString('Constellation', this._constellation);
+      xmlWriter._writeAttributeString('Classification', Enums.toXml('Classification', this._classification));
+      xmlWriter._writeAttributeString('Magnitude', this._magnitude.toString());
+      xmlWriter._writeAttributeString('Distance', this._distnace.toString());
+      xmlWriter._writeAttributeString('AngularSize', this.angularSize.toString());
+      xmlWriter._writeAttributeString('ZoomLevel', this.get_zoomLevel().toString());
+      xmlWriter._writeAttributeString('Rotation', this._camParams.rotation.toString());
+      xmlWriter._writeAttributeString('Angle', this._camParams.angle.toString());
+      xmlWriter._writeAttributeString('Opacity', this._camParams.opacity.toString());
+      xmlWriter._writeAttributeString('Target', Enums.toXml('SolarSystemObjects', this.get_target()));
+      xmlWriter._writeAttributeString('ViewTarget', this._camParams.viewTarget.toString());
+      xmlWriter._writeAttributeString('TargetReferenceFrame', this._camParams.targetReferenceFrame);
+      xmlWriter._writeStartElement('Description');
+      xmlWriter._writeCData(this.htmlDescription);
+      xmlWriter._writeEndElement();
+      if (this._backgroundImageSet != null) {
+        xmlWriter._writeStartElement('BackgroundImageSet');
+        Imageset.saveToXml(xmlWriter, this._backgroundImageSet, '');
+        xmlWriter._writeEndElement();
+      }
+      if (this._studyImageset != null) {
+        Imageset.saveToXml(xmlWriter, this._studyImageset, '');
+      }
+      xmlWriter._writeEndElement();
+    },
+    get_bounds: function() {
+      return this._bounds;
+    },
+    set_bounds: function(value) {
+      this._bounds = value;
+      return value;
+    },
+    get_isImage: function() {
+      return this._studyImageset != null || this._backgroundImageSet != null;
+    },
+    get_isTour: function() {
+      return false;
+    },
+    get_isFolder: function() {
+      return false;
+    },
+    get_children: function() {
+      return [];
+    },
+    get_readOnly: function() {
+      return true;
+    },
+    get_target: function() {
+      return this._camParams.target;
+    },
+    set_target: function(value) {
+      this._camParams.target = value;
+      return value;
+    },
+    get_isCloudCommunityItem: function() {
+      return false;
+    }
   };
 
 
@@ -16254,7 +21986,6 @@ window.wwtlib = function(){
   };
   Planets.readOrbits = function() {
     return false;
-    return true;
   };
   Planets.dumpOrbitsFile = function() {
   };
@@ -16293,7 +22024,7 @@ window.wwtlib = function(){
     return true;
   };
   Planets._loadPlanetTextures = function() {
-    var baseUrl = 'http://worldwidetelescope.org/webclient/Images/';
+    var baseUrl = URLHelpers.singleton.engineAssetUrl('');
     Planets._planetTextures = new Array(20);
     Planets._planetTextures[0] = Planets.loadPlanetTexture(baseUrl + 'sun.png');
     Planets._planetTextures[1] = Planets.loadPlanetTexture(baseUrl + 'mercury.png');
@@ -16793,7 +22524,7 @@ window.wwtlib = function(){
       Planets._ringImage = document.createElement('img');
       var xdomimg = Planets._ringImage;
       xdomimg.crossOrigin = 'anonymous';
-      Planets._ringImage.src = '/webclient/images/saturnringsshadow.png';
+      Planets._ringImage.src = URLHelpers.singleton.engineAssetUrl('saturnringsshadow.png');
       Planets._ringsTriangleLists[0] = [];
       Planets._ringsTriangleLists[1] = [];
       var ringSize = 2.25;
@@ -16879,7 +22610,7 @@ window.wwtlib = function(){
     if (Planets._ringsVertexBuffer != null) {
       return;
     }
-    Planets._ringsTexture = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/SaturnRingsStrip.png');
+    Planets._ringsTexture = Planets.loadPlanetTexture(URLHelpers.singleton.engineAssetUrl('saturnringsstrip.png'));
     var inner = 1.113;
     var outer = 2.25;
     Planets._ringsVertexBuffer = new PositionTextureVertexBuffer(((192 + 1) * 2));
@@ -19147,8 +24878,8 @@ window.wwtlib = function(){
     this._textureDirty = true;
     this._version = 0;
     this._cellHeight = height;
-    this._texture = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/glyphs1.png');
-    this._webFile = new WebFile('http://cdn.worldwidetelescope.org/webclient/images/glyphs1.xml');
+    this._texture = Planets.loadPlanetTexture(URLHelpers.singleton.engineAssetUrl('glyphs1.png'));
+    this._webFile = new WebFile(URLHelpers.singleton.engineAssetUrl('glyphs1.xml'));
     this._webFile.onStateChange = ss.bind('_glyphXmlReady', this);
     this._webFile.send();
   }
@@ -19940,19 +25671,21 @@ window.wwtlib = function(){
         }, false);
         this.texture.addEventListener('error', function(e) {
           if (!$this.texture.hasAttribute('proxyattempt')) {
-            $this.texture.src = Util.getProxiedUrl($this.get_URL());
             $this.texture.setAttribute('proxyattempt', true);
+            var new_url = URLHelpers.singleton.activateProxy($this.get_URL());
+            if (new_url != null) {
+              $this.texture.src = new_url;
+              return;
+            }
           }
-          else {
-            $this.downloading = false;
-            $this.readyToRender = false;
-            $this.errored = true;
-            $this.requestPending = false;
-            TileCache.removeFromQueue($this.get_key(), true);
-          }
+          $this.downloading = false;
+          $this.readyToRender = false;
+          $this.errored = true;
+          $this.requestPending = false;
+          TileCache.removeFromQueue($this.get_key(), true);
         }, false);
         xdomimg.crossOrigin = 'anonymous';
-        this.texture.src = ss.replaceString(this.get_URL(), 'cdn.', 'www.');
+        this.texture.src = this.get_URL();
       }
     },
     createDemFromParent: function() {
@@ -20275,17 +26008,18 @@ window.wwtlib = function(){
       return this.dataset.get_imageSetID().toString() + '\\' + this.level.toString() + '\\' + this.tileY.toString() + '_' + this.tileX.toString();
     },
     get_URL: function() {
-      var returnUrl = this.dataset.get_url();
-      if (this.dataset.get_url().indexOf('{1}') > -1) {
+      var rewritten_url = URLHelpers.singleton.rewrite(this.dataset.get_url(), 0);
+      var returnUrl = rewritten_url;
+      if (rewritten_url.indexOf('{1}') > -1) {
         if (!this.dataset.get_projection() && !ss.emptyString(this.dataset.get_quadTreeTileMap())) {
-          returnUrl = ss.format(this.dataset.get_url(), this.getServerID(), this.getTileID());
+          returnUrl = ss.format(rewritten_url, this.getServerID(), this.getTileID());
           if (returnUrl.indexOf('virtualearth.net') > -1) {
             returnUrl += '&n=z';
           }
           return returnUrl;
         }
         else {
-          return ss.format(this.dataset.get_url(), this.dataset.get_imageSetID(), this.level, this.tileX, this.tileY);
+          return ss.format(rewritten_url, this.dataset.get_imageSetID(), this.level, this.tileX, this.tileY);
         }
       }
       returnUrl = ss.replaceString(returnUrl, '{X}', this.tileX.toString());
@@ -20333,16 +26067,17 @@ window.wwtlib = function(){
       return returnUrl;
     },
     get_demURL: function() {
+      var rewritten_url = URLHelpers.singleton.rewrite(this.dataset.get_demUrl(), 0);
       if (!this.dataset.get_projection()) {
-        var baseUrl = 'http://cdn.worldwidetelescope.org/wwtweb/demtile.aspx?q={0},{1},{2},M';
-        if (!ss.emptyString(this.dataset.get_demUrl())) {
-          baseUrl = this.dataset.get_demUrl();
+        var baseUrl = URLHelpers.singleton.coreStaticUrl('wwtweb/demtile.aspx?q={0},{1},{2},M');
+        if (!ss.emptyString(rewritten_url)) {
+          baseUrl = rewritten_url;
         }
       }
-      if (this.dataset.get_demUrl().indexOf('{1}') > -1) {
-        return ss.format(this.dataset.get_demUrl() + '&new', this.level, this.tileX, this.tileY);
+      if (rewritten_url.indexOf('{1}') > -1) {
+        return ss.format(rewritten_url + '&new', this.level, this.tileX, this.tileY);
       }
-      var returnUrl = this.dataset.get_demUrl();
+      var returnUrl = rewritten_url;
       returnUrl = ss.replaceString(returnUrl, '{X}', this.tileX.toString());
       returnUrl = ss.replaceString(returnUrl, '{Y}', this.tileY.toString());
       returnUrl = ss.replaceString(returnUrl, '{L}', this.level.toString());
@@ -20766,7 +26501,7 @@ window.wwtlib = function(){
         return this._thumbnailUrlField;
       }
       else {
-        return ss.format('http://worldwidetelescope.org/wwtweb/GetTourThumbnail.aspx?GUID={0}', this.id);
+        return ss.format(URLHelpers.singleton.coreStaticUrl('wwtweb/GetTourThumbnail.aspx?GUID={0}'), this.id);
       }
     },
     set_thumbnailUrl: function(value) {
@@ -20775,7 +26510,7 @@ window.wwtlib = function(){
     },
     get_tourUrl: function() {
       if (ss.emptyString(this._tourUrl)) {
-        return ss.format('http://cdn.worldwidetelescope.org/wwtweb/GetTour.aspx?GUID={0}', this.id);
+        return ss.format(URLHelpers.singleton.coreStaticUrl('wwtweb/GetTour.aspx?GUID={0}'), this.id);
       }
       else {
         return this._tourUrl;
@@ -25282,7 +31017,7 @@ window.wwtlib = function(){
         if (this._tour.get_currentTourStop().get_overlays()[i].hitTest(location)) {
           if (!ss.emptyString(this._tour.get_currentTourStop().get_overlays()[i].get_url())) {
             var linkItem = this._tour.get_currentTourStop().get_overlays()[i];
-            Util._openUrl(linkItem.get_url(), true);
+            Util._openUrl(linkItem.get_url());
             return true;
           }
           if (!ss.emptyString(this._tour.get_currentTourStop().get_overlays()[i].get_linkID())) {
@@ -27385,29 +33120,6 @@ window.wwtlib = function(){
   Util.logN = function(num, b) {
     return Math.log(num) / Math.log(b);
   };
-  Util.getUrlParam = function(name) {
-    return '';
-  };
-  Util.getProxiedUrl = function(url) {
-    if (ss.startsWith(url.toLowerCase(), 'http://worldwidetelescope.org') || ss.startsWith(url.toLowerCase(), '//worldwidetelescope.org')) {
-      if (url.toLowerCase().indexOf('worldwidetelescope.org/wwtweb/') < 12) {
-        return url;
-      }
-      return url.split('worldwidetelescope.org')[1];
-    }
-    if (ss.startsWith(url.toLowerCase(), '//wwtstaging.azurewebsites.net') || ss.startsWith(url.toLowerCase(), '//wwtstaging.azurewebsites.net')) {
-      if (url.toLowerCase().indexOf('wwtstaging.azurewebsites.net/wwtweb/') < 12) {
-        return url;
-      }
-      return url.split('wwtstaging.azurewebsites.net')[1];
-    }
-    if (ss.startsWith(url.toLowerCase(), 'http')) {
-      // additional hack: the proxy can't do HTTPS, so force HTTP and hope for the best
-      url = url.replace(/^https:/, 'http:');
-      return '//worldwidetelescope.org/webserviceproxy.aspx?targeturl=' + encodeURIComponent(url);
-    }
-    return url;
-  };
   Util.parseTimeSpan = function(timespan) {
     var val = 0;
     var parts = timespan.split(':');
@@ -27424,11 +33136,6 @@ window.wwtlib = function(){
     var min = Math.floor(s / 60) - (hours * 60);
     var sec = s - ((hours * 3600) + min * 60);
     return ss.format('{0}:{1}:{2}', hours, min, sec);
-  };
-  Util.getTourComponent = function(url, name) {
-    // additional hack: the proxy can't do HTTPS, so force HTTP and hope for the best
-    url = url.replace(/^https:/, 'http:');
-    return 'http://worldwidetelescope.org/GetTourFile.aspx?targeturl=' + encodeURIComponent(url) + '&filename=' + name;
   };
   Util.xmlDate = function(d) {
     var hours = d.getHours();
@@ -27519,7 +33226,8 @@ window.wwtlib = function(){
     }
     return val;
   };
-  Util._openUrl = function(p, p_2) {
+  Util._openUrl = function(url) {
+    window.open(url);
   };
   Util.log10 = function(num) {
     return Math.log(num) / 2.30258509299405;
@@ -27621,12 +33329,12 @@ window.wwtlib = function(){
       return 0;
     }
     var val = value.substr(0, 1).toLowerCase() + value.substr(1);
-    return wwtlib[enumType][val];
+    return this._wwtlib[enumType][val];
   };
   Enums.toXml = function(enumType, value) {
-     var x = "0"; var p = Object.keys(wwtlib[enumType]); for (var i in p)
- { if ( wwtlib[enumType][p[i]] == value ) {
- x = p[i]; break;
+     var x = "0"; var p = Object.keys(this._wwtlib[enumType]); for (var i in p)
+ { if ( this._wwtlib[enumType][p[i]] == value ) {
+ x = p[i]; break; 
 }
  };
     var val =  x;
@@ -28602,7 +34310,7 @@ window.wwtlib = function(){
       this._starProfile.addEventListener('load', function(e) {
         $this._imageReady = true;
       }, false);
-      this._starProfile.src = 'images/StarProfileAlpha.png';
+      this._starProfile.src = URLHelpers.singleton.engineAssetUrl('StarProfileAlpha.png');
       var gotHeader = false;
       var $enum1 = ss.enumerate(lines);
       while ($enum1.moveNext()) {
@@ -28752,8 +34460,11 @@ window.wwtlib = function(){
               if (!$this._triedOnce) {
                 $this._triedOnce = true;
                 $this._xhr.onreadystatechange = null;
-                $this._url = Util.getProxiedUrl($this._url);
-                $this._CORS();
+                var new_url = URLHelpers.singleton.activateProxy($this._url);
+                if (new_url != null) {
+                  $this._url = new_url;
+                  $this._CORS();
+                }
               }
             }
             else {
@@ -28797,6 +34508,7 @@ window.wwtlib = function(){
       Wtml.loadImagesets(temp);
       complete();
     });
+    return temp;
   };
   Wtml.loadImagesets = function(folder) {
     var $enum1 = ss.enumerate(folder.get_children());
@@ -28852,8 +34564,6 @@ window.wwtlib = function(){
     this._sprite = new Sprite2d();
     this.renderType = 2;
     this._milkyWayBackground = null;
-    this._foregroundCanvas = null;
-    this._fgDevice = null;
     this._beginZoom = 1;
     this._hoverText = '';
     this._hoverTextPoint = new Vector2d();
@@ -28866,6 +34576,8 @@ window.wwtlib = function(){
     this._lastX = 0;
     this._lastY = 0;
     this._moved = false;
+    this._foregroundCanvas = null;
+    this._fgDevice = null;
     this._tracking = false;
     this._trackingObject = null;
     this.sandboxMode = false;
@@ -28875,7 +34587,7 @@ window.wwtlib = function(){
     this._targetBackgroundImageset = null;
     this.tour = null;
     this.tourEdit = null;
-    this._crossHarirs = null;
+    this._crossHairs = null;
   }
   WWTControl.get_renderNeeded = function() {
     return WWTControl._renderNeeded;
@@ -28884,25 +34596,22 @@ window.wwtlib = function(){
     WWTControl._renderNeeded = true;
     return value;
   };
-  WWTControl.showExplorerUI = function() {
-    if (WWTControl.singleton != null) {
-      WWTControl.singleton.createExplorerUI();
-    }
-  };
   WWTControl.initControl = function(DivId) {
-    return WWTControl.initControlParam(DivId, false);
+    return WWTControl.initControl2(DivId, true);
   };
-  WWTControl.initControlParam = function(DivId, webGL) {
+  WWTControl.initControlParam = function(DivId, webgl_ignored) {
+    return WWTControl.initControl2(DivId, true);
+  };
+  WWTControl.initControl2 = function(DivId, startRenderLoop) {
+    return WWTControl.initControl6(DivId, startRenderLoop, 0, 0, 360, 'Sky');
+  };
+  WWTControl.initControl6 = function(DivId, startRenderLoop, startLat, startLng, startZoom, startMode) {
     if (WWTControl.singleton.renderContext.device == null) {
       WWTControl.scriptInterface = new ScriptInterface();
       WWTControl.scriptInterface.settings = Settings.get_current();
       var canvas = WWTControl._createCanvasElement(DivId);
       var webgltext = 'webgl';
-      var gl = null;
-      webGL = true;
-      if (webGL) {
-        gl = canvas.getContext(webgltext);
-      }
+      var gl = canvas.getContext(webgltext);
       if (gl == null) {
         webgltext = 'experimental-webgl';
         gl = canvas.getContext(webgltext);
@@ -28919,19 +34628,28 @@ window.wwtlib = function(){
       WWTControl.singleton.canvas = canvas;
       WWTControl.singleton.renderContext.width = canvas.width;
       WWTControl.singleton.renderContext.height = canvas.height;
-      WWTControl.singleton.setup(canvas);
-      WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('DSS', 'http://cdn.worldwidetelescope.org/wwtweb/dss.aspx?q={1},{2},{3}', 2, 3, 3, 100, 0, 12, 256, 180, '.png', false, '', 0, 0, 0, false, 'http://worldwidetelescope.org/thumbnails/DSS.png', true, false, 0, 0, 0, '', '', '', '', 1, 'Sky'));
-      if (WWTControl.startMode === 'earth') {
-        WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('Blue Marble', 'http://worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},bm200407', 0, 3, 3, 101, 0, 7, 256, 180, '.png', false, '', 0, 0, 0, false, 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?name=bm200407', true, false, 0, 0, 0, '', '', '', '', 6371000, 'Earth'));
+      WWTControl.singleton.setup(canvas, startLat, startLng, startZoom);
+      if (startMode === 'earth') {
+        WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('Blue Marble', URLHelpers.singleton.coreStaticUrl('wwtweb/tiles.aspx?q={1},{2},{3},bm200407'), 0, 3, 3, 101, 0, 7, 256, 180, '.png', false, '', 0, 0, 0, false, URLHelpers.singleton.coreStaticUrl('wwtweb/thumbnail.aspx?name=bm200407'), true, false, 0, 0, 0, '', '', '', '', 6371000, 'Earth'));
       }
-      if (WWTControl.startMode === 'bing') {
-        WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('Virtual Earth Aerial', '//a{0}.ortho.tiles.virtualearth.net/tiles/a{1}.jpeg?g=15', 0, 3, 0, 102, 1, 20, 256, 360, '.png', false, '0123', 0, 0, 0, false, 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?name=earth', true, false, 0, 0, 0, '', '', '', '', 6371000, 'Earth'));
+      else {
+        WWTControl.singleton.renderContext.set_backgroundImageset(Imageset.create('DSS', URLHelpers.singleton.coreStaticUrl('wwtweb/dss.aspx?q={1},{2},{3}'), 2, 3, 3, 100, 0, 12, 256, 180, '.png', false, '', 0, 0, 0, false, URLHelpers.singleton.coreStaticUrl('thumbnails/DSS.png'), true, false, 0, 0, 0, '', '', '', '', 1, 'Sky'));
       }
     }
     WWTControl.singleton.renderContext.viewCamera.lng += 0;
     WWTControl.singleton.renderContext._initGL();
-    WWTControl.singleton.render();
+    if (startRenderLoop) {
+      WWTControl.singleton.render();
+    }
     return WWTControl.scriptInterface;
+  };
+  WWTControl._createCanvasElement = function(DivId) {
+    var div = document.getElementById(DivId);
+    var canvas = document.createElement('canvas');
+    canvas.height = div.clientHeight;
+    canvas.width = div.clientWidth;
+    div.appendChild(canvas);
+    return canvas;
   };
   WWTControl.useUserLocation = function() {
     navigator.geolocation.getCurrentPosition(WWTControl._getLocation, WWTControl._getLocationError);
@@ -28951,29 +34669,6 @@ window.wwtlib = function(){
     if (pos != null && pos.coords != null) {
       var lat = pos.coords.latitude;
       var lng = pos.coords.longitude;
-    }
-  };
-  WWTControl._createCanvasElement = function(DivId) {
-    var canvas = null;
-    var div = document.getElementById(DivId);
-    var style = div.attributes.getNamedItem('style');
-    canvas = document.createElement('canvas');
-    canvas.height = parseInt(div.style.height);
-    canvas.width = parseInt(div.style.width);
-    div.appendChild(canvas);
-    return canvas;
-  };
-  WWTControl.showFolderUI = function() {
-    WWTControl.singleton.createExplorerUI();
-  };
-  WWTControl.go = function(mode, lat, lng, zoom) {
-    if (mode != null && mode.length > 0) {
-      WWTControl.startMode = mode;
-    }
-    if (!!zoom) {
-      WWTControl.startLat = lat;
-      WWTControl.startLng = lng;
-      WWTControl.startZoom = zoom * 6;
     }
   };
   WWTControl.setBackgroundImageName = function(name) {
@@ -29090,6 +34785,12 @@ window.wwtlib = function(){
     render: function() {
       var $this = this;
 
+      this.renderOneFrame();
+      setTimeout(function() {
+        $this.render();
+      }, 10);
+    },
+    renderOneFrame: function() {
       if (this.renderContext.get_backgroundImageset() != null) {
         this.renderType = this.renderContext.get_backgroundImageset().get_dataSetType();
       }
@@ -29097,18 +34798,19 @@ window.wwtlib = function(){
         this.renderType = 2;
       }
       var sizeChange = false;
-      if (this.canvas.width !== parseInt(this.canvas.parentNode.style.width)) {
-        this.canvas.width = parseInt(this.canvas.parentNode.style.width);
+      if (this.canvas.width !== this.canvas.parentNode.clientWidth) {
+        this.canvas.width = this.canvas.parentNode.clientWidth;
         sizeChange = true;
       }
-      if (this.canvas.height !== parseInt(this.canvas.parentNode.style.height)) {
-        this.canvas.height = parseInt(this.canvas.parentNode.style.height);
+      if (this.canvas.height !== this.canvas.parentNode.clientHeight) {
+        this.canvas.height = this.canvas.parentNode.clientHeight;
         sizeChange = true;
       }
-      if (sizeChange) {
-        if (this.explorer != null) {
-          this.explorer.refresh();
-        }
+      if (sizeChange && this.explorer != null) {
+        this.explorer.refresh();
+      }
+      if (this.canvas.width < 1 || this.canvas.height < 1) {
+        return;
       }
       Tile.lastDeepestLevel = Tile.deepestLevel;
       RenderTriangle.width = this.renderContext.width = this.canvas.width;
@@ -29329,9 +35031,6 @@ window.wwtlib = function(){
         RenderTriangle.trianglesRendered = 0;
         RenderTriangle.trianglesCulled = 0;
       }
-      setTimeout(function() {
-        $this.render();
-      }, 10);
     },
     _getCurrentReferenceFrame: function() {
       if (this.renderContext.get_backgroundImageset() == null) {
@@ -29384,7 +35083,7 @@ window.wwtlib = function(){
       }
       if (Settings.get_active().get_showConstellationFigures()) {
         if (WWTControl.constellationsFigures == null) {
-          WWTControl.constellationsFigures = Constellations.create('Constellations', 'http://worldwidetelescope.org/data/figures.txt', false, false, false);
+          WWTControl.constellationsFigures = Constellations.create('Constellations', URLHelpers.singleton.engineAssetUrl('figures.txt'), false, false, false);
         }
         WWTControl.constellationsFigures.draw(this.renderContext, false, 'UMA', false);
       }
@@ -29423,7 +35122,7 @@ window.wwtlib = function(){
       }
       if (Settings.get_active().get_showConstellationBoundries()) {
         if (WWTControl.constellationsBoundries == null) {
-          WWTControl.constellationsBoundries = Constellations.create('Constellations', 'http://worldwidetelescope.org/data/constellations.txt', true, false, false);
+          WWTControl.constellationsBoundries = Constellations.create('Constellations', URLHelpers.singleton.engineAssetUrl('constellations.txt'), true, false, false);
         }
         WWTControl.constellationsBoundries.draw(this.renderContext, Settings.get_active().get_showConstellationSelection(), this.constellation, false);
       }
@@ -29565,55 +35264,6 @@ window.wwtlib = function(){
       }
       if (!Settings.get_globalSettings().get_smoothPan()) {
         this.renderContext.viewCamera = this.renderContext.targetCamera.copy();
-      }
-    },
-    setup: function(canvas) {
-      window.addEventListener('contextmenu', ss.bind('onContextMenu', this), false);
-      canvas.addEventListener('dblclick', ss.bind('onDoubleClick', this), false);
-      canvas.addEventListener('mousedown', ss.bind('onMouseDown', this), false);
-      canvas.addEventListener('mousewheel', ss.bind('onMouseWheel', this), false);
-      canvas.addEventListener('DOMMouseScroll', ss.bind('onMouseWheel', this), false);
-      canvas.addEventListener('touchstart', ss.bind('onTouchStart', this), false);
-      canvas.addEventListener('touchmove', ss.bind('onTouchMove', this), false);
-      canvas.addEventListener('touchend', ss.bind('onTouchEnd', this), false);
-      canvas.addEventListener('gesturechange', ss.bind('onGestureChange', this), false);
-      canvas.addEventListener('gesturestart', ss.bind('onGestureStart', this), false);
-      canvas.addEventListener('gestureend', ss.bind('onGestureEnd', this), false);
-      document.body.addEventListener('keydown', ss.bind('onKeyDown', this), false);
-      canvas.addEventListener('pointerdown', ss.bind('onPointerDown', this), false);
-      canvas.addEventListener('pointermove', ss.bind('onPointerMove', this), false);
-      canvas.addEventListener('pointerup', ss.bind('onPointerUp', this), false);
-      this.renderContext.viewCamera.lat = WWTControl.startLat;
-      this.renderContext.viewCamera.lng = WWTControl.startLng;
-      this.renderContext.viewCamera.zoom = WWTControl.startZoom;
-      this.renderContext.targetCamera = this.renderContext.viewCamera.copy();
-      if (this.renderContext.gl == null) {
-        this._foregroundCanvas = document.createElement('canvas');
-        this._foregroundCanvas.width = canvas.width;
-        this._foregroundCanvas.height = canvas.height;
-        this._fgDevice = this._foregroundCanvas.getContext('2d');
-      }
-      this._webFolder = new Folder();
-      this._webFolder.loadFromUrl('http://worldwidetelescope.org/wwtweb/catalog.aspx?X=ImageSets5', ss.bind('setupComplete', this));
-      var webFile = new WebFile('http://worldwidetelescope.org/wwtweb/weblogin.aspx?user=12345678-03D2-4935-8D0F-DCE54C9113E5&Version=HTML5&webkey=AX2011Gqqu&platform=web');
-      webFile.send();
-    },
-    setupComplete: function() {
-      Wtml.loadImagesets(this._webFolder);
-      WWTControl.scriptInterface._fireReady();
-    },
-    createExplorerUI: function() {
-      var $this = this;
-
-      if (this.explorer == null) {
-        this.explorer = FolderBrowser.create();
-        var div = document.getElementById('UI');
-        div.insertBefore(this.explorer.canvas);
-        WWTControl.exploreRoot = new Folder();
-        WWTControl.exploreRoot.loadFromUrl('http://worldwidetelescope.org/wwtweb/catalog.aspx?W=NewExploreRoot', function() {
-          $this.explorer._addItems(WWTControl.exploreRoot.get_children());
-          $this.explorer.refresh();
-        });
       }
     },
     onKeyDown: function(e) {
@@ -29928,11 +35578,14 @@ window.wwtlib = function(){
     onMouseWheel: function(e) {
       var ev = e;
       var delta;
-      if (!!ev.detail) {
+      if (!!ev.deltaY) {
+        delta = -ev.deltaY;
+      }
+      else if (!!ev.detail) {
         delta = ev.detail * -1;
       }
       else {
-        delta = ev.wheelDelta / 40;
+        delta = ev.wheelDelta;
       }
       if (delta > 0) {
         this.zoom(0.9);
@@ -29940,6 +35593,42 @@ window.wwtlib = function(){
       else {
         this.zoom(1.1);
       }
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    setup: function(canvas, startLat, startLng, startZoom) {
+      window.addEventListener('contextmenu', ss.bind('onContextMenu', this), false);
+      document.body.addEventListener('keydown', ss.bind('onKeyDown', this), false);
+      canvas.addEventListener('dblclick', ss.bind('onDoubleClick', this), false);
+      canvas.addEventListener('mousedown', ss.bind('onMouseDown', this), false);
+      canvas.addEventListener('wheel', ss.bind('onMouseWheel', this), false);
+      canvas.addEventListener('mousewheel', ss.bind('onMouseWheel', this), false);
+      canvas.addEventListener('DOMMouseScroll', ss.bind('onMouseWheel', this), false);
+      canvas.addEventListener('touchstart', ss.bind('onTouchStart', this), false);
+      canvas.addEventListener('touchmove', ss.bind('onTouchMove', this), false);
+      canvas.addEventListener('touchend', ss.bind('onTouchEnd', this), false);
+      canvas.addEventListener('gesturechange', ss.bind('onGestureChange', this), false);
+      canvas.addEventListener('gesturestart', ss.bind('onGestureStart', this), false);
+      canvas.addEventListener('gestureend', ss.bind('onGestureEnd', this), false);
+      canvas.addEventListener('pointerdown', ss.bind('onPointerDown', this), false);
+      canvas.addEventListener('pointermove', ss.bind('onPointerMove', this), false);
+      canvas.addEventListener('pointerup', ss.bind('onPointerUp', this), false);
+      this.renderContext.viewCamera.lat = startLat;
+      this.renderContext.viewCamera.lng = startLng;
+      this.renderContext.viewCamera.zoom = startZoom;
+      this.renderContext.targetCamera = this.renderContext.viewCamera.copy();
+      if (this.renderContext.gl == null) {
+        this._foregroundCanvas = document.createElement('canvas');
+        this._foregroundCanvas.width = canvas.width;
+        this._foregroundCanvas.height = canvas.height;
+        this._fgDevice = this._foregroundCanvas.getContext('2d');
+      }
+      this._webFolder = new Folder();
+      this._webFolder.loadFromUrl(URLHelpers.singleton.engineAssetUrl('builtin-image-sets.wtml'), ss.bind('_setupComplete', this));
+    },
+    _setupComplete: function() {
+      Wtml.loadImagesets(this._webFolder);
+      WWTControl.scriptInterface._fireReady();
     },
     gotoRADecZoom: function(ra, dec, zoom, instant) {
       ra = DoubleUtilities.clamp(ra, 0, 24);
@@ -30341,18 +36030,20 @@ window.wwtlib = function(){
         ctx.restore();
       }
       else {
-        if (this._crossHarirs == null) {
-          this._crossHarirs = new SimpleLineList();
-          this._crossHarirs.set_depthBuffered(false);
-          this._crossHarirs.pure2D = true;
-          this._crossHarirs.addLine(Vector3d.create(-0.02, 0, 0), Vector3d.create(0.02, 0, 0));
-          this._crossHarirs.addLine(Vector3d.create(0, -0.03, 0), Vector3d.create(0, 0.03, 0));
+        if (this._crossHairs == null) {
+          var halfHeight = 0.03;
+          var halfWidth = halfHeight * context.height / context.width;
+          this._crossHairs = new SimpleLineList();
+          this._crossHairs.set_depthBuffered(false);
+          this._crossHairs.pure2D = true;
+          this._crossHairs.addLine(Vector3d.create(-halfWidth, 0, 0), Vector3d.create(halfWidth, 0, 0));
+          this._crossHairs.addLine(Vector3d.create(0, -halfHeight, 0), Vector3d.create(0, halfHeight, 0));
         }
-        this._crossHarirs.drawLines(context, 1, Colors.get_white());
+        this._crossHairs.drawLines(context, 1, Colors.get_white());
       }
     },
     captureThumbnail: function(blobReady) {
-      this.render();
+      this.renderOneFrame();
       var image = document.createElement('img');
       image.addEventListener('load', function(e) {
         var imageAspect = (image.width) / image.height;
@@ -30393,1574 +36084,6 @@ window.wwtlib = function(){
   }
   var WWTElementEvent$ = {
 
-  };
-
-
-  // wwtlib.Annotation
-
-  function Annotation() {
-    this.addedToPrimitives = false;
-    this.annotationDirty = true;
-    this._opacity = 1;
-    this._showHoverLabel = false;
-  }
-  Annotation.prepBatch = function(renderContext) {
-    if (Annotation.pointList == null || Annotation.batchDirty) {
-      Annotation.pointList = new PointList(renderContext);
-      Annotation.lineList = new LineList();
-      Annotation.triangleList = new TriangleList();
-      Annotation.lineList.set_depthBuffered(false);
-      Annotation.triangleList.depthBuffered = false;
-    }
-  };
-  Annotation.drawBatch = function(renderContext) {
-    Annotation.batchDirty = false;
-    if (renderContext.gl == null) {
-      return;
-    }
-    if (Annotation.pointList != null) {
-      Annotation.pointList.draw(renderContext, 1, false);
-    }
-    if (Annotation.lineList != null) {
-      Annotation.lineList.drawLines(renderContext, 1);
-    }
-    if (Annotation.triangleList != null) {
-      Annotation.triangleList.draw(renderContext, 1, 0);
-    }
-  };
-  Annotation.separation = function(Alpha1, Delta1, Alpha2, Delta2) {
-    Delta1 = Delta1 / 180 * Math.PI;
-    Delta2 = Delta2 / 180 * Math.PI;
-    Alpha1 = Alpha1 / 12 * Math.PI;
-    Alpha2 = Alpha2 / 12 * Math.PI;
-    var x = Math.cos(Delta1) * Math.sin(Delta2) - Math.sin(Delta1) * Math.cos(Delta2) * Math.cos(Alpha2 - Alpha1);
-    var y = Math.cos(Delta2) * Math.sin(Alpha2 - Alpha1);
-    var z = Math.sin(Delta1) * Math.sin(Delta2) + Math.cos(Delta1) * Math.cos(Delta2) * Math.cos(Alpha2 - Alpha1);
-    var vvalue = Math.atan2(Math.sqrt(x * x + y * y), z);
-    vvalue = vvalue / Math.PI * 180;
-    if (vvalue < 0) {
-      vvalue += 180;
-    }
-    return vvalue;
-  };
-  Annotation.colorToUint = function(col) {
-    return (col.a) << 24 | (col.r << 16) | (col.g) << 8 | col.b;
-  };
-  Annotation.colorToUintAlpha = function(col, opacity) {
-    return opacity << 24 | col.r << 16 | col.g << 8 | col.b;
-  };
-  var Annotation$ = {
-    draw: function(renderContext) {
-    },
-    get_opacity: function() {
-      return this._opacity;
-    },
-    set_opacity: function(value) {
-      this._opacity = value;
-      return value;
-    },
-    get_id: function() {
-      return this._id;
-    },
-    set_id: function(value) {
-      this._id = value;
-      return value;
-    },
-    get_tag: function() {
-      return this._tag;
-    },
-    set_tag: function(value) {
-      this._tag = value;
-      return value;
-    },
-    get_label: function() {
-      return this._label;
-    },
-    set_label: function(value) {
-      this._label = value;
-      return value;
-    },
-    get_showHoverLabel: function() {
-      return this._showHoverLabel;
-    },
-    set_showHoverLabel: function(value) {
-      this._showHoverLabel = value;
-      return value;
-    },
-    hitTest: function(renderContext, RA, dec, x, y) {
-      return false;
-    },
-    get_center: function() {
-      return this.center;
-    },
-    set_center: function(value) {
-      this.center = value;
-      return value;
-    }
-  };
-
-
-  // wwtlib.BlendState
-
-  function BlendState() {
-    this._state = false;
-    this._targetState = false;
-    this._delayTime = 0;
-    this._switchedTime = new Date(1990, 0, 0, 0, 0, 0, 0);
-    this._state = false;
-    this._targetState = this._state;
-    this._delayTime = 1000;
-  }
-  BlendState.create = function(initialState, delayTime) {
-    var temp = new BlendState();
-    temp._state = initialState;
-    temp._targetState = initialState;
-    temp._delayTime = delayTime;
-    return temp;
-  };
-  var BlendState$ = {
-    get_state: function() {
-      if (this._targetState !== this._state) {
-        var ts = ss.now() - this._switchedTime;
-        if (ts > this._delayTime) {
-          this._state = this._targetState;
-        }
-        return true;
-      }
-      return this._state;
-    },
-    set_state: function(value) {
-      this._switchedTime = new Date(1990, 0, 0, 0, 0, 0, 0);
-      this._state = value;
-      this._targetState = this._state;
-      return value;
-    },
-    get_targetState: function() {
-      return this._targetState;
-    },
-    set_targetState: function(value) {
-      if (this._targetState !== value) {
-        this._switchedTime = ss.now();
-        this._targetState = value;
-      }
-      return value;
-    },
-    get_opacity: function() {
-      if (this._targetState !== this._state) {
-        var ts = ss.now() - this._switchedTime;
-        if (ts > this._delayTime) {
-          this._state = this._targetState;
-        }
-        else {
-          var opacity = (ts / this._delayTime);
-          return (this._targetState) ? opacity : 1 - opacity;
-        }
-      }
-      return (this._state) ? 1 : 0;
-    },
-    get_delayTime: function() {
-      return this._delayTime;
-    },
-    set_delayTime: function(value) {
-      this._delayTime = value;
-      return value;
-    }
-  };
-
-
-  // wwtlib.CameraParameters
-
-  function CameraParameters() {
-    this.lat = 0;
-    this.lng = 0;
-    this.zoom = 0;
-    this.rotation = 0;
-    this.angle = 0;
-    this.raDec = false;
-    this.opacity = 0;
-    this.target = 0;
-    this.zoom = 360;
-    this.viewTarget = new Vector3d();
-  }
-  CameraParameters.create = function(lat, lng, zoom, rotation, angle, opactity) {
-    var temp = new CameraParameters();
-    temp.lat = lat;
-    temp.lng = lng;
-    temp.zoom = zoom;
-    temp.rotation = rotation;
-    temp.angle = angle;
-    temp.raDec = false;
-    temp.opacity = opactity;
-    temp.viewTarget = Vector3d.create(0, 0, 0);
-    temp.target = 20;
-    temp.targetReferenceFrame = '';
-    return temp;
-  };
-  CameraParameters.logN = function(num, b) {
-    return Math.log(num) / Math.log(b);
-  };
-  CameraParameters.sinh = function(v) {
-    return (Math.exp(v) - Math.exp(-v)) / 2;
-  };
-  CameraParameters.interpolate = function(from, to, alphaIn, type, fastDirectionMove) {
-    var result = new CameraParameters();
-    var alpha = CameraParameters.easeCurve(alphaIn, type);
-    var alphaBIn = Math.min(1, alphaIn * 2);
-    var alphaB = CameraParameters.easeCurve(alphaBIn, type);
-    result.angle = to.angle * alpha + from.angle * (1 - alpha);
-    result.rotation = to.rotation * alpha + from.rotation * (1 - alpha);
-    if (fastDirectionMove) {
-      result.lat = to.lat * alphaB + from.lat * (1 - alphaB);
-      result.lng = to.lng * alphaB + from.lng * (1 - alphaB);
-    }
-    else {
-      result.lat = to.lat * alpha + from.lat * (1 - alpha);
-      result.lng = to.lng * alpha + from.lng * (1 - alpha);
-    }
-    result.zoom = Math.pow(2, CameraParameters.logN(to.zoom, 2) * alpha + CameraParameters.logN(from.zoom, 2) * (1 - alpha));
-    result.opacity = (to.opacity * alpha + from.opacity * (1 - alpha));
-    result.viewTarget = Vector3d.lerp(from.viewTarget, to.viewTarget, alpha);
-    result.targetReferenceFrame = to.targetReferenceFrame;
-    if (to.target === from.target) {
-      result.target = to.target;
-    }
-    else {
-      result.target = 20;
-    }
-    return result;
-  };
-  CameraParameters.interpolateGreatCircle = function(from, to, alphaIn, type, fastDirectionMove) {
-    var result = new CameraParameters();
-    var alpha = CameraParameters.easeCurve(alphaIn, type);
-    var alphaBIn = Math.min(1, alphaIn * 2);
-    var alphaB = CameraParameters.easeCurve(alphaBIn, type);
-    result.angle = to.angle * alpha + from.angle * (1 - alpha);
-    result.rotation = to.rotation * alpha + from.rotation * (1 - alpha);
-    var left = Coordinates.geoTo3dDouble(from.lat, from.lng);
-    var right = Coordinates.geoTo3dDouble(to.lat, to.lng);
-    var mid = Vector3d.slerp(left, right, alpha);
-    var midV2 = Coordinates.cartesianToLatLng(mid);
-    result.lat = midV2.y;
-    result.lng = midV2.x;
-    result.zoom = Math.pow(2, CameraParameters.logN(to.zoom, 2) * alpha + CameraParameters.logN(from.zoom, 2) * (1 - alpha));
-    result.opacity = (to.opacity * alpha + from.opacity * (1 - alpha));
-    result.viewTarget = Vector3d.lerp(from.viewTarget, to.viewTarget, alpha);
-    result.targetReferenceFrame = to.targetReferenceFrame;
-    if (to.target === from.target) {
-      result.target = to.target;
-    }
-    else {
-      result.target = 20;
-    }
-    return result;
-  };
-  CameraParameters.easeCurve = function(alpha, type) {
-    switch (type) {
-      case 0:
-        return alpha;
-      case 4:
-        return Math.pow(alpha, 2);
-      case 1:
-        return ((1 - alpha) * CameraParameters.sinh(alpha / (0.1085712344 * 2)) / 100) + alpha * alpha;
-      case 2:
-        return (alpha * (1 - CameraParameters.sinh((1 - alpha) / (0.1085712344 * 2)) / 100)) + (1 - alpha) * alpha;
-      case 3:
-        if (alpha < 0.5) {
-          return CameraParameters.sinh(alpha / 0.1085712344) / 100;
-        }
-        else {
-          return 1 - (CameraParameters.sinh((1 - alpha) / 0.1085712344) / 100);
-        }
-      default:
-        return alpha;
-    }
-  };
-  var CameraParameters$ = {
-    copy: function() {
-      var temp = new CameraParameters();
-      temp.lat = this.lat;
-      temp.lng = this.lng;
-      temp.zoom = this.zoom;
-      temp.rotation = this.rotation;
-      temp.angle = this.angle;
-      temp.raDec = this.raDec;
-      temp.opacity = this.opacity;
-      temp.viewTarget = this.viewTarget.copy();
-      temp.target = this.target;
-      temp.targetReferenceFrame = this.targetReferenceFrame;
-      return temp;
-    },
-    get_RA: function() {
-      return ((((180 - (this.lng - 180)) / 360) * 24) % 24);
-    },
-    set_RA: function(value) {
-      this.lng = 180 - (value / 24 * 360) - 180;
-      this.raDec = true;
-      return value;
-    },
-    get_dec: function() {
-      return this.lat;
-    },
-    set_dec: function(value) {
-      this.lat = value;
-      return value;
-    },
-    equals: function(obj) {
-      if (ss.canCast(obj, CameraParameters)) {
-        var cam = obj;
-        if (Math.abs(cam.angle - this.angle) > 0.01 || Math.abs(cam.lat - this.lat) > (cam.zoom / 10000) || Math.abs(cam.get_RA() - this.get_RA()) > (cam.zoom / 1000) || Math.abs(cam.rotation - this.rotation) > 0.1 || Math.abs(cam.zoom - this.zoom) > (Math.abs(cam.zoom) / 1000)) {
-          return false;
-        }
-        return true;
-      }
-      else {
-        return false;
-      }
-    }
-  };
-
-
-  // wwtlib.Color
-
-  function Color() {
-    this.a = 255;
-    this.b = 255;
-    this.g = 255;
-    this.r = 255;
-    this.name = '';
-  }
-  Color.fromArgb = function(a, r, g, b) {
-    var temp = new Color();
-    temp.a = a;
-    temp.r = r;
-    temp.g = g;
-    temp.b = b;
-    return temp;
-  };
-  Color._fromArgbColor = function(a, col) {
-    var temp = new Color();
-    temp.a = a;
-    temp.r = col.r;
-    temp.g = col.g;
-    temp.b = col.b;
-    return temp;
-  };
-  Color.fromName = function(name) {
-    var temp = Color.load(name);
-    return temp;
-  };
-  Color.load = function(color) {
-    var a = 255, r = 255, g = 255, b = 255;
-    var pieces = color.split(':');
-    if (pieces.length === 5) {
-      a = parseInt(pieces[1]);
-      r = parseInt(pieces[2]);
-      g = parseInt(pieces[3]);
-      b = parseInt(pieces[4]);
-    }
-    else if (pieces.length === 2) {
-      return Color.fromName(pieces[1].toLowerCase());
-    }
-    else if (pieces.length === 1 && ss.startsWith(pieces[0], '#')) {
-      return Color.fromHex(pieces[0]);
-    }
-    else if (pieces.length === 1 && pieces[0].length === 8) {
-      return Color.fromSimpleHex(pieces[0]);
-    }
-    else if (pieces.length === 1) {
-      return Color._fromWindowsNamedColor(pieces[0]);
-    }
-    return Color.fromArgb(a, r, g, b);
-  };
-  Color._fromWindowsNamedColor = function(color) {
-    switch (color.toLowerCase()) {
-      case 'activeborder':
-        return Color.fromArgb(255, 180, 180, 180);
-      case 'activecaption':
-        return Color.fromArgb(255, 153, 180, 209);
-      case 'activecaptiontext':
-        return Color.fromArgb(255, 0, 0, 0);
-      case 'appworkspace':
-        return Color.fromArgb(255, 171, 171, 171);
-      case 'control':
-        return Color.fromArgb(255, 240, 240, 240);
-      case 'controldark':
-        return Color.fromArgb(255, 160, 160, 160);
-      case 'controldarkdark':
-        return Color.fromArgb(255, 105, 105, 105);
-      case 'controllight':
-        return Color.fromArgb(255, 227, 227, 227);
-      case 'controllightlight':
-        return Color.fromArgb(255, 255, 255, 255);
-      case 'controltext':
-        return Color.fromArgb(255, 0, 0, 0);
-      case 'desktop':
-        return Color.fromArgb(255, 255, 255, 255);
-      case 'graytext':
-        return Color.fromArgb(255, 109, 109, 109);
-      case 'highlight':
-        return Color.fromArgb(255, 51, 153, 255);
-      case 'highlighttext':
-        return Color.fromArgb(255, 255, 255, 255);
-      case 'hottrack':
-        return Color.fromArgb(255, 0, 102, 204);
-      case 'inactiveborder':
-        return Color.fromArgb(255, 244, 247, 252);
-      case 'inactivecaption':
-        return Color.fromArgb(255, 191, 205, 219);
-      case 'inactivecaptiontext':
-        return Color.fromArgb(255, 0, 0, 0);
-      case 'info':
-        return Color.fromArgb(255, 255, 255, 225);
-      case 'infotext':
-        return Color.fromArgb(255, 0, 0, 0);
-      case 'menu':
-        return Color.fromArgb(255, 240, 240, 240);
-      case 'menutext':
-        return Color.fromArgb(255, 0, 0, 0);
-      case 'scrollbar':
-        return Color.fromArgb(255, 200, 200, 200);
-      case 'window':
-        return Color.fromArgb(255, 255, 255, 255);
-      case 'windowframe':
-        return Color.fromArgb(255, 100, 100, 100);
-      case 'windowtext':
-        return Color.fromArgb(255, 0, 0, 0);
-      case 'transparent':
-        return Color.fromArgb(0, 255, 255, 255);
-      case 'aliceblue':
-        return Color.fromArgb(255, 240, 248, 255);
-      case 'antiquewhite':
-        return Color.fromArgb(255, 250, 235, 215);
-      case 'aqua':
-        return Color.fromArgb(255, 0, 255, 255);
-      case 'aquamarine':
-        return Color.fromArgb(255, 127, 255, 212);
-      case 'azure':
-        return Color.fromArgb(255, 240, 255, 255);
-      case 'beige':
-        return Color.fromArgb(255, 245, 245, 220);
-      case 'bisque':
-        return Color.fromArgb(255, 255, 228, 196);
-      case 'black':
-        return Color.fromArgb(255, 0, 0, 0);
-      case 'blanchedalmond':
-        return Color.fromArgb(255, 255, 235, 205);
-      case 'blue':
-        return Color.fromArgb(255, 0, 0, 255);
-      case 'blueviolet':
-        return Color.fromArgb(255, 138, 43, 226);
-      case 'brown':
-        return Color.fromArgb(255, 165, 42, 42);
-      case 'burlywood':
-        return Color.fromArgb(255, 222, 184, 135);
-      case 'cadetblue':
-        return Color.fromArgb(255, 95, 158, 160);
-      case 'chartreuse':
-        return Color.fromArgb(255, 127, 255, 0);
-      case 'chocolate':
-        return Color.fromArgb(255, 210, 105, 30);
-      case 'coral':
-        return Color.fromArgb(255, 255, 127, 80);
-      case 'cornflowerblue':
-        return Color.fromArgb(255, 100, 149, 237);
-      case 'cornsilk':
-        return Color.fromArgb(255, 255, 248, 220);
-      case 'crimson':
-        return Color.fromArgb(255, 220, 20, 60);
-      case 'cyan':
-        return Color.fromArgb(255, 0, 255, 255);
-      case 'darkblue':
-        return Color.fromArgb(255, 0, 0, 139);
-      case 'darkcyan':
-        return Color.fromArgb(255, 0, 139, 139);
-      case 'darkgoldenrod':
-        return Color.fromArgb(255, 184, 134, 11);
-      case 'darkgray':
-        return Color.fromArgb(255, 169, 169, 169);
-      case 'darkgreen':
-        return Color.fromArgb(255, 0, 100, 0);
-      case 'darkkhaki':
-        return Color.fromArgb(255, 189, 183, 107);
-      case 'darkmagenta':
-        return Color.fromArgb(255, 139, 0, 139);
-      case 'darkolivegreen':
-        return Color.fromArgb(255, 85, 107, 47);
-      case 'darkorange':
-        return Color.fromArgb(255, 255, 140, 0);
-      case 'darkorchid':
-        return Color.fromArgb(255, 153, 50, 204);
-      case 'darkred':
-        return Color.fromArgb(255, 139, 0, 0);
-      case 'darksalmon':
-        return Color.fromArgb(255, 233, 150, 122);
-      case 'darkseagreen':
-        return Color.fromArgb(255, 143, 188, 139);
-      case 'darkslateblue':
-        return Color.fromArgb(255, 72, 61, 139);
-      case 'darkslategray':
-        return Color.fromArgb(255, 47, 79, 79);
-      case 'darkturquoise':
-        return Color.fromArgb(255, 0, 206, 209);
-      case 'darkviolet':
-        return Color.fromArgb(255, 148, 0, 211);
-      case 'deeppink':
-        return Color.fromArgb(255, 255, 20, 147);
-      case 'deepskyblue':
-        return Color.fromArgb(255, 0, 191, 255);
-      case 'dimgray':
-        return Color.fromArgb(255, 105, 105, 105);
-      case 'dodgerblue':
-        return Color.fromArgb(255, 30, 144, 255);
-      case 'firebrick':
-        return Color.fromArgb(255, 178, 34, 34);
-      case 'floralwhite':
-        return Color.fromArgb(255, 255, 250, 240);
-      case 'forestgreen':
-        return Color.fromArgb(255, 34, 139, 34);
-      case 'fuchsia':
-        return Color.fromArgb(255, 255, 0, 255);
-      case 'gainsboro':
-        return Color.fromArgb(255, 220, 220, 220);
-      case 'ghostwhite':
-        return Color.fromArgb(255, 248, 248, 255);
-      case 'gold':
-        return Color.fromArgb(255, 255, 215, 0);
-      case 'goldenrod':
-        return Color.fromArgb(255, 218, 165, 32);
-      case 'gray':
-        return Color.fromArgb(255, 128, 128, 128);
-      case 'green':
-        return Color.fromArgb(255, 0, 128, 0);
-      case 'greenyellow':
-        return Color.fromArgb(255, 173, 255, 47);
-      case 'honeydew':
-        return Color.fromArgb(255, 240, 255, 240);
-      case 'hotpink':
-        return Color.fromArgb(255, 255, 105, 180);
-      case 'indianred':
-        return Color.fromArgb(255, 205, 92, 92);
-      case 'indigo':
-        return Color.fromArgb(255, 75, 0, 130);
-      case 'ivory':
-        return Color.fromArgb(255, 255, 255, 240);
-      case 'khaki':
-        return Color.fromArgb(255, 240, 230, 140);
-      case 'lavender':
-        return Color.fromArgb(255, 230, 230, 250);
-      case 'lavenderblush':
-        return Color.fromArgb(255, 255, 240, 245);
-      case 'lawngreen':
-        return Color.fromArgb(255, 124, 252, 0);
-      case 'lemonchiffon':
-        return Color.fromArgb(255, 255, 250, 205);
-      case 'lightblue':
-        return Color.fromArgb(255, 173, 216, 230);
-      case 'lightcoral':
-        return Color.fromArgb(255, 240, 128, 128);
-      case 'lightcyan':
-        return Color.fromArgb(255, 224, 255, 255);
-      case 'lightgoldenrodyellow':
-        return Color.fromArgb(255, 250, 250, 210);
-      case 'lightgray':
-        return Color.fromArgb(255, 211, 211, 211);
-      case 'lightgreen':
-        return Color.fromArgb(255, 144, 238, 144);
-      case 'lightpink':
-        return Color.fromArgb(255, 255, 182, 193);
-      case 'lightsalmon':
-        return Color.fromArgb(255, 255, 160, 122);
-      case 'lightseagreen':
-        return Color.fromArgb(255, 32, 178, 170);
-      case 'lightskyblue':
-        return Color.fromArgb(255, 135, 206, 250);
-      case 'lightslategray':
-        return Color.fromArgb(255, 119, 136, 153);
-      case 'lightsteelblue':
-        return Color.fromArgb(255, 176, 196, 222);
-      case 'lightyellow':
-        return Color.fromArgb(255, 255, 255, 224);
-      case 'lime':
-        return Color.fromArgb(255, 0, 255, 0);
-      case 'limegreen':
-        return Color.fromArgb(255, 50, 205, 50);
-      case 'linen':
-        return Color.fromArgb(255, 250, 240, 230);
-      case 'magenta':
-        return Color.fromArgb(255, 255, 0, 255);
-      case 'maroon':
-        return Color.fromArgb(255, 128, 0, 0);
-      case 'mediumaquamarine':
-        return Color.fromArgb(255, 102, 205, 170);
-      case 'mediumblue':
-        return Color.fromArgb(255, 0, 0, 205);
-      case 'mediumorchid':
-        return Color.fromArgb(255, 186, 85, 211);
-      case 'mediumpurple':
-        return Color.fromArgb(255, 147, 112, 219);
-      case 'mediumseagreen':
-        return Color.fromArgb(255, 60, 179, 113);
-      case 'mediumslateblue':
-        return Color.fromArgb(255, 123, 104, 238);
-      case 'mediumspringgreen':
-        return Color.fromArgb(255, 0, 250, 154);
-      case 'mediumturquoise':
-        return Color.fromArgb(255, 72, 209, 204);
-      case 'mediumvioletred':
-        return Color.fromArgb(255, 199, 21, 133);
-      case 'midnightblue':
-        return Color.fromArgb(255, 25, 25, 112);
-      case 'mintcream':
-        return Color.fromArgb(255, 245, 255, 250);
-      case 'mistyrose':
-        return Color.fromArgb(255, 255, 228, 225);
-      case 'moccasin':
-        return Color.fromArgb(255, 255, 228, 181);
-      case 'navajowhite':
-        return Color.fromArgb(255, 255, 222, 173);
-      case 'navy':
-        return Color.fromArgb(255, 0, 0, 128);
-      case 'oldlace':
-        return Color.fromArgb(255, 253, 245, 230);
-      case 'olive':
-        return Color.fromArgb(255, 128, 128, 0);
-      case 'olivedrab':
-        return Color.fromArgb(255, 107, 142, 35);
-      case 'orange':
-        return Color.fromArgb(255, 255, 165, 0);
-      case 'orangered':
-        return Color.fromArgb(255, 255, 69, 0);
-      case 'orchid':
-        return Color.fromArgb(255, 218, 112, 214);
-      case 'palegoldenrod':
-        return Color.fromArgb(255, 238, 232, 170);
-      case 'palegreen':
-        return Color.fromArgb(255, 152, 251, 152);
-      case 'paleturquoise':
-        return Color.fromArgb(255, 175, 238, 238);
-      case 'palevioletred':
-        return Color.fromArgb(255, 219, 112, 147);
-      case 'papayawhip':
-        return Color.fromArgb(255, 255, 239, 213);
-      case 'peachpuff':
-        return Color.fromArgb(255, 255, 218, 185);
-      case 'peru':
-        return Color.fromArgb(255, 205, 133, 63);
-      case 'pink':
-        return Color.fromArgb(255, 255, 192, 203);
-      case 'plum':
-        return Color.fromArgb(255, 221, 160, 221);
-      case 'powderblue':
-        return Color.fromArgb(255, 176, 224, 230);
-      case 'purple':
-        return Color.fromArgb(255, 128, 0, 128);
-      case 'red':
-        return Color.fromArgb(255, 255, 0, 0);
-      case 'rosybrown':
-        return Color.fromArgb(255, 188, 143, 143);
-      case 'royalblue':
-        return Color.fromArgb(255, 65, 105, 225);
-      case 'saddlebrown':
-        return Color.fromArgb(255, 139, 69, 19);
-      case 'salmon':
-        return Color.fromArgb(255, 250, 128, 114);
-      case 'sandybrown':
-        return Color.fromArgb(255, 244, 164, 96);
-      case 'seagreen':
-        return Color.fromArgb(255, 46, 139, 87);
-      case 'seashell':
-        return Color.fromArgb(255, 255, 245, 238);
-      case 'sienna':
-        return Color.fromArgb(255, 160, 82, 45);
-      case 'silver':
-        return Color.fromArgb(255, 192, 192, 192);
-      case 'skyblue':
-        return Color.fromArgb(255, 135, 206, 235);
-      case 'slateblue':
-        return Color.fromArgb(255, 106, 90, 205);
-      case 'slategray':
-        return Color.fromArgb(255, 112, 128, 144);
-      case 'snow':
-        return Color.fromArgb(255, 255, 250, 250);
-      case 'springgreen':
-        return Color.fromArgb(255, 0, 255, 127);
-      case 'steelblue':
-        return Color.fromArgb(255, 70, 130, 180);
-      case 'tan':
-        return Color.fromArgb(255, 210, 180, 140);
-      case 'teal':
-        return Color.fromArgb(255, 0, 128, 128);
-      case 'thistle':
-        return Color.fromArgb(255, 216, 191, 216);
-      case 'tomato':
-        return Color.fromArgb(255, 255, 99, 71);
-      case 'turquoise':
-        return Color.fromArgb(255, 64, 224, 208);
-      case 'violet':
-        return Color.fromArgb(255, 238, 130, 238);
-      case 'wheat':
-        return Color.fromArgb(255, 245, 222, 179);
-      case 'white':
-        return Color.fromArgb(255, 255, 255, 255);
-      case 'whitesmoke':
-        return Color.fromArgb(255, 245, 245, 245);
-      case 'yellow':
-        return Color.fromArgb(255, 255, 255, 0);
-      case 'yellowgreen':
-        return Color.fromArgb(255, 154, 205, 50);
-      case 'buttonface':
-        return Color.fromArgb(255, 240, 240, 240);
-      case 'buttonhighlight':
-        return Color.fromArgb(255, 255, 255, 255);
-      case 'buttonshadow':
-        return Color.fromArgb(255, 160, 160, 160);
-      case 'gradientactivecaption':
-        return Color.fromArgb(255, 185, 209, 234);
-      case 'gradientinactivecaption':
-        return Color.fromArgb(255, 215, 228, 242);
-      case 'menubar':
-        return Color.fromArgb(255, 240, 240, 240);
-      case 'menuhighlight':
-        return Color.fromArgb(255, 51, 153, 255);
-    }
-    return Color.fromArgb(255, 255, 255, 255);
-  };
-  Color.fromHex = function(data) {
-    var r = Util.fromHex(data.substr(1, 2));
-    var g = Util.fromHex(data.substr(3, 2));
-    var b = Util.fromHex(data.substr(5, 2));
-    var a = 255;
-    return Color.fromArgb(a, r, g, b);
-  };
-  Color.fromSimpleHex = function(data) {
-    var a = Util.fromHex(data.substr(0, 2));
-    var r = Util.fromHex(data.substr(2, 2));
-    var g = Util.fromHex(data.substr(4, 2));
-    var b = Util.fromHex(data.substr(6, 2));
-    return Color.fromArgb(a, r, g, b);
-  };
-  Color.fromInt = function(color) {
-    var r = (color & 4278190080) >>> 24;
-    var g = (color & 16711680) >>> 16;
-    var b = (color & 65280) >>> 8;
-    var a = (color & 255);
-    return Color.fromArgb(a, r, g, b);
-  };
-  var Color$ = {
-    toFormat: function() {
-      if (ss.emptyString(this.name)) {
-        return ss.format('rgb({0},{1},{2})', this.r.toString(), this.g.toString(), this.b.toString());
-      }
-      else {
-        return this.name;
-      }
-    },
-    save: function() {
-      if (!ss.emptyString(this.name)) {
-        return ss.format('{0}:{1}', 0, this.name);
-      }
-      else {
-        return ss.format('{0}:{1}:{2}:{3}:{4}', 1, this.a, this.r, this.g, this.b);
-      }
-    },
-    toString: function() {
-      if (ss.emptyString(this.name)) {
-        return ss.format('#{0}{1}{2}', Util.toHex(this.r), Util.toHex(this.g), Util.toHex(this.b));
-      }
-      else {
-        return this.name;
-      }
-    },
-    toSimpleHex: function() {
-      if (ss.emptyString(this.name)) {
-        return ss.format('{0}{1}{2}{3}', Util.toHex(this.a), Util.toHex(this.r), Util.toHex(this.g), Util.toHex(this.b));
-      }
-      else {
-        return this.name;
-      }
-    },
-    _clone: function() {
-      return Color.fromArgb(this.a, this.r, this.g, this.b);
-    }
-  };
-
-
-  // wwtlib.Colors
-
-  function Colors() {
-  }
-  Colors.get_black = function() {
-    return Color.fromArgb(255, 0, 0, 0);
-  };
-  Colors.get_blue = function() {
-    return Color.fromArgb(255, 0, 0, 255);
-  };
-  Colors.get_brown = function() {
-    return Color.fromArgb(255, 165, 42, 42);
-  };
-  Colors.get_cyan = function() {
-    return Color.fromArgb(255, 0, 255, 255);
-  };
-  Colors.get_darkGray = function() {
-    return Color.fromArgb(255, 169, 169, 169);
-  };
-  Colors.get_gray = function() {
-    return Color.fromArgb(255, 128, 128, 128);
-  };
-  Colors.get_green = function() {
-    return Color.fromArgb(255, 0, 255, 0);
-  };
-  Colors.get_lightGray = function() {
-    return Color.fromArgb(255, 211, 211, 211);
-  };
-  Colors.get_magenta = function() {
-    return Color.fromArgb(255, 255, 0, 255);
-  };
-  Colors.get_orange = function() {
-    return Color.fromArgb(255, 255, 165, 0);
-  };
-  Colors.get_purple = function() {
-    return Color.fromArgb(255, 128, 0, 128);
-  };
-  Colors.get_red = function() {
-    return Color.fromArgb(255, 255, 0, 0);
-  };
-  Colors.get_transparent = function() {
-    return Color.fromArgb(0, 255, 255, 255);
-  };
-  Colors.get_white = function() {
-    return Color.fromArgb(255, 255, 255, 255);
-  };
-  Colors.get_yellow = function() {
-    return Color.fromArgb(255, 255, 255, 0);
-  };
-  var Colors$ = {
-
-  };
-
-
-  // wwtlib.Constellations
-
-  function Constellations() {
-    this._pointCount = 0;
-    this._boundry = false;
-    this._noInterpollation = false;
-    this.readOnly = false;
-    this.radius = 1;
-    this._drawCount = 0;
-    this._constellationVertexBuffers = {};
-  }
-  Constellations.createBasic = function(name) {
-    var temp = new Constellations();
-    temp._name = name;
-    temp._url = null;
-    temp.lines = [];
-    var $enum1 = ss.enumerate(ss.keys(Constellations.fullNames));
-    while ($enum1.moveNext()) {
-      var abbrv = $enum1.current;
-      temp.lines.push(new Lineset(abbrv));
-    }
-    return temp;
-  };
-  Constellations.create = function(name, url, boundry, noInterpollation, resource) {
-    var temp = new Constellations();
-    temp._noInterpollation = noInterpollation;
-    temp._boundry = boundry;
-    temp._name = name;
-    temp._url = url;
-    temp.getFile();
-    return temp;
-  };
-  Constellations.drawConstellationNames = function(renderContext, opacity, drawColor) {
-    if (Constellations._namesBatch == null) {
-      Constellations.initializeConstellationNames();
-      if (Constellations._namesBatch == null) {
-        return;
-      }
-    }
-    Constellations._namesBatch.draw(renderContext, opacity, drawColor);
-  };
-  Constellations.initializeConstellationNames = function() {
-    if (Constellations.constellationCentroids == null) {
-      return;
-    }
-    Constellations._namesBatch = new Text3dBatch(80);
-    var $enum1 = ss.enumerate(ss.keys(Constellations.constellationCentroids));
-    while ($enum1.moveNext()) {
-      var key = $enum1.current;
-      var centroid = Constellations.constellationCentroids[key];
-      var center = Coordinates.raDecTo3dAu(centroid.get_RA(), centroid.get_dec(), 1);
-      var up = Vector3d.create(0, 1, 0);
-      var name = centroid.get_name();
-      if (centroid.get_name() === 'Triangulum Australe') {
-        name = ss.replaceString(name, ' ', '\n   ');
-      }
-      Constellations._namesBatch.add(new Text3d(center, up, name, 80, 0.000125));
-    }
-  };
-  Constellations.drawArtwork = function(renderContext) {
-    if (Constellations.artwork == null) {
-      if (Constellations._artFile == null) {
-        Constellations._artFile = new Folder();
-        Constellations._artFile.loadFromUrl('http://worldwidetelescope.org/wwtweb/catalog.aspx?W=hevelius', Constellations._onArtReady);
-      }
-      return;
-    }
-    Constellations._maxSeperation = Math.max(0.5, Math.cos((renderContext.get_fovAngle() * 2) / 180 * Math.PI));
-    var $enum1 = ss.enumerate(Constellations.artwork);
-    while ($enum1.moveNext()) {
-      var place = $enum1.current;
-      var bs = Constellations.pictureBlendStates[place.get_constellation()];
-      bs.set_targetState(Settings.get_active().get_constellationArtFilter().isSet(place.get_constellation()));
-      if (bs.get_state()) {
-        var reverse = false;
-        var centroid = Constellations.constellationCentroids[place.get_constellation()];
-        if (centroid != null) {
-          var pos = Coordinates.raDecTo3d((reverse) ? -centroid.get_RA() - 6 : centroid.get_RA(), (reverse) ? centroid.get_dec() : centroid.get_dec());
-          if (Vector3d.dot(renderContext.get_viewPoint(), pos) > Constellations._maxSeperation) {
-            renderContext.drawImageSet(place.get_studyImageset(), 100);
-          }
-        }
-      }
-    }
-  };
-  Constellations._onArtReady = function() {
-    Constellations._artFile.childLoadCallback(Constellations._loadArtList);
-  };
-  Constellations._loadArtList = function() {
-    Constellations.artwork = Constellations._artFile.get_places();
-  };
-  Constellations._loadNames = function() {
-    if (Constellations._webFileConstNames.get_state() === 2) {
-      alert(Constellations._webFileConstNames.get_message());
-    }
-    else if (Constellations._webFileConstNames.get_state() === 1) {
-      Constellations._centroidsReady(Constellations._webFileConstNames.getText());
-    }
-  };
-  Constellations._centroidsReady = function(file) {
-    Constellations.constellationCentroids = {};
-    Constellations.fullNames = {};
-    Constellations.abbreviations = {};
-    Constellations.bitIDs = {};
-    var rows = file.split('\r\n');
-    var id = 0;
-    var line;
-    var $enum1 = ss.enumerate(rows);
-    while ($enum1.moveNext()) {
-      var row = $enum1.current;
-      line = row;
-      var data = line.split(',');
-      Constellations.fullNames[data[1]] = data[0];
-      Constellations.abbreviations[data[0]] = data[1];
-      Constellations.bitIDs[data[1]] = id++;
-      Constellations.pictureBlendStates[data[1]] = BlendState.create(true, 1000);
-      Constellations.constellationCentroids[data[1]] = Place.create(data[0], parseFloat(data[3]), parseFloat(data[2]), 128, data[1], 2, 360);
-    }
-    WWTControl.set_renderNeeded(true);
-    ConstellationFilter.buildConstellationFilters();
-  };
-  Constellations.fullName = function(name) {
-    if (ss.keyExists(Constellations.fullNames, name)) {
-      return Constellations.fullNames[name];
-    }
-    return name;
-  };
-  Constellations.abbreviation = function(name) {
-    if (Constellations.abbreviations != null && !ss.emptyString(name) && ss.keyExists(Constellations.abbreviations, name)) {
-      return Constellations.abbreviations[name];
-    }
-    return name;
-  };
-  var Constellations$ = {
-    get_name: function() {
-      return this._name;
-    },
-    set_name: function(value) {
-      this._name = value;
-      return value;
-    },
-    getFile: function() {
-      this._webFile = new WebFile(this._url);
-      this._webFile.onStateChange = ss.bind('fileStateChange', this);
-      this._webFile.send();
-    },
-    fileStateChange: function() {
-      if (this._webFile.get_state() === 2) {
-        alert(this._webFile.get_message());
-      }
-      else if (this._webFile.get_state() === 1) {
-        this._loadConstellationData(this._webFile.getText());
-      }
-    },
-    _loadConstellationData: function(data) {
-      if (this._boundry && !this._noInterpollation) {
-        Constellations.boundries = {};
-      }
-      this.lines = [];
-      var lineSet = null;
-      try {
-        var rows = data.split('\r\n');
-        var abrv;
-        var abrvOld = '';
-        var ra;
-        var dec;
-        var lastRa = 0;
-        var type = 0;
-        var $enum1 = ss.enumerate(rows);
-        while ($enum1.moveNext()) {
-          var row = $enum1.current;
-          var line = row;
-          if (line.substr(11, 2) === '- ') {
-            line = line.substr(0, 11) + ' -' + line.substr(13, (line.length - 13));
-          }
-          if (line.substr(11, 2) === '+ ') {
-            line = line.substr(0, 11) + ' +' + line.substr(13, (line.length - 13));
-          }
-          dec = parseFloat(line.substr(11, 10));
-          if (this._noInterpollation) {
-            ra = parseFloat(line.substr(0, 10));
-          }
-          else {
-            ra = parseFloat(line.substr(0, 10));
-          }
-          abrv = ss.trim(line.substr(23, 4));
-          if (!this._boundry) {
-            if (!!ss.trim(line.substr(28, 1))) {
-              type = parseInt(line.substr(28, 1));
-            }
-          }
-          else {
-            if (this._noInterpollation && line.substr(28, 1) !== 'O') {
-              continue;
-            }
-          }
-          if (abrv !== abrvOld) {
-            type = 3;
-            lineSet = new Lineset(abrv);
-            this.lines.push(lineSet);
-            if (this._boundry && !this._noInterpollation) {
-              Constellations.boundries[abrv] = lineSet;
-            }
-            abrvOld = abrv;
-            lastRa = 0;
-          }
-          if (this._noInterpollation) {
-            if (Math.abs(ra - lastRa) > 12) {
-              ra = ra - (24 * (((ra - lastRa) < 0) ? -1 : 1));
-            }
-            lastRa = ra;
-          }
-          var starName = null;
-          if (line.length > 30) {
-            starName = ss.trim(line.substr(30));
-          }
-          if (starName == null || starName !== 'Empty') {
-            lineSet.add(ra, dec, type, starName);
-          }
-          this._pointCount++;
-          type = 1;
-        }
-      }
-      catch ($e2) {
-        var i = 0;
-      }
-      WWTControl.set_renderNeeded(true);
-    },
-    draw: function(renderContext, showOnlySelected, focusConsteallation, clearExisting) {
-      Constellations._maxSeperation = Math.max(0.6, Math.cos((renderContext.get_fovAngle() * 2) / 180 * Math.PI));
-      this._drawCount = 0;
-      var lsSelected = null;
-      if (this.lines == null || Constellations.constellationCentroids == null) {
-        return;
-      }
-      Constellations._constToDraw = focusConsteallation;
-      var $enum1 = ss.enumerate(this.lines);
-      while ($enum1.moveNext()) {
-        var ls = $enum1.current;
-        if (Constellations._constToDraw === ls.get_name() && this._boundry) {
-          lsSelected = ls;
-        }
-        else if (!showOnlySelected || !this._boundry) {
-          this._drawSingleConstellation(renderContext, ls, 1);
-        }
-      }
-      if (lsSelected != null) {
-        this._drawSingleConstellation(renderContext, lsSelected, 1);
-      }
-    },
-    _drawSingleConstellation: function(renderContext, ls, opacity) {
-      var reverse = false;
-      var centroid = Constellations.constellationCentroids[ls.get_name()];
-      if (centroid != null) {
-        var pos = Coordinates.raDecTo3d((reverse) ? -centroid.get_RA() - 6 : centroid.get_RA(), (reverse) ? centroid.get_dec() : centroid.get_dec());
-        if (Vector3d.dot(renderContext.get_viewPoint(), pos) < Constellations._maxSeperation) {
-          return;
-        }
-      }
-      if (!ss.keyExists(this._constellationVertexBuffers, ls.get_name())) {
-        var count = ls.points.length;
-        var linelist = new SimpleLineList();
-        linelist.set_depthBuffered(false);
-        this._constellationVertexBuffers[ls.get_name()] = linelist;
-        var currentPoint = new Vector3d();
-        var temp;
-        for (var i = 0; i < count; i++) {
-          if (!ls.points[i].pointType || !i) {
-            currentPoint = Coordinates.raDecTo3d(ls.points[i].RA, ls.points[i].dec);
-          }
-          else {
-            temp = Coordinates.raDecTo3d(ls.points[i].RA, ls.points[i].dec);
-            linelist.addLine(currentPoint, temp);
-            currentPoint = temp;
-          }
-        }
-        if (this._boundry) {
-          temp = Coordinates.raDecTo3d(ls.points[0].RA, ls.points[0].dec);
-          linelist.addLine(currentPoint, temp);
-        }
-      }
-      var col = 'red';
-      if (this._boundry) {
-        if (Constellations._constToDraw !== ls.get_name()) {
-          col = Settings.get_globalSettings().get_constellationBoundryColor();
-        }
-        else {
-          col = Settings.get_globalSettings().get_constellationSelectionColor();
-        }
-      }
-      else {
-        col = Settings.get_globalSettings().get_constellationFigureColor();
-      }
-      this._constellationVertexBuffers[ls.get_name()].drawLines(renderContext, opacity, Color.load(col));
-    },
-    _drawSingleConstellationOld: function(renderContext, ls) {
-      var reverse = false;
-      var centroid = Constellations.constellationCentroids[ls.get_name()];
-      if (centroid != null) {
-        var pos = Coordinates.raDecTo3d((reverse) ? -centroid.get_RA() - 6 : centroid.get_RA(), (reverse) ? centroid.get_dec() : centroid.get_dec());
-        if (Vector3d.dot(renderContext.get_viewPoint(), pos) < Constellations._maxSeperation) {
-          return;
-        }
-      }
-      this._drawCount++;
-      var col;
-      if (this._boundry) {
-        if (Constellations._constToDraw !== ls.get_name()) {
-          col = Settings.get_globalSettings().get_constellationBoundryColor();
-        }
-        else {
-          col = Settings.get_globalSettings().get_constellationSelectionColor();
-        }
-      }
-      else {
-        col = Settings.get_globalSettings().get_constellationFigureColor();
-      }
-      if (renderContext.gl == null) {
-        var ctx = renderContext.device;
-        var count = ls.points.length;
-        var lastPoint = new Vector3d();
-        ctx.save();
-        var linePending = false;
-        ctx.beginPath();
-        ctx.strokeStyle = col;
-        ctx.lineWidth = 2;
-        ctx.globalAlpha = 0.25;
-        for (var i = 0; i < count; i++) {
-          if (!ls.points[i].pointType || !i) {
-            if (linePending) {
-              ctx.stroke();
-            }
-            lastPoint = renderContext.WVP.transform(Coordinates.raDecTo3d(ls.points[i].RA, ls.points[i].dec));
-            ctx.moveTo(lastPoint.x, lastPoint.y);
-          }
-          else {
-            var newPoint = renderContext.WVP.transform(Coordinates.raDecTo3d(ls.points[i].RA, ls.points[i].dec));
-            ctx.lineTo(newPoint.x, newPoint.y);
-            linePending = true;
-          }
-        }
-        if (this._boundry) {
-          ctx.closePath();
-        }
-        ctx.stroke();
-        ctx.restore();
-      }
-      else {
-      }
-    },
-    findConstellationForPoint: function(ra, dec) {
-      if (dec > 88.402 || this.lines == null) {
-        return 'UMI';
-      }
-      var $enum1 = ss.enumerate(this.lines);
-      while ($enum1.moveNext()) {
-        var ls = $enum1.current;
-        var count = ls.points.length;
-        var i;
-        var j;
-        var inside = false;
-        for (i = 0, j = count - 1; i < count; j = i++) {
-          if ((((ls.points[i].dec <= dec) && (dec < ls.points[j].dec)) || ((ls.points[j].dec <= dec) && (dec < ls.points[i].dec))) && (ra < (ls.points[j].RA - ls.points[i].RA) * (dec - ls.points[i].dec) / (ls.points[j].dec - ls.points[i].dec) + ls.points[i].RA)) {
-            inside = !inside;
-          }
-        }
-        if (inside) {
-          return ls.get_name();
-        }
-      }
-      if (ra > 0) {
-        return this.findConstellationForPoint(ra - 24, dec);
-      }
-      if (dec > 65.5) {
-        return 'UMI';
-      }
-      if (dec < -65.5) {
-        return 'OCT';
-      }
-      return 'Error';
-    }
-  };
-
-
-  // wwtlib.Lineset
-
-  function Lineset(name) {
-    this._name = name;
-    this.points = [];
-  }
-  var Lineset$ = {
-    get_name: function() {
-      return this._name;
-    },
-    set_name: function(value) {
-      this._name = value;
-      return value;
-    },
-    add: function(ra, dec, pointType, name) {
-      this.points.push(new Linepoint(ra, dec, pointType, name));
-    }
-  };
-
-
-  // wwtlib.Linepoint
-
-  function Linepoint(ra, dec, type, name) {
-    this.RA = 0;
-    this.dec = 0;
-    this.pointType = 0;
-    this.name = null;
-    this.RA = ra;
-    this.dec = dec;
-    this.pointType = type;
-    this.name = name;
-  }
-  var Linepoint$ = {
-    toString: function() {
-      if (ss.emptyString(this.name)) {
-        return Coordinates.formatDMS((((this.RA / 360) * 24 + 12) % 24)) + ', ' + Coordinates.formatDMS(this.dec) + ', ' + this.pointType.toString();
-      }
-      else {
-        return this.name + ', ' + this.pointType.toString();
-      }
-    }
-  };
-
-
-  // wwtlib.ConstellationFilter
-
-  function ConstellationFilter() {
-    this.bits = new Array(3);
-    this.oldBits = new Array(3);
-    this.blendState = BlendState.create(false, 1000);
-    this.internal = false;
-    this.settingsOwned = false;
-    for (var i = 0; i < 3; i++) {
-      this.bits[i] = ~this.bits[i];
-      this.oldBits[i] = this.bits[i];
-    }
-  }
-  ConstellationFilter.buildConstellationFilters = function() {
-    var all = ConstellationFilter.get_allConstellation();
-    all.internal = true;
-    ConstellationFilter.families['AllConstellation'] = all;
-    ConstellationFilter.families['Zodiacal'] = ConstellationFilter.get_zodiacal();
-    ConstellationFilter.families['Ursa Major Family'] = ConstellationFilter.get_ursaMajorFamily();
-    ConstellationFilter.families['Perseus Family'] = ConstellationFilter.get_perseusFamily();
-    ConstellationFilter.families['Hercules Family'] = ConstellationFilter.get_herculesFamily();
-    ConstellationFilter.families['Orion Family'] = ConstellationFilter.get_orionFamily();
-    ConstellationFilter.families['Heavenly Waters'] = ConstellationFilter.get_heavenlyWaters();
-    ConstellationFilter.families['Bayer Family'] = ConstellationFilter.get_bayerFamily();
-    ConstellationFilter.families['La Caille Family'] = ConstellationFilter.get_laCaileFamily();
-  };
-  ConstellationFilter.saveCustomFilters = function() {
-    var sb = new ss.StringBuilder();
-    var $dict1 = ConstellationFilter.families;
-    for (var $key2 in $dict1) {
-      var kv = { key: $key2, value: $dict1[$key2] };
-      if (!kv.value.internal) {
-        sb.append(kv.key);
-        sb.append(';');
-        sb.appendLine(kv.value.toString());
-      }
-    }
-  };
-  ConstellationFilter.get_allConstellation = function() {
-    var all = new ConstellationFilter();
-    all.setAll(true);
-    return all;
-  };
-  ConstellationFilter.get_zodiacal = function() {
-    var zodiacal = new ConstellationFilter();
-    zodiacal.set('ARI', true);
-    zodiacal.set('TAU', true);
-    zodiacal.set('GEM', true);
-    zodiacal.set('CNC', true);
-    zodiacal.set('LEO', true);
-    zodiacal.set('VIR', true);
-    zodiacal.set('LIB', true);
-    zodiacal.set('SCO', true);
-    zodiacal.set('SGR', true);
-    zodiacal.set('CAP', true);
-    zodiacal.set('AQR', true);
-    zodiacal.set('PSC', true);
-    zodiacal.internal = true;
-    return zodiacal;
-  };
-  ConstellationFilter.get_ursaMajorFamily = function() {
-    var uma = new ConstellationFilter();
-    uma.set('UMA', true);
-    uma.set('UMI', true);
-    uma.set('DRA', true);
-    uma.set('CVN', true);
-    uma.set('BOO', true);
-    uma.set('COM', true);
-    uma.set('CRB', true);
-    uma.set('CAM', true);
-    uma.set('LYN', true);
-    uma.set('LMI', true);
-    uma.internal = true;
-    return uma;
-  };
-  ConstellationFilter.get_perseusFamily = function() {
-    var Perseus = new ConstellationFilter();
-    Perseus.set('CAS', true);
-    Perseus.set('CEP', true);
-    Perseus.set('AND', true);
-    Perseus.set('PER', true);
-    Perseus.set('PEG', true);
-    Perseus.set('CET', true);
-    Perseus.set('AUR', true);
-    Perseus.set('LAC', true);
-    Perseus.set('TRI', true);
-    Perseus.internal = true;
-    return Perseus;
-  };
-  ConstellationFilter.get_herculesFamily = function() {
-    var hercules = new ConstellationFilter();
-    hercules.set('HER', true);
-    hercules.set('SGE', true);
-    hercules.set('AQL', true);
-    hercules.set('LYR', true);
-    hercules.set('CYG', true);
-    hercules.set('VUL', true);
-    hercules.set('HYA', true);
-    hercules.set('SEX', true);
-    hercules.set('CRT', true);
-    hercules.set('CRV', true);
-    hercules.set('OPH', true);
-    hercules.set('SER1', true);
-    hercules.set('SER2', true);
-    hercules.set('SCT', true);
-    hercules.set('CEN', true);
-    hercules.set('LUP', true);
-    hercules.set('CRA', true);
-    hercules.set('ARA', true);
-    hercules.set('TRA', true);
-    hercules.set('CRU', true);
-    hercules.internal = true;
-    return hercules;
-  };
-  ConstellationFilter.get_orionFamily = function() {
-    var orion = new ConstellationFilter();
-    orion.set('ORI', true);
-    orion.set('CMA', true);
-    orion.set('CMI', true);
-    orion.set('MON', true);
-    orion.set('LEP', true);
-    orion.internal = true;
-    return orion;
-  };
-  ConstellationFilter.get_heavenlyWaters = function() {
-    var waters = new ConstellationFilter();
-    waters.set('DEL', true);
-    waters.set('EQU', true);
-    waters.set('ERI', true);
-    waters.set('PSA', true);
-    waters.set('CAR', true);
-    waters.set('PUP', true);
-    waters.set('VEL', true);
-    waters.set('PYX', true);
-    waters.set('COL', true);
-    waters.internal = true;
-    return waters;
-  };
-  ConstellationFilter.get_bayerFamily = function() {
-    var bayer = new ConstellationFilter();
-    bayer.set('HYA', true);
-    bayer.set('DOR', true);
-    bayer.set('VOL', true);
-    bayer.set('APS', true);
-    bayer.set('PAV', true);
-    bayer.set('GRU', true);
-    bayer.set('PHE', true);
-    bayer.set('TUC', true);
-    bayer.set('IND', true);
-    bayer.set('CHA', true);
-    bayer.set('MUS', true);
-    bayer.internal = true;
-    return bayer;
-  };
-  ConstellationFilter.get_laCaileFamily = function() {
-    var LaCaile = new ConstellationFilter();
-    LaCaile.set('NOR', true);
-    LaCaile.set('CIR', true);
-    LaCaile.set('TEL', true);
-    LaCaile.set('MIC', true);
-    LaCaile.set('SCL', true);
-    LaCaile.set('FOR', true);
-    LaCaile.set('CAE', true);
-    LaCaile.set('HOR', true);
-    LaCaile.set('OCT', true);
-    LaCaile.set('MEN', true);
-    LaCaile.set('RET', true);
-    LaCaile.set('PIC', true);
-    LaCaile.set('ANT', true);
-    LaCaile.internal = true;
-    return LaCaile;
-  };
-  ConstellationFilter.parse = function(val) {
-    var parts = (val).split(',');
-    var cf = new ConstellationFilter();
-    try {
-      for (var i = 0; i < 3; i++) {
-        cf.bits[i] = parseInt(parts[i]);
-      }
-    }
-    catch ($e1) {
-    }
-    return cf;
-  };
-  var ConstellationFilter$ = {
-    _saveBits: function() {
-      for (var i = 0; i < 3; i++) {
-        this.oldBits[i] = this.bits[i];
-      }
-    },
-    _isChanged: function() {
-      for (var i = 0; i < 3; i++) {
-        if (this.oldBits[i] !== this.bits[i]) {
-          return true;
-        }
-      }
-      return false;
-    },
-    _checkChanged: function() {
-      if (this._isChanged()) {
-        this._fireChanged();
-      }
-    },
-    isEnabled: function(abbrev) {
-      var bitID = Constellations.bitIDs[abbrev];
-      var index = bitID / 32;
-      bitID = bitID % 32;
-      return this.blendState.get_state() && !!((1 << bitID) & this.bits[index]);
-    },
-    isSet: function(abbrev) {
-      this._saveBits();
-      var bitID = Constellations.bitIDs[abbrev];
-      var index = ss.truncate((bitID / 32));
-      bitID = bitID % 32;
-      return !!((1 << bitID) & this.bits[index]);
-    },
-    set: function(abbrev, state) {
-      this._saveBits();
-      var bitID = Constellations.bitIDs[abbrev];
-      var index = bitID / 32;
-      bitID = bitID % 32;
-      if (state) {
-        this.bits[index] = this.bits[index] | (1 << bitID);
-      }
-      else {
-        this.bits[index] = this.bits[index] ^ (1 << bitID);
-      }
-      this._checkChanged();
-    },
-    setAll: function(state) {
-      this._saveBits();
-      for (var bitID = 0; bitID < 89; bitID++) {
-        var index = bitID / 32;
-        var bit = bitID % 32;
-        if (state) {
-          this.bits[index] = this.bits[index] | (1 << bit);
-        }
-        else {
-          this.bits[index] = this.bits[index] ^ (1 << bit);
-        }
-      }
-      this._checkChanged();
-    },
-    setBits: function(bits) {
-      this._saveBits();
-      for (var i = 0; i < 3; i++) {
-        this.bits[i] = (bits[i * 4]) + ((bits[i * 4 + 1]) << 8) + ((bits[i * 4 + 2]) << 16) + ((bits[i * 4 + 3]) << 24);
-      }
-      this._checkChanged();
-    },
-    getBits: function() {
-      var bits = new Array(12);
-      var index = 0;
-      for (var i = 0; i < 3; i++) {
-        bits[index++] = this.bits[i];
-        bits[index++] = (this.bits[i] >> 8);
-        bits[index++] = (this.bits[i] >> 16);
-        bits[index++] = (this.bits[i] >> 24);
-      }
-      return bits;
-    },
-    cloneFilter: function(filter) {
-      this._saveBits();
-      for (var i = 0; i < 3; i++) {
-        this.bits[i] = filter.bits[i];
-      }
-      this._checkChanged();
-    },
-    clone: function() {
-      var newFilter = new ConstellationFilter();
-      newFilter.cloneFilter(this);
-      return newFilter;
-    },
-    combine: function(filter) {
-      this._saveBits();
-      for (var i = 0; i < 3; i++) {
-        this.bits[i] = this.bits[i] | filter.bits[i];
-      }
-      this._checkChanged();
-    },
-    remove: function(filter) {
-      this._saveBits();
-      for (var i = 0; i < 3; i++) {
-        this.bits[i] = this.bits[i] & ~filter.bits[i];
-      }
-      this._checkChanged();
-    },
-    _fireChanged: function() {
-      if (this.settingsOwned) {
-      }
-    },
-    toString: function() {
-      return ss.format('{0},{1},{2}', this.bits[0], this.bits[1], this.bits[2]);
-    }
   };
 
 
@@ -32464,3908 +36587,600 @@ window.wwtlib = function(){
   };
 
 
-  // wwtlib.PositionTexture
+  // wwtlib.Circle
 
-  function PositionTexture() {
-    this.tu = 0;
-    this.tv = 0;
-    this.position = new Vector3d();
+  function Circle() {
+    this._fill$1 = false;
+    this._skyRelative$1 = false;
+    this._strokeWidth$1 = 1;
+    this._radius$1 = 10;
+    this._lineColor$1 = Colors.get_white();
+    this._fillColor$1 = Colors.get_white();
+    this._ra$1 = 0;
+    this._dec$1 = 0;
+    Annotation.call(this);
   }
-  PositionTexture.createPos = function(pos, u, v) {
-    var temp = new PositionTexture();
-    temp.tu = u * Tile.uvMultiple;
-    temp.tv = v * Tile.uvMultiple;
-    temp.position = pos;
-    return temp;
-  };
-  PositionTexture.createPosRaw = function(pos, u, v) {
-    var temp = new PositionTexture();
-    temp.tu = u;
-    temp.tv = v;
-    temp.position = pos;
-    return temp;
-  };
-  PositionTexture.createPosSize = function(pos, u, v, width, height) {
-    var temp = new PositionTexture();
-    temp.tu = u * width;
-    temp.tv = v * height;
-    temp.position = pos;
-    return temp;
-  };
-  PositionTexture.create = function(xvalue, yvalue, zvalue, u, v) {
-    var temp = new PositionTexture();
-    temp.position = Vector3d.create(xvalue, yvalue, zvalue);
-    temp.tu = u * Tile.uvMultiple;
-    temp.tv = v * Tile.uvMultiple;
-    return temp;
-  };
-  var PositionTexture$ = {
-    copy: function() {
-      var temp = new PositionTexture();
-      temp.position = Vector3d.makeCopy(this.position);
-      temp.tu = this.tu;
-      temp.tv = this.tv;
-      return temp;
+  var Circle$ = {
+    get_fill: function() {
+      return this._fill$1;
     },
-    toString: function() {
-      return ss.format('{0}, {1}, {2}, {3}, {4}', this.position.x, this.position.y, this.position.z, this.tu, this.tv);
-    }
-  };
-
-
-  // wwtlib.PositionColoredTextured
-
-  function PositionColoredTextured() {
-    this.tu = 0;
-    this.tv = 0;
-    this.color = new Color();
-    this.position = new Vector3d();
-  }
-  PositionColoredTextured.createPos = function(pos, u, v) {
-    var temp = new PositionColoredTextured();
-    temp.tu = u * Tile.uvMultiple;
-    temp.tv = v * Tile.uvMultiple;
-    temp.position = pos;
-    return temp;
-  };
-  PositionColoredTextured.createPosRaw = function(pos, u, v) {
-    var temp = new PositionColoredTextured();
-    temp.tu = u;
-    temp.tv = v;
-    temp.position = pos;
-    return temp;
-  };
-  PositionColoredTextured.createPosSize = function(pos, u, v, width, height) {
-    var temp = new PositionColoredTextured();
-    temp.tu = u * width;
-    temp.tv = v * height;
-    temp.position = pos;
-    return temp;
-  };
-  PositionColoredTextured.create = function(xvalue, yvalue, zvalue, u, v) {
-    var temp = new PositionTexture();
-    temp.position = Vector3d.create(xvalue, yvalue, zvalue);
-    temp.tu = u * Tile.uvMultiple;
-    temp.tv = v * Tile.uvMultiple;
-    return temp;
-  };
-  var PositionColoredTextured$ = {
-    copy: function() {
-      var temp = new PositionTexture();
-      temp.position = Vector3d.makeCopy(this.position);
-      temp.tu = this.tu;
-      temp.tv = this.tv;
-      return temp;
-    },
-    toString: function() {
-      return ss.format('{0}, {1}, {2}, {3}, {4}', this.position.x, this.position.y, this.position.z, this.tu, this.tv);
-    }
-  };
-
-
-  // wwtlib.PositionColored
-
-  function PositionColored(pos, color) {
-    this.color = new Color();
-    this.color = color._clone();
-    this.position = pos.copy();
-  }
-  var PositionColored$ = {
-    copy: function() {
-      var temp = new PositionColored(this.position, this.color);
-      return temp;
-    },
-    toString: function() {
-      return ss.format('{0}, {1}, {2}, {3}', this.position.x, this.position.y, this.position.z, this.color.toString());
-    }
-  };
-
-
-  // wwtlib.PositionNormalTexturedTangent
-
-  function PositionNormalTexturedTangent(position, normal, texCoord, tangent) {
-    this.x = 0;
-    this.y = 0;
-    this.z = 0;
-    this.nx = 0;
-    this.ny = 0;
-    this.nz = 0;
-    this.tu = 0;
-    this.tv = 0;
-    this.tanx = 0;
-    this.tany = 0;
-    this.tanz = 0;
-    this.x = position.x;
-    this.y = position.y;
-    this.z = position.z;
-    this.nx = normal.x;
-    this.ny = normal.y;
-    this.nz = normal.z;
-    this.tu = texCoord.x;
-    this.tv = texCoord.y;
-    this.tanx = tangent.x;
-    this.tany = tangent.y;
-    this.tanz = tangent.z;
-  }
-  var PositionNormalTexturedTangent$ = {
-    get_normal: function() {
-      return Vector3d.create(this.nx, this.ny, this.nz);
-    },
-    set_normal: function(value) {
-      this.nx = value.x;
-      this.ny = value.y;
-      this.nz = value.z;
+    set_fill: function(value) {
+      Annotation.batchDirty = true;
+      this._fill$1 = value;
       return value;
     },
-    get_position: function() {
-      return Vector3d.create(this.x, this.y, this.z);
+    get_skyRelative: function() {
+      return this._skyRelative$1;
     },
-    set_position: function(value) {
-      this.x = value.x;
-      this.y = value.y;
-      this.z = value.z;
+    set_skyRelative: function(value) {
+      Annotation.batchDirty = true;
+      this._skyRelative$1 = value;
       return value;
     },
-    get_texCoord: function() {
-      return Vector2d.create(this.tu, this.tv);
+    get_lineWidth: function() {
+      return this._strokeWidth$1;
     },
-    set_texCoord: function(value) {
-      this.tu = value.x;
-      this.tv = value.y;
+    set_lineWidth: function(value) {
+      Annotation.batchDirty = true;
+      this._strokeWidth$1 = value;
       return value;
     },
-    get_tangent: function() {
-      return Vector3d.create(this.tanx, this.tany, this.tanz);
+    get_radius: function() {
+      return this._radius$1;
     },
-    set_tangent: function(value) {
-      this.tanx = value.x;
-      this.tany = value.y;
-      this.tanz = value.z;
+    set_radius: function(value) {
+      Annotation.batchDirty = true;
+      this._radius$1 = value;
       return value;
     },
-    toString: function() {
-      return ss.format('X={0}, Y={1}, Z={2}, Nx={3}, Ny={4}, Nz={5}, U={6}, V={7}, TanX={8}, TanY={9}, TanZ={10}', this.x, this.y, this.z, this.nx, this.ny, this.nz, this.tu, this.tv, this.tanx, this.tany, this.tanz);
-    }
-  };
-
-
-  // wwtlib.Vector3d
-
-  function Vector3d() {
-    this.x = 0;
-    this.y = 0;
-    this.z = 0;
-  }
-  Vector3d.create = function(valueX, valueY, valueZ) {
-    var temp = new Vector3d();
-    temp.x = valueX;
-    temp.y = valueY;
-    temp.z = valueZ;
-    return temp;
-  };
-  Vector3d.makeCopy = function(value) {
-    var temp = new Vector3d();
-    temp.x = value.x;
-    temp.y = value.y;
-    temp.z = value.z;
-    return temp;
-  };
-  Vector3d.negate = function(vec) {
-    return Vector3d.create(-vec.x, -vec.y, -vec.z);
-  };
-  Vector3d.midPoint = function(left, right) {
-    var result = Vector3d.create((left.x + right.x) / 2, (left.y + right.y) / 2, (left.z + right.z) / 2);
-    result.normalize();
-    return result;
-  };
-  Vector3d.midPointByLength = function(left, right) {
-    var result = Vector3d.create((left.x + right.x) / 2, (left.y + right.y) / 2, (left.z + right.z) / 2);
-    result.normalize();
-    result.multiply(left.length());
-    return result;
-  };
-  Vector3d.get_empty = function() {
-    return Vector3d.create(0, 0, 0);
-  };
-  Vector3d.addVectors = function(left, right) {
-    return Vector3d.create(left.x + right.x, left.y + right.y, left.z + right.z);
-  };
-  Vector3d.cross = function(left, right) {
-    return Vector3d.create(left.y * right.z - left.z * right.y, left.z * right.x - left.x * right.z, left.x * right.y - left.y * right.x);
-  };
-  Vector3d.dot = function(left, right) {
-    return left.x * right.x + left.y * right.y + left.z * right.z;
-  };
-  Vector3d.getLength = function(source) {
-    return Math.sqrt(source.x * source.x + source.y * source.y + source.z * source.z);
-  };
-  Vector3d.getLengthSq = function(source) {
-    return source.x * source.x + source.y * source.y + source.z * source.z;
-  };
-  Vector3d.lerp = function(left, right, interpolater) {
-    return Vector3d.create(left.x * (1 - interpolater) + right.x * interpolater, left.y * (1 - interpolater) + right.y * interpolater, left.z * (1 - interpolater) + right.z * interpolater);
-  };
-  Vector3d.midpoint = function(left, right) {
-    var tmp = Vector3d.create(left.x * (0.5) + right.x * 0.5, left.y * (0.5) + right.y * 0.5, left.z * (0.5) + right.z * 0.5);
-    tmp.normalize();
-    return tmp;
-  };
-  Vector3d.slerp = function(left, right, interpolater) {
-    var dot = Vector3d.dot(left, right);
-    while (dot < 0.98) {
-      var middle = Vector3d.midpoint(left, right);
-      if (interpolater > 0.5) {
-        left = middle;
-        interpolater -= 0.5;
-        interpolater *= 2;
+    get_lineColor: function() {
+      return this._lineColor$1.toString();
+    },
+    set_lineColor: function(value) {
+      Annotation.batchDirty = true;
+      this._lineColor$1 = Color.load(value);
+      return value;
+    },
+    get_fillColor: function() {
+      return this._fillColor$1.toString();
+    },
+    set_fillColor: function(value) {
+      Annotation.batchDirty = true;
+      this._fillColor$1 = Color.fromName(value);
+      return value;
+    },
+    setCenter: function(ra, dec) {
+      Annotation.batchDirty = true;
+      this._ra$1 = ra / 15;
+      this._dec$1 = dec;
+      this.center = Coordinates.raDecTo3d(this._ra$1, this._dec$1);
+    },
+    draw: function(renderContext) {
+      var onScreen = true;
+      var rad = this._radius$1;
+      if (this._skyRelative$1) {
+        rad /= renderContext.get_fovScale() / 3600;
       }
-      else {
-        right = middle;
-        interpolater *= 2;
+      var screenSpacePnt = renderContext.WVP.transform(this.center);
+      if (screenSpacePnt.z < 0) {
+        onScreen = false;
       }
-      dot = Vector3d.dot(left, right);
-    }
-    var tmp = Vector3d.lerp(left, right, interpolater);
-    tmp.normalize();
-    return tmp;
-  };
-  Vector3d.multiplyScalar = function(source, f) {
-    var result = source.copy();
-    result.multiply(f);
-    return result;
-  };
-  Vector3d.scale = function(source, scalingFactor) {
-    var result = source;
-    result.multiply(scalingFactor);
-    return result;
-  };
-  Vector3d.subtractVectors = function(left, right) {
-    var result = left.copy();
-    result.subtract(right);
-    return result;
-  };
-  Vector3d.parse = function(data) {
-    var newVector = new Vector3d();
-    var list = data.split(',');
-    if (list.length === 3) {
-      newVector.x = parseFloat(list[0]);
-      newVector.y = parseFloat(list[1]);
-      newVector.z = parseFloat(list[2]);
-    }
-    return newVector;
-  };
-  Vector3d._transformCoordinate = function(vector3d, mat) {
-    return mat.transform(vector3d);
-  };
-  var Vector3d$ = {
-    set: function(valueX, valueY, valueZ) {
-      this.x = valueX;
-      this.y = valueY;
-      this.z = valueZ;
-    },
-    copy: function() {
-      var temp = new Vector3d();
-      temp.x = this.x;
-      temp.y = this.y;
-      temp.z = this.z;
-      return temp;
-    },
-    round: function() {
-      this.x = ss.truncate((this.x * 65536)) / 65536;
-      this.y = ss.truncate((this.y * 65536)) / 65536;
-      this.z = ss.truncate((this.z * 65536)) / 65536;
-    },
-    add: function(source) {
-      this.x += source.x;
-      this.y += source.y;
-      this.z += source.z;
-    },
-    length: function() {
-      return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-    },
-    lengthSq: function() {
-      return this.x * this.x + this.y * this.y + this.z * this.z;
-    },
-    multiply: function(s) {
-      this.x *= s;
-      this.y *= s;
-      this.z *= s;
-    },
-    normalize: function() {
-      var length = this.length();
-      if (!!length) {
-        this.x /= length;
-        this.y /= length;
-        this.z /= length;
+      if (Vector3d.dot(renderContext.get_viewPoint(), this.center) < 0.55) {
+        onScreen = false;
       }
-    },
-    rotateX: function(radians) {
-      var zTemp;
-      var yTemp;
-      yTemp = this.y * Math.cos(radians) - this.z * Math.sin(radians);
-      zTemp = this.y * Math.sin(radians) + this.z * Math.cos(radians);
-      this.z = zTemp;
-      this.y = yTemp;
-    },
-    rotateZ: function(radians) {
-      var xTemp;
-      var yTemp;
-      xTemp = this.x * Math.cos(radians) - this.y * Math.sin(radians);
-      yTemp = this.x * Math.sin(radians) + this.y * Math.cos(radians);
-      this.y = yTemp;
-      this.x = xTemp;
-    },
-    rotateY: function(radians) {
-      var zTemp;
-      var xTemp;
-      zTemp = this.z * Math.cos(radians) - this.x * Math.sin(radians);
-      xTemp = this.z * Math.sin(radians) + this.x * Math.cos(radians);
-      this.x = xTemp;
-      this.z = zTemp;
-    },
-    subtract: function(source) {
-      this.x -= source.x;
-      this.y -= source.y;
-      this.z -= source.z;
-    },
-    toString: function() {
-      return ss.format('{0}, {1}, {2}', this.x, this.y, this.z);
-    },
-    toSpherical: function() {
-      var ascention;
-      var declination;
-      var radius = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-      var XZ = Math.sqrt(this.x * this.x + this.z * this.z);
-      declination = Math.asin(this.y / radius);
-      if (!XZ) {
-        ascention = 0;
-      }
-      else if (0 <= this.x) {
-        ascention = Math.asin(this.z / XZ);
-      }
-      else {
-        ascention = Math.PI - Math.asin(this.z / XZ);
-      }
-      return Vector2d.create(((ascention + Math.PI) % (2 * Math.PI)), (declination + (Math.PI / 2)));
-    },
-    toRaDec: function() {
-      var point = this.toSpherical();
-      point.x = point.x / Math.PI * 12;
-      point.y = (point.y / Math.PI * 180) - 90;
-      return point;
-    },
-    distanceToLine: function(x1, x2) {
-      var t1 = Vector3d.subtractVectors(x2, x1);
-      var t2 = Vector3d.subtractVectors(x1, this);
-      var t3 = Vector3d.cross(t1, t2);
-      var d1 = t3.length();
-      var t4 = Vector3d.subtractVectors(x2, x1);
-      var d2 = t4.length();
-      return d1 / d2;
-    },
-    _transformByMatrics: function(lookAtAdjust) {
-      var temp = lookAtAdjust.transform(this);
-      this.x = temp.x;
-      this.y = temp.y;
-      this.z = temp.z;
-    }
-  };
-
-
-  // wwtlib.Vector2d
-
-  function Vector2d() {
-    this.x = 0;
-    this.y = 0;
-  }
-  Vector2d.lerp = function(left, right, interpolater) {
-    return Vector2d.create(left.x * (1 - interpolater) + right.x * interpolater, left.y * (1 - interpolater) + right.y * interpolater);
-  };
-  Vector2d.cartesianToSpherical2 = function(vector) {
-    var rho = Math.sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
-    var longitude = Math.atan2(vector.z, vector.x);
-    var latitude = Math.asin(vector.y / rho);
-    return Vector2d.create(longitude / Math.PI * 180, latitude / Math.PI * 180);
-  };
-  Vector2d.average3d = function(left, right) {
-    var pntLeft = Coordinates.geoTo3dDouble(left.y, left.x);
-    var pntRight = Coordinates.geoTo3dDouble(right.y, right.x);
-    var pntOut = Vector3d.addVectors(pntLeft, pntRight);
-    pntOut.multiply(0.5);
-    pntOut.normalize();
-    return Vector2d.cartesianToSpherical2(pntOut);
-  };
-  Vector2d.create = function(x, y) {
-    var temp = new Vector2d();
-    temp.x = x;
-    temp.y = y;
-    return temp;
-  };
-  Vector2d.subtract = function(left, right) {
-    return Vector2d.create(left.x - right.x, left.y - right.y);
-  };
-  var Vector2d$ = {
-    distance3d: function(pointB) {
-      var pnt1 = Coordinates.geoTo3dDouble(pointB.y, pointB.x);
-      var pnt2 = Coordinates.geoTo3dDouble(this.y, this.x);
-      var pntDiff = Vector3d.subtractVectors(pnt1, pnt2);
-      return pntDiff.length() / Math.PI * 180;
-    },
-    get_length: function() {
-      return Math.sqrt(this.x * this.x + this.y * this.y);
-    },
-    normalize: function() {
-      var length = this.get_length();
-      if (!!length) {
-        this.x /= length;
-        this.y /= length;
-      }
-    },
-    extend: function(factor) {
-      this.x = this.x * factor;
-      this.y = this.y * factor;
-    }
-  };
-
-
-  // wwtlib.Matrix3d
-
-  function Matrix3d() {
-    this._m11 = 0;
-    this._m12 = 0;
-    this._m13 = 0;
-    this._m14 = 0;
-    this._m21 = 0;
-    this._m22 = 0;
-    this._m23 = 0;
-    this._m24 = 0;
-    this._m31 = 0;
-    this._m32 = 0;
-    this._m33 = 0;
-    this._m34 = 0;
-    this._offsetX = 0;
-    this._offsetY = 0;
-    this._offsetZ = 0;
-    this._m44 = 0;
-    this._isNotKnownToBeIdentity = false;
-  }
-  Matrix3d.create = function(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, offsetX, offsetY, offsetZ, m44) {
-    var temp = new Matrix3d();
-    temp._m11 = m11;
-    temp._m12 = m12;
-    temp._m13 = m13;
-    temp._m14 = m14;
-    temp._m21 = m21;
-    temp._m22 = m22;
-    temp._m23 = m23;
-    temp._m24 = m24;
-    temp._m31 = m31;
-    temp._m32 = m32;
-    temp._m33 = m33;
-    temp._m34 = m34;
-    temp._offsetX = offsetX;
-    temp._offsetY = offsetY;
-    temp._offsetZ = offsetZ;
-    temp._m44 = m44;
-    temp._isNotKnownToBeIdentity = true;
-    return temp;
-  };
-  Matrix3d.get_identity = function() {
-    var temp = new Matrix3d();
-    temp.set(Matrix3d._s_identity);
-    return temp;
-  };
-  Matrix3d.multiplyMatrix = function(matrix1, matrix2) {
-    if (matrix1.get__isDistinguishedIdentity()) {
-      return matrix2;
-    }
-    if (matrix2.get__isDistinguishedIdentity()) {
-      return matrix1;
-    }
-    return Matrix3d.create((((matrix1._m11 * matrix2._m11) + (matrix1._m12 * matrix2._m21)) + (matrix1._m13 * matrix2._m31)) + (matrix1._m14 * matrix2._offsetX), (((matrix1._m11 * matrix2._m12) + (matrix1._m12 * matrix2._m22)) + (matrix1._m13 * matrix2._m32)) + (matrix1._m14 * matrix2._offsetY), (((matrix1._m11 * matrix2._m13) + (matrix1._m12 * matrix2._m23)) + (matrix1._m13 * matrix2._m33)) + (matrix1._m14 * matrix2._offsetZ), (((matrix1._m11 * matrix2._m14) + (matrix1._m12 * matrix2._m24)) + (matrix1._m13 * matrix2._m34)) + (matrix1._m14 * matrix2._m44), (((matrix1._m21 * matrix2._m11) + (matrix1._m22 * matrix2._m21)) + (matrix1._m23 * matrix2._m31)) + (matrix1._m24 * matrix2._offsetX), (((matrix1._m21 * matrix2._m12) + (matrix1._m22 * matrix2._m22)) + (matrix1._m23 * matrix2._m32)) + (matrix1._m24 * matrix2._offsetY), (((matrix1._m21 * matrix2._m13) + (matrix1._m22 * matrix2._m23)) + (matrix1._m23 * matrix2._m33)) + (matrix1._m24 * matrix2._offsetZ), (((matrix1._m21 * matrix2._m14) + (matrix1._m22 * matrix2._m24)) + (matrix1._m23 * matrix2._m34)) + (matrix1._m24 * matrix2._m44), (((matrix1._m31 * matrix2._m11) + (matrix1._m32 * matrix2._m21)) + (matrix1._m33 * matrix2._m31)) + (matrix1._m34 * matrix2._offsetX), (((matrix1._m31 * matrix2._m12) + (matrix1._m32 * matrix2._m22)) + (matrix1._m33 * matrix2._m32)) + (matrix1._m34 * matrix2._offsetY), (((matrix1._m31 * matrix2._m13) + (matrix1._m32 * matrix2._m23)) + (matrix1._m33 * matrix2._m33)) + (matrix1._m34 * matrix2._offsetZ), (((matrix1._m31 * matrix2._m14) + (matrix1._m32 * matrix2._m24)) + (matrix1._m33 * matrix2._m34)) + (matrix1._m34 * matrix2._m44), (((matrix1._offsetX * matrix2._m11) + (matrix1._offsetY * matrix2._m21)) + (matrix1._offsetZ * matrix2._m31)) + (matrix1._m44 * matrix2._offsetX), (((matrix1._offsetX * matrix2._m12) + (matrix1._offsetY * matrix2._m22)) + (matrix1._offsetZ * matrix2._m32)) + (matrix1._m44 * matrix2._offsetY), (((matrix1._offsetX * matrix2._m13) + (matrix1._offsetY * matrix2._m23)) + (matrix1._offsetZ * matrix2._m33)) + (matrix1._m44 * matrix2._offsetZ), (((matrix1._offsetX * matrix2._m14) + (matrix1._offsetY * matrix2._m24)) + (matrix1._offsetZ * matrix2._m34)) + (matrix1._m44 * matrix2._m44));
-  };
-  Matrix3d.lookAtLH = function(cameraPosition, cameraTarget, cameraUpVector) {
-    var zaxis = Vector3d.subtractVectors(cameraTarget, cameraPosition);
-    zaxis.normalize();
-    var xaxis = Vector3d.cross(cameraUpVector, zaxis);
-    xaxis.normalize();
-    var yaxis = Vector3d.cross(zaxis, xaxis);
-    var mat = Matrix3d.create(xaxis.x, yaxis.x, zaxis.x, 0, xaxis.y, yaxis.y, zaxis.y, 0, xaxis.z, yaxis.z, zaxis.z, 0, -Vector3d.dot(xaxis, cameraPosition), -Vector3d.dot(yaxis, cameraPosition), -Vector3d.dot(zaxis, cameraPosition), 1);
-    return mat;
-  };
-  Matrix3d._createIdentity = function() {
-    var matrixd = Matrix3d.create(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
-    matrixd.set__isDistinguishedIdentity(true);
-    return matrixd;
-  };
-  Matrix3d.equals = function(matrix1, matrix2) {
-    if (matrix1.get__isDistinguishedIdentity() || matrix2.get__isDistinguishedIdentity()) {
-      return (matrix1.get_isIdentity() === matrix2.get_isIdentity());
-    }
-    if ((((matrix1.get_m11() === matrix2.get_m11() && matrix1.get_m12() === matrix2.get_m12()) && (matrix1.get_m13() === matrix2.get_m13() && matrix1.get_m14() === matrix2.get_m14())) && ((matrix1.get_m21() === matrix2.get_m21() && matrix1.get_m22() === matrix2.get_m22()) && (matrix1.get_m23() === matrix2.get_m23() && matrix1.get_m24() === matrix2.get_m24()))) && (((matrix1.get_m31() === matrix2.get_m31() && matrix1.get_m32() === matrix2.get_m32()) && (matrix1.get_m33() === matrix2.get_m33() && matrix1.get_m34() === matrix2.get_m34())) && ((matrix1.get_offsetX() === matrix2.get_offsetX() && matrix1.get_offsetY() === matrix2.get_offsetY()) && matrix1.get_offsetZ() === matrix2.get_offsetZ()))) {
-      return matrix1.get_m44() === matrix2.get_m44();
-    }
-    return false;
-  };
-  Matrix3d.fromMatrix2d = function(mat) {
-    var mat3d = Matrix3d._createIdentity();
-    mat3d.set_m11(mat.m11);
-    mat3d.set_m12(mat.m12);
-    mat3d.set_m13(mat.m13);
-    mat3d.set_m21(mat.m21);
-    mat3d.set_m22(mat.m22);
-    mat3d.set_m23(mat.m23);
-    mat3d.set_m31(mat.m31);
-    mat3d.set_m32(mat.m32);
-    mat3d.set_m33(mat.m33);
-    mat3d._isNotKnownToBeIdentity = true;
-    return mat3d;
-  };
-  Matrix3d.rotationYawPitchRoll = function(heading, pitch, roll) {
-    var matX = Matrix3d._rotationX(pitch);
-    var matY = Matrix3d._rotationY(heading);
-    var matZ = Matrix3d._rotationZ(roll);
-    return Matrix3d.multiplyMatrix(Matrix3d.multiplyMatrix(matY, matX), matZ);
-  };
-  Matrix3d._rotationY = function(p) {
-    var v = p;
-    var matNew = Matrix3d.get_identity();
-    matNew._m11 = Math.cos(v);
-    matNew._m22 = 1;
-    matNew._m31 = Math.sin(v);
-    matNew._m13 = -Math.sin(v);
-    matNew._m33 = Math.cos(v);
-    matNew._isNotKnownToBeIdentity = true;
-    return matNew;
-  };
-  Matrix3d._rotationX = function(p) {
-    var v = p;
-    var matNew = Matrix3d.get_identity();
-    matNew._m11 = 1;
-    matNew._m22 = Math.cos(v);
-    matNew._m32 = -Math.sin(v);
-    matNew._m23 = Math.sin(v);
-    matNew._m33 = Math.cos(v);
-    matNew._isNotKnownToBeIdentity = true;
-    return matNew;
-  };
-  Matrix3d._rotationZ = function(p) {
-    var v = p;
-    var matNew = Matrix3d.get_identity();
-    matNew._m11 = Math.cos(v);
-    matNew._m21 = -Math.sin(v);
-    matNew._m12 = Math.sin(v);
-    matNew._m22 = Math.cos(v);
-    matNew._m33 = 1;
-    matNew._isNotKnownToBeIdentity = true;
-    return matNew;
-  };
-  Matrix3d._scaling = function(x, y, z) {
-    var matNew = Matrix3d.get_identity();
-    matNew._m11 = x;
-    matNew._m22 = y;
-    matNew._m33 = z;
-    matNew._isNotKnownToBeIdentity = true;
-    return matNew;
-  };
-  Matrix3d._translationXYZ = function(x, y, z) {
-    var matNew = Matrix3d.get_identity();
-    matNew.set_offsetX(x);
-    matNew.set_offsetY(y);
-    matNew.set_offsetZ(z);
-    matNew._isNotKnownToBeIdentity = true;
-    return matNew;
-  };
-  Matrix3d.perspectiveFovLH = function(fieldOfViewY, aspectRatio, znearPlane, zfarPlane) {
-    var h = 1 / Math.tan(fieldOfViewY / 2);
-    var w = h / aspectRatio;
-    return Matrix3d.create(w, 0, 0, 0, 0, h, 0, 0, 0, 0, zfarPlane / (zfarPlane - znearPlane), 1, 0, 0, -znearPlane * zfarPlane / (zfarPlane - znearPlane), 0);
-  };
-  Matrix3d.perspectiveOffCenterLH = function(left, right, bottom, top, znearPlane, zfarPlane) {
-    return Matrix3d.create(2 * znearPlane / (right - left), 0, 0, 0, 0, 2 * znearPlane / (top - bottom), 0, 0, (left + right) / (left - right), (top + bottom) / (bottom - top), zfarPlane / (zfarPlane - znearPlane), 1, 0, 0, znearPlane * zfarPlane / (znearPlane - zfarPlane), 0);
-  };
-  Matrix3d.invertMatrix = function(matrix3d) {
-    var mat = matrix3d.clone();
-    mat.invert();
-    return mat;
-  };
-  Matrix3d.translation = function(vector3d) {
-    return Matrix3d._translationXYZ(vector3d.x, vector3d.y, vector3d.z);
-  };
-  Matrix3d.getMapMatrix = function(center, fieldWidth, fieldHeight, rotation) {
-    var offsetX = 0;
-    var offsetY = 0;
-    offsetX = -((center.get_lng() + 180 - (fieldWidth / 2)) / 360);
-    offsetY = -(1 - ((center.get_lat() + 90 + (fieldHeight / 2)) / 180));
-    var mat = new Matrix2d();
-    var scaleX = 0;
-    var scaleY = 0;
-    scaleX = 360 / fieldWidth;
-    scaleY = 180 / fieldHeight;
-    mat = Matrix2d.multiply(mat, Matrix2d.translation(offsetX, offsetY));
-    mat = Matrix2d.multiply(mat, Matrix2d.scaling(scaleX, scaleY));
-    if (!!rotation) {
-      mat = Matrix2d.multiply(mat, Matrix2d.translation(-0.5, -0.5));
-      mat = Matrix2d.multiply(mat, Matrix2d.rotation(rotation));
-      mat = Matrix2d.multiply(mat, Matrix2d.translation(0.5, 0.5));
-    }
-    return Matrix3d.fromMatrix2d(mat);
-  };
-  var Matrix3d$ = {
-    clone: function() {
-      var tmp = new Matrix3d();
-      tmp.set(this);
-      return tmp;
-    },
-    setIdentity: function() {
-      this.set(Matrix3d._s_identity);
-    },
-    set: function(mat) {
-      this._m11 = mat._m11;
-      this._m12 = mat._m12;
-      this._m13 = mat._m13;
-      this._m14 = mat._m14;
-      this._m21 = mat._m21;
-      this._m22 = mat._m22;
-      this._m23 = mat._m23;
-      this._m24 = mat._m24;
-      this._m31 = mat._m31;
-      this._m32 = mat._m32;
-      this._m33 = mat._m33;
-      this._m34 = mat._m34;
-      this._offsetX = mat._offsetX;
-      this._offsetY = mat._offsetY;
-      this._offsetZ = mat._offsetZ;
-      this._m44 = mat._m44;
-      this._isNotKnownToBeIdentity = true;
-    },
-    floatArray: function() {
-      var array = new Array(16);
-      array[0] = this._m11;
-      array[1] = this._m12;
-      array[2] = this._m13;
-      array[3] = this._m14;
-      array[4] = this._m21;
-      array[5] = this._m22;
-      array[6] = this._m23;
-      array[7] = this._m24;
-      array[8] = this._m31;
-      array[9] = this._m32;
-      array[10] = this._m33;
-      array[11] = this._m34;
-      array[12] = this._offsetX;
-      array[13] = this._offsetY;
-      array[14] = this._offsetZ;
-      array[15] = this._m44;
-      return array;
-    },
-    get_isIdentity: function() {
-      if (this.get__isDistinguishedIdentity()) {
-        return true;
-      }
-      if (((((this._m11 === 1) && (!this._m12)) && ((!this._m13) && (!this._m14))) && (((!this._m21) && (this._m22 === 1)) && ((!this._m23) && (!this._m24)))) && ((((!this._m31) && (!this._m32)) && ((this._m33 === 1) && (!this._m34))) && (((!this._offsetX) && (!this._offsetY)) && ((!this._offsetZ) && (this._m44 === 1))))) {
-        this.set__isDistinguishedIdentity(true);
-        return true;
-      }
-      return false;
-    },
-    prepend: function(matrix) {
-      this.set(Matrix3d.multiplyMatrix(matrix, this));
-    },
-    append: function(matrix) {
-      this._multiply(matrix);
-    },
-    scale: function(scale) {
-      if (this.get__isDistinguishedIdentity()) {
-        this._setScaleMatrix(scale);
-      }
-      else {
-        this._m11 *= scale.x;
-        this._m12 *= scale.y;
-        this._m13 *= scale.z;
-        this._m21 *= scale.x;
-        this._m22 *= scale.y;
-        this._m23 *= scale.z;
-        this._m31 *= scale.x;
-        this._m32 *= scale.y;
-        this._m33 *= scale.z;
-        this._offsetX *= scale.x;
-        this._offsetY *= scale.y;
-        this._offsetZ *= scale.z;
-      }
-    },
-    scalePrepend: function(scale) {
-      if (this.get__isDistinguishedIdentity()) {
-        this._setScaleMatrix(scale);
-      }
-      else {
-        this._m11 *= scale.x;
-        this._m12 *= scale.x;
-        this._m13 *= scale.x;
-        this._m14 *= scale.x;
-        this._m21 *= scale.y;
-        this._m22 *= scale.y;
-        this._m23 *= scale.y;
-        this._m24 *= scale.y;
-        this._m31 *= scale.z;
-        this._m32 *= scale.z;
-        this._m33 *= scale.z;
-        this._m34 *= scale.z;
-      }
-    },
-    scaleAt: function(scale, center) {
-      if (this.get__isDistinguishedIdentity()) {
-        this._setScaleMatrixCenter(scale, center);
-      }
-      else {
-        var num = this._m14 * center.x;
-        this._m11 = num + (scale.x * (this._m11 - num));
-        num = this._m14 * center.y;
-        this._m12 = num + (scale.y * (this._m12 - num));
-        num = this._m14 * center.z;
-        this._m13 = num + (scale.z * (this._m13 - num));
-        num = this._m24 * center.x;
-        this._m21 = num + (scale.x * (this._m21 - num));
-        num = this._m24 * center.y;
-        this._m22 = num + (scale.y * (this._m22 - num));
-        num = this._m24 * center.z;
-        this._m23 = num + (scale.z * (this._m23 - num));
-        num = this._m34 * center.x;
-        this._m31 = num + (scale.x * (this._m31 - num));
-        num = this._m34 * center.y;
-        this._m32 = num + (scale.y * (this._m32 - num));
-        num = this._m34 * center.z;
-        this._m33 = num + (scale.z * (this._m33 - num));
-        num = this._m44 * center.x;
-        this._offsetX = num + (scale.x * (this._offsetX - num));
-        num = this._m44 * center.y;
-        this._offsetY = num + (scale.y * (this._offsetY - num));
-        num = this._m44 * center.z;
-        this._offsetZ = num + (scale.z * (this._offsetZ - num));
-      }
-    },
-    scaleAtPrepend: function(scale, center) {
-      if (this.get__isDistinguishedIdentity()) {
-        this._setScaleMatrixCenter(scale, center);
-      }
-      else {
-        var num3 = center.x - (center.x * scale.x);
-        var num2 = center.y - (center.y * scale.y);
-        var num = center.z - (center.z * scale.z);
-        this._offsetX += ((this._m11 * num3) + (this._m21 * num2)) + (this._m31 * num);
-        this._offsetY += ((this._m12 * num3) + (this._m22 * num2)) + (this._m32 * num);
-        this._offsetZ += ((this._m13 * num3) + (this._m23 * num2)) + (this._m33 * num);
-        this._m44 += ((this._m14 * num3) + (this._m24 * num2)) + (this._m34 * num);
-        this._m11 *= scale.x;
-        this._m12 *= scale.x;
-        this._m13 *= scale.x;
-        this._m14 *= scale.x;
-        this._m21 *= scale.y;
-        this._m22 *= scale.y;
-        this._m23 *= scale.y;
-        this._m24 *= scale.y;
-        this._m31 *= scale.z;
-        this._m32 *= scale.z;
-        this._m33 *= scale.z;
-        this._m34 *= scale.z;
-      }
-    },
-    translate: function(offset) {
-      if (this.get__isDistinguishedIdentity()) {
-        this._setTranslationMatrix(offset);
-      }
-      else {
-        this._m11 += this._m14 * offset.x;
-        this._m12 += this._m14 * offset.y;
-        this._m13 += this._m14 * offset.z;
-        this._m21 += this._m24 * offset.x;
-        this._m22 += this._m24 * offset.y;
-        this._m23 += this._m24 * offset.z;
-        this._m31 += this._m34 * offset.x;
-        this._m32 += this._m34 * offset.y;
-        this._m33 += this._m34 * offset.z;
-        this._offsetX += this._m44 * offset.x;
-        this._offsetY += this._m44 * offset.y;
-        this._offsetZ += this._m44 * offset.z;
-      }
-    },
-    translatePrepend: function(offset) {
-      if (this.get__isDistinguishedIdentity()) {
-        this._setTranslationMatrix(offset);
-      }
-      else {
-        this._offsetX += ((this._m11 * offset.x) + (this._m21 * offset.y)) + (this._m31 * offset.z);
-        this._offsetY += ((this._m12 * offset.x) + (this._m22 * offset.y)) + (this._m32 * offset.z);
-        this._offsetZ += ((this._m13 * offset.x) + (this._m23 * offset.y)) + (this._m33 * offset.z);
-        this._m44 += ((this._m14 * offset.x) + (this._m24 * offset.y)) + (this._m34 * offset.z);
-      }
-    },
-    transform: function(point) {
-      var temp = new Vector3d();
-      if (!this.get__isDistinguishedIdentity()) {
-        var x = point.x;
-        var y = point.y;
-        var z = point.z;
-        temp.x = (((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX;
-        temp.y = (((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY;
-        temp.z = (((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ;
-        if (!this.get_isAffine()) {
-          var num4 = (((x * this._m14) + (y * this._m24)) + (z * this._m34)) + this._m44;
-          temp.x /= num4;
-          temp.y /= num4;
-          temp.z /= num4;
-        }
-      }
-      return temp;
-    },
-    _transformTo: function(input, output) {
-      output.x = (((input.x * this._m11) + (input.y * this._m21)) + (input.z * this._m31)) + this._offsetX;
-      output.y = (((input.x * this._m12) + (input.y * this._m22)) + (input.z * this._m32)) + this._offsetY;
-      output.z = (((input.x * this._m13) + (input.y * this._m23)) + (input.z * this._m33)) + this._offsetZ;
-      var num4 = (((input.x * this._m14) + (input.y * this._m24)) + (input.z * this._m34)) + this._m44;
-      output.x /= num4;
-      output.y /= num4;
-      output.z /= num4;
-    },
-    transformArray: function(points) {
-      if (points != null) {
-        for (var i = 0; i < points.length; i++) {
-          this._multiplyPoint(points[i]);
-        }
-      }
-    },
-    projectArrayToScreen: function(input, output) {
-      if (input != null && output != null) {
-        var affine = this.get_isAffine();
-        for (var i = 0; i < input.length; i++) {
-          var x = input[i].x;
-          var y = input[i].y;
-          var z = input[i].z;
-          if (affine) {
-            output[i].x = ((((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX);
-            output[i].y = ((((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY);
-            output[i].z = (((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ;
+      if (renderContext.gl != null) {
+        if (Annotation.batchDirty || this.annotationDirty) {
+          var up = Vector3d.create(0, 1, 0);
+          var xNormal = Vector3d.cross(this.center, up);
+          var yNormal = Vector3d.cross(this.center, xNormal);
+          var r = this._radius$1 / 44;
+          var segments = 72;
+          var radiansPerSegment = Math.PI * 2 / segments;
+          var vertexList = [];
+          for (var j = 0; j <= segments; j++) {
+            var x = Math.cos(j * radiansPerSegment) * r;
+            var y = Math.sin(j * radiansPerSegment) * r;
+            vertexList.push(Vector3d.create(this.center.x + x * xNormal.x + y * yNormal.x, this.center.y + x * xNormal.y + y * yNormal.y, this.center.z + x * xNormal.z + y * yNormal.z));
           }
-          else {
-            var num4 = (((x * this._m14) + (y * this._m24)) + (z * this._m34)) + this._m44;
-            output[i].x = (((((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX) / num4);
-            output[i].y = (((((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY) / num4);
-            output[i].z = ((((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ) / num4;
+          if (this._strokeWidth$1 > 0 && vertexList.length > 1) {
+            for (var i = 0; i < (vertexList.length - 1); i++) {
+              Annotation.lineList.addLine(vertexList[i], vertexList[i + 1], this._lineColor$1, new Dates(0, 1));
+            }
+            Annotation.lineList.addLine(vertexList[vertexList.length - 1], vertexList[0], this._lineColor$1, new Dates(0, 1));
           }
+          if (this._fill$1) {
+            var indexes = Tessellator.tesselateSimplePoly(vertexList);
+            for (var i = 0; i < indexes.length; i += 3) {
+              Annotation.triangleList.addSubdividedTriangles(vertexList[indexes[i]], vertexList[indexes[i + 1]], vertexList[indexes[i + 2]], this._fillColor$1, new Dates(0, 1), 2);
+            }
+          }
+          this.annotationDirty = false;
         }
-      }
-    },
-    projectToScreen: function(input, width, height) {
-      var output = new Vector3d();
-      var x = input.x;
-      var y = input.y;
-      var z = input.z;
-      if (this.get_isAffine()) {
-        output.x = (((((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX) + 0.5) * width;
-        output.y = (-((((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY) + 0.5) * height;
-        output.z = (((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ;
       }
       else {
-        var num4 = (((x * this._m14) + (y * this._m24)) + (z * this._m34)) + this._m44;
-        output.x = ((((((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX) / num4) + 0.5) * width;
-        output.y = (-(((((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY) / num4) + 0.5) * height;
-        output.z = ((((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ) / num4;
-      }
-      return output;
-    },
-    get_isAffine: function() {
-      if (this.get__isDistinguishedIdentity()) {
-        return true;
-      }
-      if (((!this._m14) && (!this._m24)) && (!this._m34)) {
-        return (this._m44 === 1);
-      }
-      return false;
-    },
-    get_determinant: function() {
-      if (this.get__isDistinguishedIdentity()) {
-        return 1;
-      }
-      if (this.get_isAffine()) {
-        return this._getNormalizedAffineDeterminant();
-      }
-      var num6 = (this._m13 * this._m24) - (this._m23 * this._m14);
-      var num5 = (this._m13 * this._m34) - (this._m33 * this._m14);
-      var num4 = (this._m13 * this._m44) - (this._offsetZ * this._m14);
-      var num3 = (this._m23 * this._m34) - (this._m33 * this._m24);
-      var num2 = (this._m23 * this._m44) - (this._offsetZ * this._m24);
-      var num = (this._m33 * this._m44) - (this._offsetZ * this._m34);
-      var num10 = ((this._m22 * num5) - (this._m32 * num6)) - (this._m12 * num3);
-      var num9 = ((this._m12 * num2) - (this._m22 * num4)) + (this._offsetY * num6);
-      var num8 = ((this._m32 * num4) - (this._offsetY * num5)) - (this._m12 * num);
-      var num7 = ((this._m22 * num) - (this._m32 * num2)) + (this._offsetY * num3);
-      return ((((this._offsetX * num10) + (this._m31 * num9)) + (this._m21 * num8)) + (this._m11 * num7));
-    },
-    get_hasInverse: function() {
-      return !DoubleUtilities.isZero(this.get_determinant());
-    },
-    invert: function() {
-      if (!this._invertCore()) {
-        return;
-      }
-    },
-    transpose: function() {
-      var that = new Matrix3d();
-      that.set(this);
-      this._m12 = that._m21;
-      this._m13 = that._m31;
-      this._m14 = that._offsetX;
-      this._m23 = that._m32;
-      this._m24 = that._offsetY;
-      this._m34 = that._offsetZ;
-      this._m21 = that._m12;
-      this._m31 = that._m13;
-      this._offsetX = that._m14;
-      this._m32 = that._m23;
-      this._offsetY = that._m24;
-      this._offsetZ = that._m34;
-    },
-    get_m11: function() {
-      if (this.get__isDistinguishedIdentity()) {
-        return 1;
-      }
-      return this._m11;
-    },
-    set_m11: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m11 = value;
-      return value;
-    },
-    get_m12: function() {
-      return this._m12;
-    },
-    set_m12: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m12 = value;
-      return value;
-    },
-    get_m13: function() {
-      return this._m13;
-    },
-    set_m13: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m13 = value;
-      return value;
-    },
-    get_m14: function() {
-      return this._m14;
-    },
-    set_m14: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m14 = value;
-      return value;
-    },
-    get_m21: function() {
-      return this._m21;
-    },
-    set_m21: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m21 = value;
-      return value;
-    },
-    get_m22: function() {
-      if (this.get__isDistinguishedIdentity()) {
-        return 1;
-      }
-      return this._m22;
-    },
-    set_m22: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m22 = value;
-      return value;
-    },
-    get_m23: function() {
-      return this._m23;
-    },
-    set_m23: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m23 = value;
-      return value;
-    },
-    get_m24: function() {
-      return this._m24;
-    },
-    set_m24: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m24 = value;
-      return value;
-    },
-    get_m31: function() {
-      return this._m31;
-    },
-    set_m31: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m31 = value;
-      return value;
-    },
-    get_m32: function() {
-      return this._m32;
-    },
-    set_m32: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m32 = value;
-      return value;
-    },
-    get_m33: function() {
-      if (this.get__isDistinguishedIdentity()) {
-        return 1;
-      }
-      return this._m33;
-    },
-    set_m33: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m33 = value;
-      return value;
-    },
-    get_m34: function() {
-      return this._m34;
-    },
-    set_m34: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m34 = value;
-      return value;
-    },
-    get_m41: function() {
-      return this.get_offsetX();
-    },
-    set_m41: function(value) {
-      this.set_offsetX(value);
-      return value;
-    },
-    get_m42: function() {
-      return this.get_offsetY();
-    },
-    set_m42: function(value) {
-      this.set_offsetY(value);
-      return value;
-    },
-    get_m43: function() {
-      return this.get_offsetZ();
-    },
-    set_m43: function(value) {
-      this.set_offsetZ(value);
-      return value;
-    },
-    get_offsetX: function() {
-      return this._offsetX;
-    },
-    set_offsetX: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._offsetX = value;
-      return value;
-    },
-    get_offsetY: function() {
-      return this._offsetY;
-    },
-    set_offsetY: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._offsetY = value;
-      return value;
-    },
-    get_offsetZ: function() {
-      return this._offsetZ;
-    },
-    set_offsetZ: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._offsetZ = value;
-      return value;
-    },
-    get_m44: function() {
-      if (this.get__isDistinguishedIdentity()) {
-        return 1;
-      }
-      return this._m44;
-    },
-    set_m44: function(value) {
-      if (this.get__isDistinguishedIdentity()) {
-        this.set(Matrix3d._s_identity);
-        this.set__isDistinguishedIdentity(false);
-      }
-      this._m44 = value;
-      return value;
-    },
-    _setScaleMatrix: function(scale) {
-      this._m11 = scale.x;
-      this._m22 = scale.y;
-      this._m33 = scale.z;
-      this._m44 = 1;
-      this.set__isDistinguishedIdentity(false);
-    },
-    _setScaleMatrixCenter: function(scale, center) {
-      this._m11 = scale.x;
-      this._m22 = scale.y;
-      this._m33 = scale.z;
-      this._m44 = 1;
-      this._offsetX = center.x - (center.x * scale.x);
-      this._offsetY = center.y - (center.y * scale.y);
-      this._offsetZ = center.z - (center.z * scale.z);
-      this.set__isDistinguishedIdentity(false);
-    },
-    _setTranslationMatrix: function(offset) {
-      this._m11 = this._m22 = this._m33 = this._m44 = 1;
-      this._offsetX = offset.x;
-      this._offsetY = offset.y;
-      this._offsetZ = offset.z;
-      this.set__isDistinguishedIdentity(false);
-    },
-    _multiplyPoint: function(point) {
-      if (!this.get__isDistinguishedIdentity()) {
-        var x = point.x;
-        var y = point.y;
-        var z = point.z;
-        point.x = (((x * this._m11) + (y * this._m21)) + (z * this._m31)) + this._offsetX;
-        point.y = (((x * this._m12) + (y * this._m22)) + (z * this._m32)) + this._offsetY;
-        point.z = (((x * this._m13) + (y * this._m23)) + (z * this._m33)) + this._offsetZ;
-        if (!this.get_isAffine()) {
-          var num4 = (((x * this._m14) + (y * this._m24)) + (z * this._m34)) + this._m44;
-          point.x /= num4;
-          point.y /= num4;
-          point.z /= num4;
+        if (onScreen) {
+          var ctx = renderContext.device;
+          ctx.save();
+          ctx.globalAlpha = this.get_opacity();
+          ctx.beginPath();
+          ctx.arc(screenSpacePnt.x, screenSpacePnt.y, rad, 0, Math.PI * 2, true);
+          ctx.lineWidth = this._strokeWidth$1;
+          ctx.fillStyle = this._fillColor$1.toString();
+          if (this._fill$1) {
+            ctx.fill();
+          }
+          ctx.globalAlpha = 1;
+          ctx.strokeStyle = this._lineColor$1.toString();
+          ctx.stroke();
+          ctx.restore();
         }
       }
     },
-    multiplyVector: function(vector) {
-      if (!this.get__isDistinguishedIdentity()) {
-        var x = vector.x;
-        var y = vector.y;
-        var z = vector.z;
-        vector.x = ((x * this._m11) + (y * this._m21)) + (z * this._m31);
-        vector.y = ((x * this._m12) + (y * this._m22)) + (z * this._m32);
-        vector.z = ((x * this._m13) + (y * this._m23)) + (z * this._m33);
-      }
-    },
-    _getNormalizedAffineDeterminant: function() {
-      var num3 = (this._m12 * this._m23) - (this._m22 * this._m13);
-      var num2 = (this._m32 * this._m13) - (this._m12 * this._m33);
-      var num = (this._m22 * this._m33) - (this._m32 * this._m23);
-      return (((this._m31 * num3) + (this._m21 * num2)) + (this._m11 * num));
-    },
-    _normalizedAffineInvert: function() {
-      var num11 = (this._m12 * this._m23) - (this._m22 * this._m13);
-      var num10 = (this._m32 * this._m13) - (this._m12 * this._m33);
-      var num9 = (this._m22 * this._m33) - (this._m32 * this._m23);
-      var num8 = ((this._m31 * num11) + (this._m21 * num10)) + (this._m11 * num9);
-      if (DoubleUtilities.isZero(num8)) {
+    hitTest: function(renderContext, RA, dec, x, y) {
+      if (ss.emptyString(this.get_id())) {
         return false;
       }
-      var num20 = (this._m21 * this._m13) - (this._m11 * this._m23);
-      var num19 = (this._m11 * this._m33) - (this._m31 * this._m13);
-      var num18 = (this._m31 * this._m23) - (this._m21 * this._m33);
-      var num7 = (this._m11 * this._m22) - (this._m21 * this._m12);
-      var num6 = (this._m11 * this._m32) - (this._m31 * this._m12);
-      var num5 = (this._m11 * this._offsetY) - (this._offsetX * this._m12);
-      var num4 = (this._m21 * this._m32) - (this._m31 * this._m22);
-      var num3 = (this._m21 * this._offsetY) - (this._offsetX * this._m22);
-      var num2 = (this._m31 * this._offsetY) - (this._offsetX * this._m32);
-      var num17 = ((this._m23 * num5) - (this._offsetZ * num7)) - (this._m13 * num3);
-      var num16 = ((this._m13 * num2) - (this._m33 * num5)) + (this._offsetZ * num6);
-      var num15 = ((this._m33 * num3) - (this._offsetZ * num4)) - (this._m23 * num2);
-      var num14 = num7;
-      var num13 = -num6;
-      var num12 = num4;
-      var num = 1 / num8;
-      this._m11 = num9 * num;
-      this._m12 = num10 * num;
-      this._m13 = num11 * num;
-      this._m21 = num18 * num;
-      this._m22 = num19 * num;
-      this._m23 = num20 * num;
-      this._m31 = num12 * num;
-      this._m32 = num13 * num;
-      this._m33 = num14 * num;
-      this._offsetX = num15 * num;
-      this._offsetY = num16 * num;
-      this._offsetZ = num17 * num;
-      return true;
-    },
-    _invertCore: function() {
-      if (!this.get__isDistinguishedIdentity()) {
-        if (this.get_isAffine()) {
-          return this._normalizedAffineInvert();
-        }
-        var num7 = (this._m13 * this._m24) - (this._m23 * this._m14);
-        var num6 = (this._m13 * this._m34) - (this._m33 * this._m14);
-        var num5 = (this._m13 * this._m44) - (this._offsetZ * this._m14);
-        var num4 = (this._m23 * this._m34) - (this._m33 * this._m24);
-        var num3 = (this._m23 * this._m44) - (this._offsetZ * this._m24);
-        var num2 = (this._m33 * this._m44) - (this._offsetZ * this._m34);
-        var num12 = ((this._m22 * num6) - (this._m32 * num7)) - (this._m12 * num4);
-        var num11 = ((this._m12 * num3) - (this._m22 * num5)) + (this._offsetY * num7);
-        var num10 = ((this._m32 * num5) - (this._offsetY * num6)) - (this._m12 * num2);
-        var num9 = ((this._m22 * num2) - (this._m32 * num3)) + (this._offsetY * num4);
-        var num8 = (((this._offsetX * num12) + (this._m31 * num11)) + (this._m21 * num10)) + (this._m11 * num9);
-        if (DoubleUtilities.isZero(num8)) {
-          return false;
-        }
-        var num24 = ((this._m11 * num4) - (this._m21 * num6)) + (this._m31 * num7);
-        var num23 = ((this._m21 * num5) - (this._offsetX * num7)) - (this._m11 * num3);
-        var num22 = ((this._m11 * num2) - (this._m31 * num5)) + (this._offsetX * num6);
-        var num21 = ((this._m31 * num3) - (this._offsetX * num4)) - (this._m21 * num2);
-        num7 = (this._m11 * this._m22) - (this._m21 * this._m12);
-        num6 = (this._m11 * this._m32) - (this._m31 * this._m12);
-        num5 = (this._m11 * this._offsetY) - (this._offsetX * this._m12);
-        num4 = (this._m21 * this._m32) - (this._m31 * this._m22);
-        num3 = (this._m21 * this._offsetY) - (this._offsetX * this._m22);
-        num2 = (this._m31 * this._offsetY) - (this._offsetX * this._m32);
-        var num20 = ((this._m13 * num4) - (this._m23 * num6)) + (this._m33 * num7);
-        var num19 = ((this._m23 * num5) - (this._offsetZ * num7)) - (this._m13 * num3);
-        var num18 = ((this._m13 * num2) - (this._m33 * num5)) + (this._offsetZ * num6);
-        var num17 = ((this._m33 * num3) - (this._offsetZ * num4)) - (this._m23 * num2);
-        var num16 = ((this._m24 * num6) - (this._m34 * num7)) - (this._m14 * num4);
-        var num15 = ((this._m14 * num3) - (this._m24 * num5)) + (this._m44 * num7);
-        var num14 = ((this._m34 * num5) - (this._m44 * num6)) - (this._m14 * num2);
-        var num13 = ((this._m24 * num2) - (this._m34 * num3)) + (this._m44 * num4);
-        var num = 1 / num8;
-        this._m11 = num9 * num;
-        this._m12 = num10 * num;
-        this._m13 = num11 * num;
-        this._m14 = num12 * num;
-        this._m21 = num21 * num;
-        this._m22 = num22 * num;
-        this._m23 = num23 * num;
-        this._m24 = num24 * num;
-        this._m31 = num13 * num;
-        this._m32 = num14 * num;
-        this._m33 = num15 * num;
-        this._m34 = num16 * num;
-        this._offsetX = num17 * num;
-        this._offsetY = num18 * num;
-        this._offsetZ = num19 * num;
-        this._m44 = num20 * num;
+      var rad = this._radius$1;
+      if (!this._skyRelative$1) {
+        rad *= renderContext.get_fovScale() / 3600;
       }
-      return true;
-    },
-    get__isDistinguishedIdentity: function() {
-      return !this._isNotKnownToBeIdentity;
-    },
-    set__isDistinguishedIdentity: function(value) {
-      this._isNotKnownToBeIdentity = !value;
-      return value;
-    },
-    _multiply: function(mat) {
-      this.set(Matrix3d.multiplyMatrix(this, mat));
+      return Annotation.separation(RA, dec, this._ra$1, this._dec$1) < rad;
     }
   };
 
 
-  // wwtlib.Matrix2d
+  // wwtlib.Poly
 
-  function Matrix2d() {
-    this.m11 = 1;
-    this.m12 = 0;
-    this.m13 = 0;
-    this.m21 = 0;
-    this.m22 = 1;
-    this.m23 = 0;
-    this.m31 = 0;
-    this.m32 = 0;
-    this.m33 = 1;
+  function Poly() {
+    this._points$1 = [];
+    this._fill$1 = false;
+    this._strokeWidth$1 = 1;
+    this._lineColor$1 = Colors.get_white();
+    this._fillColor$1 = Colors.get_white();
+    Annotation.call(this);
   }
-  Matrix2d.create = function(m11, m12, m13, m21, m22, m23, m31, m32, m33) {
-    var mat = new Matrix2d();
-    mat.m11 = m11;
-    mat.m12 = m12;
-    mat.m13 = m13;
-    mat.m21 = m21;
-    mat.m22 = m22;
-    mat.m23 = m23;
-    mat.m31 = m31;
-    mat.m32 = m32;
-    mat.m33 = m33;
-    return mat;
-  };
-  Matrix2d.rotation = function(angle) {
-    var mat = new Matrix2d();
-    mat.m11 = Math.cos(angle);
-    mat.m21 = -Math.sin(angle);
-    mat.m12 = Math.sin(angle);
-    mat.m22 = Math.cos(angle);
-    return mat;
-  };
-  Matrix2d.translation = function(x, y) {
-    var mat = new Matrix2d();
-    mat.m31 = x;
-    mat.m32 = y;
-    return mat;
-  };
-  Matrix2d.scaling = function(x, y) {
-    var mat = new Matrix2d();
-    mat.m11 = x;
-    mat.m22 = y;
-    return mat;
-  };
-  Matrix2d.multiply = function(matrix1, matrix2) {
-    return Matrix2d.create((((matrix1.m11 * matrix2.m11) + (matrix1.m12 * matrix2.m21)) + (matrix1.m13 * matrix2.m31)), (((matrix1.m11 * matrix2.m12) + (matrix1.m12 * matrix2.m22)) + (matrix1.m13 * matrix2.m32)), (((matrix1.m11 * matrix2.m13) + (matrix1.m12 * matrix2.m23)) + (matrix1.m13 * matrix2.m33)), (((matrix1.m21 * matrix2.m11) + (matrix1.m22 * matrix2.m21)) + (matrix1.m23 * matrix2.m31)), (((matrix1.m21 * matrix2.m12) + (matrix1.m22 * matrix2.m22)) + (matrix1.m23 * matrix2.m32)), (((matrix1.m21 * matrix2.m13) + (matrix1.m22 * matrix2.m23)) + (matrix1.m23 * matrix2.m33)), (((matrix1.m31 * matrix2.m11) + (matrix1.m32 * matrix2.m21)) + (matrix1.m33 * matrix2.m31)), (((matrix1.m31 * matrix2.m12) + (matrix1.m32 * matrix2.m22)) + (matrix1.m33 * matrix2.m32)), (((matrix1.m31 * matrix2.m13) + (matrix1.m32 * matrix2.m23)) + (matrix1.m33 * matrix2.m33)));
-  };
-  Matrix2d.rotateAt = function(angle, pnt) {
-    var matT0 = Matrix2d.translation(-pnt.x, -pnt.y);
-    var matR = Matrix2d.rotation(angle);
-    var matT1 = Matrix2d.translation(pnt.x, pnt.y);
-    return Matrix2d.multiply(Matrix2d.multiply(matT0, matR), matT1);
-  };
-  var Matrix2d$ = {
-    _transformPoints: function(points) {
-      var $enum1 = ss.enumerate(points);
-      while ($enum1.moveNext()) {
-        var pnt = $enum1.current;
-        this.multiplyPoint(pnt);
-      }
+  var Poly$ = {
+    addPoint: function(x, y) {
+      Annotation.batchDirty = true;
+      this._points$1.push(Coordinates.raDecTo3d(x / 15, y));
     },
-    multiplyPoint: function(point) {
-      var x = point.x;
-      var y = point.y;
-      point.x = (((x * this.m11) + (y * this.m21)) + this.m31);
-      point.y = (((x * this.m12) + (y * this.m22)) + this.m32);
-    }
-  };
-
-
-  // wwtlib.DoubleUtilities
-
-  function DoubleUtilities() {
-  }
-  DoubleUtilities.isZero = function(value) {
-    return (Math.abs(value) < 2.22044604925031E-50);
-  };
-  DoubleUtilities.isOne = function(value) {
-    return (Math.abs(value - 1) < 2.22044604925031E-50);
-  };
-  DoubleUtilities.radiansToDegrees = function(radians) {
-    return radians * 180 / Math.PI;
-  };
-  DoubleUtilities.degreesToRadians = function(degrees) {
-    return degrees * Math.PI / 180;
-  };
-  DoubleUtilities.clamp = function(x, min, max) {
-    return Math.max(min, Math.min(x, max));
-  };
-
-
-  // wwtlib.PlaneD
-
-  function PlaneD(valuePointA, valuePointB, valuePointC, valuePointD) {
-    this.a = 0;
-    this.b = 0;
-    this.c = 0;
-    this.d = 0;
-    this.a = valuePointA;
-    this.b = valuePointB;
-    this.c = valuePointC;
-    this.d = valuePointD;
-  }
-  var PlaneD$ = {
-    normalize: function() {
-      var length = Math.sqrt(this.a * this.a + this.b * this.b + this.c * this.c);
-      this.a /= length;
-      this.b /= length;
-      this.c /= length;
-      this.d /= length;
+    get_fill: function() {
+      return this._fill$1;
     },
-    dot: function(v) {
-      return this.b * v.y + this.c * v.z + this.d * v.w + this.a * v.x;
-    }
-  };
-
-
-  // wwtlib.Vector4d
-
-  function Vector4d(valueX, valueY, valueZ, valueW) {
-    this.x = 0;
-    this.y = 0;
-    this.z = 0;
-    this.w = 0;
-    this.x = valueX;
-    this.y = valueY;
-    this.z = valueZ;
-    this.w = valueW;
-  }
-  var Vector4d$ = {
-
-  };
-
-
-  // wwtlib.PositionNormalTexturedX2
-
-  function PositionNormalTexturedX2() {
-    this.x = 0;
-    this.y = 0;
-    this.z = 0;
-    this.nx = 0;
-    this.ny = 0;
-    this.nz = 0;
-    this.tu = 0;
-    this.tv = 0;
-    this.tu1 = 0;
-    this.tv1 = 0;
-  }
-  PositionNormalTexturedX2.create2UV = function(pos, nor, u, v, u1, v1) {
-    var temp = new PositionNormalTexturedX2();
-    temp.x = pos.x;
-    temp.y = pos.y;
-    temp.z = pos.z;
-    temp.nx = nor.x;
-    temp.ny = nor.y;
-    temp.nz = nor.z;
-    temp.tu = u;
-    temp.tv = v;
-    temp.tu1 = u1;
-    temp.tv1 = v1;
-    return temp;
-  };
-  PositionNormalTexturedX2.create = function(pos, nor, u, v) {
-    var temp = new PositionNormalTexturedX2();
-    temp.x = pos.x;
-    temp.y = pos.y;
-    temp.z = pos.z;
-    temp.nx = nor.x;
-    temp.ny = nor.y;
-    temp.nz = nor.z;
-    temp.tu = u;
-    temp.tv = v;
-    var result = Coordinates.cartesianToSpherical2(nor);
-    temp.tu1 = ((result.get_lng() + 180) / 360);
-    temp.tv1 = (1 - ((result.get_lat() + 90) / 180));
-    return temp;
-  };
-  PositionNormalTexturedX2.createLong2UV = function(xvalue, yvalue, zvalue, nxvalue, nyvalue, nzvalue, u, v, u1, v1) {
-    var temp = new PositionNormalTexturedX2();
-    temp.x = xvalue;
-    temp.y = yvalue;
-    temp.z = zvalue;
-    temp.nx = nxvalue;
-    temp.ny = nyvalue;
-    temp.nz = nzvalue;
-    temp.tu = u;
-    temp.tv = v;
-    temp.tu1 = u1;
-    temp.tv1 = v1;
-    return temp;
-  };
-  PositionNormalTexturedX2.get_strideSize = function() {
-    return 40;
-  };
-  var PositionNormalTexturedX2$ = {
-    get_lat: function() {
-      return (1 - this.tv1) * 180 - 90;
-    },
-    set_lat: function(value) {
-      this.tv1 = (1 - ((value + 90) / 180));
+    set_fill: function(value) {
+      Annotation.batchDirty = true;
+      this._fill$1 = value;
       return value;
     },
-    get_lng: function() {
-      return this.tu1 * 360 - 180;
+    get_lineWidth: function() {
+      return this._strokeWidth$1;
     },
-    set_lng: function(value) {
-      this.tu1 = ((value + 180) / 360);
+    set_lineWidth: function(value) {
+      Annotation.batchDirty = true;
+      this._strokeWidth$1 = value;
       return value;
     },
-    createLong: function(xvalue, yvalue, zvalue, nxvalue, nyvalue, nzvalue, u, v) {
-      var temp = new PositionNormalTexturedX2();
-      temp.x = xvalue;
-      temp.y = yvalue;
-      temp.z = zvalue;
-      temp.nx = nxvalue;
-      temp.ny = nyvalue;
-      temp.nz = nzvalue;
-      temp.tu = u;
-      temp.tv = v;
-      var result = Coordinates.cartesianToSpherical2(Vector3d.create(this.nx, this.ny, this.nz));
-      temp.tu1 = ((result.get_lng() + 180) / 360);
-      temp.tv1 = (1 - ((result.get_lat() + 90) / 180));
-      return temp;
+    get_lineColor: function() {
+      return this._lineColor$1.toString();
     },
-    get_normal: function() {
-      return Vector3d.create(this.nx, this.ny, this.nz);
-    },
-    set_normal: function(value) {
-      this.nx = value.x;
-      this.ny = value.y;
-      this.nz = value.z;
+    set_lineColor: function(value) {
+      Annotation.batchDirty = true;
+      this._lineColor$1 = Color.fromName(value);
       return value;
     },
-    get_position: function() {
-      return Vector3d.create(this.x, this.y, this.y);
+    get_fillColor: function() {
+      return this._fillColor$1.toString();
     },
-    set_position: function(value) {
-      this.x = value.x;
-      this.y = value.y;
-      this.z = value.z;
+    set_fillColor: function(value) {
+      Annotation.batchDirty = true;
+      this._fillColor$1 = Color.fromName(value);
       return value;
     },
-    toString: function() {
-      return ss.format('X={0}, Y={1}, Z={2}, Nx={3}, Ny={4}, Nz={5}, U={6}, V={7}, U1={8}, U2={9}', this.x, this.y, this.z, this.nx, this.ny, this.nz, this.tu, this.tv, this.tu1, this.tv1);
-    }
-  };
-
-
-  // wwtlib.PositionNormalTextured
-
-  function PositionNormalTextured() {
-    this.x = 0;
-    this.y = 0;
-    this.z = 0;
-    this.nx = 0;
-    this.ny = 0;
-    this.nz = 0;
-    this.tu = 0;
-    this.tv = 0;
-  }
-  PositionNormalTextured.createShort = function(pos, nor, u, v) {
-    var temp = new PositionNormalTextured();
-    temp.x = pos.x;
-    temp.y = pos.y;
-    temp.z = pos.z;
-    temp.nx = nor.x;
-    temp.ny = nor.y;
-    temp.nz = nor.z;
-    temp.tu = u;
-    temp.tv = v;
-    return temp;
-  };
-  PositionNormalTextured._create = function(x, y, z, nx, ny, nz, tu, tv) {
-    var temp = new PositionNormalTextured();
-    temp.x = x;
-    temp.y = y;
-    temp.z = z;
-    temp.nx = nx;
-    temp.ny = ny;
-    temp.nz = nz;
-    temp.tu = tu;
-    temp.tv = tv;
-    return temp;
-  };
-  PositionNormalTextured.createUV = function(pos, nor, uv) {
-    var temp = new PositionNormalTextured();
-    temp.x = pos.x;
-    temp.y = pos.y;
-    temp.z = pos.z;
-    temp.nx = nor.x;
-    temp.ny = nor.y;
-    temp.nz = nor.z;
-    temp.tu = uv.x;
-    temp.tv = uv.y;
-    return temp;
-  };
-  var PositionNormalTextured$ = {
-    createLong: function(xvalue, yvalue, zvalue, nxvalue, nyvalue, nzvalue, u, v) {
-      var temp = new PositionNormalTexturedX2();
-      temp.x = xvalue;
-      temp.y = yvalue;
-      temp.z = zvalue;
-      temp.nx = nxvalue;
-      temp.ny = nyvalue;
-      temp.nz = nzvalue;
-      temp.tu = u;
-      temp.tv = v;
-      return temp;
-    },
-    get_normal: function() {
-      return Vector3d.create(this.nx, this.ny, this.nz);
-    },
-    set_normal: function(value) {
-      this.nx = value.x;
-      this.ny = value.y;
-      this.nz = value.z;
-      return value;
-    },
-    get_position: function() {
-      return Vector3d.create(this.x, this.y, this.z);
-    },
-    set_position: function(value) {
-      this.x = value.x;
-      this.y = value.y;
-      this.z = value.z;
-      return value;
-    },
-    toString: function() {
-      return ss.format('X={0}, Y={1}, Z={2}, Nx={3}, Ny={4}, Nz={5}, U={6}, V={7}, U1={8}, U2={9}', this.x, this.y, this.z, this.nx, this.ny, this.nz, this.tu, this.tv);
-    }
-  };
-
-
-  // wwtlib.SphereHull
-
-  function SphereHull() {
-    this.radius = 0;
-  }
-  SphereHull._create = function(Center, Radius) {
-    var temp = new SphereHull();
-    temp.center = Center;
-    temp.radius = Radius;
-    return temp;
-  };
-  var SphereHull$ = {
-
-  };
-
-
-  // wwtlib.ConvexHull
-
-  function ConvexHull() {
-  }
-  ConvexHull.findEnclosingSphereFast = function(points) {
-    var result = new SphereHull();
-    var count = points.length;
-    var center = Vector3d.zero;
-    for (var i = 0; i < count; ++i) {
-      center.add(points[i]);
-    }
-    center.multiply(1 / count);
-    var radius = 0;
-    for (var i = 0; i < count; ++i) {
-      var distance = Vector3d.getLengthSq(Vector3d.subtractVectors(points[i], center));
-      if (distance > radius) {
-        radius = distance;
-      }
-    }
-    radius = Math.sqrt(radius);
-    result.center = center;
-    result.radius = radius;
-    return result;
-  };
-  ConvexHull.findEnclosingSphere = function(list) {
-    var Center = new Vector3d();
-    var Radius = 0;
-    var count = list.length;
-    var i;
-    var dx;
-    var dy;
-    var dz;
-    var rad_sq;
-    var xspan;
-    var yspan;
-    var zspan;
-    var maxspan;
-    var old_to_p;
-    var old_to_p_sq;
-    var old_to_new;
-    var xmin = new Vector3d();
-    var xmax = new Vector3d();
-    var ymin = new Vector3d();
-    var ymax = new Vector3d();
-    var zmin = new Vector3d();
-    var zmax = new Vector3d();
-    var dia1 = new Vector3d();
-    var dia2 = new Vector3d();
-    xmin.x = ymin.y = zmin.z = 100000000;
-    xmax.x = ymax.y = zmax.z = -1000000000;
-    for (i = 0; i < count; i++) {
-      var current = list[i];
-      if (current.x < xmin.x) {
-        xmin = current;
-      }
-      if (current.x > xmax.x) {
-        xmax = current;
-      }
-      if (current.y < ymin.y) {
-        ymin = current;
-      }
-      if (current.y > ymax.y) {
-        ymax = current;
-      }
-      if (current.z < zmin.z) {
-        zmin = current;
-      }
-      if (current.z > zmax.z) {
-        zmax = current;
-      }
-    }
-    dx = xmax.x - xmin.x;
-    dy = xmax.y - xmin.y;
-    dz = xmax.z - xmin.z;
-    xspan = dx * dx + dy * dy + dz * dz;
-    dx = ymax.x - ymin.x;
-    dy = ymax.y - ymin.y;
-    dz = ymax.z - ymin.z;
-    yspan = dx * dx + dy * dy + dz * dz;
-    dx = zmax.x - zmin.x;
-    dy = zmax.y - zmin.y;
-    dz = zmax.z - zmin.z;
-    zspan = dx * dx + dy * dy + dz * dz;
-    dia1 = xmin;
-    dia2 = xmax;
-    maxspan = xspan;
-    if (yspan > maxspan) {
-      maxspan = yspan;
-      dia1 = ymin;
-      dia2 = ymax;
-    }
-    if (zspan > maxspan) {
-      dia1 = zmin;
-      dia2 = zmax;
-    }
-    Center.x = (dia1.x + dia2.x) / 2;
-    Center.y = (dia1.y + dia2.y) / 2;
-    Center.z = (dia1.z + dia2.z) / 2;
-    dx = dia2.x - Center.x;
-    dy = dia2.y - Center.y;
-    dz = dia2.z - Center.z;
-    rad_sq = dx * dx + dy * dy + dz * dz;
-    Radius = Math.sqrt(rad_sq);
-    for (i = 0; i < count; i++) {
-      var current = list[i];
-      dx = current.x - Center.x;
-      dy = current.y - Center.y;
-      dz = current.z - Center.z;
-      old_to_p_sq = dx * dx + dy * dy + dz * dz;
-      if (old_to_p_sq > rad_sq) {
-        old_to_p = Math.sqrt(old_to_p_sq);
-        Radius = (Radius + old_to_p) / 2;
-        rad_sq = Radius * Radius;
-        old_to_new = old_to_p - Radius;
-        Center.x = (Radius * Center.x + old_to_new * current.x) / old_to_p;
-        Center.y = (Radius * Center.y + old_to_new * current.y) / old_to_p;
-        Center.z = (Radius * Center.z + old_to_new * current.z) / old_to_p;
-      }
-    }
-    return SphereHull._create(Center, Radius);
-  };
-  var ConvexHull$ = {
-
-  };
-
-
-  // wwtlib.Folder
-
-  function Folder() {
-    this.parent = null;
-    this.isProxy = false;
-    this._versionDependent = false;
-    this._readOnly = true;
-    this._dirty = false;
-    this._thumbnail = null;
-    this._proxyFolder = null;
-    this._lastUpdate = new Date();
-    this._childList = [];
-    this._itemsField = [];
-    this._imagesets = [];
-    this._tours = [];
-    this._folders = [];
-    this._places = [];
-    this._groupField = 0;
-    this._refreshTypeField = 0;
-    this._refreshTypeFieldSpecified = false;
-    this._browseableField = true;
-    this._browseableFieldSpecified = false;
-    this._searchableField = false;
-    this._typeField = 0;
-    this._communityIdField = 0;
-    this._componentIdField = 0;
-    this._permissionField = 0;
-  }
-  var Folder$ = {
-    toString: function() {
-      return this._nameField;
-    },
-    get_versionDependent: function() {
-      return this._versionDependent;
-    },
-    set_versionDependent: function(value) {
-      this._versionDependent = value;
-      var $enum1 = ss.enumerate(this._folders);
-      while ($enum1.moveNext()) {
-        var folder = $enum1.current;
-        folder.set_versionDependent(this._versionDependent);
-      }
-      return value;
-    },
-    get_readOnly: function() {
-      return this._readOnly;
-    },
-    set_readOnly: function(value) {
-      this._readOnly = value;
-      return value;
-    },
-    get_dirty: function() {
-      return this._dirty;
-    },
-    set_dirty: function(value) {
-      this._dirty = value;
-      return value;
-    },
-    loadFromUrl: function(url, complete) {
-      this._onComplete = complete;
-      this._webFile = new WebFile(Util.getProxiedUrl(url));
-      this._webFile.onStateChange = ss.bind('_loadData', this);
-      this._webFile.send();
-    },
-    _loadData: function() {
-      if (this._webFile.get_state() === 2) {
-        alert(this._webFile.get_message());
-      }
-      else if (this._webFile.get_state() === 1) {
-        var node = Util.selectSingleNode(this._webFile.getXml(), 'Folder');
-        if (node == null) {
-          var doc = this._webFile.getXml();
-          if (doc != null) {
-            node = Util.selectSingleNode(doc, 'Folder');
-          }
-        }
-        if (node != null) {
-          this._clearChildren();
-          this._parseXML(node);
-        }
-        if (this._onComplete != null) {
-          this._onComplete();
-        }
-      }
-    },
-    _clearChildren: function() {
-      this._folders.length = 0;
-      this._tours.length = 0;
-      this._places.length = 0;
-      this.get_imagesets().length = 0;
-    },
-    _parseXML: function(node) {
-      if (node.attributes.getNamedItem('Name') != null) {
-        this._nameField = node.attributes.getNamedItem('Name').nodeValue;
-      }
-      else {
-        this._nameField = '';
-      }
-      if (node.attributes.getNamedItem('Url') != null) {
-        this._urlField = node.attributes.getNamedItem('Url').nodeValue;
-      }
-      if (node.attributes.getNamedItem('Thumbnail') != null) {
-        this._thumbnailUrlField = node.attributes.getNamedItem('Thumbnail').nodeValue;
-      }
-      var $enum1 = ss.enumerate(node.childNodes);
-      while ($enum1.moveNext()) {
-        var child = $enum1.current;
-        switch (child.nodeName) {
-          case 'Folder':
-            var temp = new Folder();
-            temp.parent = this;
-            temp._parseXML(child);
-            this._folders.push(temp);
-            break;
-          case 'Place':
-            this._places.push(Place._fromXml(child));
-            break;
-          case 'ImageSet':
-            this.get_imagesets().push(Imageset.fromXMLNode(child));
-            break;
-          case 'Tour':
-            this.get_tours().push(Tour._fromXml(child));
-            break;
-        }
-      }
-    },
-    addChildFolder: function(child) {
-      this._folders.push(child);
-      this._dirty = true;
-    },
-    removeChildFolder: function(child) {
-      ss.remove(this._folders, child);
-      this._dirty = true;
-    },
-    addChildPlace: function(child) {
-      this._places.push(child);
-      this._dirty = true;
-    },
-    removeChildPlace: function(child) {
-      ss.remove(this._places, child);
-      this._dirty = true;
-    },
-    get_thumbnail: function() {
-      return this._thumbnail;
-    },
-    set_thumbnail: function(value) {
-      this._thumbnail = value;
-      return value;
-    },
-    get_bounds: function() {
-      return this._bounds;
-    },
-    set_bounds: function(value) {
-      this._bounds = value;
-      return value;
-    },
-    get_isImage: function() {
-      return false;
-    },
-    get_isTour: function() {
-      return false;
-    },
-    get_isFolder: function() {
-      return true;
-    },
-    get_isCloudCommunityItem: function() {
-      return !!this._communityIdField || this._permissionField > 0;
-    },
-    refresh: function() {
-      if (this._proxyFolder == null) {
-        this._proxyFolder = new Folder();
-        this._proxyFolder.isProxy = true;
-        this._proxyFolder.parent = this.parent;
-      }
-      this._proxyFolder.loadFromUrl(this._urlField, this._childReadyCallback);
-      this._childReadyCallback = null;
-    },
-    childLoadCallback: function(callback) {
-      this._childReadyCallback = callback;
-      var temp = this.get_children();
-      if (this._proxyFolder == null) {
-        callback();
-      }
-    },
-    get_children: function() {
-      if (ss.emptyString(this._urlField)) {
-        this._childList.length = 0;
-        if (this.parent != null) {
-          var folderUp = new FolderUp();
-          folderUp.parent = this.parent;
-          this._childList.push(folderUp);
-        }
-        if (this.get_folders() != null) {
-          var $enum1 = ss.enumerate(this.get_folders());
-          while ($enum1.moveNext()) {
-            var folder = $enum1.current;
-            this._childList.push(folder);
-          }
-        }
-        if (this.get_imagesets() != null) {
-          var $enum2 = ss.enumerate(this.get_imagesets());
-          while ($enum2.moveNext()) {
-            var imset = $enum2.current;
-            this._childList.push(imset);
-          }
-        }
-        if (this.get_places() != null) {
-          var $enum3 = ss.enumerate(this.get_places());
-          while ($enum3.moveNext()) {
-            var place = $enum3.current;
-            this._childList.push(place);
-          }
-        }
-        if (this.get_tours() != null) {
-          var $enum4 = ss.enumerate(this.get_tours());
-          while ($enum4.moveNext()) {
-            var tour = $enum4.current;
-            this._childList.push(tour);
-          }
-        }
-        return this._childList;
-      }
-      else {
-        var ts = (this._lastUpdate - ss.now()) / 1000;
-        if (true || this.get_refreshType() === 1 || this._proxyFolder == null || (!this.get_refreshType() && (parseInt(this._refreshIntervalField) < ts))) {
-          this.refresh();
-        }
-        if (this._proxyFolder != null) {
-          return this._proxyFolder.get_children();
-        }
-        else {
-          return null;
-        }
-      }
-    },
-    get_msrCommunityId: function() {
-      return this._communityIdField;
-    },
-    set_msrCommunityId: function(value) {
-      this._communityIdField = value;
-      return value;
-    },
-    get_msrComponentId: function() {
-      return this._componentIdField;
-    },
-    set_msrComponentId: function(value) {
-      this._componentIdField = value;
-      return value;
-    },
-    get_permission: function() {
-      return this._permissionField;
-    },
-    set_permission: function(value) {
-      this._permissionField = value;
-      return value;
-    },
-    get_folders: function() {
-      return this._folders;
-    },
-    set_folders: function(value) {
-      this._folders = value;
-      return value;
-    },
-    get_places: function() {
-      return this._places;
-    },
-    set_places: function(value) {
-      this._places = value;
-      return value;
-    },
-    get_imagesets: function() {
-      return this._imagesets;
-    },
-    set_imagesets: function(value) {
-      this._imagesets = value;
-      return value;
-    },
-    get_tours: function() {
-      return this._tours;
-    },
-    set_tours: function(value) {
-      this._tours = value;
-      return value;
-    },
-    get_name: function() {
-      if (this._nameField == null) {
-        return '';
-      }
-      else {
-        return this._nameField;
-      }
-    },
-    set_name: function(value) {
-      this._nameField = value;
-      return value;
-    },
-    get_group: function() {
-      return this._groupField;
-    },
-    set_group: function(value) {
-      this._groupField = value;
-      return value;
-    },
-    get_url: function() {
-      return this._urlField;
-    },
-    set_url: function(value) {
-      this._urlField = value;
-      return value;
-    },
-    get_thumbnailUrl: function() {
-      if (ss.emptyString(this._thumbnailUrlField)) {
-        return 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?name=folder';
-      }
-      return this._thumbnailUrlField;
-    },
-    set_thumbnailUrl: function(value) {
-      this._thumbnailUrlField = value;
-      return value;
-    },
-    get_refreshType: function() {
-      return this._refreshTypeField;
-    },
-    set_refreshType: function(value) {
-      this._refreshTypeField = value;
-      this.set_refreshTypeSpecified(true);
-      return value;
-    },
-    get_refreshTypeSpecified: function() {
-      return this._refreshTypeFieldSpecified;
-    },
-    set_refreshTypeSpecified: function(value) {
-      this._refreshTypeFieldSpecified = value;
-      return value;
-    },
-    get_refreshInterval: function() {
-      return this._refreshIntervalField;
-    },
-    set_refreshInterval: function(value) {
-      this._refreshIntervalField = value;
-      return value;
-    },
-    get_browseable: function() {
-      return this._browseableField;
-    },
-    set_browseable: function(value) {
-      this._browseableField = value;
-      this._browseableFieldSpecified = true;
-      return value;
-    },
-    get_browseableSpecified: function() {
-      return this._browseableFieldSpecified;
-    },
-    set_browseableSpecified: function(value) {
-      this._browseableFieldSpecified = value;
-      return value;
-    },
-    get_searchable: function() {
-      return this._searchableField;
-    },
-    set_searchable: function(value) {
-      this._searchableField = value;
-      return value;
-    },
-    get_type: function() {
-      return this._typeField;
-    },
-    set_type: function(value) {
-      this._typeField = value;
-      return value;
-    },
-    get_subType: function() {
-      return this._subTypeField;
-    },
-    set_subType: function(value) {
-      this._subTypeField = value;
-      return value;
-    }
-  };
-
-
-  // wwtlib.FolderBrowser
-
-  function FolderBrowser() {
-    this._items = [];
-    this.top = 10;
-    this.left = 10;
-    this._indexTouchDown = -1;
-    this._mouseDown = false;
-    this._lastX = 0;
-    this._lastY = 0;
-    this._ignoreClick = false;
-    this._thumbnailSize = 0;
-    this._horzSpacing = 110;
-    this._vertSpacing = 75;
-    this._thumbHeight = 65;
-    this._thumbWidth = 110;
-    this._horzMultiple = 110;
-    this._rowCount = 1;
-    this._colCount = 6;
-    this._dragging = false;
-    this._startIndex = 0;
-    this._startOffset = 0;
-    this._selectedItem = -1;
-    this._hoverItem = -1;
-    this.showAddButton = false;
-    this.width = 0;
-    this.height = 0;
-    this._addButtonHover = false;
-    this.imageClicked = false;
-  }
-  FolderBrowser.create = function() {
-    var temp = new FolderBrowser();
-    temp.height = 85;
-    temp.width = 1920;
-    temp.canvas = document.createElement('canvas');
-    temp.canvas.width = temp.width;
-    temp.canvas.height = temp.height;
-    temp.setup();
-    temp.loadImages();
-    return temp;
-  };
-  var FolderBrowser$ = {
-    setup: function() {
-      this.canvas.addEventListener('click', ss.bind('onClick', this), false);
-      this.canvas.addEventListener('dblclick', ss.bind('onDoubleClick', this), false);
-      this.canvas.addEventListener('mousemove', ss.bind('onMouseMove', this), false);
-      this.canvas.addEventListener('mouseup', ss.bind('onMouseUp', this), false);
-      this.canvas.addEventListener('mousedown', ss.bind('onMouseDown', this), false);
-      this.canvas.addEventListener('mousewheel', ss.bind('onMouseWheel', this), false);
-      this.canvas.addEventListener('touchstart', ss.bind('onTouchStart', this), false);
-      this.canvas.addEventListener('touchmove', ss.bind('onTouchMove', this), false);
-      this.canvas.addEventListener('touchend', ss.bind('onTouchEnd', this), false);
-      this.canvas.addEventListener('mouseout', ss.bind('onMouseUp', this), false);
-    },
-    onTouchStart: function(e) {
-      var ev = e;
-      ev.preventDefault();
-      this._mouseDown = true;
-      this._lastX = ev.targetTouches[0].pageX;
-      this._lastY = ev.targetTouches[0].pageY;
-      this._indexTouchDown = this._getItemIndexFromCursor(Vector2d.create(ev.targetTouches[0].pageX, ev.targetTouches[0].pageY));
-    },
-    onTouchMove: function(e) {
-      var ev = e;
-      ev.preventDefault();
-      if (this._mouseDown) {
-        var curX = ev.targetTouches[0].pageX - this._lastX;
-        var curY = ev.targetTouches[0].pageY - this._lastY;
-        if (this._mouseDown) {
-          this._dragging = true;
-        }
-        if (!this._dragging) {
-          var newHover = this._getItemIndexFromCursor(Vector2d.create(ev.targetTouches[0].pageX, ev.targetTouches[0].pageY));
-          if (this._hoverItem !== newHover) {
-            this._hoverItem = newHover;
-          }
-        }
-        else {
-          var tiles = Math.round(((ev.targetTouches[0].pageX - this._lastX) + this._startOffset) / this._horzSpacing);
-          var offset = Math.round(((ev.targetTouches[0].pageX - this._lastX) + this._startOffset) - (tiles * this._horzSpacing));
-          this._startOffset = offset;
-          this._startIndex -= tiles;
-          if (this._startIndex < 0) {
-            this._startOffset -= (this._horzSpacing * this._startIndex);
-            this._startIndex = 0;
-          }
-          this._lastX = ev.targetTouches[0].pageX;
-          this._lastY = ev.targetTouches[0].pageY;
-        }
-        this.refresh();
-      }
-    },
-    onTouchEnd: function(e) {
-      var ev = e;
-      ev.preventDefault();
-      if (this._dragging) {
-        this._dragging = false;
-        this._ignoreClick = true;
-      }
-      else if (this._indexTouchDown > -1 && this._mouseDown) {
-        this._handleClick(this._indexTouchDown);
-      }
-      this._startOffset = 0;
-      this._mouseDown = false;
-      this.refresh();
-    },
-    onClick: function(e) {
-      if (!this._ignoreClick) {
-        var index = this._getItemIndexFromCursor(Vector2d.create(e.offsetX, e.offsetY));
-        this._handleClick(index);
-      }
-      else {
-        this._ignoreClick = false;
-      }
-    },
-    _handleClick: function(index) {
-      var $this = this;
-
-      if (index > -1) {
-        if (ss.canCast(this._items[index], Place)) {
-          var place = this._items[index];
-          WWTControl.singleton.gotoTarget(place, false, false, true);
-          return;
-        }
-        if (ss.canCast(this._items[index], Imageset)) {
-          var imageset = this._items[index];
-          WWTControl.singleton.renderContext.set_backgroundImageset(imageset);
-          return;
-        }
-        if (ss.canCast(this._items[index], Tour)) {
-          var tour = this._items[index];
-          WWTControl.singleton.playTour(tour.get_tourUrl());
-          return;
-        }
-        if (ss.canCast(this._items[index], Folder)) {
-          var folder = this._items[index];
-          this._startIndex = 0;
-          folder.childLoadCallback(function() {
-            $this._items = folder.get_children();
-            $this.refresh();
-          });
-          return;
-        }
-        if (ss.canCast(this._items[index], FolderUp)) {
-          var folderUp = this._items[index];
-          if (folderUp.parent != null) {
-            this._startIndex = 0;
-            folderUp.parent.childLoadCallback(function() {
-              $this._items = folderUp.parent.get_children();
-              $this.refresh();
-            });
-          }
-          return;
-        }
-      }
-      return;
-    },
-    onDoubleClick: function(e) {
-      RenderTriangle.renderingOn = !RenderTriangle.renderingOn;
-    },
-    onGestureChange: function(e) {
-      var g = e;
-      this._mouseDown = false;
-      var delta = g.scale;
-    },
-    onMouseDown: function(e) {
-      this._mouseDown = true;
-      this._lastX = Mouse.offsetX(this.canvas, e);
-      this._lastY = Mouse.offsetY(this.canvas, e);
-    },
-    onMouseMove: function(e) {
-      if (this._mouseDown) {
-        this._dragging = true;
-      }
-      if (!this._dragging) {
-        var newHover = this._getItemIndexFromCursor(Vector2d.create(Mouse.offsetX(this.canvas, e), Mouse.offsetY(this.canvas, e)));
-        if (this._hoverItem !== newHover) {
-          this._hoverItem = newHover;
-        }
-      }
-      else {
-        var tiles = Math.round(((Mouse.offsetX(this.canvas, e) - this._lastX) + this._startOffset) / this._horzSpacing);
-        var offset = Math.round(((Mouse.offsetX(this.canvas, e) - this._lastX) + this._startOffset) - (tiles * this._horzSpacing));
-        this._startOffset = offset;
-        this._startIndex -= tiles;
-        if (this._startIndex < 0) {
-          this._startOffset -= (this._horzSpacing * this._startIndex);
-          this._startIndex = 0;
-        }
-        this._lastX = Mouse.offsetX(this.canvas, e);
-        this._lastY = Mouse.offsetY(this.canvas, e);
-      }
-      this.refresh();
-    },
-    onMouseUp: function(e) {
-      if (this._dragging) {
-        this._startOffset = 0;
-        this._dragging = false;
-        this._ignoreClick = true;
-      }
-      this._mouseDown = false;
-      this.refresh();
-    },
-    onMouseWheel: function(e) {
-      var ev = e;
-      var delta = ev.wheelDelta;
-    },
-    loadImages: function() {
-      var $this = this;
-
-      if (!FolderBrowser._imagesLoaded && !FolderBrowser._downloading) {
-        FolderBrowser._imageLoadCount = 0;
-        FolderBrowser._imagesLoaded = false;
-        FolderBrowser._downloading = true;
-        FolderBrowser._bmpBackground = document.createElement('img');
-        FolderBrowser._bmpBackground.src = 'images/thumbBackground.png';
-        FolderBrowser._bmpBackground.addEventListener('load', function(e) {
-          FolderBrowser._imageLoadCount++;
-          if (FolderBrowser._imageLoadCount === 5) {
-            FolderBrowser._downloading = false;
-            FolderBrowser._imagesLoaded = true;
-            $this.refresh();
-          }
-        }, false);
-        FolderBrowser._bmpBackgroundHover = document.createElement('img');
-        FolderBrowser._bmpBackgroundHover.src = 'images/thumbBackgroundHover.png';
-        FolderBrowser._bmpBackgroundHover.addEventListener('load', function(e) {
-          FolderBrowser._imageLoadCount++;
-          if (FolderBrowser._imageLoadCount === 5) {
-            FolderBrowser._downloading = false;
-            FolderBrowser._imagesLoaded = true;
-            $this.refresh();
-          }
-        }, false);
-        FolderBrowser._bmpBackgroundWide = document.createElement('img');
-        FolderBrowser._bmpBackgroundWide.src = 'images/thumbBackgroundWide.png';
-        FolderBrowser._bmpBackgroundWide.addEventListener('load', function(e) {
-          FolderBrowser._imageLoadCount++;
-          if (FolderBrowser._imageLoadCount === 5) {
-            FolderBrowser._downloading = false;
-            FolderBrowser._imagesLoaded = true;
-            $this.refresh();
-          }
-        }, false);
-        FolderBrowser._bmpBackgroundWideHover = document.createElement('img');
-        FolderBrowser._bmpBackgroundWideHover.src = 'images/thumbBackgroundWideHover.png';
-        FolderBrowser._bmpBackgroundWideHover.addEventListener('load', function(e) {
-          FolderBrowser._imageLoadCount++;
-          if (FolderBrowser._imageLoadCount === 5) {
-            FolderBrowser._downloading = false;
-            FolderBrowser._imagesLoaded = true;
-            $this.refresh();
-          }
-        }, false);
-        FolderBrowser._bmpDropInsertMarker = document.createElement('img');
-        FolderBrowser._bmpDropInsertMarker.src = 'images/dragInsertMarker.png';
-        FolderBrowser._bmpDropInsertMarker.addEventListener('load', function(e) {
-          FolderBrowser._imageLoadCount++;
-          if (FolderBrowser._imageLoadCount === 5) {
-            FolderBrowser._downloading = false;
-            FolderBrowser._imagesLoaded = true;
-            $this.refresh();
-          }
-        }, false);
-      }
-    },
-    get_thumbnailSize: function() {
-      return this._thumbnailSize;
-    },
-    set_thumbnailSize: function(value) {
-      this._thumbnailSize = value;
-      switch (value) {
-        case 1:
-          this._horzSpacing = 180;
-          this._vertSpacing = 75;
-          this._thumbHeight = 65;
-          this._thumbWidth = 180;
-          break;
-        case 0:
-          this._horzSpacing = 110;
-          this._vertSpacing = 75;
-          this._thumbHeight = 65;
-          this._thumbWidth = 110;
-          break;
-      }
-      this._updatePaginator();
-      this.refresh();
-      return value;
-    },
-    refresh: function() {
-      if (this.width !== window.innerWidth) {
-        this.width = window.innerWidth;
-        this.canvas.width = this.canvas.width;
-      }
-      this.paint();
-    },
-    get_rowCount: function() {
-      return this._rowCount;
-    },
-    set_rowCount: function(value) {
-      if (this._rowCount !== value) {
-        this._rowCount = value;
-        this._updatePaginator();
-      }
-      return value;
-    },
-    _updatePaginator: function() {
-    },
-    get_colCount: function() {
-      return this._colCount;
-    },
-    set_colCount: function(value) {
-      if (this._colCount !== value) {
-        this._colCount = value;
-        this._updatePaginator();
-      }
-      return value;
-    },
-    get_itemsPerPage: function() {
-      return this._rowCount * this._colCount;
-    },
-    get_currentPage: function() {
-      return this._startIndex / this.get_itemsPerPage();
-    },
-    get_pageCount: function() {
-      return Math.max(1, ((this._items.length + this.get_itemsPerPage() - 1) + ((this.showAddButton) ? 1 : 0)) / this.get_itemsPerPage());
-    },
-    paint: function() {
-      var $this = this;
-
-      var g = this.canvas.getContext('2d');
-      g.fillStyle = 'rgb(20, 22, 31)';
-      g.fillRect(0, 0, this.width, this.height);
-      if (!FolderBrowser._imagesLoaded) {
-        return;
-      }
-      var netHeight = (this.height - 10 * 2);
-      var netWidth = (this.width - 10 * 2);
-      this.set_rowCount(Math.round(Math.max(netHeight / this._thumbHeight, 1)));
-      this.set_colCount(Math.round(Math.max(netWidth / this._horzSpacing, 1)));
-      this._horzMultiple = (netWidth + 13) / this.get_colCount();
-      this._startIndex = Math.round((this._startIndex / this.get_itemsPerPage()) * this.get_itemsPerPage());
-      var rectf;
-      var index = this._startIndex;
-      for (var y = 0; y < this._rowCount; y++) {
-        for (var x = 0; x < this._colCount; x++) {
-          if (index >= this._items.length) {
-            if (!this._items.length || this.showAddButton) {
-              rectf = Rectangle.create(this.left + x * this._horzMultiple + 3 + this._startOffset, this.top + y * this._vertSpacing, this._thumbWidth - 10, 60);
-              g.drawImage((this._thumbnailSize === 1) ? FolderBrowser._bmpBackgroundWide : FolderBrowser._bmpBackground, ss.truncate((x * this._horzMultiple)) + this._startOffset, y * this._vertSpacing);
+    draw: function(renderContext) {
+      if (renderContext.gl != null) {
+        if (Annotation.batchDirty || this.annotationDirty) {
+          var vertexList = this._points$1;
+          if (this._strokeWidth$1 > 0 && this._points$1.length > 1) {
+            for (var i = 0; i < (this._points$1.length - 1); i++) {
+              Annotation.lineList.addLine(vertexList[i], vertexList[i + 1], this._lineColor$1, new Dates(0, 1));
             }
-            break;
+            Annotation.lineList.addLine(vertexList[this._points$1.length - 1], vertexList[0], this._lineColor$1, new Dates(0, 1));
           }
-          rectf = Rectangle.create(this.left + x * this._horzMultiple + 3 + this._startOffset, this.top + y * this._vertSpacing, this._thumbWidth - 14, 60);
-          var textBrush = 'white';
-          if (index === this._hoverItem || (index === this._selectedItem && this._hoverItem === -1)) {
-            g.drawImage((this._thumbnailSize === 1) ? FolderBrowser._bmpBackgroundWideHover : FolderBrowser._bmpBackgroundHover, this.left + ss.truncate((x * this._horzMultiple)) + this._startOffset, this.top + y * this._vertSpacing);
-            textBrush = 'yellow';
+          if (this._fill$1) {
+            var indexes = Tessellator.tesselateSimplePoly(vertexList);
+            for (var i = 0; i < indexes.length; i += 3) {
+              Annotation.triangleList.addSubdividedTriangles(vertexList[indexes[i]], vertexList[indexes[i + 1]], vertexList[indexes[i + 2]], this._fillColor$1, new Dates(0, 1), 2);
+            }
+          }
+          this.annotationDirty = false;
+        }
+      }
+      else {
+        var ctx = renderContext.device;
+        ctx.save();
+        ctx.globalAlpha = this.get_opacity();
+        ctx.beginPath();
+        var first = true;
+        var $enum1 = ss.enumerate(this._points$1);
+        while ($enum1.moveNext()) {
+          var pnt = $enum1.current;
+          var screenSpacePnt = renderContext.WVP.transform(pnt);
+          if (screenSpacePnt.z < 0) {
+            ctx.restore();
+            return;
+          }
+          if (Vector3d.dot(renderContext.get_viewPoint(), pnt) < 0.75) {
+            ctx.restore();
+            return;
+          }
+          if (first) {
+            first = false;
+            ctx.moveTo(screenSpacePnt.x, screenSpacePnt.y);
           }
           else {
-            g.drawImage((this._thumbnailSize === 1) ? FolderBrowser._bmpBackgroundWide : FolderBrowser._bmpBackground, this.left + ss.truncate((x * this._horzMultiple)) + this._startOffset, this.top + y * this._vertSpacing);
+            ctx.lineTo(screenSpacePnt.x, screenSpacePnt.y);
           }
-          this._items[index].set_bounds(Rectangle.create((this.left + x * this._horzMultiple) + this._startOffset, this.top + (y * this._vertSpacing), ss.truncate(this._horzMultiple), this._vertSpacing));
-          try {
-            var bmpThumb = this._items[index].get_thumbnail();
-            if (bmpThumb != null) {
-              g.drawImage(bmpThumb, this.left + (x * this._horzMultiple) + 2 + this._startOffset, this.top + y * this._vertSpacing + 3);
-              g.strokeStyle = 'rgb(0,0,0)';
-              g.rect(this.left + ss.truncate((x * this._horzMultiple)) + 2 + this._startOffset, this.top + y * this._vertSpacing + 3, this._items[index].get_thumbnail().width, this._items[index].get_thumbnail().height);
+        }
+        ctx.closePath();
+        ctx.lineWidth = this._strokeWidth$1;
+        if (this._fill$1) {
+          ctx.fillStyle = this._fillColor$1.toString();
+          ctx.fill();
+        }
+        ctx.strokeStyle = this._lineColor$1.toString();
+        ctx.globalAlpha = 1;
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  };
+
+
+  // wwtlib.PolyLine
+
+  function PolyLine() {
+    this._points$1 = [];
+    this._strokeWidth$1 = 1;
+    this._lineColor$1 = Colors.get_white();
+    Annotation.call(this);
+  }
+  var PolyLine$ = {
+    addPoint: function(x, y) {
+      Annotation.batchDirty = true;
+      this._points$1.push(Coordinates.raDecTo3d(x / 15, y));
+    },
+    get_lineWidth: function() {
+      return this._strokeWidth$1;
+    },
+    set_lineWidth: function(value) {
+      Annotation.batchDirty = true;
+      this._strokeWidth$1 = value;
+      return value;
+    },
+    get_lineColor: function() {
+      return this._lineColor$1.toString();
+    },
+    set_lineColor: function(value) {
+      Annotation.batchDirty = true;
+      this._lineColor$1 = Color.fromName(value);
+      return value;
+    },
+    draw: function(renderContext) {
+      if (renderContext.gl != null) {
+        if (Annotation.batchDirty || this.annotationDirty) {
+          var vertexList = this._points$1;
+          if (this._strokeWidth$1 > 0) {
+            for (var i = 0; i < (this._points$1.length - 1); i++) {
+              Annotation.lineList.addLine(vertexList[i], vertexList[i + 1], this._lineColor$1, new Dates(0, 1));
+            }
+          }
+          this.annotationDirty = false;
+        }
+      }
+      else {
+        var ctx = renderContext.device;
+        ctx.save();
+        ctx.globalAlpha = this.get_opacity();
+        var first = true;
+        var $enum1 = ss.enumerate(this._points$1);
+        while ($enum1.moveNext()) {
+          var pnt = $enum1.current;
+          var screenSpacePnt = renderContext.WVP.transform(pnt);
+          if (screenSpacePnt.z < 0) {
+            ctx.restore();
+            return;
+          }
+          if (Vector3d.dot(renderContext.get_viewPoint(), pnt) < 0.75) {
+            ctx.restore();
+            return;
+          }
+          if (first) {
+            first = false;
+            ctx.beginPath();
+            ctx.moveTo(screenSpacePnt.x, screenSpacePnt.y);
+          }
+          else {
+            ctx.lineTo(screenSpacePnt.x, screenSpacePnt.y);
+          }
+        }
+        ctx.lineWidth = this._strokeWidth$1;
+        ctx.strokeStyle = this._lineColor$1.toString();
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  };
+
+
+  // wwtlib.EquirectangularTile
+
+  function EquirectangularTile() {
+    this._tileDegrees$1 = 0;
+    this._topDown$1 = true;
+    this._subDivisionLevel$1 = 1;
+    Tile.call(this);
+  }
+  EquirectangularTile.create = function(level, x, y, dataset, parent) {
+    var temp = new EquirectangularTile();
+    temp.parent = parent;
+    temp.level = level;
+    temp.tileX = x;
+    temp.tileY = y;
+    temp.dataset = dataset;
+    temp._topDown$1 = !dataset.get_bottomsUp();
+    temp.computeBoundingSphere();
+    return temp;
+  };
+  var EquirectangularTile$ = {
+    computeBoundingSphere: function() {
+      if (!this._topDown$1) {
+        this.computeBoundingSphereBottomsUp();
+        return;
+      }
+      this._tileDegrees$1 = this.dataset.get_baseTileDegrees() / Math.pow(2, this.level);
+      var latMin = (90 - ((this.tileY) * this._tileDegrees$1));
+      var latMax = (90 - (((this.tileY + 1)) * this._tileDegrees$1));
+      var lngMin = ((this.tileX * this._tileDegrees$1) - 180);
+      var lngMax = ((((this.tileX + 1)) * this._tileDegrees$1) - 180);
+      var latCenter = (latMin + latMax) / 2;
+      var lngCenter = (lngMin + lngMax) / 2;
+      this.sphereCenter = this.geoTo3d(latCenter, lngCenter, false);
+      this.topLeft = this.geoTo3d(latMin, lngMin, false);
+      this.bottomRight = this.geoTo3d(latMax, lngMax, false);
+      this.topRight = this.geoTo3d(latMin, lngMax, false);
+      this.bottomLeft = this.geoTo3d(latMax, lngMin, false);
+      var distVect = this.geoTo3d(latMin, lngMin, false);
+      distVect.subtract(this.sphereCenter);
+      this.sphereRadius = distVect.length();
+      this._tileDegrees$1 = lngMax - lngMin;
+    },
+    computeBoundingSphereBottomsUp: function() {
+      var tileDegrees = this.dataset.get_baseTileDegrees() / (Math.pow(2, this.level));
+      var latMin = (-90 + (((this.tileY + 1)) * tileDegrees));
+      var latMax = (-90 + ((this.tileY) * tileDegrees));
+      var lngMin = ((this.tileX * tileDegrees) - 180);
+      var lngMax = ((((this.tileX + 1)) * tileDegrees) - 180);
+      var latCenter = (latMin + latMax) / 2;
+      var lngCenter = (lngMin + lngMax) / 2;
+      this.sphereCenter = this.geoTo3d(latCenter, lngCenter, false);
+      this.topLeft = this.geoTo3d(latMin, lngMin, false);
+      this.bottomRight = this.geoTo3d(latMax, lngMax, false);
+      this.topRight = this.geoTo3d(latMin, lngMax, false);
+      this.bottomLeft = this.geoTo3d(latMax, lngMin, false);
+      var distVect = this.topLeft;
+      distVect.subtract(this.sphereCenter);
+      this.sphereRadius = distVect.length();
+      tileDegrees = lngMax - lngMin;
+    },
+    createGeometry: function(renderContext) {
+      Tile.prototype.createGeometry.call(this, renderContext);
+      if (renderContext.gl == null) {
+        if (!this.dataset.get_dataSetType() || this.dataset.get_dataSetType() === 1) {
+          this._subDivisionLevel$1 = Math.max(2, (4 - this.level) * 2);
+        }
+      }
+      else {
+        this._subDivisionLevel$1 = 32;
+      }
+      try {
+        for (var i = 0; i < 4; i++) {
+          this._renderTriangleLists[i] = [];
+        }
+        if (!this._topDown$1) {
+          return this._createGeometryBottomsUp$1(renderContext);
+        }
+        var lat, lng;
+        var index = 0;
+        var tileDegrees = this.dataset.get_baseTileDegrees() / Math.pow(2, this.level);
+        var latMin = (90 - ((this.tileY) * tileDegrees));
+        var latMax = (90 - (((this.tileY + 1)) * tileDegrees));
+        var lngMin = ((this.tileX * tileDegrees) - 180);
+        var lngMax = ((((this.tileX + 1)) * tileDegrees) - 180);
+        var tileDegreesX = lngMax - lngMin;
+        var tileDegreesY = latMax - latMin;
+        this.topLeft = this.geoTo3d(latMin, lngMin, false);
+        this.bottomRight = this.geoTo3d(latMax, lngMax, false);
+        this.topRight = this.geoTo3d(latMin, lngMax, false);
+        this.bottomLeft = this.geoTo3d(latMax, lngMin, false);
+        var verts = new Array((this._subDivisionLevel$1 + 1) * (this._subDivisionLevel$1 + 1));
+        var x, y;
+        var textureStep = 1 / this._subDivisionLevel$1;
+        for (y = 0; y <= this._subDivisionLevel$1; y++) {
+          if (y !== this._subDivisionLevel$1) {
+            lat = latMin + (textureStep * tileDegreesY * y);
+          }
+          else {
+            lat = latMax;
+          }
+          for (x = 0; x <= this._subDivisionLevel$1; x++) {
+            if (x !== this._subDivisionLevel$1) {
+              lng = lngMin + (textureStep * tileDegreesX * x);
             }
             else {
-              this._items[index].set_thumbnail(document.createElement('img'));
-              this._items[index].get_thumbnail().src = this._items[index].get_thumbnailUrl();
-              this._items[index].get_thumbnail().addEventListener('load', function(e) {
-                $this.refresh();
-              }, false);
+              lng = lngMax;
+            }
+            index = y * (this._subDivisionLevel$1 + 1) + x;
+            verts[index] = PositionTexture.createPos(this.geoTo3d(lat, lng, false), x * textureStep, y * textureStep);
+          }
+        }
+        this.triangleCount = this._subDivisionLevel$1 * this._subDivisionLevel$1 * 2;
+        var quarterDivisions = this._subDivisionLevel$1 / 2;
+        var part = 0;
+        if (renderContext.gl == null) {
+          for (var y2 = 0; y2 < 2; y2++) {
+            for (var x2 = 0; x2 < 2; x2++) {
+              index = 0;
+              for (var y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
+                for (var x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
+                  var p1;
+                  var p2;
+                  var p3;
+                  p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + x1)];
+                  p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
+                  p3 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
+                  this._renderTriangleLists[part].push(RenderTriangle.create(p1, p3, p2, this.texture, this.level));
+                  p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
+                  p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
+                  p3 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
+                  this._renderTriangleLists[part].push(RenderTriangle.create(p1, p3, p2, this.texture, this.level));
+                }
+              }
+              part++;
             }
           }
-          catch ($e1) {
-          }
-          g.fillStyle = textBrush;
-          g.strokeStyle = textBrush;
-          g.lineWidth = 1;
-          g.font = 'normal 8pt Arial';
-          g.fillText(this._items[index].get_name(), rectf.x, rectf.y + rectf.height, rectf.width);
-          index++;
-        }
-        if (index >= this._items.length) {
-          break;
-        }
-      }
-    },
-    _getItemIndexFromCursor: function(testPointIn) {
-      var testPoint = Vector2d.create(testPointIn.x + this.left, testPointIn.y + this.top);
-      this.imageClicked = false;
-      var index = -1;
-      var xpos = ss.truncate((testPoint.x / this._horzMultiple));
-      var xPart = ss.truncate((testPoint.x % this._horzMultiple));
-      if (xpos >= this._colCount) {
-        return -1;
-      }
-      if (xpos < 0) {
-        return -1;
-      }
-      var ypos = ss.truncate((testPoint.y / this._vertSpacing));
-      var yPart = ss.truncate((testPoint.y % this._vertSpacing));
-      if (ypos >= this._rowCount) {
-        return -1;
-      }
-      if (ypos < 0) {
-        return -1;
-      }
-      index = this._startIndex + ypos * this._colCount + xpos;
-      if (index === this._items.length) {
-        this._addButtonHover = true;
-      }
-      else {
-        this._addButtonHover = false;
-      }
-      if (index > this._items.length - 1) {
-        return -1;
-      }
-      if ((this._items[index]).get_isImage() && yPart < 16 && xPart > 78) {
-        this.imageClicked = true;
-      }
-      return index;
-    },
-    _addItems: function(list) {
-      this._items = list;
-    }
-  };
-
-
-  // wwtlib.FolderUp
-
-  function FolderUp() {
-    this.parent = null;
-    this._bounds = new Rectangle();
-  }
-  var FolderUp$ = {
-    get_name: function() {
-      return 'Up Level';
-    },
-    get_thumbnail: function() {
-      return this._thumbnail;
-    },
-    set_thumbnail: function(value) {
-      this._thumbnail = value;
-      return value;
-    },
-    get_thumbnailUrl: function() {
-      return 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?Name=folderup';
-    },
-    set_thumbnailUrl: function(value) {
-      return;
-      return value;
-    },
-    get_bounds: function() {
-      return this._bounds;
-    },
-    set_bounds: function(value) {
-      this._bounds = value;
-      return value;
-    },
-    get_isImage: function() {
-      return false;
-    },
-    get_isTour: function() {
-      return false;
-    },
-    get_isFolder: function() {
-      return false;
-    },
-    get_isCloudCommunityItem: function() {
-      return false;
-    },
-    get_readOnly: function() {
-      return false;
-    },
-    get_children: function() {
-      if (this.parent == null) {
-        return [];
-      }
-      else {
-        return this.parent.get_children();
-      }
-    }
-  };
-
-
-  // wwtlib.Imageset
-
-  function Imageset() {
-    this._projection = 0;
-    this._imageSetID = 0;
-    this._baseTileDegrees = 0;
-    this._widthFactor = 1;
-    this.demUrl = '';
-    this._levels = 0;
-    this._mercator = false;
-    this._bottomsUp = false;
-    this._baseLevel = 1;
-    this._quadTreeTileMap = '0123';
-    this._centerX = 0;
-    this._centerY = 0;
-    this._rotation = 0;
-    this._meanRadius = 0;
-    this._dataSetType = 0;
-    this._bandPass = 3;
-    this._altUrl = '';
-    this._singleImage = false;
-    this._matrixComputed = false;
-    this._name = '';
-    this._sparse = false;
-    this._thumbnailUrl = '';
-    this._generic = false;
-    this._defaultSet = false;
-    this._elevationModel = false;
-    this._offsetX = 0;
-    this._offsetY = 0;
-  }
-  Imageset.getTileKey = function(imageset, level, x, y) {
-    return imageset.get_imageSetID().toString() + '\\' + level.toString() + '\\' + y.toString() + '_' + x.toString();
-  };
-  Imageset.getNewTile = function(imageset, level, x, y, parent) {
-    switch (imageset.get_projection()) {
-      case 0:
-        var newTile = MercatorTile.create(level, x, y, imageset, parent);
-        return newTile;
-      case 1:
-        return EquirectangularTile.create(level, x, y, imageset, parent);
-      case 3:
-      default:
-        return ToastTile.create(level, x, y, imageset, parent);
-      case 5:
-        return SkyImageTile.create(level, x, y, imageset, parent);
-      case 6:
-        return PlotTile.create(level, x, y, imageset, parent);
-      case 2:
-        var newTile = TangentTile.create(level, x, y, imageset, parent);
-        return newTile;
-    }
-  };
-  Imageset.fromXMLNode = function(node) {
-    try {
-      var type = 2;
-      var projection = 2;
-      if (node.attributes.getNamedItem('DataSetType') != null) {
-        type = Enums.parse('ImageSetType', node.attributes.getNamedItem('DataSetType').nodeValue);
-      }
-      var bandPass = 3;
-      bandPass = Enums.parse('BandPass', node.attributes.getNamedItem('BandPass').nodeValue);
-      var wf = 1;
-      if (node.attributes.getNamedItem('WidthFactor') != null) {
-        wf = parseInt(node.attributes.getNamedItem('WidthFactor').nodeValue);
-      }
-      if (node.attributes.getNamedItem('Generic') == null || !ss.boolean(node.attributes.getNamedItem('Generic').nodeValue)) {
-        projection = Enums.parse('ProjectionType', node.attributes.getNamedItem('Projection').nodeValue);
-        var fileType = node.attributes.getNamedItem('FileType').nodeValue;
-        if (!ss.startsWith(fileType, '.')) {
-          fileType = '.' + fileType;
-        }
-        var thumbnailUrl = '';
-        var thumbUrl = Util.selectSingleNode(node, 'ThumbnailUrl');
-        if (thumbUrl != null) {
-          if (ss.emptyString(thumbUrl.text)) {
-            var cn = thumbUrl;
-            thumbnailUrl = cn.textContent;
-          }
-          else {
-            thumbnailUrl = thumbUrl.text;
-          }
-        }
-        var stockSet = false;
-        var elevationModel = false;
-        if (node.attributes.getNamedItem('StockSet') != null) {
-          stockSet = ss.boolean(node.attributes.getNamedItem('StockSet').nodeValue);
-        }
-        if (node.attributes.getNamedItem('ElevationModel') != null) {
-          elevationModel = ss.boolean(node.attributes.getNamedItem('ElevationModel').nodeValue);
-        }
-        var demUrl = '';
-        if (node.attributes.getNamedItem('DemUrl') != null) {
-          demUrl = node.attributes.getNamedItem('DemUrl').nodeValue;
-        }
-        var alturl = '';
-        if (node.attributes.getNamedItem('AltUrl') != null) {
-          alturl = node.attributes.getNamedItem('AltUrl').nodeValue;
-        }
-        var offsetX = 0;
-        if (node.attributes.getNamedItem('OffsetX') != null) {
-          offsetX = parseFloat(node.attributes.getNamedItem('OffsetX').nodeValue);
-        }
-        var offsetY = 0;
-        if (node.attributes.getNamedItem('OffsetY') != null) {
-          offsetY = parseFloat(node.attributes.getNamedItem('OffsetY').nodeValue);
-        }
-        var creditText = '';
-        var credits = Util.selectSingleNode(node, 'Credits');
-        if (credits != null) {
-          creditText = Util.getInnerText(credits);
-        }
-        var creditsUrl = '';
-        credits = Util.selectSingleNode(node, 'CreditsUrl');
-        if (credits != null) {
-          creditsUrl = Util.getInnerText(credits);
-        }
-        var meanRadius = 0;
-        if (node.attributes.getNamedItem('MeanRadius') != null) {
-          meanRadius = parseFloat(node.attributes.getNamedItem('MeanRadius').nodeValue);
-        }
-        var referenceFrame = null;
-        if (node.attributes.getNamedItem('ReferenceFrame') != null) {
-          referenceFrame = node.attributes.getNamedItem('ReferenceFrame').nodeValue;
-        }
-        var name = '';
-        if (node.attributes.getNamedItem('Name') != null) {
-          name = node.attributes.getNamedItem('Name').nodeValue;
-        }
-        var url = '';
-        if (node.attributes.getNamedItem('Url') != null) {
-          url = node.attributes.getNamedItem('Url').nodeValue;
-        }
-        var baseTileLevel = 0;
-        if (node.attributes.getNamedItem('BaseTileLevel') != null) {
-          baseTileLevel = parseInt(node.attributes.getNamedItem('BaseTileLevel').nodeValue);
-        }
-        var tileLevels = 0;
-        if (node.attributes.getNamedItem('TileLevels') != null) {
-          tileLevels = parseInt(node.attributes.getNamedItem('TileLevels').nodeValue);
-        }
-        var baseDegreesPerTile = 0;
-        if (node.attributes.getNamedItem('BaseDegreesPerTile') != null) {
-          baseDegreesPerTile = parseFloat(node.attributes.getNamedItem('BaseDegreesPerTile').nodeValue);
-        }
-        var bottomsUp = false;
-        if (node.attributes.getNamedItem('BottomsUp') != null) {
-          bottomsUp = ss.boolean(node.attributes.getNamedItem('BottomsUp').nodeValue);
-        }
-        var quadTreeMap = '';
-        if (node.attributes.getNamedItem('QuadTreeMap') != null) {
-          quadTreeMap = node.attributes.getNamedItem('QuadTreeMap').nodeValue;
-        }
-        var centerX = 0;
-        if (node.attributes.getNamedItem('CenterX') != null) {
-          centerX = parseFloat(node.attributes.getNamedItem('CenterX').nodeValue);
-        }
-        var centerY = 0;
-        if (node.attributes.getNamedItem('CenterY') != null) {
-          centerY = parseFloat(node.attributes.getNamedItem('CenterY').nodeValue);
-        }
-        var rotation = 0;
-        if (node.attributes.getNamedItem('Rotation') != null) {
-          rotation = parseFloat(node.attributes.getNamedItem('Rotation').nodeValue);
-        }
-        var sparse = false;
-        if (node.attributes.getNamedItem('Sparse') != null) {
-          sparse = ss.boolean(node.attributes.getNamedItem('Sparse').nodeValue);
-        }
-        return Imageset.create(name, url, type, bandPass, projection, Math.abs(Util.getHashCode(url)), baseTileLevel, tileLevels, 256, baseDegreesPerTile, fileType, bottomsUp, quadTreeMap, centerX, centerY, rotation, sparse, thumbnailUrl, stockSet, elevationModel, wf, offsetX, offsetY, creditText, creditsUrl, demUrl, alturl, meanRadius, referenceFrame);
-      }
-      else {
-        return Imageset.createGeneric(type, bandPass);
-      }
-    }
-    catch ($e1) {
-      return null;
-    }
-  };
-  Imageset.saveToXml = function(xmlWriter, imageset, alternateUrl) {
-    xmlWriter._writeStartElement('ImageSet');
-    xmlWriter._writeAttributeString('Generic', imageset.get_generic().toString());
-    xmlWriter._writeAttributeString('DataSetType', Enums.toXml('ImageSetType', imageset.get_dataSetType()));
-    xmlWriter._writeAttributeString('BandPass', Enums.toXml('BandPass', imageset.get_bandPass()));
-    if (!imageset.get_generic()) {
-      xmlWriter._writeAttributeString('Name', imageset.get_name());
-      if (ss.emptyString(alternateUrl)) {
-        xmlWriter._writeAttributeString('Url', imageset.get_url());
-      }
-      else {
-        xmlWriter._writeAttributeString('Url', alternateUrl);
-      }
-      xmlWriter._writeAttributeString('DemUrl', imageset.get_demUrl());
-      xmlWriter._writeAttributeString('BaseTileLevel', imageset.get_baseLevel().toString());
-      xmlWriter._writeAttributeString('TileLevels', imageset.get_levels().toString());
-      xmlWriter._writeAttributeString('BaseDegreesPerTile', imageset.get_baseTileDegrees().toString());
-      xmlWriter._writeAttributeString('FileType', imageset.get_extension());
-      xmlWriter._writeAttributeString('BottomsUp', imageset.get_bottomsUp().toString());
-      xmlWriter._writeAttributeString('Projection', Enums.toXml('ProjectionType', imageset.get_projection()));
-      xmlWriter._writeAttributeString('QuadTreeMap', imageset.get_quadTreeTileMap());
-      xmlWriter._writeAttributeString('CenterX', imageset.get_centerX().toString());
-      xmlWriter._writeAttributeString('CenterY', imageset.get_centerY().toString());
-      xmlWriter._writeAttributeString('OffsetX', imageset.get_offsetX().toString());
-      xmlWriter._writeAttributeString('OffsetY', imageset.get_offsetY().toString());
-      xmlWriter._writeAttributeString('Rotation', imageset.get_rotation().toString());
-      xmlWriter._writeAttributeString('Sparse', imageset.get_sparse().toString());
-      xmlWriter._writeAttributeString('ElevationModel', imageset.get_elevationModel().toString());
-      xmlWriter._writeAttributeString('StockSet', imageset.get_defaultSet().toString());
-      xmlWriter._writeAttributeString('WidthFactor', imageset.get_widthFactor().toString());
-      xmlWriter._writeAttributeString('MeanRadius', imageset.get_meanRadius().toString());
-      xmlWriter._writeAttributeString('ReferenceFrame', imageset.get_referenceFrame());
-      if (ss.emptyString(alternateUrl)) {
-        xmlWriter._writeElementString('ThumbnailUrl', imageset.get_thumbnailUrl());
-      }
-      else {
-        xmlWriter._writeElementString('ThumbnailUrl', imageset.get_url());
-      }
-    }
-    xmlWriter._writeEndElement();
-  };
-  Imageset.createGeneric = function(dataSetType, bandPass) {
-    var temp = new Imageset();
-    temp._generic = true;
-    temp._name = 'Generic';
-    temp._sparse = false;
-    temp._dataSetType = dataSetType;
-    temp._bandPass = bandPass;
-    temp._quadTreeTileMap = '';
-    temp.url = '';
-    temp._levels = 0;
-    temp._baseTileDegrees = 0;
-    temp._imageSetID = 0;
-    temp._extension = '';
-    temp._projection = 1;
-    temp._bottomsUp = false;
-    temp._baseLevel = 0;
-    temp._mercator = (!temp._projection);
-    temp._centerX = 0;
-    temp._centerY = 0;
-    temp._rotation = 0;
-    temp._thumbnailUrl = '';
-    temp._matrix = Matrix3d.get_identity();
-    temp._matrix._multiply(Matrix3d._rotationX((temp.get_rotation() / 180 * Math.PI)));
-    temp._matrix._multiply(Matrix3d._rotationZ((temp.get_centerY() / 180 * Math.PI)));
-    temp._matrix._multiply(Matrix3d._rotationY((((360 - temp.get_centerX()) + 180) / 180 * Math.PI)));
-    return temp;
-  };
-  Imageset.create = function(name, url, dataSetType, bandPass, projection, imageSetID, baseLevel, levels, tileSize, baseTileDegrees, extension, bottomsUp, quadTreeMap, centerX, centerY, rotation, sparse, thumbnailUrl, defaultSet, elevationModel, wf, offsetX, offsetY, credits, creditsUrl, demUrlIn, alturl, meanRadius, referenceFrame) {
-    var temp = new Imageset();
-    temp.set_referenceFrame(referenceFrame);
-    temp.set_meanRadius(meanRadius);
-    temp._altUrl = alturl;
-    temp.demUrl = demUrlIn;
-    temp._creditsText = credits;
-    temp._creditsUrl = creditsUrl;
-    temp._offsetY = offsetY;
-    temp._offsetX = offsetX;
-    temp._widthFactor = wf;
-    temp._elevationModel = elevationModel;
-    temp._defaultSet = defaultSet;
-    temp._name = name;
-    temp._sparse = sparse;
-    temp._dataSetType = dataSetType;
-    temp._bandPass = bandPass;
-    temp._quadTreeTileMap = quadTreeMap;
-    temp.url = url;
-    temp._levels = levels;
-    temp._baseTileDegrees = baseTileDegrees;
-    temp._imageSetID = imageSetID;
-    temp._extension = extension;
-    temp._projection = projection;
-    temp._bottomsUp = bottomsUp;
-    temp._baseLevel = baseLevel;
-    temp._mercator = (!projection);
-    temp._centerX = centerX;
-    temp._centerY = centerY;
-    temp._rotation = rotation;
-    temp._thumbnailUrl = thumbnailUrl;
-    temp._computeMatrix();
-    return temp;
-  };
-  var Imageset$ = {
-    get_wcsImage: function() {
-      return this._wcsImage;
-    },
-    set_wcsImage: function(value) {
-      this._wcsImage = value;
-      return value;
-    },
-    get_projection: function() {
-      return this._projection;
-    },
-    set_projection: function(value) {
-      this._projection = value;
-      return value;
-    },
-    get_referenceFrame: function() {
-      return this._referenceFrame;
-    },
-    set_referenceFrame: function(value) {
-      this._referenceFrame = value;
-      return value;
-    },
-    get_imageSetID: function() {
-      return this._imageSetID;
-    },
-    set_imageSetID: function(value) {
-      this._imageSetID = value;
-      return value;
-    },
-    get_baseTileDegrees: function() {
-      return this._baseTileDegrees;
-    },
-    set_baseTileDegrees: function(value) {
-      this._baseTileDegrees = value;
-      return value;
-    },
-    get_widthFactor: function() {
-      return this._widthFactor;
-    },
-    set_widthFactor: function(value) {
-      this._widthFactor = value;
-      return value;
-    },
-    getHashCode: function() {
-      return Util.getHashCode(this.get_url());
-    },
-    get_url: function() {
-      return this.url;
-    },
-    set_url: function(value) {
-      this.url = value;
-      return value;
-    },
-    get_demUrl: function() {
-      if (ss.emptyString(this.demUrl) && !this._projection) {
-        return 'http://worldwidetelescope.org/wwtweb/BingDemTile.aspx?Q={0},{1},{2}';
-      }
-      return this.demUrl;
-    },
-    set_demUrl: function(value) {
-      this.demUrl = value;
-      return value;
-    },
-    get_extension: function() {
-      return this._extension;
-    },
-    set_extension: function(value) {
-      this._extension = value;
-      return value;
-    },
-    get_levels: function() {
-      return this._levels;
-    },
-    set_levels: function(value) {
-      this._levels = value;
-      return value;
-    },
-    get_bottomsUp: function() {
-      return this._bottomsUp;
-    },
-    set_bottomsUp: function(value) {
-      this._bottomsUp = value;
-      return value;
-    },
-    get_mercator: function() {
-      return this._mercator;
-    },
-    set_mercator: function(value) {
-      this._mercator = value;
-      return value;
-    },
-    get_baseLevel: function() {
-      return this._baseLevel;
-    },
-    set_baseLevel: function(value) {
-      this._baseLevel = value;
-      return value;
-    },
-    get_quadTreeTileMap: function() {
-      return this._quadTreeTileMap;
-    },
-    set_quadTreeTileMap: function(value) {
-      this._quadTreeTileMap = value;
-      return value;
-    },
-    get_centerX: function() {
-      return this._centerX;
-    },
-    set_centerX: function(value) {
-      if (this._centerX !== value) {
-        this._centerX = value;
-        this._computeMatrix();
-      }
-      return value;
-    },
-    get_centerY: function() {
-      return this._centerY;
-    },
-    set_centerY: function(value) {
-      if (this._centerY !== value) {
-        this._centerY = value;
-        this._computeMatrix();
-      }
-      return value;
-    },
-    get_rotation: function() {
-      return this._rotation;
-    },
-    set_rotation: function(value) {
-      if (this._rotation !== value) {
-        this._rotation = value;
-        this._computeMatrix();
-      }
-      return value;
-    },
-    get_meanRadius: function() {
-      return this._meanRadius;
-    },
-    set_meanRadius: function(value) {
-      this._meanRadius = value;
-      return value;
-    },
-    get_bandPass: function() {
-      return this._bandPass;
-    },
-    set_bandPass: function(value) {
-      this._bandPass = value;
-      return value;
-    },
-    get_dataSetType: function() {
-      return this._dataSetType;
-    },
-    set_dataSetType: function(value) {
-      this._dataSetType = value;
-      return value;
-    },
-    get_altUrl: function() {
-      return this._altUrl;
-    },
-    set_altUrl: function(value) {
-      this._altUrl = value;
-      return value;
-    },
-    get_singleImage: function() {
-      return this._singleImage;
-    },
-    set_singleImage: function(value) {
-      this._singleImage = value;
-      return value;
-    },
-    toString: function() {
-      if (this.get_defaultSet()) {
-        return this._name + ' *';
-      }
-      else {
-        return this._name;
-      }
-    },
-    get_stockImageSet: function() {
-      if (this._generic || !this._defaultSet) {
-        return this;
-      }
-      else {
-        return Imageset.createGeneric(this.get_dataSetType(), this.get_bandPass());
-      }
-    },
-    equals: function(obj) {
-      if (obj == null) {
-        return false;
-      }
-      if (!(ss.canCast(obj, Imageset))) {
-        return false;
-      }
-      var b = obj;
-      return (Util.getHashCode(b.get_url()) === Util.getHashCode(this.get_url()) && b.get_dataSetType() === this.get_dataSetType() && b.get_bandPass() === this.get_bandPass() && b.get_generic() === this.get_generic());
-    },
-    get_matrix: function() {
-      if (!this._matrixComputed) {
-        this._computeMatrix();
-      }
-      return this._matrix;
-    },
-    set_matrix: function(value) {
-      this._matrix = value;
-      return value;
-    },
-    _computeMatrix: function() {
-      this._matrixComputed = true;
-      this._matrix = Matrix3d.get_identity();
-      this._matrix._multiply(Matrix3d._rotationX((this.get_rotation() / 180 * Math.PI)));
-      this._matrix._multiply(Matrix3d._rotationZ((this.get_centerY() / 180 * Math.PI)));
-      this._matrix._multiply(Matrix3d._rotationY(((360 - this.get_centerX()) / 180 * Math.PI)));
-    },
-    get_name: function() {
-      return this._name;
-    },
-    set_name: function(value) {
-      this._name = value;
-      return value;
-    },
-    get_sparse: function() {
-      return this._sparse;
-    },
-    set_sparse: function(value) {
-      this._sparse = value;
-      return value;
-    },
-    get_thumbnailUrl: function() {
-      return this._thumbnailUrl;
-    },
-    set_thumbnailUrl: function(value) {
-      this._thumbnailUrl = value;
-      return value;
-    },
-    get_generic: function() {
-      return this._generic;
-    },
-    set_generic: function(value) {
-      this._generic = value;
-      return value;
-    },
-    get_elevationModel: function() {
-      return this._elevationModel;
-    },
-    set_elevationModel: function(value) {
-      this._elevationModel = value;
-      return value;
-    },
-    get_defaultSet: function() {
-      return this._defaultSet;
-    },
-    set_defaultSet: function(value) {
-      this._defaultSet = value;
-      return value;
-    },
-    get_offsetX: function() {
-      return this._offsetX;
-    },
-    set_offsetX: function(value) {
-      this._offsetX = value;
-      return value;
-    },
-    get_offsetY: function() {
-      return this._offsetY;
-    },
-    set_offsetY: function(value) {
-      this._offsetY = value;
-      return value;
-    },
-    get_creditsText: function() {
-      return this._creditsText;
-    },
-    set_creditsText: function(value) {
-      this._creditsText = value;
-      return value;
-    },
-    get_creditsUrl: function() {
-      return this._creditsUrl;
-    },
-    set_creditsUrl: function(value) {
-      this._creditsUrl = value;
-      return value;
-    },
-    get_isMandelbrot: function() {
-      return false;
-    },
-    get_thumbnail: function() {
-      return this._thumbnail;
-    },
-    set_thumbnail: function(value) {
-      this._thumbnail = value;
-      return value;
-    },
-    get_bounds: function() {
-      return this._bounds;
-    },
-    set_bounds: function(value) {
-      this._bounds = value;
-      return value;
-    },
-    get_isImage: function() {
-      return true;
-    },
-    get_isTour: function() {
-      return false;
-    },
-    get_isFolder: function() {
-      return false;
-    },
-    get_isCloudCommunityItem: function() {
-      return false;
-    },
-    get_readOnly: function() {
-      return false;
-    },
-    get_children: function() {
-      return [];
-    }
-  };
-
-
-  // wwtlib.ViewMoverKenBurnsStyle
-
-  function ViewMoverKenBurnsStyle(from, to, time, fromDateTime, toDateTime, type) {
-    this.interpolationType = 0;
-    this.fastDirectionMove = false;
-    this._toTargetTime = 0;
-    this._dateTimeSpan = 0;
-    this._complete = false;
-    this._midpointFired = false;
-    this.interpolationType = type;
-    if (Math.abs(from.lng - to.lng) > 180) {
-      if (from.lng > to.lng) {
-        from.lng -= 360;
-      }
-      else {
-        from.lng += 360;
-      }
-    }
-    this._fromDateTime = fromDateTime;
-    this._toDateTime = toDateTime;
-    this._dateTimeSpan = toDateTime - fromDateTime;
-    this._from = from.copy();
-    this._to = to.copy();
-    this._fromTime = ss.now();
-    this._toTargetTime = time;
-  }
-  var ViewMoverKenBurnsStyle$ = {
-    get_complete: function() {
-      return this._complete;
-    },
-    get_currentPosition: function() {
-      var elapsed = ss.now() - this._fromTime;
-      var elapsedSeconds = (elapsed) / 1000;
-      var alpha = elapsedSeconds / this._toTargetTime;
-      if (!this._midpointFired && alpha >= 0.5) {
-        this._midpointFired = true;
-        if (this._midpoint != null) {
-          this._midpoint();
-        }
-      }
-      if (alpha >= 1) {
-        alpha = 1;
-        this._complete = true;
-        return this._to.copy();
-      }
-      if (Settings.get_active().get_galacticMode() && WWTControl.singleton.renderContext.space) {
-        return CameraParameters.interpolateGreatCircle(this._from, this._to, alpha, this.interpolationType, this.fastDirectionMove);
-      }
-      return CameraParameters.interpolate(this._from, this._to, alpha, this.interpolationType, this.fastDirectionMove);
-    },
-    get_currentDateTime: function() {
-      var elapsed = ss.now() - this._fromTime;
-      var elapsedSeconds = (elapsed) / 1000;
-      var alpha = elapsedSeconds / this._toTargetTime;
-      var delta = this._dateTimeSpan * alpha;
-      var retDate = new Date(this._fromDateTime.getTime() + ss.truncate(delta));
-      return retDate;
-    },
-    get_midpoint: function() {
-      return this._midpoint;
-    },
-    set_midpoint: function(value) {
-      this._midpoint = value;
-      return value;
-    },
-    get_moveTime: function() {
-      return this._toTargetTime;
-    }
-  };
-
-
-  // wwtlib.ViewMoverSlew
-
-  function ViewMoverSlew() {
-    this._upTargetTime = 0;
-    this._downTargetTime = 0;
-    this._toTargetTime = 0;
-    this._upTimeFactor = 0.6;
-    this._downTimeFactor = 0.6;
-    this._travelTimeFactor = 7;
-    this._midpointFired = false;
-    this._complete = false;
-  }
-  ViewMoverSlew.create = function(from, to) {
-    var temp = new ViewMoverSlew();
-    temp.init(from, to);
-    return temp;
-  };
-  ViewMoverSlew.createUpDown = function(from, to, upDowFactor) {
-    var temp = new ViewMoverSlew();
-    temp._upTimeFactor = temp._downTimeFactor = upDowFactor;
-    temp.init(from.copy(), to.copy());
-    return temp;
-  };
-  var ViewMoverSlew$ = {
-    init: function(from, to) {
-      if (Math.abs(from.lng - to.lng) > 180) {
-        if (from.lng > to.lng) {
-          from.lng -= 360;
         }
         else {
-          from.lng += 360;
-        }
-      }
-      if (to.zoom <= 0) {
-        to.zoom = 360;
-      }
-      if (from.zoom <= 0) {
-        from.zoom = 360;
-      }
-      this._from = from;
-      this._to = to;
-      this._fromTime = ss.now();
-      var zoomUpTarget = 360;
-      var travelTime;
-      var lngDist = Math.abs(from.lng - to.lng);
-      var latDist = Math.abs(from.lat - to.lat);
-      var distance = Math.sqrt(latDist * latDist + lngDist * lngDist);
-      zoomUpTarget = (distance / 3) * 20;
-      if (zoomUpTarget > 360) {
-        zoomUpTarget = 360;
-      }
-      if (zoomUpTarget < from.zoom) {
-        zoomUpTarget = from.zoom;
-      }
-      travelTime = (distance / 180) * (360 / zoomUpTarget) * this._travelTimeFactor;
-      var rotateTime = Math.max(Math.abs(from.angle - to.angle), Math.abs(from.rotation - to.rotation));
-      var logDistUp = Math.max(Math.abs(Util.logN(zoomUpTarget, 2) - Util.logN(from.zoom, 2)), rotateTime);
-      this._upTargetTime = this._upTimeFactor * logDistUp;
-      this._downTargetTime = this._upTargetTime + travelTime;
-      var logDistDown = Math.abs(Util.logN(zoomUpTarget, 2) - Util.logN(to.zoom, 2));
-      this._toTargetTime = this._downTargetTime + Math.max((this._downTimeFactor * logDistDown), rotateTime);
-      this._fromTop = from.copy();
-      this._fromTop.zoom = zoomUpTarget;
-      this._fromTop.angle = (from.angle + to.angle) / 2;
-      this._fromTop.rotation = (from.rotation + to.rotation) / 2;
-      this._toTop = to.copy();
-      this._toTop.zoom = this._fromTop.zoom;
-      this._toTop.angle = this._fromTop.angle;
-      this._toTop.rotation = this._fromTop.rotation;
-    },
-    get_complete: function() {
-      return this._complete;
-    },
-    get_currentPosition: function() {
-      var elapsed = ss.now() - this._fromTime;
-      var elapsedSeconds = (elapsed) / 1000;
-      if (elapsedSeconds < this._upTargetTime) {
-        return CameraParameters.interpolate(this._from, this._fromTop, elapsedSeconds / this._upTargetTime, 3, false);
-      }
-      else if (elapsedSeconds < this._downTargetTime) {
-        elapsedSeconds -= this._upTargetTime;
-        if (Settings.get_active().get_galacticMode() && WWTControl.singleton.renderContext.space) {
-          return CameraParameters.interpolateGreatCircle(this._fromTop, this._toTop, elapsedSeconds / (this._downTargetTime - this._upTargetTime), 3, false);
-        }
-        return CameraParameters.interpolate(this._fromTop, this._toTop, elapsedSeconds / (this._downTargetTime - this._upTargetTime), 3, false);
-      }
-      else {
-        if (!this._midpointFired) {
-          this._midpointFired = true;
-          if (this._midpoint != null) {
-            this._midpoint();
+          this._vertexBuffer = Tile.prepDevice.createBuffer();
+          Tile.prepDevice.bindBuffer(34962, this._vertexBuffer);
+          var f32array = new Float32Array(verts.length * 5);
+          var buffer = f32array;
+          index = 0;
+          var $enum1 = ss.enumerate(verts);
+          while ($enum1.moveNext()) {
+            var pt = $enum1.current;
+            index = this.addVertex(buffer, index, pt);
+          }
+          Tile.prepDevice.bufferData(34962, f32array, 35044);
+          for (var y2 = 0; y2 < 2; y2++) {
+            for (var x2 = 0; x2 < 2; x2++) {
+              var ui16array = new Uint16Array(this.triangleCount * 3);
+              var indexArray = ui16array;
+              index = 0;
+              for (var y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
+                for (var x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
+                  indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + x1);
+                  indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
+                  indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
+                  indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
+                  indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
+                  indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1));
+                }
+              }
+              this._indexBuffers[part] = Tile.prepDevice.createBuffer();
+              Tile.prepDevice.bindBuffer(34963, this._indexBuffers[part]);
+              Tile.prepDevice.bufferData(34963, ui16array, 35044);
+              part++;
+            }
           }
         }
-        elapsedSeconds -= this._downTargetTime;
-        var alpha = elapsedSeconds / (this._toTargetTime - this._downTargetTime);
-        if (alpha > 1) {
-          alpha = 1;
-          this._complete = true;
-          return this._to.copy();
-        }
-        return CameraParameters.interpolate(this._toTop, this._to, alpha, 3, false);
       }
-    },
-    get_currentDateTime: function() {
-      SpaceTimeController.updateClock();
-      return SpaceTimeController.get_now();
-    },
-    get_midpoint: function() {
-      return this._midpoint;
-    },
-    set_midpoint: function(value) {
-      this._midpoint = value;
-      return value;
-    },
-    get_moveTime: function() {
-      return this._toTargetTime;
-    }
-  };
-
-
-  // wwtlib.MainView
-
-  function MainView() {
-  }
-  MainView._drawTest = function() {
-    var canvas = document.getElementById('canvas');
-    var ctx = canvas.getContext('2d');
-    ctx.fillStyle = 'rgb(80,0,0)';
-    ctx.fillRect(120, 120, 165, 160);
-    ctx.fillStyle = 'rgba(0, 0, 160, 0.5)';
-    ctx.fillRect(140, 140, 165, 160);
-  };
-
-
-  // wwtlib.Place
-
-  function Place() {
-    this._camParams = CameraParameters.create(0, 0, -1, 0, 0, 100);
-    this._location3d = Vector3d.create(0, 0, 0);
-    this.htmlDescription = '';
-    this._constellation = '';
-    this._classification = 1048576;
-    this._type = 2;
-    this._magnitude = 0;
-    this._distnace = 0;
-    this.angularSize = 60;
-    this.annotation = '';
-    this._thumbNail = null;
-    this._studyImageset = null;
-    this._backgroundImageSet = null;
-    this._searchDistance = 0;
-    this._elevation = 50;
-  }
-  Place.create = function(name, lat, lng, classification, constellation, type, zoomFactor) {
-    var temp = new Place();
-    temp.set_zoomLevel(zoomFactor);
-    temp._constellation = constellation;
-    temp._name = name;
-    if (type === 2 || type === 4) {
-      temp._camParams.set_RA(lng);
-    }
-    else {
-      temp.set_lng(lng);
-    }
-    temp.set_lat(lat);
-    temp.set_classification(classification);
-    temp.set_type(type);
-    return temp;
-  };
-  Place.createCameraParams = function(name, camParams, classification, constellation, type, target) {
-    var temp = new Place();
-    temp._constellation = constellation;
-    temp._name = name;
-    temp.set_classification(classification);
-    temp._camParams = camParams;
-    temp.set_type(type);
-    temp.set_target(target);
-    return temp;
-  };
-  Place._fromXml = function(place) {
-    var newPlace = new Place();
-    newPlace._name = place.attributes.getNamedItem('Name').nodeValue;
-    if (place.attributes.getNamedItem('MSRComponentId') != null && place.attributes.getNamedItem('Permission') != null && place.attributes.getNamedItem('Url') != null) {
-      newPlace.set_url(place.attributes.getNamedItem('Url').nodeValue);
-      newPlace.set_thumbnailUrl(place.attributes.getNamedItem('Thumbnail').nodeValue);
-      return newPlace;
-    }
-    if (place.attributes.getNamedItem('DataSetType') != null) {
-      newPlace._type = Enums.parse('ImageSetType', place.attributes.getNamedItem('DataSetType').nodeValue);
-    }
-    if (newPlace.get_type() === 2) {
-      newPlace._camParams.set_RA(parseFloat(place.attributes.getNamedItem('RA').nodeValue));
-      newPlace._camParams.set_dec(parseFloat(place.attributes.getNamedItem('Dec').nodeValue));
-    }
-    else {
-      newPlace.set_lat(parseFloat(place.attributes.getNamedItem('Lat').nodeValue));
-      newPlace.set_lng(parseFloat(place.attributes.getNamedItem('Lng').nodeValue));
-    }
-    if (place.attributes.getNamedItem('Constellation') != null) {
-      newPlace._constellation = place.attributes.getNamedItem('Constellation').nodeValue;
-    }
-    if (place.attributes.getNamedItem('Classification') != null) {
-      newPlace._classification = Enums.parse('Classification', place.attributes.getNamedItem('Classification').nodeValue);
-    }
-    if (place.attributes.getNamedItem('Magnitude') != null) {
-      newPlace._magnitude = parseFloat(place.attributes.getNamedItem('Magnitude').nodeValue);
-    }
-    if (place.attributes.getNamedItem('AngularSize') != null) {
-      newPlace.angularSize = parseFloat(place.attributes.getNamedItem('AngularSize').nodeValue);
-    }
-    if (place.attributes.getNamedItem('ZoomLevel') != null) {
-      newPlace.set_zoomLevel(parseFloat(place.attributes.getNamedItem('ZoomLevel').nodeValue));
-    }
-    if (place.attributes.getNamedItem('Rotation') != null) {
-      newPlace._camParams.rotation = parseFloat(place.attributes.getNamedItem('Rotation').nodeValue);
-    }
-    if (place.attributes.getNamedItem('Annotation') != null) {
-      newPlace.annotation = place.attributes.getNamedItem('Annotation').nodeValue;
-    }
-    if (place.attributes.getNamedItem('Angle') != null) {
-      newPlace._camParams.angle = parseFloat(place.attributes.getNamedItem('Angle').nodeValue);
-    }
-    if (place.attributes.getNamedItem('Opacity') != null) {
-      newPlace._camParams.opacity = parseFloat(place.attributes.getNamedItem('Opacity').nodeValue);
-    }
-    else {
-      newPlace._camParams.opacity = 100;
-    }
-    newPlace.set_target(65536);
-    if (place.attributes.getNamedItem('Target') != null) {
-      newPlace.set_target(Enums.parse('SolarSystemObjects', place.attributes.getNamedItem('Target').nodeValue));
-    }
-    if (place.attributes.getNamedItem('ViewTarget') != null) {
-      newPlace._camParams.viewTarget = Vector3d.parse(place.attributes.getNamedItem('ViewTarget').nodeValue);
-    }
-    if (place.attributes.getNamedItem('TargetReferenceFrame') != null) {
-      newPlace._camParams.targetReferenceFrame = place.attributes.getNamedItem('TargetReferenceFrame').nodeValue;
-    }
-    var descriptionNode = Util.selectSingleNode(place, 'Description');
-    if (descriptionNode != null) {
-      newPlace.htmlDescription = descriptionNode.nodeValue;
-    }
-    var backgroundImageSet = Util.selectSingleNode(place, 'BackgroundImageSet');
-    if (backgroundImageSet != null) {
-      var imageSet = Util.selectSingleNode(backgroundImageSet, 'ImageSet');
-      newPlace._backgroundImageSet = Imageset.fromXMLNode(imageSet);
-    }
-    var study = Util.selectSingleNode(place, 'ForegroundImageSet');
-    if (study != null) {
-      var imageSet = Util.selectSingleNode(study, 'ImageSet');
-      newPlace._studyImageset = Imageset.fromXMLNode(imageSet);
-    }
-    study = Util.selectSingleNode(place, 'ImageSet');
-    if (study != null) {
-      newPlace._studyImageset = Imageset.fromXMLNode(study);
-    }
-    return newPlace;
-  };
-  Place._properCaps = function(name) {
-    var list = name.split(' ');
-    var ProperName = '';
-    var $enum1 = ss.enumerate(list);
-    while ($enum1.moveNext()) {
-      var part = $enum1.current;
-      ProperName = ProperName + part.substr(0, 1).toUpperCase() + ((part.length > 1) ? part.substr(1).toLowerCase() : '') + ' ';
-    }
-    return ss.trim(ProperName);
-  };
-  var Place$ = {
-    get_tag: function() {
-      return this._tag;
-    },
-    set_tag: function(value) {
-      this._tag = value;
-      return value;
-    },
-    get_url: function() {
-      return this._url;
-    },
-    set_url: function(value) {
-      this._url = value;
-      return value;
-    },
-    get_thumbnail: function() {
-      return this._thumbnail;
-    },
-    set_thumbnail: function(value) {
-      this._thumbnail = value;
-      return value;
-    },
-    get_name: function() {
-      return this.get_names()[0];
-    },
-    get_names: function() {
-      if (ss.emptyString(this._name)) {
-        return ''.split(';');
+      catch ($e2) {
       }
-      return this._name.split(';');
-    },
-    set_names: function(value) {
-      this._name = UiTools.getNamesStringFromArray(value);
-      return value;
-    },
-    get_camParams: function() {
-      if (this.get_classification() === 536870912 && this._camParams.target !== 20) {
-        var raDec = Planets.getPlanetLocation(this.get_name());
-        this._camParams.set_RA(raDec.RA);
-        this._camParams.set_dec(raDec.dec);
-        this._distnace = raDec.distance;
-      }
-      return this._camParams;
-    },
-    set_camParams: function(value) {
-      this._camParams = value;
-      return value;
-    },
-    updatePlanetLocation: function(jNow) {
-      this._camParams.viewTarget = Planets.getPlanet3dLocationJD(this.get_target(), jNow);
-      if (this.get_target() !== 65536 && this.get_target() !== 20) {
-        this._camParams.viewTarget = Planets.getPlanetTargetPoint(this.get_target(), this.get_lat(), this.get_lng(), jNow);
-      }
-    },
-    get_location3d: function() {
-      if (this.get_classification() === 536870912 || (!this._location3d.x && !this._location3d.y && !this._location3d.z)) {
-        this._location3d = Coordinates.raDecTo3d(this.get_RA(), this.get_dec());
-      }
-      return this._location3d;
-    },
-    get_lat: function() {
-      return this.get_camParams().lat;
-    },
-    set_lat: function(value) {
-      this._camParams.lat = value;
-      return value;
-    },
-    get_lng: function() {
-      return this.get_camParams().lng;
-    },
-    set_lng: function(value) {
-      this._camParams.lng = value;
-      return value;
-    },
-    get_opacity: function() {
-      return this.get_camParams().opacity;
-    },
-    set_opacity: function(value) {
-      this._camParams.opacity = value;
-      return value;
-    },
-    get_constellation: function() {
-      return this._constellation;
-    },
-    set_constellation: function(value) {
-      this._constellation = value;
-      return value;
-    },
-    get_classification: function() {
-      return this._classification;
-    },
-    set_classification: function(value) {
-      this._classification = value;
-      return value;
-    },
-    get_type: function() {
-      return this._type;
-    },
-    set_type: function(value) {
-      this._type = value;
-      return value;
-    },
-    get_magnitude: function() {
-      return this._magnitude;
-    },
-    set_magnitude: function(value) {
-      this._magnitude = value;
-      return value;
-    },
-    get_distance: function() {
-      return this._distnace;
-    },
-    set_distance: function(value) {
-      this._distnace = value;
-      return value;
-    },
-    get_zoomLevel: function() {
-      return this.get_camParams().zoom;
-    },
-    set_zoomLevel: function(value) {
-      this._camParams.zoom = value;
-      return value;
-    },
-    get_annotation: function() {
-      return this.annotation;
-    },
-    set_annotation: function(value) {
-      this.annotation = value;
-      return value;
-    },
-    get_studyImageset: function() {
-      return this._studyImageset;
-    },
-    set_studyImageset: function(value) {
-      this._studyImageset = value;
-      return value;
-    },
-    get_backgroundImageset: function() {
-      return this._backgroundImageSet;
-    },
-    set_backgroundImageset: function(value) {
-      if (value != null) {
-        this.set_type(value.get_dataSetType());
-      }
-      this._backgroundImageSet = value;
-      return value;
-    },
-    get_searchDistance: function() {
-      return this._searchDistance;
-    },
-    set_searchDistance: function(value) {
-      this._searchDistance = value;
-      return value;
-    },
-    get_elevation: function() {
-      return this._elevation;
-    },
-    set_elevation: function(value) {
-      this._elevation = value;
-      return value;
-    },
-    get_thumbnailUrl: function() {
-      if (ss.emptyString(this._thumbnailField)) {
-        if (this._studyImageset != null && !ss.emptyString(this._studyImageset.get_thumbnailUrl())) {
-          return this._studyImageset.get_thumbnailUrl();
-        }
-        if (this._backgroundImageSet != null && !ss.emptyString(this._backgroundImageSet.get_thumbnailUrl())) {
-          return this._backgroundImageSet.get_thumbnailUrl();
-        }
-        var name = this.get_name();
-        if (name.indexOf(';') > -1) {
-          name = name.substr(0, name.indexOf(';'));
-        }
-        if (this.get_classification() === 1) {
-          return 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?name=star';
-        }
-        return 'http://worldwidetelescope.org/wwtweb/thumbnail.aspx?name=' + name.toLowerCase();
-      }
-      return this._thumbnailField;
-    },
-    set_thumbnailUrl: function(value) {
-      this._thumbnailField = value;
-      return value;
-    },
-    get_RA: function() {
-      return this.get_camParams().get_RA();
-    },
-    set_RA: function(value) {
-      this._camParams.set_RA(value);
-      return value;
-    },
-    get_dec: function() {
-      return this.get_camParams().get_dec();
-    },
-    set_dec: function(value) {
-      this._camParams.set_dec(value);
-      return value;
-    },
-    toString: function() {
-      return this._name;
-    },
-    _saveToXml: function(xmlWriter, elementName) {
-      xmlWriter._writeStartElement(elementName);
-      xmlWriter._writeAttributeString('Name', this._name);
-      xmlWriter._writeAttributeString('DataSetType', Enums.toXml('ImageSetType', this._type));
-      if (this.get_type() === 2) {
-        xmlWriter._writeAttributeString('RA', this._camParams.get_RA().toString());
-        xmlWriter._writeAttributeString('Dec', this._camParams.get_dec().toString());
-      }
-      else {
-        xmlWriter._writeAttributeString('Lat', this.get_lat().toString());
-        xmlWriter._writeAttributeString('Lng', this.get_lng().toString());
-      }
-      xmlWriter._writeAttributeString('Constellation', this._constellation);
-      xmlWriter._writeAttributeString('Classification', Enums.toXml('Classification', this._classification));
-      xmlWriter._writeAttributeString('Magnitude', this._magnitude.toString());
-      xmlWriter._writeAttributeString('Distance', this._distnace.toString());
-      xmlWriter._writeAttributeString('AngularSize', this.angularSize.toString());
-      xmlWriter._writeAttributeString('ZoomLevel', this.get_zoomLevel().toString());
-      xmlWriter._writeAttributeString('Rotation', this._camParams.rotation.toString());
-      xmlWriter._writeAttributeString('Angle', this._camParams.angle.toString());
-      xmlWriter._writeAttributeString('Opacity', this._camParams.opacity.toString());
-      xmlWriter._writeAttributeString('Target', Enums.toXml('SolarSystemObjects', this.get_target()));
-      xmlWriter._writeAttributeString('ViewTarget', this._camParams.viewTarget.toString());
-      xmlWriter._writeAttributeString('TargetReferenceFrame', this._camParams.targetReferenceFrame);
-      xmlWriter._writeStartElement('Description');
-      xmlWriter._writeCData(this.htmlDescription);
-      xmlWriter._writeEndElement();
-      if (this._backgroundImageSet != null) {
-        xmlWriter._writeStartElement('BackgroundImageSet');
-        Imageset.saveToXml(xmlWriter, this._backgroundImageSet, '');
-        xmlWriter._writeEndElement();
-      }
-      if (this._studyImageset != null) {
-        Imageset.saveToXml(xmlWriter, this._studyImageset, '');
-      }
-      xmlWriter._writeEndElement();
-    },
-    get_bounds: function() {
-      return this._bounds;
-    },
-    set_bounds: function(value) {
-      this._bounds = value;
-      return value;
-    },
-    get_isImage: function() {
-      return this._studyImageset != null || this._backgroundImageSet != null;
-    },
-    get_isTour: function() {
-      return false;
-    },
-    get_isFolder: function() {
-      return false;
-    },
-    get_children: function() {
-      return [];
-    },
-    get_readOnly: function() {
       return true;
     },
-    get_target: function() {
-      return this._camParams.target;
-    },
-    set_target: function(value) {
-      this._camParams.target = value;
-      return value;
-    },
-    get_isCloudCommunityItem: function() {
-      return false;
+    _createGeometryBottomsUp$1: function(renderContext) {
+      var lat, lng;
+      var index = 0;
+      var tileDegrees = this.dataset.get_baseTileDegrees() / Math.pow(2, this.level);
+      var latMin = (-90 + (((this.tileY + 1)) * tileDegrees));
+      var latMax = (-90 + ((this.tileY) * tileDegrees));
+      var lngMin = ((this.tileX * tileDegrees) - 180);
+      var lngMax = ((((this.tileX + 1)) * tileDegrees) - 180);
+      var tileDegreesX = lngMax - lngMin;
+      var tileDegreesY = latMax - latMin;
+      var verts = new Array((this._subDivisionLevel$1 + 1) * (this._subDivisionLevel$1 + 1));
+      var x, y;
+      var textureStep = 1 / this._subDivisionLevel$1;
+      for (y = 0; y <= this._subDivisionLevel$1; y++) {
+        if (y !== this._subDivisionLevel$1) {
+          lat = latMin + (textureStep * tileDegreesY * y);
+        }
+        else {
+          lat = latMax;
+        }
+        for (x = 0; x <= this._subDivisionLevel$1; x++) {
+          if (x !== this._subDivisionLevel$1) {
+            lng = lngMin + (textureStep * tileDegreesX * x);
+          }
+          else {
+            lng = lngMax;
+          }
+          index = y * (this._subDivisionLevel$1 + 1) + x;
+          verts[index] = PositionTexture.createPos(this.geoTo3d(lat, lng, false), x * textureStep, y * textureStep);
+        }
+      }
+      this.triangleCount = this._subDivisionLevel$1 * this._subDivisionLevel$1 * 2;
+      var quarterDivisions = this._subDivisionLevel$1 / 2;
+      var part = 0;
+      if (renderContext.gl == null) {
+        for (var y2 = 0; y2 < 2; y2++) {
+          for (var x2 = 0; x2 < 2; x2++) {
+            index = 0;
+            for (var y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
+              for (var x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
+                var p1;
+                var p2;
+                var p3;
+                p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + x1)];
+                p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
+                p3 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
+                this._renderTriangleLists[part].push(RenderTriangle.create(p1, p3, p2, this.texture, this.level));
+                p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
+                p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
+                p3 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
+                this._renderTriangleLists[part].push(RenderTriangle.create(p1, p3, p2, this.texture, this.level));
+              }
+            }
+            part++;
+          }
+        }
+      }
+      else {
+        this._vertexBuffer = Tile.prepDevice.createBuffer();
+        Tile.prepDevice.bindBuffer(34962, this._vertexBuffer);
+        var f32array = new Float32Array(verts.length * 5);
+        var buffer = f32array;
+        index = 0;
+        var $enum1 = ss.enumerate(verts);
+        while ($enum1.moveNext()) {
+          var pt = $enum1.current;
+          index = this.addVertex(buffer, index, pt);
+        }
+        Tile.prepDevice.bufferData(34962, f32array, 35044);
+        for (var y2 = 0; y2 < 2; y2++) {
+          for (var x2 = 0; x2 < 2; x2++) {
+            var ui16array = new Uint16Array(this.triangleCount * 3);
+            var indexArray = ui16array;
+            index = 0;
+            for (var y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
+              for (var x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
+                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + x1);
+                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
+                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
+                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
+                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
+                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1));
+              }
+            }
+            this._indexBuffers[part] = Tile.prepDevice.createBuffer();
+            Tile.prepDevice.bindBuffer(34963, this._indexBuffers[part]);
+            Tile.prepDevice.bufferData(34963, ui16array, 35044);
+            part++;
+          }
+        }
+      }
+      return true;
     }
-  };
-
-
-  // wwtlib.Class1
-
-  function Class1() {
-  }
-  var Class1$ = {
-
   };
 
 
@@ -37835,7 +38650,7 @@ window.wwtlib = function(){
       }
       if (ss.canCast(this._imageSet$1.get_wcsImage(), FitsImage)) {
         var fi = ss.safeCast(this._imageSet$1.get_wcsImage(), FitsImage);
-        xmlWriter._writeAttributeString('ScaleType', fi.lastScale.toString());
+        xmlWriter._writeAttributeString('ScaleType', Enums.toXml('ScaleTypes', fi.lastScale));
         xmlWriter._writeAttributeString('MinValue', fi.lastBitmapMin.toString());
         xmlWriter._writeAttributeString('MaxValue', fi.lastBitmapMax.toString());
         if (fi.lastBitmapColorMapperName != null) {
@@ -38992,6 +39807,10 @@ window.wwtlib = function(){
     return new Date(es.getDate() + ss.truncate((excelDate * 24 * 60 * 60 * 1000)));
   };
   SpreadSheetLayer.get__circleTexture$1 = function() {
+    if (SpreadSheetLayer._circleTexture$1 == null) {
+      var url = URLHelpers.singleton.engineAssetUrl('circle.png');
+      SpreadSheetLayer._circleTexture$1 = Planets.loadPlanetTexture(url);
+    }
     return SpreadSheetLayer._circleTexture$1;
   };
   var SpreadSheetLayer$ = {
@@ -39021,9 +39840,6 @@ window.wwtlib = function(){
       this._dataDirty$1 = true;
       this.dirty = true;
       return true;
-    },
-    upadteData: function(data, purgeOld, purgeAll, hasHeader) {  // back-compat
-      return this.updateData(data, purgeOld, purgeAll, hasHeader);
     },
     loadData: function(tourDoc, filename) {
       var $this = this;
@@ -39765,7 +40581,7 @@ window.wwtlib = function(){
       xmlWriter._writeAttributeString('PlotType', Enums.toXml('PlotTypes', this.get_plotType()));
       xmlWriter._writeAttributeString('MarkerIndex', this.get_markerIndex().toString());
       xmlWriter._writeAttributeString('MarkerScale', Enums.toXml('MarkerScales', this.get_markerScale()));
-      xmlWriter._writeAttributeString('AltUnit', this.get_altUnit().toString());
+      xmlWriter._writeAttributeString('AltUnit', Enums.toXml('AltUnits', this.get_altUnit()));
       xmlWriter._writeAttributeString('AltColumn', this.get_altColumn().toString());
       xmlWriter._writeAttributeString('StartDateColumn', this.get_startDateColumn().toString());
       xmlWriter._writeAttributeString('EndDateColumn', this.get_endDateColumn().toString());
@@ -40432,6 +41248,8 @@ window.wwtlib = function(){
             this.pointList.draw(renderContext, opacity * this.get_opacity(), false);
             break;
           case 2:
+            this.pointList.drawTextured(renderContext, SpreadSheetLayer.get__circleTexture$1().texture2d, opacity * this.get_opacity());
+            break;
           case 1:
             this.pointList.drawTextured(renderContext, PushPin.getPushPinTexture(35), opacity * this.get_opacity());
             break;
@@ -42191,6 +43009,363 @@ window.wwtlib = function(){
   };
 
 
+  // wwtlib.MercatorTile
+
+  function MercatorTile() {
+    this._tileDegrees$1 = 0;
+    this._latMin$1 = 0;
+    this._latMax$1 = 0;
+    this._lngMin$1 = 0;
+    this._lngMax$1 = 0;
+    this._subDivisionLevel$1 = 32;
+    Tile.call(this);
+  }
+  MercatorTile.create = function(level, X, Y, dataset, parent) {
+    var temp = new MercatorTile();
+    temp.parent = parent;
+    temp.level = level;
+    temp.tileX = X;
+    temp.tileY = Y;
+    temp.dataset = dataset;
+    temp.computeBoundingSphere();
+    return temp;
+  };
+  MercatorTile.getCentrePointOffsetAsTileRatio = function(lat, lon, zoom) {
+    var metersX = MercatorTile.absoluteLonToMetersAtZoom(lon, zoom);
+    var relativeXIntoCell = (metersX / 256) - Math.floor(metersX / 256);
+    var metersY = MercatorTile.absoluteLatToMetersAtZoom(lat, zoom);
+    var relativeYIntoCell = (metersY / 256) - Math.floor(metersY / 256);
+    return Vector2d.create(relativeXIntoCell, relativeYIntoCell);
+  };
+  MercatorTile.relativeMetersToLatAtZoom = function(Y, zoom) {
+    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
+    var metersY = Y * metersPerPixel;
+    return MercatorTile._radToDeg$1(Math.PI / 2 - 2 * Math.atan(Math.exp(0 - metersY / 6378137)));
+  };
+  MercatorTile.relativeMetersToLonAtZoom = function(X, zoom) {
+    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
+    var metersX = X * metersPerPixel;
+    return MercatorTile._radToDeg$1(metersX / 6378137);
+  };
+  MercatorTile.absoluteLatToMetersAtZoom = function(latitude, zoom) {
+    var sinLat = Math.sin(MercatorTile._degToRad$1(latitude));
+    var metersY = 6378137 / 2 * Math.log((1 + sinLat) / (1 - sinLat));
+    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
+    return ss.truncate((Math.round(20037508 - metersY) / metersPerPixel));
+  };
+  MercatorTile.absoluteMetersToLatAtZoom = function(Y, zoom) {
+    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
+    var metersY = 20037508 - Y * metersPerPixel;
+    return MercatorTile._radToDeg$1(Math.PI / 2 - 2 * Math.atan(Math.exp(0 - metersY / 6378137)));
+  };
+  MercatorTile.absoluteLonToMetersAtZoom = function(longitude, zoom) {
+    var metersX = 6378137 * MercatorTile._degToRad$1(longitude);
+    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
+    return ss.truncate(((metersX + 20037508) / metersPerPixel));
+  };
+  MercatorTile.absoluteMetersToLonAtZoom = function(X, zoom) {
+    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
+    var metersX = X * metersPerPixel - 20037508;
+    return MercatorTile._radToDeg$1(metersX / 6378137);
+  };
+  MercatorTile.absoluteLonToMetersAtZoomTile = function(longitude, zoom, tileX) {
+    var metersX = 6378137 * MercatorTile._degToRad$1(longitude);
+    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
+    return ss.truncate(((metersX + 20037508) / metersPerPixel));
+  };
+  MercatorTile.absoluteLatToMetersAtZoomTile = function(latitude, zoom, tileX) {
+    var sinLat = Math.sin(MercatorTile._degToRad$1(latitude));
+    var metersY = 6378137 / 2 * Math.log((1 + sinLat) / (1 - sinLat));
+    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
+    return ss.truncate((Math.round(20037508 - metersY) / metersPerPixel));
+  };
+  MercatorTile.absoluteMetersToLonAtZoomByTileY = function(X, zoom, tileY) {
+    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
+    var metersX = X * metersPerPixel - 20037508;
+    return MercatorTile._radToDeg$1(metersX / 6378137);
+  };
+  MercatorTile._degToRad$1 = function(deg) {
+    return (deg * Math.PI / 180);
+  };
+  MercatorTile.metersPerPixel2 = function(zoom) {
+    return (156543 / (1 << zoom));
+  };
+  MercatorTile._radToDeg$1 = function(rad) {
+    return (rad * 180 / Math.PI);
+  };
+  var MercatorTile$ = {
+    computeBoundingSphere: function() {
+      this._tileDegrees$1 = 360 / Math.pow(2, this.level);
+      this._latMin$1 = MercatorTile.absoluteMetersToLatAtZoom(this.tileY * 256, this.level);
+      this._latMax$1 = MercatorTile.absoluteMetersToLatAtZoom((this.tileY + 1) * 256, this.level);
+      this._lngMin$1 = ((this.tileX * this._tileDegrees$1) - 180);
+      this._lngMax$1 = ((((this.tileX + 1)) * this._tileDegrees$1) - 180);
+      var latCenter = (this._latMin$1 + this._latMax$1) / 2;
+      var lngCenter = (this._lngMin$1 + this._lngMax$1) / 2;
+      this.sphereCenter = this.geoTo3d(latCenter, lngCenter, false);
+      this.topLeft = this.geoTo3d(this._latMin$1, this._lngMin$1, false);
+      this.bottomRight = this.geoTo3d(this._latMax$1, this._lngMax$1, false);
+      this.topRight = this.geoTo3d(this._latMin$1, this._lngMax$1, false);
+      this.bottomLeft = this.geoTo3d(this._latMax$1, this._lngMin$1, false);
+      if (!this.tileY) {
+        this.topLeft = Vector3d.create(0, 1, 0);
+        this.topRight = Vector3d.create(0, 1, 0);
+      }
+      if (this.tileY === Math.pow(2, this.level) - 1) {
+        this.bottomRight = Vector3d.create(0, -1, 0);
+        this.bottomLeft = Vector3d.create(0, -1, 0);
+      }
+      var distVect = this.topLeft;
+      distVect.subtract(this.sphereCenter);
+      this.sphereRadius = distVect.length();
+      distVect = this.bottomRight;
+      distVect.subtract(this.sphereCenter);
+      var len = distVect.length();
+      if (this.sphereRadius < len) {
+        this.sphereRadius = len;
+      }
+      this._tileDegrees$1 = Math.abs(this._latMax$1 - this._latMin$1);
+    },
+    isPointInTile: function(lat, lng) {
+      if (!this.demReady || this.demData == null || lat < Math.min(this._latMin$1, this._latMax$1) || lat > Math.max(this._latMax$1, this._latMin$1) || lng < Math.min(this._lngMin$1, this._lngMax$1) || lng > Math.max(this._lngMin$1, this._lngMax$1)) {
+        return false;
+      }
+      return true;
+    },
+    getSurfacePointAltitude: function(lat, lng, meters) {
+      if (this.level < Tile.lastDeepestLevel) {
+        var $enum1 = ss.enumerate(this.children);
+        while ($enum1.moveNext()) {
+          var child = $enum1.current;
+          if (child != null) {
+            if (child.isPointInTile(lat, lng)) {
+              var retVal = child.getSurfacePointAltitude(lat, lng, meters);
+              if (!!retVal) {
+                return retVal;
+              }
+              else {
+                break;
+              }
+            }
+          }
+        }
+      }
+      var alt = this._getAltitudeAtLatLng$1(lat, lng, (meters) ? 1 : this.get__demScaleFactor());
+      return alt;
+    },
+    _getAltitudeAtLatLng$1: function(lat, lng, scaleFactor) {
+      var height = Math.abs(this._latMax$1 - this._latMin$1);
+      var width = Math.abs(this._lngMax$1 - this._lngMin$1);
+      var yy = ((lat - Math.min(this._latMax$1, this._latMin$1)) / height * 32);
+      var xx = ((lng - Math.min(this._lngMax$1, this._lngMin$1)) / width * 32);
+      var indexY = Math.min(31, ss.truncate(yy));
+      var indexX = Math.min(31, ss.truncate(xx));
+      var ha = xx - indexX;
+      var va = yy - indexY;
+      var ul = this.demData[indexY * 33 + indexX];
+      var ur = this.demData[indexY * 33 + (indexX + 1)];
+      var ll = this.demData[(indexY + 1) * 33 + indexX];
+      var lr = this.demData[(indexY + 1) * 33 + (indexX + 1)];
+      var top = ul * (1 - ha) + ha * ur;
+      var bottom = ll * (1 - ha) + ha * lr;
+      var val = top * (1 - va) + va * bottom;
+      return val / scaleFactor;
+    },
+    createGeometry: function(renderContext) {
+      Tile.prototype.createGeometry.call(this, renderContext);
+      if (this.geometryCreated) {
+        return true;
+      }
+      this.geometryCreated = true;
+      if (Tile.uvMultiple === 256) {
+        if (!this.dataset.get_dataSetType() || this.dataset.get_dataSetType() === 1) {
+          this._subDivisionLevel$1 = Math.max(2, (6 - this.level) * 2);
+        }
+      }
+      for (var i = 0; i < 4; i++) {
+        this._renderTriangleLists[i] = [];
+      }
+      var lat, lng;
+      var index = 0;
+      var tileDegrees = 360 / Math.pow(2, this.level);
+      this._latMin$1 = MercatorTile.absoluteMetersToLatAtZoom(this.tileY * 256, this.level);
+      this._latMax$1 = MercatorTile.absoluteMetersToLatAtZoom((this.tileY + 1) * 256, this.level);
+      this._lngMin$1 = ((this.tileX * tileDegrees) - 180);
+      this._lngMax$1 = ((((this.tileX + 1)) * tileDegrees) - 180);
+      var latCenter = MercatorTile.absoluteMetersToLatAtZoom(((this.tileY * 2) + 1) * 256, this.level + 1);
+      this.topLeft = this.geoTo3d(this._latMin$1, this._lngMin$1, false);
+      this.bottomRight = this.geoTo3d(this._latMax$1, this._lngMax$1, false);
+      this.topRight = this.geoTo3d(this._latMin$1, this._lngMax$1, false);
+      this.bottomLeft = this.geoTo3d(this._latMax$1, this._lngMin$1, false);
+      var verts = new Array((this._subDivisionLevel$1 + 1) * (this._subDivisionLevel$1 + 1));
+      tileDegrees = this._lngMax$1 - this._lngMin$1;
+      var dGrid = (tileDegrees / this._subDivisionLevel$1);
+      var x1, y1;
+      var textureStep = 1 / this._subDivisionLevel$1;
+      var latDegrees = this._latMax$1 - latCenter;
+      for (y1 = 0; y1 < this._subDivisionLevel$1 / 2; y1++) {
+        if (y1 !== this._subDivisionLevel$1 / 2) {
+          lat = this._latMax$1 - (2 * textureStep * latDegrees * y1);
+        }
+        else {
+          lat = latCenter;
+        }
+        for (x1 = 0; x1 <= this._subDivisionLevel$1; x1++) {
+          if (x1 !== this._subDivisionLevel$1) {
+            lng = this._lngMin$1 + (textureStep * tileDegrees * x1);
+          }
+          else {
+            lng = this._lngMax$1;
+          }
+          index = y1 * (this._subDivisionLevel$1 + 1) + x1;
+          verts[index] = new PositionTexture();
+          verts[index].position = this.geoTo3dWithAlt(lat, lng, false, true);
+          verts[index].tu = (x1 * textureStep) * Tile.uvMultiple;
+          verts[index].tv = ((MercatorTile.absoluteLatToMetersAtZoom(lat, this.level) - (this.tileY * 256)) / 256) * Tile.uvMultiple;
+          this.demIndex++;
+        }
+      }
+      latDegrees = this._latMin$1 - latCenter;
+      for (y1 = this._subDivisionLevel$1 / 2; y1 <= this._subDivisionLevel$1; y1++) {
+        if (y1 !== this._subDivisionLevel$1) {
+          lat = latCenter + (2 * textureStep * latDegrees * (y1 - (this._subDivisionLevel$1 / 2)));
+        }
+        else {
+          lat = this._latMin$1;
+        }
+        for (x1 = 0; x1 <= this._subDivisionLevel$1; x1++) {
+          if (x1 !== this._subDivisionLevel$1) {
+            lng = this._lngMin$1 + (textureStep * tileDegrees * x1);
+          }
+          else {
+            lng = this._lngMax$1;
+          }
+          index = y1 * (this._subDivisionLevel$1 + 1) + x1;
+          verts[index] = new PositionTexture();
+          verts[index].position = this.geoTo3dWithAlt(lat, lng, false, true);
+          verts[index].tu = (x1 * textureStep) * Tile.uvMultiple;
+          verts[index].tv = ((MercatorTile.absoluteLatToMetersAtZoom(lat, this.level) - (this.tileY * 256)) / 256) * Tile.uvMultiple;
+          this.demIndex++;
+        }
+      }
+      if (!this.tileY) {
+        y1 = this._subDivisionLevel$1;
+        for (x1 = 0; x1 <= this._subDivisionLevel$1; x1++) {
+          index = y1 * (this._subDivisionLevel$1 + 1) + x1;
+          verts[index].position = Vector3d.create(0, 1, 0);
+        }
+      }
+      if (this.tileY === Math.pow(2, this.level) - 1) {
+        y1 = 0;
+        for (x1 = 0; x1 <= this._subDivisionLevel$1; x1++) {
+          index = y1 * (this._subDivisionLevel$1 + 1) + x1;
+          verts[index].position = Vector3d.create(0, -1, 0);
+        }
+      }
+      this.triangleCount = this._subDivisionLevel$1 * this._subDivisionLevel$1 * 2;
+      var quarterDivisions = this._subDivisionLevel$1 / 2;
+      var part = 0;
+      if (renderContext.gl == null) {
+        for (var y2 = 0; y2 < 2; y2++) {
+          for (var x2 = 0; x2 < 2; x2++) {
+            index = 0;
+            for (y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
+              for (x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
+                var p1;
+                var p2;
+                var p3;
+                p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + x1)];
+                p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
+                p3 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
+                var tri = RenderTriangle.create(p1, p2, p3, this.texture, this.level);
+                this._renderTriangleLists[part].push(tri);
+                p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
+                p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
+                p3 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
+                tri = RenderTriangle.create(p1, p2, p3, this.texture, this.level);
+                this._renderTriangleLists[part].push(tri);
+              }
+            }
+            part++;
+          }
+        }
+      }
+      else {
+        this._vertexBuffer = Tile.prepDevice.createBuffer();
+        Tile.prepDevice.bindBuffer(34962, this._vertexBuffer);
+        var f32array = new Float32Array(verts.length * 5);
+        var buffer = f32array;
+        index = 0;
+        var $enum1 = ss.enumerate(verts);
+        while ($enum1.moveNext()) {
+          var pt = $enum1.current;
+          index = this.addVertex(buffer, index, pt);
+        }
+        Tile.prepDevice.bufferData(34962, f32array, 35044);
+        for (var y2 = 0; y2 < 2; y2++) {
+          for (var x2 = 0; x2 < 2; x2++) {
+            var ui16array = new Uint16Array(this.triangleCount * 3);
+            var indexArray = ui16array;
+            index = 0;
+            for (y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
+              for (x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
+                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + x1);
+                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
+                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
+                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
+                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
+                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1));
+              }
+            }
+            this._indexBuffers[part] = Tile.prepDevice.createBuffer();
+            Tile.prepDevice.bindBuffer(34963, this._indexBuffers[part]);
+            Tile.prepDevice.bufferData(34963, ui16array, 35044);
+            part++;
+          }
+        }
+      }
+      return true;
+    },
+    _getDemSample$1: function(x, y) {
+      return this.demData[(32 - y) * 33 + x];
+    },
+    createDemFromParent: function() {
+      var parent = ss.safeCast(this.parent, MercatorTile);
+      if (parent == null || parent.demData == null) {
+        return false;
+      }
+      var offsetX = (((this.tileX % 2) === 1) ? 16 : 0);
+      var offsetY = (((this.tileY % 2) === 1) ? 16 : 0);
+      this.demData = new Array(this.demSize);
+      for (var y = 0; y < 33; y += 2) {
+        var copy = true;
+        for (var x = 0; x < 33; x++) {
+          if (copy) {
+            this.demData[(32 - y) * 33 + x] = parent._getDemSample$1((x / 2) + offsetX, (y / 2) + offsetY);
+          }
+          else {
+            this.demData[(32 - y) * 33 + x] = ((parent._getDemSample$1((x / 2) + offsetX, (y / 2) + offsetY) + parent._getDemSample$1(((x / 2) + offsetX) + 1, (y / 2) + offsetY)) / 2);
+          }
+          copy = !copy;
+        }
+      }
+      for (var y = 1; y < 33; y += 2) {
+        for (var x = 0; x < 33; x++) {
+          this.demData[(32 - y) * 33 + x] = ((this._getDemSample$1(x, y - 1) + this._getDemSample$1(x, y + 1)) / 2);
+        }
+      }
+      var $enum1 = ss.enumerate(this.demData);
+      while ($enum1.moveNext()) {
+        var sample = $enum1.current;
+        this.demAverage += sample;
+      }
+      this.demAverage /= this.demData.length;
+      this.demReady = true;
+      return true;
+    }
+  };
+
+
   // wwtlib.PlotTile
 
   function PlotTile() {
@@ -42254,7 +43429,7 @@ window.wwtlib = function(){
     requestImage: function() {
       if (!this.downloading && !this.readyToRender) {
         this.downloading = true;
-        this._webFile$1 = new WebFile(Util.getProxiedUrl(this.get_URL()));
+        this._webFile$1 = new WebFile(URLHelpers.singleton.rewrite(this.get_URL(), 0));
         this._webFile$1.onStateChange = ss.bind('fileStateChange', this);
         this._webFile$1.send();
       }
@@ -44499,960 +45674,6 @@ window.wwtlib = function(){
   };
 
 
-  // wwtlib.Circle
-
-  function Circle() {
-    this._fill$1 = false;
-    this._skyRelative$1 = false;
-    this._strokeWidth$1 = 1;
-    this._radius$1 = 10;
-    this._lineColor$1 = Colors.get_white();
-    this._fillColor$1 = Colors.get_white();
-    this._ra$1 = 0;
-    this._dec$1 = 0;
-    Annotation.call(this);
-  }
-  var Circle$ = {
-    get_fill: function() {
-      return this._fill$1;
-    },
-    set_fill: function(value) {
-      Annotation.batchDirty = true;
-      this._fill$1 = value;
-      return value;
-    },
-    get_skyRelative: function() {
-      return this._skyRelative$1;
-    },
-    set_skyRelative: function(value) {
-      Annotation.batchDirty = true;
-      this._skyRelative$1 = value;
-      return value;
-    },
-    get_lineWidth: function() {
-      return this._strokeWidth$1;
-    },
-    set_lineWidth: function(value) {
-      Annotation.batchDirty = true;
-      this._strokeWidth$1 = value;
-      return value;
-    },
-    get_radius: function() {
-      return this._radius$1;
-    },
-    set_radius: function(value) {
-      Annotation.batchDirty = true;
-      this._radius$1 = value;
-      return value;
-    },
-    get_lineColor: function() {
-      return this._lineColor$1.toString();
-    },
-    set_lineColor: function(value) {
-      Annotation.batchDirty = true;
-      this._lineColor$1 = Color.load(value);
-      return value;
-    },
-    get_fillColor: function() {
-      return this._fillColor$1.toString();
-    },
-    set_fillColor: function(value) {
-      Annotation.batchDirty = true;
-      this._fillColor$1 = Color.fromName(value);
-      return value;
-    },
-    setCenter: function(ra, dec) {
-      Annotation.batchDirty = true;
-      this._ra$1 = ra / 15;
-      this._dec$1 = dec;
-      this.center = Coordinates.raDecTo3d(this._ra$1, this._dec$1);
-    },
-    draw: function(renderContext) {
-      var onScreen = true;
-      var rad = this._radius$1;
-      if (this._skyRelative$1) {
-        rad /= renderContext.get_fovScale() / 3600;
-      }
-      var screenSpacePnt = renderContext.WVP.transform(this.center);
-      if (screenSpacePnt.z < 0) {
-        onScreen = false;
-      }
-      if (Vector3d.dot(renderContext.get_viewPoint(), this.center) < 0.55) {
-        onScreen = false;
-      }
-      if (renderContext.gl != null) {
-        if (Annotation.batchDirty || this.annotationDirty) {
-          var up = Vector3d.create(0, 1, 0);
-          var xNormal = Vector3d.cross(this.center, up);
-          var yNormal = Vector3d.cross(this.center, xNormal);
-          var r = this._radius$1 / 44;
-          var segments = 72;
-          var radiansPerSegment = Math.PI * 2 / segments;
-          var vertexList = [];
-          for (var j = 0; j <= segments; j++) {
-            var x = Math.cos(j * radiansPerSegment) * r;
-            var y = Math.sin(j * radiansPerSegment) * r;
-            vertexList.push(Vector3d.create(this.center.x + x * xNormal.x + y * yNormal.x, this.center.y + x * xNormal.y + y * yNormal.y, this.center.z + x * xNormal.z + y * yNormal.z));
-          }
-          if (this._strokeWidth$1 > 0 && vertexList.length > 1) {
-            for (var i = 0; i < (vertexList.length - 1); i++) {
-              Annotation.lineList.addLine(vertexList[i], vertexList[i + 1], this._lineColor$1, new Dates(0, 1));
-            }
-            Annotation.lineList.addLine(vertexList[vertexList.length - 1], vertexList[0], this._lineColor$1, new Dates(0, 1));
-          }
-          if (this._fill$1) {
-            var indexes = Tessellator.tesselateSimplePoly(vertexList);
-            for (var i = 0; i < indexes.length; i += 3) {
-              Annotation.triangleList.addSubdividedTriangles(vertexList[indexes[i]], vertexList[indexes[i + 1]], vertexList[indexes[i + 2]], this._fillColor$1, new Dates(0, 1), 2);
-            }
-          }
-          this.annotationDirty = false;
-        }
-      }
-      else {
-        if (onScreen) {
-          var ctx = renderContext.device;
-          ctx.save();
-          ctx.globalAlpha = this.get_opacity();
-          ctx.beginPath();
-          ctx.arc(screenSpacePnt.x, screenSpacePnt.y, rad, 0, Math.PI * 2, true);
-          ctx.lineWidth = this._strokeWidth$1;
-          ctx.fillStyle = this._fillColor$1.toString();
-          if (this._fill$1) {
-            ctx.fill();
-          }
-          ctx.globalAlpha = 1;
-          ctx.strokeStyle = this._lineColor$1.toString();
-          ctx.stroke();
-          ctx.restore();
-        }
-      }
-    },
-    hitTest: function(renderContext, RA, dec, x, y) {
-      if (ss.emptyString(this.get_id())) {
-        return false;
-      }
-      var rad = this._radius$1;
-      if (!this._skyRelative$1) {
-        rad *= renderContext.get_fovScale() / 3600;
-      }
-      return Annotation.separation(RA, dec, this._ra$1, this._dec$1) < rad;
-    }
-  };
-
-
-  // wwtlib.Poly
-
-  function Poly() {
-    this._points$1 = [];
-    this._fill$1 = false;
-    this._strokeWidth$1 = 1;
-    this._lineColor$1 = Colors.get_white();
-    this._fillColor$1 = Colors.get_white();
-    Annotation.call(this);
-  }
-  var Poly$ = {
-    addPoint: function(x, y) {
-      Annotation.batchDirty = true;
-      this._points$1.push(Coordinates.raDecTo3d(x / 15, y));
-    },
-    get_fill: function() {
-      return this._fill$1;
-    },
-    set_fill: function(value) {
-      Annotation.batchDirty = true;
-      this._fill$1 = value;
-      return value;
-    },
-    get_lineWidth: function() {
-      return this._strokeWidth$1;
-    },
-    set_lineWidth: function(value) {
-      Annotation.batchDirty = true;
-      this._strokeWidth$1 = value;
-      return value;
-    },
-    get_lineColor: function() {
-      return this._lineColor$1.toString();
-    },
-    set_lineColor: function(value) {
-      Annotation.batchDirty = true;
-      this._lineColor$1 = Color.fromName(value);
-      return value;
-    },
-    get_fillColor: function() {
-      return this._fillColor$1.toString();
-    },
-    set_fillColor: function(value) {
-      Annotation.batchDirty = true;
-      this._fillColor$1 = Color.fromName(value);
-      return value;
-    },
-    draw: function(renderContext) {
-      if (renderContext.gl != null) {
-        if (Annotation.batchDirty || this.annotationDirty) {
-          var vertexList = this._points$1;
-          if (this._strokeWidth$1 > 0 && this._points$1.length > 1) {
-            for (var i = 0; i < (this._points$1.length - 1); i++) {
-              Annotation.lineList.addLine(vertexList[i], vertexList[i + 1], this._lineColor$1, new Dates(0, 1));
-            }
-            Annotation.lineList.addLine(vertexList[this._points$1.length - 1], vertexList[0], this._lineColor$1, new Dates(0, 1));
-          }
-          if (this._fill$1) {
-            var indexes = Tessellator.tesselateSimplePoly(vertexList);
-            for (var i = 0; i < indexes.length; i += 3) {
-              Annotation.triangleList.addSubdividedTriangles(vertexList[indexes[i]], vertexList[indexes[i + 1]], vertexList[indexes[i + 2]], this._fillColor$1, new Dates(0, 1), 2);
-            }
-          }
-          this.annotationDirty = false;
-        }
-      }
-      else {
-        var ctx = renderContext.device;
-        ctx.save();
-        ctx.globalAlpha = this.get_opacity();
-        ctx.beginPath();
-        var first = true;
-        var $enum1 = ss.enumerate(this._points$1);
-        while ($enum1.moveNext()) {
-          var pnt = $enum1.current;
-          var screenSpacePnt = renderContext.WVP.transform(pnt);
-          if (screenSpacePnt.z < 0) {
-            ctx.restore();
-            return;
-          }
-          if (Vector3d.dot(renderContext.get_viewPoint(), pnt) < 0.75) {
-            ctx.restore();
-            return;
-          }
-          if (first) {
-            first = false;
-            ctx.moveTo(screenSpacePnt.x, screenSpacePnt.y);
-          }
-          else {
-            ctx.lineTo(screenSpacePnt.x, screenSpacePnt.y);
-          }
-        }
-        ctx.closePath();
-        ctx.lineWidth = this._strokeWidth$1;
-        if (this._fill$1) {
-          ctx.fillStyle = this._fillColor$1.toString();
-          ctx.fill();
-        }
-        ctx.strokeStyle = this._lineColor$1.toString();
-        ctx.globalAlpha = 1;
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-  };
-
-
-  // wwtlib.PolyLine
-
-  function PolyLine() {
-    this._points$1 = [];
-    this._strokeWidth$1 = 1;
-    this._lineColor$1 = Colors.get_white();
-    Annotation.call(this);
-  }
-  var PolyLine$ = {
-    addPoint: function(x, y) {
-      Annotation.batchDirty = true;
-      this._points$1.push(Coordinates.raDecTo3d(x / 15, y));
-    },
-    get_lineWidth: function() {
-      return this._strokeWidth$1;
-    },
-    set_lineWidth: function(value) {
-      Annotation.batchDirty = true;
-      this._strokeWidth$1 = value;
-      return value;
-    },
-    get_lineColor: function() {
-      return this._lineColor$1.toString();
-    },
-    set_lineColor: function(value) {
-      Annotation.batchDirty = true;
-      this._lineColor$1 = Color.fromName(value);
-      return value;
-    },
-    draw: function(renderContext) {
-      if (renderContext.gl != null) {
-        if (Annotation.batchDirty || this.annotationDirty) {
-          var vertexList = this._points$1;
-          if (this._strokeWidth$1 > 0) {
-            for (var i = 0; i < (this._points$1.length - 1); i++) {
-              Annotation.lineList.addLine(vertexList[i], vertexList[i + 1], this._lineColor$1, new Dates(0, 1));
-            }
-          }
-          this.annotationDirty = false;
-        }
-      }
-      else {
-        var ctx = renderContext.device;
-        ctx.save();
-        ctx.globalAlpha = this.get_opacity();
-        var first = true;
-        var $enum1 = ss.enumerate(this._points$1);
-        while ($enum1.moveNext()) {
-          var pnt = $enum1.current;
-          var screenSpacePnt = renderContext.WVP.transform(pnt);
-          if (screenSpacePnt.z < 0) {
-            ctx.restore();
-            return;
-          }
-          if (Vector3d.dot(renderContext.get_viewPoint(), pnt) < 0.75) {
-            ctx.restore();
-            return;
-          }
-          if (first) {
-            first = false;
-            ctx.beginPath();
-            ctx.moveTo(screenSpacePnt.x, screenSpacePnt.y);
-          }
-          else {
-            ctx.lineTo(screenSpacePnt.x, screenSpacePnt.y);
-          }
-        }
-        ctx.lineWidth = this._strokeWidth$1;
-        ctx.strokeStyle = this._lineColor$1.toString();
-        ctx.stroke();
-        ctx.restore();
-      }
-    }
-  };
-
-
-  // wwtlib.EquirectangularTile
-
-  function EquirectangularTile() {
-    this._tileDegrees$1 = 0;
-    this._topDown$1 = true;
-    this._subDivisionLevel$1 = 1;
-    Tile.call(this);
-  }
-  EquirectangularTile.create = function(level, x, y, dataset, parent) {
-    var temp = new EquirectangularTile();
-    temp.parent = parent;
-    temp.level = level;
-    temp.tileX = x;
-    temp.tileY = y;
-    temp.dataset = dataset;
-    temp._topDown$1 = !dataset.get_bottomsUp();
-    temp.computeBoundingSphere();
-    return temp;
-  };
-  var EquirectangularTile$ = {
-    computeBoundingSphere: function() {
-      if (!this._topDown$1) {
-        this.computeBoundingSphereBottomsUp();
-        return;
-      }
-      this._tileDegrees$1 = this.dataset.get_baseTileDegrees() / Math.pow(2, this.level);
-      var latMin = (90 - ((this.tileY) * this._tileDegrees$1));
-      var latMax = (90 - (((this.tileY + 1)) * this._tileDegrees$1));
-      var lngMin = ((this.tileX * this._tileDegrees$1) - 180);
-      var lngMax = ((((this.tileX + 1)) * this._tileDegrees$1) - 180);
-      var latCenter = (latMin + latMax) / 2;
-      var lngCenter = (lngMin + lngMax) / 2;
-      this.sphereCenter = this.geoTo3d(latCenter, lngCenter, false);
-      this.topLeft = this.geoTo3d(latMin, lngMin, false);
-      this.bottomRight = this.geoTo3d(latMax, lngMax, false);
-      this.topRight = this.geoTo3d(latMin, lngMax, false);
-      this.bottomLeft = this.geoTo3d(latMax, lngMin, false);
-      var distVect = this.geoTo3d(latMin, lngMin, false);
-      distVect.subtract(this.sphereCenter);
-      this.sphereRadius = distVect.length();
-      this._tileDegrees$1 = lngMax - lngMin;
-    },
-    computeBoundingSphereBottomsUp: function() {
-      var tileDegrees = this.dataset.get_baseTileDegrees() / (Math.pow(2, this.level));
-      var latMin = (-90 + (((this.tileY + 1)) * tileDegrees));
-      var latMax = (-90 + ((this.tileY) * tileDegrees));
-      var lngMin = ((this.tileX * tileDegrees) - 180);
-      var lngMax = ((((this.tileX + 1)) * tileDegrees) - 180);
-      var latCenter = (latMin + latMax) / 2;
-      var lngCenter = (lngMin + lngMax) / 2;
-      this.sphereCenter = this.geoTo3d(latCenter, lngCenter, false);
-      this.topLeft = this.geoTo3d(latMin, lngMin, false);
-      this.bottomRight = this.geoTo3d(latMax, lngMax, false);
-      this.topRight = this.geoTo3d(latMin, lngMax, false);
-      this.bottomLeft = this.geoTo3d(latMax, lngMin, false);
-      var distVect = this.topLeft;
-      distVect.subtract(this.sphereCenter);
-      this.sphereRadius = distVect.length();
-      tileDegrees = lngMax - lngMin;
-    },
-    createGeometry: function(renderContext) {
-      Tile.prototype.createGeometry.call(this, renderContext);
-      if (renderContext.gl == null) {
-        if (!this.dataset.get_dataSetType() || this.dataset.get_dataSetType() === 1) {
-          this._subDivisionLevel$1 = Math.max(2, (4 - this.level) * 2);
-        }
-      }
-      else {
-        this._subDivisionLevel$1 = 32;
-      }
-      try {
-        for (var i = 0; i < 4; i++) {
-          this._renderTriangleLists[i] = [];
-        }
-        if (!this._topDown$1) {
-          return this._createGeometryBottomsUp$1(renderContext);
-        }
-        var lat, lng;
-        var index = 0;
-        var tileDegrees = this.dataset.get_baseTileDegrees() / Math.pow(2, this.level);
-        var latMin = (90 - ((this.tileY) * tileDegrees));
-        var latMax = (90 - (((this.tileY + 1)) * tileDegrees));
-        var lngMin = ((this.tileX * tileDegrees) - 180);
-        var lngMax = ((((this.tileX + 1)) * tileDegrees) - 180);
-        var tileDegreesX = lngMax - lngMin;
-        var tileDegreesY = latMax - latMin;
-        this.topLeft = this.geoTo3d(latMin, lngMin, false);
-        this.bottomRight = this.geoTo3d(latMax, lngMax, false);
-        this.topRight = this.geoTo3d(latMin, lngMax, false);
-        this.bottomLeft = this.geoTo3d(latMax, lngMin, false);
-        var verts = new Array((this._subDivisionLevel$1 + 1) * (this._subDivisionLevel$1 + 1));
-        var x, y;
-        var textureStep = 1 / this._subDivisionLevel$1;
-        for (y = 0; y <= this._subDivisionLevel$1; y++) {
-          if (y !== this._subDivisionLevel$1) {
-            lat = latMin + (textureStep * tileDegreesY * y);
-          }
-          else {
-            lat = latMax;
-          }
-          for (x = 0; x <= this._subDivisionLevel$1; x++) {
-            if (x !== this._subDivisionLevel$1) {
-              lng = lngMin + (textureStep * tileDegreesX * x);
-            }
-            else {
-              lng = lngMax;
-            }
-            index = y * (this._subDivisionLevel$1 + 1) + x;
-            verts[index] = PositionTexture.createPos(this.geoTo3d(lat, lng, false), x * textureStep, y * textureStep);
-          }
-        }
-        this.triangleCount = this._subDivisionLevel$1 * this._subDivisionLevel$1 * 2;
-        var quarterDivisions = this._subDivisionLevel$1 / 2;
-        var part = 0;
-        if (renderContext.gl == null) {
-          for (var y2 = 0; y2 < 2; y2++) {
-            for (var x2 = 0; x2 < 2; x2++) {
-              index = 0;
-              for (var y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
-                for (var x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
-                  var p1;
-                  var p2;
-                  var p3;
-                  p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + x1)];
-                  p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
-                  p3 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
-                  this._renderTriangleLists[part].push(RenderTriangle.create(p1, p3, p2, this.texture, this.level));
-                  p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
-                  p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
-                  p3 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
-                  this._renderTriangleLists[part].push(RenderTriangle.create(p1, p3, p2, this.texture, this.level));
-                }
-              }
-              part++;
-            }
-          }
-        }
-        else {
-          this._vertexBuffer = Tile.prepDevice.createBuffer();
-          Tile.prepDevice.bindBuffer(34962, this._vertexBuffer);
-          var f32array = new Float32Array(verts.length * 5);
-          var buffer = f32array;
-          index = 0;
-          var $enum1 = ss.enumerate(verts);
-          while ($enum1.moveNext()) {
-            var pt = $enum1.current;
-            index = this.addVertex(buffer, index, pt);
-          }
-          Tile.prepDevice.bufferData(34962, f32array, 35044);
-          for (var y2 = 0; y2 < 2; y2++) {
-            for (var x2 = 0; x2 < 2; x2++) {
-              var ui16array = new Uint16Array(this.triangleCount * 3);
-              var indexArray = ui16array;
-              index = 0;
-              for (var y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
-                for (var x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
-                  indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + x1);
-                  indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
-                  indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
-                  indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
-                  indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
-                  indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1));
-                }
-              }
-              this._indexBuffers[part] = Tile.prepDevice.createBuffer();
-              Tile.prepDevice.bindBuffer(34963, this._indexBuffers[part]);
-              Tile.prepDevice.bufferData(34963, ui16array, 35044);
-              part++;
-            }
-          }
-        }
-      }
-      catch ($e2) {
-      }
-      return true;
-    },
-    _createGeometryBottomsUp$1: function(renderContext) {
-      var lat, lng;
-      var index = 0;
-      var tileDegrees = this.dataset.get_baseTileDegrees() / Math.pow(2, this.level);
-      var latMin = (-90 + (((this.tileY + 1)) * tileDegrees));
-      var latMax = (-90 + ((this.tileY) * tileDegrees));
-      var lngMin = ((this.tileX * tileDegrees) - 180);
-      var lngMax = ((((this.tileX + 1)) * tileDegrees) - 180);
-      var tileDegreesX = lngMax - lngMin;
-      var tileDegreesY = latMax - latMin;
-      var verts = new Array((this._subDivisionLevel$1 + 1) * (this._subDivisionLevel$1 + 1));
-      var x, y;
-      var textureStep = 1 / this._subDivisionLevel$1;
-      for (y = 0; y <= this._subDivisionLevel$1; y++) {
-        if (y !== this._subDivisionLevel$1) {
-          lat = latMin + (textureStep * tileDegreesY * y);
-        }
-        else {
-          lat = latMax;
-        }
-        for (x = 0; x <= this._subDivisionLevel$1; x++) {
-          if (x !== this._subDivisionLevel$1) {
-            lng = lngMin + (textureStep * tileDegreesX * x);
-          }
-          else {
-            lng = lngMax;
-          }
-          index = y * (this._subDivisionLevel$1 + 1) + x;
-          verts[index] = PositionTexture.createPos(this.geoTo3d(lat, lng, false), x * textureStep, y * textureStep);
-        }
-      }
-      this.triangleCount = this._subDivisionLevel$1 * this._subDivisionLevel$1 * 2;
-      var quarterDivisions = this._subDivisionLevel$1 / 2;
-      var part = 0;
-      if (renderContext.gl == null) {
-        for (var y2 = 0; y2 < 2; y2++) {
-          for (var x2 = 0; x2 < 2; x2++) {
-            index = 0;
-            for (var y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
-              for (var x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
-                var p1;
-                var p2;
-                var p3;
-                p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + x1)];
-                p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
-                p3 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
-                this._renderTriangleLists[part].push(RenderTriangle.create(p1, p3, p2, this.texture, this.level));
-                p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
-                p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
-                p3 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
-                this._renderTriangleLists[part].push(RenderTriangle.create(p1, p3, p2, this.texture, this.level));
-              }
-            }
-            part++;
-          }
-        }
-      }
-      else {
-        this._vertexBuffer = Tile.prepDevice.createBuffer();
-        Tile.prepDevice.bindBuffer(34962, this._vertexBuffer);
-        var f32array = new Float32Array(verts.length * 5);
-        var buffer = f32array;
-        index = 0;
-        var $enum1 = ss.enumerate(verts);
-        while ($enum1.moveNext()) {
-          var pt = $enum1.current;
-          index = this.addVertex(buffer, index, pt);
-        }
-        Tile.prepDevice.bufferData(34962, f32array, 35044);
-        for (var y2 = 0; y2 < 2; y2++) {
-          for (var x2 = 0; x2 < 2; x2++) {
-            var ui16array = new Uint16Array(this.triangleCount * 3);
-            var indexArray = ui16array;
-            index = 0;
-            for (var y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
-              for (var x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
-                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + x1);
-                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
-                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
-                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
-                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
-                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1));
-              }
-            }
-            this._indexBuffers[part] = Tile.prepDevice.createBuffer();
-            Tile.prepDevice.bindBuffer(34963, this._indexBuffers[part]);
-            Tile.prepDevice.bufferData(34963, ui16array, 35044);
-            part++;
-          }
-        }
-      }
-      return true;
-    }
-  };
-
-
-  // wwtlib.MercatorTile
-
-  function MercatorTile() {
-    this._tileDegrees$1 = 0;
-    this._latMin$1 = 0;
-    this._latMax$1 = 0;
-    this._lngMin$1 = 0;
-    this._lngMax$1 = 0;
-    this._subDivisionLevel$1 = 32;
-    Tile.call(this);
-  }
-  MercatorTile.create = function(level, X, Y, dataset, parent) {
-    var temp = new MercatorTile();
-    temp.parent = parent;
-    temp.level = level;
-    temp.tileX = X;
-    temp.tileY = Y;
-    temp.dataset = dataset;
-    temp.computeBoundingSphere();
-    return temp;
-  };
-  MercatorTile.getCentrePointOffsetAsTileRatio = function(lat, lon, zoom) {
-    var metersX = MercatorTile.absoluteLonToMetersAtZoom(lon, zoom);
-    var relativeXIntoCell = (metersX / 256) - Math.floor(metersX / 256);
-    var metersY = MercatorTile.absoluteLatToMetersAtZoom(lat, zoom);
-    var relativeYIntoCell = (metersY / 256) - Math.floor(metersY / 256);
-    return Vector2d.create(relativeXIntoCell, relativeYIntoCell);
-  };
-  MercatorTile.relativeMetersToLatAtZoom = function(Y, zoom) {
-    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
-    var metersY = Y * metersPerPixel;
-    return MercatorTile._radToDeg$1(Math.PI / 2 - 2 * Math.atan(Math.exp(0 - metersY / 6378137)));
-  };
-  MercatorTile.relativeMetersToLonAtZoom = function(X, zoom) {
-    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
-    var metersX = X * metersPerPixel;
-    return MercatorTile._radToDeg$1(metersX / 6378137);
-  };
-  MercatorTile.absoluteLatToMetersAtZoom = function(latitude, zoom) {
-    var sinLat = Math.sin(MercatorTile._degToRad$1(latitude));
-    var metersY = 6378137 / 2 * Math.log((1 + sinLat) / (1 - sinLat));
-    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
-    return ss.truncate((Math.round(20037508 - metersY) / metersPerPixel));
-  };
-  MercatorTile.absoluteMetersToLatAtZoom = function(Y, zoom) {
-    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
-    var metersY = 20037508 - Y * metersPerPixel;
-    return MercatorTile._radToDeg$1(Math.PI / 2 - 2 * Math.atan(Math.exp(0 - metersY / 6378137)));
-  };
-  MercatorTile.absoluteLonToMetersAtZoom = function(longitude, zoom) {
-    var metersX = 6378137 * MercatorTile._degToRad$1(longitude);
-    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
-    return ss.truncate(((metersX + 20037508) / metersPerPixel));
-  };
-  MercatorTile.absoluteMetersToLonAtZoom = function(X, zoom) {
-    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
-    var metersX = X * metersPerPixel - 20037508;
-    return MercatorTile._radToDeg$1(metersX / 6378137);
-  };
-  MercatorTile.absoluteLonToMetersAtZoomTile = function(longitude, zoom, tileX) {
-    var metersX = 6378137 * MercatorTile._degToRad$1(longitude);
-    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
-    return ss.truncate(((metersX + 20037508) / metersPerPixel));
-  };
-  MercatorTile.absoluteLatToMetersAtZoomTile = function(latitude, zoom, tileX) {
-    var sinLat = Math.sin(MercatorTile._degToRad$1(latitude));
-    var metersY = 6378137 / 2 * Math.log((1 + sinLat) / (1 - sinLat));
-    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
-    return ss.truncate((Math.round(20037508 - metersY) / metersPerPixel));
-  };
-  MercatorTile.absoluteMetersToLonAtZoomByTileY = function(X, zoom, tileY) {
-    var metersPerPixel = MercatorTile.metersPerPixel2(zoom);
-    var metersX = X * metersPerPixel - 20037508;
-    return MercatorTile._radToDeg$1(metersX / 6378137);
-  };
-  MercatorTile._degToRad$1 = function(deg) {
-    return (deg * Math.PI / 180);
-  };
-  MercatorTile.metersPerPixel2 = function(zoom) {
-    return (156543 / (1 << zoom));
-  };
-  MercatorTile._radToDeg$1 = function(rad) {
-    return (rad * 180 / Math.PI);
-  };
-  var MercatorTile$ = {
-    computeBoundingSphere: function() {
-      this._tileDegrees$1 = 360 / Math.pow(2, this.level);
-      this._latMin$1 = MercatorTile.absoluteMetersToLatAtZoom(this.tileY * 256, this.level);
-      this._latMax$1 = MercatorTile.absoluteMetersToLatAtZoom((this.tileY + 1) * 256, this.level);
-      this._lngMin$1 = ((this.tileX * this._tileDegrees$1) - 180);
-      this._lngMax$1 = ((((this.tileX + 1)) * this._tileDegrees$1) - 180);
-      var latCenter = (this._latMin$1 + this._latMax$1) / 2;
-      var lngCenter = (this._lngMin$1 + this._lngMax$1) / 2;
-      this.sphereCenter = this.geoTo3d(latCenter, lngCenter, false);
-      this.topLeft = this.geoTo3d(this._latMin$1, this._lngMin$1, false);
-      this.bottomRight = this.geoTo3d(this._latMax$1, this._lngMax$1, false);
-      this.topRight = this.geoTo3d(this._latMin$1, this._lngMax$1, false);
-      this.bottomLeft = this.geoTo3d(this._latMax$1, this._lngMin$1, false);
-      if (!this.tileY) {
-        this.topLeft = Vector3d.create(0, 1, 0);
-        this.topRight = Vector3d.create(0, 1, 0);
-      }
-      if (this.tileY === Math.pow(2, this.level) - 1) {
-        this.bottomRight = Vector3d.create(0, -1, 0);
-        this.bottomLeft = Vector3d.create(0, -1, 0);
-      }
-      var distVect = this.topLeft;
-      distVect.subtract(this.sphereCenter);
-      this.sphereRadius = distVect.length();
-      distVect = this.bottomRight;
-      distVect.subtract(this.sphereCenter);
-      var len = distVect.length();
-      if (this.sphereRadius < len) {
-        this.sphereRadius = len;
-      }
-      this._tileDegrees$1 = Math.abs(this._latMax$1 - this._latMin$1);
-    },
-    isPointInTile: function(lat, lng) {
-      if (!this.demReady || this.demData == null || lat < Math.min(this._latMin$1, this._latMax$1) || lat > Math.max(this._latMax$1, this._latMin$1) || lng < Math.min(this._lngMin$1, this._lngMax$1) || lng > Math.max(this._lngMin$1, this._lngMax$1)) {
-        return false;
-      }
-      return true;
-    },
-    getSurfacePointAltitude: function(lat, lng, meters) {
-      if (this.level < Tile.lastDeepestLevel) {
-        var $enum1 = ss.enumerate(this.children);
-        while ($enum1.moveNext()) {
-          var child = $enum1.current;
-          if (child != null) {
-            if (child.isPointInTile(lat, lng)) {
-              var retVal = child.getSurfacePointAltitude(lat, lng, meters);
-              if (!!retVal) {
-                return retVal;
-              }
-              else {
-                break;
-              }
-            }
-          }
-        }
-      }
-      var alt = this._getAltitudeAtLatLng$1(lat, lng, (meters) ? 1 : this.get__demScaleFactor());
-      return alt;
-    },
-    _getAltitudeAtLatLng$1: function(lat, lng, scaleFactor) {
-      var height = Math.abs(this._latMax$1 - this._latMin$1);
-      var width = Math.abs(this._lngMax$1 - this._lngMin$1);
-      var yy = ((lat - Math.min(this._latMax$1, this._latMin$1)) / height * 32);
-      var xx = ((lng - Math.min(this._lngMax$1, this._lngMin$1)) / width * 32);
-      var indexY = Math.min(31, ss.truncate(yy));
-      var indexX = Math.min(31, ss.truncate(xx));
-      var ha = xx - indexX;
-      var va = yy - indexY;
-      var ul = this.demData[indexY * 33 + indexX];
-      var ur = this.demData[indexY * 33 + (indexX + 1)];
-      var ll = this.demData[(indexY + 1) * 33 + indexX];
-      var lr = this.demData[(indexY + 1) * 33 + (indexX + 1)];
-      var top = ul * (1 - ha) + ha * ur;
-      var bottom = ll * (1 - ha) + ha * lr;
-      var val = top * (1 - va) + va * bottom;
-      return val / scaleFactor;
-    },
-    createGeometry: function(renderContext) {
-      Tile.prototype.createGeometry.call(this, renderContext);
-      if (this.geometryCreated) {
-        return true;
-      }
-      this.geometryCreated = true;
-      if (Tile.uvMultiple === 256) {
-        if (!this.dataset.get_dataSetType() || this.dataset.get_dataSetType() === 1) {
-          this._subDivisionLevel$1 = Math.max(2, (6 - this.level) * 2);
-        }
-      }
-      for (var i = 0; i < 4; i++) {
-        this._renderTriangleLists[i] = [];
-      }
-      var lat, lng;
-      var index = 0;
-      var tileDegrees = 360 / Math.pow(2, this.level);
-      this._latMin$1 = MercatorTile.absoluteMetersToLatAtZoom(this.tileY * 256, this.level);
-      this._latMax$1 = MercatorTile.absoluteMetersToLatAtZoom((this.tileY + 1) * 256, this.level);
-      this._lngMin$1 = ((this.tileX * tileDegrees) - 180);
-      this._lngMax$1 = ((((this.tileX + 1)) * tileDegrees) - 180);
-      var latCenter = MercatorTile.absoluteMetersToLatAtZoom(((this.tileY * 2) + 1) * 256, this.level + 1);
-      this.topLeft = this.geoTo3d(this._latMin$1, this._lngMin$1, false);
-      this.bottomRight = this.geoTo3d(this._latMax$1, this._lngMax$1, false);
-      this.topRight = this.geoTo3d(this._latMin$1, this._lngMax$1, false);
-      this.bottomLeft = this.geoTo3d(this._latMax$1, this._lngMin$1, false);
-      var verts = new Array((this._subDivisionLevel$1 + 1) * (this._subDivisionLevel$1 + 1));
-      tileDegrees = this._lngMax$1 - this._lngMin$1;
-      var dGrid = (tileDegrees / this._subDivisionLevel$1);
-      var x1, y1;
-      var textureStep = 1 / this._subDivisionLevel$1;
-      var latDegrees = this._latMax$1 - latCenter;
-      for (y1 = 0; y1 < this._subDivisionLevel$1 / 2; y1++) {
-        if (y1 !== this._subDivisionLevel$1 / 2) {
-          lat = this._latMax$1 - (2 * textureStep * latDegrees * y1);
-        }
-        else {
-          lat = latCenter;
-        }
-        for (x1 = 0; x1 <= this._subDivisionLevel$1; x1++) {
-          if (x1 !== this._subDivisionLevel$1) {
-            lng = this._lngMin$1 + (textureStep * tileDegrees * x1);
-          }
-          else {
-            lng = this._lngMax$1;
-          }
-          index = y1 * (this._subDivisionLevel$1 + 1) + x1;
-          verts[index] = new PositionTexture();
-          verts[index].position = this.geoTo3dWithAlt(lat, lng, false, true);
-          verts[index].tu = (x1 * textureStep) * Tile.uvMultiple;
-          verts[index].tv = ((MercatorTile.absoluteLatToMetersAtZoom(lat, this.level) - (this.tileY * 256)) / 256) * Tile.uvMultiple;
-          this.demIndex++;
-        }
-      }
-      latDegrees = this._latMin$1 - latCenter;
-      for (y1 = this._subDivisionLevel$1 / 2; y1 <= this._subDivisionLevel$1; y1++) {
-        if (y1 !== this._subDivisionLevel$1) {
-          lat = latCenter + (2 * textureStep * latDegrees * (y1 - (this._subDivisionLevel$1 / 2)));
-        }
-        else {
-          lat = this._latMin$1;
-        }
-        for (x1 = 0; x1 <= this._subDivisionLevel$1; x1++) {
-          if (x1 !== this._subDivisionLevel$1) {
-            lng = this._lngMin$1 + (textureStep * tileDegrees * x1);
-          }
-          else {
-            lng = this._lngMax$1;
-          }
-          index = y1 * (this._subDivisionLevel$1 + 1) + x1;
-          verts[index] = new PositionTexture();
-          verts[index].position = this.geoTo3dWithAlt(lat, lng, false, true);
-          verts[index].tu = (x1 * textureStep) * Tile.uvMultiple;
-          verts[index].tv = ((MercatorTile.absoluteLatToMetersAtZoom(lat, this.level) - (this.tileY * 256)) / 256) * Tile.uvMultiple;
-          this.demIndex++;
-        }
-      }
-      if (!this.tileY) {
-        y1 = this._subDivisionLevel$1;
-        for (x1 = 0; x1 <= this._subDivisionLevel$1; x1++) {
-          index = y1 * (this._subDivisionLevel$1 + 1) + x1;
-          verts[index].position = Vector3d.create(0, 1, 0);
-        }
-      }
-      if (this.tileY === Math.pow(2, this.level) - 1) {
-        y1 = 0;
-        for (x1 = 0; x1 <= this._subDivisionLevel$1; x1++) {
-          index = y1 * (this._subDivisionLevel$1 + 1) + x1;
-          verts[index].position = Vector3d.create(0, -1, 0);
-        }
-      }
-      this.triangleCount = this._subDivisionLevel$1 * this._subDivisionLevel$1 * 2;
-      var quarterDivisions = this._subDivisionLevel$1 / 2;
-      var part = 0;
-      if (renderContext.gl == null) {
-        for (var y2 = 0; y2 < 2; y2++) {
-          for (var x2 = 0; x2 < 2; x2++) {
-            index = 0;
-            for (y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
-              for (x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
-                var p1;
-                var p2;
-                var p3;
-                p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + x1)];
-                p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
-                p3 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
-                var tri = RenderTriangle.create(p1, p2, p3, this.texture, this.level);
-                this._renderTriangleLists[part].push(tri);
-                p1 = verts[(y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
-                p2 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1)];
-                p3 = verts[((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1))];
-                tri = RenderTriangle.create(p1, p2, p3, this.texture, this.level);
-                this._renderTriangleLists[part].push(tri);
-              }
-            }
-            part++;
-          }
-        }
-      }
-      else {
-        this._vertexBuffer = Tile.prepDevice.createBuffer();
-        Tile.prepDevice.bindBuffer(34962, this._vertexBuffer);
-        var f32array = new Float32Array(verts.length * 5);
-        var buffer = f32array;
-        index = 0;
-        var $enum1 = ss.enumerate(verts);
-        while ($enum1.moveNext()) {
-          var pt = $enum1.current;
-          index = this.addVertex(buffer, index, pt);
-        }
-        Tile.prepDevice.bufferData(34962, f32array, 35044);
-        for (var y2 = 0; y2 < 2; y2++) {
-          for (var x2 = 0; x2 < 2; x2++) {
-            var ui16array = new Uint16Array(this.triangleCount * 3);
-            var indexArray = ui16array;
-            index = 0;
-            for (y1 = (quarterDivisions * y2); y1 < (quarterDivisions * (y2 + 1)); y1++) {
-              for (x1 = (quarterDivisions * x2); x1 < (quarterDivisions * (x2 + 1)); x1++) {
-                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + x1);
-                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
-                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
-                indexArray[index++] = (y1 * (this._subDivisionLevel$1 + 1) + (x1 + 1));
-                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + x1);
-                indexArray[index++] = ((y1 + 1) * (this._subDivisionLevel$1 + 1) + (x1 + 1));
-              }
-            }
-            this._indexBuffers[part] = Tile.prepDevice.createBuffer();
-            Tile.prepDevice.bindBuffer(34963, this._indexBuffers[part]);
-            Tile.prepDevice.bufferData(34963, ui16array, 35044);
-            part++;
-          }
-        }
-      }
-      return true;
-    },
-    _getDemSample$1: function(x, y) {
-      return this.demData[(32 - y) * 33 + x];
-    },
-    createDemFromParent: function() {
-      var parent = ss.safeCast(this.parent, MercatorTile);
-      if (parent == null || parent.demData == null) {
-        return false;
-      }
-      var offsetX = (((this.tileX % 2) === 1) ? 16 : 0);
-      var offsetY = (((this.tileY % 2) === 1) ? 16 : 0);
-      this.demData = new Array(this.demSize);
-      for (var y = 0; y < 33; y += 2) {
-        var copy = true;
-        for (var x = 0; x < 33; x++) {
-          if (copy) {
-            this.demData[(32 - y) * 33 + x] = parent._getDemSample$1((x / 2) + offsetX, (y / 2) + offsetY);
-          }
-          else {
-            this.demData[(32 - y) * 33 + x] = ((parent._getDemSample$1((x / 2) + offsetX, (y / 2) + offsetY) + parent._getDemSample$1(((x / 2) + offsetX) + 1, (y / 2) + offsetY)) / 2);
-          }
-          copy = !copy;
-        }
-      }
-      for (var y = 1; y < 33; y += 2) {
-        for (var x = 0; x < 33; x++) {
-          this.demData[(32 - y) * 33 + x] = ((this._getDemSample$1(x, y - 1) + this._getDemSample$1(x, y + 1)) / 2);
-        }
-      }
-      var $enum1 = ss.enumerate(this.demData);
-      while ($enum1.moveNext()) {
-        var sample = $enum1.current;
-        this.demAverage += sample;
-      }
-      this.demAverage /= this.demData.length;
-      this.demReady = true;
-      return true;
-    }
-  };
-
-
   // wwtlib.ISSLayer
 
   function ISSLayer() {
@@ -45464,7 +45685,7 @@ window.wwtlib = function(){
       return;
     }
     ISSLayer._loading$2 = true;
-    var url = 'http://www.worldwidetelescope.org/data/iss.wtt';
+    var url = URLHelpers.singleton.coreStaticUrl('data/iss.wtt');
     ISSLayer._doc$2 = TourDocument.fromUrlRaw(url, function() {
       ISSLayer.createSpaceStation();
     });
@@ -45624,16 +45845,15 @@ window.wwtlib = function(){
   var $exports = ss.module('wwtlib',
     {
       IFolder: [ IFolder ],
+      FolderUp: [ FolderUp, FolderUp$, null, IThumbnail ],
       Sprite2d: [ Sprite2d, Sprite2d$, null ],
+      ViewMoverSlew: [ ViewMoverSlew, ViewMoverSlew$, null, IViewMover ],
       VertexPosition: [ VertexPosition, VertexPosition$, null ],
+      MainView: [ MainView, null, null ],
       MinorPlanets: [ MinorPlanets, MinorPlanets$, null ],
       TileCache: [ TileCache, TileCache$, null ],
       DistanceCalc: [ DistanceCalc, DistanceCalc$, null ],
       Triangle: [ Triangle, Triangle$, null ],
-      Wtml: [ Wtml, Wtml$, null ],
-      FolderUp: [ FolderUp, FolderUp$, null, IThumbnail ],
-      ViewMoverSlew: [ ViewMoverSlew, ViewMoverSlew$, null, IViewMover ],
-      MainView: [ MainView, null, null ],
       PositionTextureVertexBuffer: [ PositionTextureVertexBuffer, PositionTextureVertexBuffer$, VertexBufferBase ],
       KeplerVertexBuffer: [ KeplerVertexBuffer, KeplerVertexBuffer$, VertexBufferBase ],
       TimeSeriesLineVertexBuffer: [ TimeSeriesLineVertexBuffer, TimeSeriesLineVertexBuffer$, VertexBufferBase ],
@@ -45645,8 +45865,21 @@ window.wwtlib = function(){
     {
       DAY_OF_WEEK: DAY_OF_WEEK,
       EO: EO,
+      URLRewriteMode: URLRewriteMode,
+      SolarSystemObjects: SolarSystemObjects,
+      InterpolationType: InterpolationType,
+      PointType: PointType,
+      LocationHint: LocationHint,
+      FolderGroup: FolderGroup,
+      FolderRefreshType: FolderRefreshType,
+      FolderType: FolderType,
+      ThumbnailSize: ThumbnailSize,
       CullMode: CullMode,
       PointScaleTypes: PointScaleTypes,
+      ProjectionType: ProjectionType,
+      ImageSetType: ImageSetType,
+      BandPass: BandPass,
+      Classification: Classification,
       DataTypes: DataTypes,
       ScaleTypes: ScaleTypes,
       AltUnits: AltUnits,
@@ -45675,25 +45908,13 @@ window.wwtlib = function(){
       DialogResult: DialogResult,
       Formatting: Formatting,
       StateType: StateType,
-      SolarSystemObjects: SolarSystemObjects,
-      InterpolationType: InterpolationType,
-      PointType: PointType,
-      LocationHint: LocationHint,
-      FolderGroup: FolderGroup,
-      FolderRefreshType: FolderRefreshType,
-      FolderType: FolderType,
-      ThumbnailSize: ThumbnailSize,
-      ProjectionType: ProjectionType,
-      ImageSetType: ImageSetType,
-      BandPass: BandPass,
-      Classification: Classification,
-      IUIServicesCallbacks: [ IUIServicesCallbacks ],
-      ISettings: [ ISettings ],
-      IUndoStep: [ IUndoStep ],
       IThumbnail: [ IThumbnail ],
       IPlace: [ IPlace ],
       IUiController: [ IUiController ],
       IViewMover: [ IViewMover ],
+      IUIServicesCallbacks: [ IUIServicesCallbacks ],
+      ISettings: [ ISettings ],
+      IUndoStep: [ IUndoStep ],
       GFX: [ GFX, null, null ],
       ABR: [ ABR, ABR$, null ],
       ACFT: [ ACFT, ACFT$, null ],
@@ -45758,9 +45979,36 @@ window.wwtlib = function(){
       CAASun: [ CAASun, CAASun$, null ],
       CAAUranus: [ CAAUranus, CAAUranus$, null ],
       CAAVenus: [ CAAVenus, CAAVenus$, null ],
+      URLHelpers: [ URLHelpers, URLHelpers$, null ],
+      Annotation: [ Annotation, Annotation$, null ],
       AstroRaDec: [ AstroRaDec, AstroRaDec$, null ],
       RiseSetDetails: [ RiseSetDetails, RiseSetDetails$, null ],
       AstroCalc: [ AstroCalc, AstroCalc$, null ],
+      BlendState: [ BlendState, BlendState$, null ],
+      CameraParameters: [ CameraParameters, CameraParameters$, null ],
+      Color: [ Color, Color$, null ],
+      Colors: [ Colors, Colors$, null ],
+      Constellations: [ Constellations, Constellations$, null ],
+      Lineset: [ Lineset, Lineset$, null ],
+      Linepoint: [ Linepoint, Linepoint$, null ],
+      ConstellationFilter: [ ConstellationFilter, ConstellationFilter$, null ],
+      PositionTexture: [ PositionTexture, PositionTexture$, null ],
+      PositionColoredTextured: [ PositionColoredTextured, PositionColoredTextured$, null ],
+      PositionColored: [ PositionColored, PositionColored$, null ],
+      PositionNormalTexturedTangent: [ PositionNormalTexturedTangent, PositionNormalTexturedTangent$, null ],
+      Vector3d: [ Vector3d, Vector3d$, null ],
+      Vector2d: [ Vector2d, Vector2d$, null ],
+      Matrix3d: [ Matrix3d, Matrix3d$, null ],
+      Matrix2d: [ Matrix2d, Matrix2d$, null ],
+      DoubleUtilities: [ DoubleUtilities, null, null ],
+      PlaneD: [ PlaneD, PlaneD$, null ],
+      Vector4d: [ Vector4d, Vector4d$, null ],
+      PositionNormalTexturedX2: [ PositionNormalTexturedX2, PositionNormalTexturedX2$, null ],
+      PositionNormalTextured: [ PositionNormalTextured, PositionNormalTextured$, null ],
+      SphereHull: [ SphereHull, SphereHull$, null ],
+      ConvexHull: [ ConvexHull, ConvexHull$, null ],
+      Folder: [ Folder, Folder$, null, IThumbnail ],
+      FolderBrowser: [ FolderBrowser, FolderBrowser$, null ],
       ShortIndexBuffer: [ ShortIndexBuffer, ShortIndexBuffer$, null ],
       IndexBuffer: [ IndexBuffer, IndexBuffer$, null, ss.IDisposable ],
       VertexBufferBase: [ VertexBufferBase, VertexBufferBase$, null, ss.IDisposable ],
@@ -45790,6 +46038,8 @@ window.wwtlib = function(){
       Tessellator: [ Tessellator, Tessellator$, null ],
       Texture: [ Texture, Texture$, null, ss.IDisposable ],
       Grids: [ Grids, Grids$, null ],
+      Imageset: [ Imageset, Imageset$, null, IThumbnail ],
+      ViewMoverKenBurnsStyle: [ ViewMoverKenBurnsStyle, ViewMoverKenBurnsStyle$, null, IViewMover ],
       KeplerVertex: [ KeplerVertex, KeplerVertex$, null ],
       ScaleMap: [ ScaleMap, ScaleMap$, null ],
       ColorMapContainer: [ ColorMapContainer, ColorMapContainer$, null ],
@@ -45818,6 +46068,7 @@ window.wwtlib = function(){
       VoRow: [ VoRow, VoRow$, null ],
       VoColumn: [ VoColumn, VoColumn$, null ],
       WcsImage: [ WcsImage, WcsImage$, null ],
+      Place: [ Place, Place$, null, IThumbnail, IPlace ],
       KeplerianElements: [ KeplerianElements, KeplerianElements$, null ],
       BodyAngles: [ BodyAngles, BodyAngles$, null ],
       Planets: [ Planets, Planets$, null ],
@@ -45884,39 +46135,14 @@ window.wwtlib = function(){
       VizLayer: [ VizLayer, VizLayer$, null ],
       DataItem: [ DataItem, DataItem$, null ],
       WebFile: [ WebFile, WebFile$, null ],
+      Wtml: [ Wtml, Wtml$, null ],
       WWTControl: [ WWTControl, WWTControl$, null ],
       WWTElementEvent: [ WWTElementEvent, WWTElementEvent$, null ],
-      Annotation: [ Annotation, Annotation$, null ],
-      BlendState: [ BlendState, BlendState$, null ],
-      CameraParameters: [ CameraParameters, CameraParameters$, null ],
-      Color: [ Color, Color$, null ],
-      Colors: [ Colors, Colors$, null ],
-      Constellations: [ Constellations, Constellations$, null ],
-      Lineset: [ Lineset, Lineset$, null ],
-      Linepoint: [ Linepoint, Linepoint$, null ],
-      ConstellationFilter: [ ConstellationFilter, ConstellationFilter$, null ],
       Coordinates: [ Coordinates, Coordinates$, null ],
-      PositionTexture: [ PositionTexture, PositionTexture$, null ],
-      PositionColoredTextured: [ PositionColoredTextured, PositionColoredTextured$, null ],
-      PositionColored: [ PositionColored, PositionColored$, null ],
-      PositionNormalTexturedTangent: [ PositionNormalTexturedTangent, PositionNormalTexturedTangent$, null ],
-      Vector3d: [ Vector3d, Vector3d$, null ],
-      Vector2d: [ Vector2d, Vector2d$, null ],
-      Matrix3d: [ Matrix3d, Matrix3d$, null ],
-      Matrix2d: [ Matrix2d, Matrix2d$, null ],
-      DoubleUtilities: [ DoubleUtilities, null, null ],
-      PlaneD: [ PlaneD, PlaneD$, null ],
-      Vector4d: [ Vector4d, Vector4d$, null ],
-      PositionNormalTexturedX2: [ PositionNormalTexturedX2, PositionNormalTexturedX2$, null ],
-      PositionNormalTextured: [ PositionNormalTextured, PositionNormalTextured$, null ],
-      SphereHull: [ SphereHull, SphereHull$, null ],
-      ConvexHull: [ ConvexHull, ConvexHull$, null ],
-      Folder: [ Folder, Folder$, null, IThumbnail ],
-      FolderBrowser: [ FolderBrowser, FolderBrowser$, null ],
-      Imageset: [ Imageset, Imageset$, null, IThumbnail ],
-      ViewMoverKenBurnsStyle: [ ViewMoverKenBurnsStyle, ViewMoverKenBurnsStyle$, null, IViewMover ],
-      Place: [ Place, Place$, null, IThumbnail, IPlace ],
-      Class1: [ Class1, Class1$, null ],
+      Circle: [ Circle, Circle$, Annotation ],
+      Poly: [ Poly, Poly$, Annotation ],
+      PolyLine: [ PolyLine, PolyLine$, Annotation ],
+      EquirectangularTile: [ EquirectangularTile, EquirectangularTile$, Tile ],
       PositionVertexBuffer: [ PositionVertexBuffer, PositionVertexBuffer$, VertexBufferBase ],
       PositionNormalTexturedVertexBuffer: [ PositionNormalTexturedVertexBuffer, PositionNormalTexturedVertexBuffer$, VertexBufferBase ],
       PositionNormalTexturedTangentVertexBuffer: [ PositionNormalTexturedTangentVertexBuffer, PositionNormalTexturedTangentVertexBuffer$, VertexBufferBase ],
@@ -45936,6 +46162,7 @@ window.wwtlib = function(){
       SpreadSheetLayer: [ SpreadSheetLayer, SpreadSheetLayer$, Layer ],
       TimeSeriesLayer: [ TimeSeriesLayer, TimeSeriesLayer$, Layer ],
       VoTableLayer: [ VoTableLayer, VoTableLayer$, Layer ],
+      MercatorTile: [ MercatorTile, MercatorTile$, Tile ],
       PlotTile: [ PlotTile, PlotTile$, Tile ],
       SkyImageTile: [ SkyImageTile, SkyImageTile$, Tile ],
       TangentTile: [ TangentTile, TangentTile$, Tile ],
@@ -45950,11 +46177,6 @@ window.wwtlib = function(){
       ReferenceFrameProps: [ ReferenceFrameProps, ReferenceFrameProps$, Dialog ],
       GreatCircleDialog: [ GreatCircleDialog, GreatCircleDialog$, Dialog ],
       DataVizWizard: [ DataVizWizard, DataVizWizard$, Dialog ],
-      Circle: [ Circle, Circle$, Annotation ],
-      Poly: [ Poly, Poly$, Annotation ],
-      PolyLine: [ PolyLine, PolyLine$, Annotation ],
-      EquirectangularTile: [ EquirectangularTile, EquirectangularTile$, Tile ],
-      MercatorTile: [ MercatorTile, MercatorTile$, Tile ],
       ISSLayer: [ ISSLayer, ISSLayer$, Object3dLayer ],
       SlideChangedEventArgs: [ SlideChangedEventArgs, SlideChangedEventArgs$, ss.EventArgs ],
       ArrivedEventArgs: [ ArrivedEventArgs, ArrivedEventArgs$, ss.EventArgs ],
@@ -46114,10 +46336,36 @@ window.wwtlib = function(){
   GFX.g_R2VenusCoefficients = [ new VSC(1407, 5.0637, 10213.2855), new VSC(16, 5.47, 20426.57), new VSC(13, 0, 0) ];
   GFX.g_R3VenusCoefficients = [ new VSC(50, 3.22, 10213.29) ];
   GFX.g_R4VenusCoefficients = [ new VSC(1, 0.92, 10213.29) ];
+  URLHelpers.singleton = new URLHelpers();
+  Annotation.pointList = null;
+  Annotation.lineList = null;
+  Annotation.triangleList = null;
+  Annotation.batchDirty = true;
   AstroCalc._galDetails = new GMDS();
   AstroCalc._jupDetails = new EPD();
   AstroCalc._jupPhisical = new CAAPhysicalJupiterDetails();
   AstroCalc._jDateLast = 0;
+  Constellations.RC = 0.017453292519943;
+  Constellations._maxSeperation = 0.745;
+  Constellations.containment = Constellations.create('Constellations', URLHelpers.singleton.engineAssetUrl('constellations.txt'), true, true, true);
+  Constellations._constToDraw = '';
+  Constellations.selectedSegment = null;
+  Constellations._artFile = null;
+  Constellations.artwork = null;
+  Constellations.boundries = null;
+  Constellations.pictureBlendStates = {};
+  (function() {
+    var url = URLHelpers.singleton.engineAssetUrl('ConstellationNamePositions_EN.txt');
+    Constellations._webFileConstNames = new WebFile(url);
+    Constellations._webFileConstNames.onStateChange = Constellations._loadNames;
+    Constellations._webFileConstNames.send();
+  })();
+  ConstellationFilter.families = {};
+  Vector3d.zero = new Vector3d();
+  Matrix3d._s_identity = Matrix3d._createIdentity();
+  FolderBrowser._downloading = false;
+  FolderBrowser._imagesLoaded = false;
+  FolderBrowser._imageLoadCount = 0;
   PointList.starTexture = null;
   SimpleLineShader.vertLoc = 0;
   SimpleLineShader.initialized = false;
@@ -46252,14 +46500,17 @@ window.wwtlib = function(){
   LayerManager._moonfile = '';
   LayerManager._selectedLayer = null;
   LayerManager._lastMenuClick = new Vector2d();
-  LayerManager.getMoonFile('http://worldwidetelescope.org/wwtweb/catalog.aspx?Q=moons');
+  LayerManager.getMoonFile(URLHelpers.singleton.engineAssetUrl('moons.txt'));
   LayerUI._type = null;
   Object3d.maX_VERTICES = 8000;
   Object3d.maX_POLYGONS = 8000;
   Orbit._orbitalToWwt = Matrix3d.create(1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
   Orbit._initBegun = false;
   PushPin._pinTextureCache = {};
-  PushPin._pins = Planets.loadPlanetTexture('http://cdn.worldwidetelescope.org/webclient/images/pins.png');
+  PushPin._pins = Planets.loadPlanetTexture(URLHelpers.singleton.engineAssetUrl('pins.png'));
+  (function() {
+    var canvas = document.getElementById('canvas');
+  })();
   MinorPlanets.mpcList = [];
   MinorPlanets._initBegun = false;
   MinorPlanets._mpcBlendStates = new Array(7);
@@ -46357,10 +46608,6 @@ window.wwtlib = function(){
   VizLayer.earthRadius = 6371000;
   WWTControl.imageSets = [];
   WWTControl.exploreRoot = new Folder();
-  WWTControl.startLat = 0;
-  WWTControl.startLng = 0;
-  WWTControl.startZoom = 360;
-  WWTControl.startMode = 'Sky';
   WWTControl.imageSetName = '';
   WWTControl.showDataLayers = false;
   WWTControl._renderNeeded = false;
@@ -46371,38 +46618,10 @@ window.wwtlib = function(){
   WWTControl.singleton.renderContext = new RenderContext();
   SpaceTimeController.last = ss.now();
   SpaceTimeController.updateClock();
-  Annotation.pointList = null;
-  Annotation.lineList = null;
-  Annotation.triangleList = null;
-  Annotation.batchDirty = true;
-  Constellations.RC = 0.017453292519943;
-  Constellations._maxSeperation = 0.745;
-  Constellations.containment = Constellations.create('Constellations', 'http://worldwidetelescope.org/data/constellations.txt', true, true, true);
-  Constellations._constToDraw = '';
-  Constellations.selectedSegment = null;
-  Constellations._artFile = null;
-  Constellations.artwork = null;
-  Constellations.boundries = null;
-  Constellations.pictureBlendStates = {};
-  (function() {
-    var url = 'http://worldwidetelescope.org/wwtweb/catalog.aspx?q=ConstellationNamePositions_EN';
-    Constellations._webFileConstNames = new WebFile(url);
-    Constellations._webFileConstNames.onStateChange = Constellations._loadNames;
-    Constellations._webFileConstNames.send();
-  })();
-  ConstellationFilter.families = {};
   Coordinates.RC = (3.1415927 / 180);
   Coordinates.RCRA = (3.1415927 / 12);
   Coordinates.radius = 1;
   Coordinates._rotationMatrix = null;
-  Vector3d.zero = new Vector3d();
-  Matrix3d._s_identity = Matrix3d._createIdentity();
-  FolderBrowser._downloading = false;
-  FolderBrowser._imagesLoaded = false;
-  FolderBrowser._imageLoadCount = 0;
-  (function() {
-    var canvas = document.getElementById('canvas');
-  })();
   FitsImage.last = null;
   FitsImage._naN$1 = 0 / 0;
   Object3dLayer._translateUI$1 = null;
@@ -46421,4 +46640,8 @@ window.wwtlib = function(){
   ISSLayer._doc$2 = null;
 
   return $exports;
-}();
+});
+
+// (umd_footer.js intentionally incomplete -- it is concatenated to form index.js)
+  return _exports_object;
+}));
