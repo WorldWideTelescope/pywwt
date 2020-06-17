@@ -87,12 +87,33 @@ def assert_widget_image(tmpdir, widget, filename):
 
     from ..conftest import _cached_opengl_renderer
 
+    # Get the path to the "expected" image. There are can be a variety of
+    # versions, unfortunately, due to differences between different OpenGL
+    # renderers.
+
     framework = 'webengine' if WEBENGINE else 'webkit'
     if sys.platform.startswith('win') and not WEBENGINE and 'GDI' in _cached_opengl_renderer:
         framework += '_win'
     elif sys.platform.startswith('darwin'):
         framework += '_osx'
-    expected = os.path.join(DATA, framework, filename)
+
+    if 'Mesa' in _cached_opengl_renderer:
+        framework_variant = '_mesa'
+    else:  # may need to add further variants in the future
+        framework_variant = None
+
+    expected = None
+
+    if framework_variant is not None:
+        p = os.path.join(DATA, framework + framework_variant, filename)
+        if os.path.exists(p):
+            expected = p
+
+    if expected is None:
+        expected = os.path.join(DATA, framework, filename)
+
+    # Do the actual comparison.
+
     try:
         msg = compare_images(expected, actual, tol=1.6)
     except Exception:
