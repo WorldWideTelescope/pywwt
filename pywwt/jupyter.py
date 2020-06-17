@@ -15,8 +15,12 @@ from . import __version__
 
 __all__ = ['WWTJupyterWidget']
 
-VIEW_MODULE_VERSION = __version__
-MODEL_MODULE_VERSION = __version__
+_npm_version = (__version__.replace('.alpha', '-alpha.')
+                           .replace('.beta', '-beta.')
+                           .replace('.dev', '-dev.')
+                           .replace('.rc', '-rc.'))
+VIEW_MODULE_VERSION = _npm_version
+MODEL_MODULE_VERSION = _npm_version
 
 dom_listener = DOMListener()
 
