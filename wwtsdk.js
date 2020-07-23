@@ -7479,7 +7479,12 @@ define('wwtlib', ['ss'], function(ss) {
       var lcdomain = domain.toLowerCase();
       var lcpath = rest.toLowerCase().split('?')[0];
       if (!ss.keyExists(this._domain_handling, lcdomain)) {
-        this._domain_handling[lcdomain] = 2;
+        if (ss.startsWith(lcdomain, 'localhost:') || ss.startsWith(lcdomain, '127.0.0.1:')) {
+          this._domain_handling[lcdomain] = 1;
+        }
+        else {
+          this._domain_handling[lcdomain] = 2;
+        }
       }
       var mode = this._domain_handling[lcdomain];
       switch (mode) {
@@ -7541,10 +7546,15 @@ define('wwtlib', ['ss'], function(ss) {
         lcdomain = url_no_protocol.substring(0, slash_index).toLowerCase();
       }
       if (!ss.keyExists(this._domain_handling, lcdomain)) {
-        this._domain_handling[lcdomain] = 2;
+        if (ss.startsWith(lcdomain, 'localhost:') || ss.startsWith(lcdomain, '127.0.0.1:')) {
+          this._domain_handling[lcdomain] = 1;
+        }
+        else {
+          this._domain_handling[lcdomain] = 2;
+        }
       }
       var mode = this._domain_handling[lcdomain];
-      if (!mode) {
+      if (!mode || mode === 1) {
         return null;
       }
       this._domain_handling[lcdomain] = 3;
@@ -8810,7 +8820,6 @@ define('wwtlib', ['ss'], function(ss) {
         }
       }
       catch ($e2) {
-        var i = 0;
       }
       WWTControl.set_renderNeeded(true);
     },
@@ -14739,7 +14748,6 @@ define('wwtlib', ['ss'], function(ss) {
     }
     if (Grids._precTextBatch == null) {
       Grids._precTextBatch = new Text3dBatch(50);
-      var index = 0;
       for (var l = -12000; l < 13000; l += 2000) {
         var b = 90 - obliquity + 3;
         var p = -((l - 2000) / 25772 * 24) - 6;
@@ -16831,12 +16839,7 @@ define('wwtlib', ['ss'], function(ss) {
       var layer = LayerManager._layerListTours[key];
       if (ss.keyExists(LayerManager.get_layerList(), layer.id)) {
         if (!CollisionChecked) {
-          if (true) {
-            OverWrite = true;
-          }
-          else {
-            OverWrite = false;
-          }
+          OverWrite = true;
           CollisionChecked = true;
         }
         if (OverWrite) {
@@ -22067,7 +22070,7 @@ define('wwtlib', ['ss'], function(ss) {
     ss.clearKeys(Planets._drawOrder);
     var camera = renderContext.cameraPosition.copy();
     for (var planetId = 0; planetId < 14; planetId++) {
-      if (!Planets._planetLocations[planetId].eclipsed) {
+      if (!(Settings.get_active().get_solarSystemLighting() && Planets._planetLocations[planetId].eclipsed)) {
         var distVector = Vector3d.subtractVectors(camera, Vector3d.subtractVectors(Planets._planet3dLocations[planetId], centerPoint));
         if (!ss.keyExists(Planets._drawOrder, distVector.length())) {
           Planets._drawOrder[distVector.length()] = planetId;
@@ -22851,6 +22854,8 @@ define('wwtlib', ['ss'], function(ss) {
     this.az = 0;
     this.targetAlt = 0;
     this.targetAz = 0;
+    this._backgroundImageset = null;
+    this._foregroundImageset = null;
     this._targetHeight = 1;
     this.targetAltitude = 0;
     this._galactic = true;
@@ -34550,12 +34555,15 @@ define('wwtlib', ['ss'], function(ss) {
   function WWTControl() {
     this.uiController = null;
     this._annotations = [];
+    this._hoverText = '';
+    this._hoverTextPoint = new Vector2d();
+    this._lastMouseMove = new Date(1900, 1, 0, 0, 0, 0, 0);
     this.layers = [];
     this._frameCount = 0;
     this._zoomMax = 360;
     this._zoomMaxSolarSystem = 10000000000000000;
     this._zoomMin = 0.001373291015625;
-    this._zoomMinSolarSystem = 0.0001;
+    this._zoomMinSolarSystem = 1E-08;
     this.constellation = 'UMA';
     this._fadePoints = null;
     this.fader = BlendState.create(true, 2000);
@@ -34565,16 +34573,13 @@ define('wwtlib', ['ss'], function(ss) {
     this.renderType = 2;
     this._milkyWayBackground = null;
     this._beginZoom = 1;
-    this._hoverText = '';
-    this._hoverTextPoint = new Vector2d();
-    this._lastMouseMove = new Date(1900, 1, 0, 0, 0, 0, 0);
-    this._isPintching = false;
-    this._pointerIds = new Array(2);
     this._dragging = false;
-    this._rect = new Array(2);
     this._mouseDown = false;
+    this._isPinching = false;
     this._lastX = 0;
     this._lastY = 0;
+    this._pointerIds = new Array(2);
+    this._pinchingZoomRect = new Array(2);
     this._moved = false;
     this._foregroundCanvas = null;
     this._fgDevice = null;
@@ -34693,7 +34698,38 @@ define('wwtlib', ['ss'], function(ss) {
       this._annotations.length = 0;
       Annotation.batchDirty = true;
     },
-    get__zoomMax: function() {
+    _annotationclicked: function(ra, dec, x, y) {
+      if (this._annotations != null && this._annotations.length > 0) {
+        var index = 0;
+        var $enum1 = ss.enumerate(this._annotations);
+        while ($enum1.moveNext()) {
+          var note = $enum1.current;
+          if (note.hitTest(this.renderContext, ra, dec, x, y)) {
+            WWTControl.scriptInterface._fireAnnotationclicked(ra, dec, note.get_id());
+            return true;
+          }
+          index++;
+        }
+      }
+      return false;
+    },
+    _annotationHover: function(ra, dec, x, y) {
+      if (this._annotations != null && this._annotations.length > 0) {
+        var index = 0;
+        var $enum1 = ss.enumerate(this._annotations);
+        while ($enum1.moveNext()) {
+          var note = $enum1.current;
+          if (note.hitTest(this.renderContext, ra, dec, x, y)) {
+            this._hoverText = note.get_label();
+            this._hoverTextPoint = Vector2d.create(x, y);
+            return true;
+          }
+          index++;
+        }
+      }
+      return false;
+    },
+    get_zoomMax: function() {
       if (this.renderContext.get_backgroundImageset() != null && this.renderContext.get_backgroundImageset().get_dataSetType() === 4) {
         return this._zoomMaxSolarSystem;
       }
@@ -34701,9 +34737,16 @@ define('wwtlib', ['ss'], function(ss) {
         return this._zoomMax;
       }
     },
+    set_zoomMax: function(value) {
+      this._zoomMax = value;
+      return value;
+    },
+    setSolarSystemMaxZoom: function(value) {
+      this._zoomMaxSolarSystem = value;
+    },
     get_zoomMin: function() {
       if (this.renderContext.get_backgroundImageset() != null && this.renderContext.get_backgroundImageset().get_dataSetType() === 4) {
-        return this._zoomMinSolarSystem / 10000;
+        return this._zoomMinSolarSystem;
       }
       else {
         return this._zoomMin;
@@ -34712,6 +34755,9 @@ define('wwtlib', ['ss'], function(ss) {
     set_zoomMin: function(value) {
       this._zoomMin = value;
       return value;
+    },
+    setSolarSystemMinZoom: function(value) {
+      this._zoomMinSolarSystem = value;
     },
     _notifyMoveComplete: function() {
     },
@@ -35217,14 +35263,24 @@ define('wwtlib', ['ss'], function(ss) {
       this.renderContext.viewCamera.angle = dc * this.renderContext.viewCamera.angle + oneMinusDragCoefficient * this.renderContext.targetCamera.angle;
     },
     move: function(x, y) {
-      var scaleY = this.renderContext.get_fovScale() / (3600);
+      var angle = Math.atan2(y, x);
+      var distance = Math.sqrt(x * x + y * y);
+      if (this.get_solarSystemMode() || this.get_planetLike()) {
+        x = Math.cos(angle + this.renderContext.viewCamera.rotation) * distance;
+        y = Math.sin(angle + this.renderContext.viewCamera.rotation) * distance;
+      }
+      else {
+        x = Math.cos(angle - this.renderContext.viewCamera.rotation) * distance;
+        y = Math.sin(angle - this.renderContext.viewCamera.rotation) * distance;
+      }
+      var scaleY = this.renderContext.get_fovScale() / 3600;
       if (this.renderContext.get_backgroundImageset().get_dataSetType() === 4) {
         scaleY = 0.06;
       }
       var scaleX = scaleY / Math.max(0.2, Math.cos(this.renderContext.viewCamera.lat / 180 * Math.PI));
       if (!this.renderContext.get_backgroundImageset().get_dataSetType() || this.renderContext.get_backgroundImageset().get_dataSetType() === 1 || this.renderContext.get_backgroundImageset().get_dataSetType() === 4) {
-        scaleX = scaleX * 6.3;
-        scaleY = scaleY * 6.3;
+        scaleX *= 6.3;
+        scaleY *= 6.3;
       }
       if (this.renderContext.space && (Settings.get_active().get_galacticMode() || Settings.get_active().get_localHorizonMode())) {
         x = (Settings.get_active().get_localHorizonMode()) ? -x : x;
@@ -35259,20 +35315,12 @@ define('wwtlib', ['ss'], function(ss) {
     },
     zoom: function(factor) {
       this.renderContext.targetCamera.zoom *= factor;
-      if (this.renderContext.targetCamera.zoom > this.get__zoomMax()) {
-        this.renderContext.targetCamera.zoom = this.get__zoomMax();
+      if (this.renderContext.targetCamera.zoom > this.get_zoomMax()) {
+        this.renderContext.targetCamera.zoom = this.get_zoomMax();
       }
       if (!Settings.get_globalSettings().get_smoothPan()) {
         this.renderContext.viewCamera = this.renderContext.targetCamera.copy();
       }
-    },
-    onKeyDown: function(e) {
-      if (this.uiController != null) {
-        this.uiController.keyDown(this, e);
-      }
-    },
-    onDoubleClick: function(e) {
-      WWTControl.showDataLayers = true;
     },
     onGestureStart: function(e) {
       this._mouseDown = false;
@@ -35287,37 +35335,6 @@ define('wwtlib', ['ss'], function(ss) {
       var g = e;
       this._mouseDown = false;
     },
-    _annotationclicked: function(ra, dec, x, y) {
-      if (this._annotations != null && this._annotations.length > 0) {
-        var index = 0;
-        var $enum1 = ss.enumerate(this._annotations);
-        while ($enum1.moveNext()) {
-          var note = $enum1.current;
-          if (note.hitTest(this.renderContext, ra, dec, x, y)) {
-            WWTControl.scriptInterface._fireAnnotationclicked(ra, dec, note.get_id());
-            return true;
-          }
-          index++;
-        }
-      }
-      return false;
-    },
-    _annotationHover: function(ra, dec, x, y) {
-      if (this._annotations != null && this._annotations.length > 0) {
-        var index = 0;
-        var $enum1 = ss.enumerate(this._annotations);
-        while ($enum1.moveNext()) {
-          var note = $enum1.current;
-          if (note.hitTest(this.renderContext, ra, dec, x, y)) {
-            this._hoverText = note.get_label();
-            this._hoverTextPoint = Vector2d.create(x, y);
-            return true;
-          }
-          index++;
-        }
-      }
-      return false;
-    },
     onTouchStart: function(e) {
       var ev = e;
       ev.preventDefault();
@@ -35325,10 +35342,10 @@ define('wwtlib', ['ss'], function(ss) {
       this._lastX = ev.targetTouches[0].pageX;
       this._lastY = ev.targetTouches[0].pageY;
       if (ev.targetTouches.length === 2) {
-        this._isPintching = true;
+        this._isPinching = true;
         return;
       }
-      else if (this.uiController != null) {
+      if (this.uiController != null) {
         var ee = new WWTElementEvent(this._lastX, this._lastY);
         if (this.uiController.mouseDown(this, ee)) {
           this._mouseDown = false;
@@ -35338,70 +35355,23 @@ define('wwtlib', ['ss'], function(ss) {
       }
       this._mouseDown = true;
     },
-    onPointerDown: function(e) {
-      var pe = e;
-      var index = 0;
-      var evt = arguments[0], cnv = arguments[0].target; if (cnv.setPointerCapture) {cnv.setPointerCapture(evt.pointerId);} else if (cnv.msSetPointerCapture) { cnv.msSetPointerCapture(evt.pointerId); };
-      if (!this._pointerIds[0]) {
-        this._pointerIds[0] = pe.pointerId;
-        index = 0;
-      }
-      else {
-        if (!this._pointerIds[1]) {
-          this._pointerIds[1] = pe.pointerId;
-          index = 1;
-        }
-        else {
-          return;
-        }
-      }
-      this._rect[index] = Vector2d.create(e.offsetX, e.offsetY);
-    },
-    onPointerMove: function(e) {
-      var pe = e;
-      var index = 0;
-      if (this._pointerIds[0] === pe.pointerId) {
-        index = 0;
-      }
-      else {
-        if (this._pointerIds[1] === pe.pointerId) {
-          index = 1;
-        }
-        else {
-          return;
-        }
-      }
-      if (!!this._pointerIds[0] && !!this._pointerIds[1]) {
-        if (this._rect[0] != null) {
-          var oldDist = this.getDistance(this._rect[0], this._rect[1]);
-          this._rect[index] = Vector2d.create(e.offsetX, e.offsetY);
-          var newDist = this.getDistance(this._rect[0], this._rect[1]);
+    onTouchMove: function(e) {
+      var ev = e;
+      if (this._isPinching) {
+        var t0 = ev.touches[0];
+        var t1 = ev.touches[1];
+        var newRect = new Array(2);
+        newRect[0] = Vector2d.create(t0.pageX, t0.pageY);
+        newRect[1] = Vector2d.create(t1.pageX, t1.pageY);
+        if (this._pinchingZoomRect[0] != null && this._pinchingZoomRect[1] != null) {
+          var oldDist = this.getDistance(this._pinchingZoomRect[0], this._pinchingZoomRect[1]);
+          var newDist = this.getDistance(newRect[0], newRect[1]);
           var ratio = oldDist / newDist;
           this.zoom(ratio);
         }
-        e.stopPropagation();
-        e.preventDefault();
-      }
-      this._rect[index] = Vector2d.create(e.offsetX, e.offsetY);
-    },
-    onPointerUp: function(e) {
-      var pe = e;
-      if (this._pointerIds[0] === pe.pointerId) {
-        this._pointerIds[0] = 0;
-      }
-      else {
-        if (this._pointerIds[1] === pe.pointerId) {
-          this._pointerIds[1] = 0;
-        }
-        else {
-          return;
-        }
-      }
-    },
-    onTouchMove: function(e) {
-      var ev = e;
-      if (this._isPintching) {
-        this.pinchMove(ev);
+        this._pinchingZoomRect = newRect;
+        ev.stopPropagation();
+        ev.preventDefault();
         return;
       }
       ev.preventDefault();
@@ -35428,10 +35398,11 @@ define('wwtlib', ['ss'], function(ss) {
       var ev = e;
       ev.preventDefault();
       ev.stopPropagation();
-      this._rect = new Array(2);
-      if (this._isPintching) {
+      this._pinchingZoomRect[0] = null;
+      this._pinchingZoomRect[1] = null;
+      if (this._isPinching) {
         if (ev.touches.length < 2) {
-          this._isPintching = false;
+          this._isPinching = false;
         }
         return;
       }
@@ -35446,36 +35417,63 @@ define('wwtlib', ['ss'], function(ss) {
       this._mouseDown = false;
       this._dragging = false;
     },
-    pinchStart: function(ev) {
-      var t0 = ev.touches[0];
-      var t1 = ev.touches[1];
-      this._rect[0] = Vector2d.create(t0.pageX, t0.pageY);
-      this._rect[1] = Vector2d.create(t1.pageX, t1.pageY);
-      ev.stopPropagation();
-      ev.preventDefault();
+    onPointerDown: function(e) {
+      var pe = e;
+      var index = 0;
+      var evt = arguments[0], cnv = arguments[0].target; if (cnv.setPointerCapture) {cnv.setPointerCapture(evt.pointerId);} else if (cnv.msSetPointerCapture) { cnv.msSetPointerCapture(evt.pointerId); };
+      if (this._pointerIds[0] === pe.pointerId) {
+        index = 0;
+      }
+      else if (this._pointerIds[1] === pe.pointerId) {
+        index = 1;
+      }
+      else if (!this._pointerIds[0]) {
+        index = 0;
+      }
+      else if (!this._pointerIds[1]) {
+        index = 1;
+      }
+      else {
+        return;
+      }
+      this._pointerIds[index] = pe.pointerId;
+      this._pinchingZoomRect[index] = Vector2d.create(e.offsetX, e.offsetY);
     },
-    pinchMove: function(ev) {
-      var t0 = ev.touches[0];
-      var t1 = ev.touches[1];
-      var newRect = new Array(2);
-      newRect[0] = Vector2d.create(t0.pageX, t0.pageY);
-      newRect[1] = Vector2d.create(t1.pageX, t1.pageY);
-      if (this._rect[0] != null) {
-        var oldDist = this.getDistance(this._rect[0], this._rect[1]);
-        var newDist = this.getDistance(newRect[0], newRect[1]);
+    onPointerMove: function(e) {
+      var pe = e;
+      var index = 0;
+      if (this._pointerIds[0] === pe.pointerId) {
+        index = 0;
+      }
+      else if (this._pointerIds[1] === pe.pointerId) {
+        index = 1;
+      }
+      else {
+        return;
+      }
+      if (this._pinchingZoomRect[0] != null && this._pinchingZoomRect[1] != null) {
+        var oldDist = this.getDistance(this._pinchingZoomRect[0], this._pinchingZoomRect[1]);
+        this._pinchingZoomRect[index] = Vector2d.create(e.offsetX, e.offsetY);
+        var newDist = this.getDistance(this._pinchingZoomRect[0], this._pinchingZoomRect[1]);
         var ratio = oldDist / newDist;
         this.zoom(ratio);
       }
-      this._rect = newRect;
-      ev.stopPropagation();
-      ev.preventDefault();
+      else {
+        this._pinchingZoomRect[index] = Vector2d.create(e.offsetX, e.offsetY);
+      }
+      e.stopPropagation();
+      e.preventDefault();
     },
-    getDistance: function(a, b) {
-      var x;
-      var y;
-      x = a.x - b.x;
-      y = a.y - b.y;
-      return Math.sqrt(x * x + y * y);
+    onPointerUp: function(e) {
+      var pe = e;
+      if (this._pointerIds[0] === pe.pointerId) {
+        this._pointerIds[0] = 0;
+        this._pinchingZoomRect[0] = null;
+      }
+      if (this._pointerIds[1] === pe.pointerId) {
+        this._pointerIds[1] = 0;
+        this._pinchingZoomRect[1] = null;
+      }
     },
     onMouseDown: function(e) {
       document.addEventListener('mousemove', ss.bind('onMouseMove', this), false);
@@ -35488,10 +35486,6 @@ define('wwtlib', ['ss'], function(ss) {
       this._mouseDown = true;
       this._lastX = Mouse.offsetX(this.canvas, e);
       this._lastY = Mouse.offsetY(this.canvas, e);
-    },
-    onContextMenu: function(e) {
-      e.preventDefault();
-      e.stopPropagation();
     },
     onMouseMove: function(e) {
       this._lastMouseMove = ss.now();
@@ -35520,16 +35514,6 @@ define('wwtlib', ['ss'], function(ss) {
         }
       }
     },
-    _tilt: function(x, y) {
-      this.renderContext.targetCamera.rotation += x * 0.001;
-      this.renderContext.targetCamera.angle += y * 0.001;
-      if (this.renderContext.targetCamera.angle < -1.52) {
-        this.renderContext.targetCamera.angle = -1.52;
-      }
-      if (this.renderContext.targetCamera.angle > 0) {
-        this.renderContext.targetCamera.angle = 0;
-      }
-    },
     onMouseUp: function(e) {
       document.removeEventListener('mousemove', ss.bind('onMouseMove', this), false);
       document.removeEventListener('mouseup', ss.bind('onMouseUp', this), false);
@@ -35549,9 +35533,58 @@ define('wwtlib', ['ss'], function(ss) {
       this._mouseDown = false;
       this._moved = false;
     },
+    onMouseWheel: function(e) {
+      var ev = e;
+      var delta;
+      if (!!ev.deltaY) {
+        delta = -ev.deltaY;
+      }
+      else if (!!ev.detail) {
+        delta = ev.detail * -1;
+      }
+      else {
+        delta = ev.wheelDelta;
+      }
+      if (delta > 0) {
+        this.zoom(0.9);
+      }
+      else {
+        this.zoom(1.1);
+      }
+      e.stopPropagation();
+      e.preventDefault();
+    },
+    onDoubleClick: function(e) {
+      WWTControl.showDataLayers = true;
+    },
+    onKeyDown: function(e) {
+      if (this.uiController != null) {
+        this.uiController.keyDown(this, e);
+      }
+    },
+    getDistance: function(a, b) {
+      var x;
+      var y;
+      x = a.x - b.x;
+      y = a.y - b.y;
+      return Math.sqrt(x * x + y * y);
+    },
+    onContextMenu: function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    },
+    _tilt: function(x, y) {
+      this.renderContext.targetCamera.rotation += x * 0.001;
+      this.renderContext.targetCamera.angle += y * 0.001;
+      if (this.renderContext.targetCamera.angle < -1.52) {
+        this.renderContext.targetCamera.angle = -1.52;
+      }
+      if (this.renderContext.targetCamera.angle > 0) {
+        this.renderContext.targetCamera.angle = 0;
+      }
+    },
     getCoordinatesForScreenPoint: function(x, y) {
       var result;
-      var PickRayOrig;
       var PickRayDir;
       var pt = Vector2d.create(x, y);
       PickRayDir = this.transformPickPointToWorldSpace(pt, this.renderContext.width, this.renderContext.height);
@@ -35574,27 +35607,6 @@ define('wwtlib', ['ss'], function(ss) {
       vPickRayDir.z = v.x * m.get_m13() + v.y * m.get_m23() + v.z * m.get_m33();
       vPickRayDir.normalize();
       return vPickRayDir;
-    },
-    onMouseWheel: function(e) {
-      var ev = e;
-      var delta;
-      if (!!ev.deltaY) {
-        delta = -ev.deltaY;
-      }
-      else if (!!ev.detail) {
-        delta = ev.detail * -1;
-      }
-      else {
-        delta = ev.wheelDelta;
-      }
-      if (delta > 0) {
-        this.zoom(0.9);
-      }
-      else {
-        this.zoom(1.1);
-      }
-      e.stopPropagation();
-      e.preventDefault();
     },
     setup: function(canvas, startLat, startLng, startZoom) {
       window.addEventListener('contextmenu', ss.bind('onContextMenu', this), false);
@@ -35633,7 +35645,7 @@ define('wwtlib', ['ss'], function(ss) {
     gotoRADecZoom: function(ra, dec, zoom, instant) {
       ra = DoubleUtilities.clamp(ra, 0, 24);
       dec = DoubleUtilities.clamp(dec, -90, 90);
-      zoom = DoubleUtilities.clamp(zoom, this.get_zoomMin(), this.get__zoomMax());
+      zoom = DoubleUtilities.clamp(zoom, this.get_zoomMin(), this.get_zoomMax());
       this._tracking = false;
       this._trackingObject = null;
       this.gotoTargetFull(false, instant, CameraParameters.create(dec, WWTControl.singleton.renderContext.rAtoViewLng(ra), zoom, WWTControl.singleton.renderContext.viewCamera.rotation, WWTControl.singleton.renderContext.viewCamera.angle, WWTControl.singleton.renderContext.viewCamera.opacity), WWTControl.singleton.renderContext.get_foregroundImageset(), WWTControl.singleton.renderContext.get_backgroundImageset());
@@ -35805,7 +35817,7 @@ define('wwtlib', ['ss'], function(ss) {
         instant = true;
       }
       if (place.get_classification() === 128) {
-        camParams.zoom = this.get__zoomMax();
+        camParams.zoom = this.get_zoomMax();
         this.gotoTargetFull(false, instant, camParams, null, null);
       }
       else {
@@ -36068,8 +36080,8 @@ define('wwtlib', ['ss'], function(ss) {
       image.src = WWTControl.singleton.canvas.toDataURL();
     },
     clampZooms: function(rc) {
-      rc.viewCamera.zoom = DoubleUtilities.clamp(rc.viewCamera.zoom, this.get_zoomMin(), this.get__zoomMax());
-      rc.targetCamera.zoom = DoubleUtilities.clamp(rc.targetCamera.zoom, this.get_zoomMin(), this.get__zoomMax());
+      rc.viewCamera.zoom = DoubleUtilities.clamp(rc.viewCamera.zoom, this.get_zoomMin(), this.get_zoomMax());
+      rc.targetCamera.zoom = DoubleUtilities.clamp(rc.targetCamera.zoom, this.get_zoomMin(), this.get_zoomMax());
     }
   };
 
@@ -36212,7 +36224,6 @@ define('wwtlib', ['ss'], function(ss) {
     var c = Math.floor(365.25 * year);
     var d = Math.floor(30.6001 * (month + 1));
     var julianDays;
-    var jd2;
     var julianCenturies;
     var mst;
     julianDays = b + c + d - 730550.5 + day + (hour + minute / 60 + second / 3600) / 24;
@@ -40122,7 +40133,6 @@ define('wwtlib', ['ss'], function(ss) {
       while ($enum1.moveNext()) {
         var row = $enum1.current;
         try {
-          var selected = false;
           if (this.geometryColumn > -1 || (!this.get_coordinatesType() && (this.lngColumn > -1 && this.latColumn > -1)) || ((this.get_coordinatesType() === 1) && (this.get_xAxisColumn() > -1 && this.get_yAxisColumn() > -1))) {
             var Xcoord = 0;
             var Ycoord = 0;
@@ -40173,7 +40183,6 @@ define('wwtlib', ['ss'], function(ss) {
                   Xcoord += 180;
                 }
               }
-              var offset = 0;
               var pos = Coordinates.geoTo3dDoubleRad(Ycoord, Xcoord, alt);
               if (this.astronomical && !this.bufferIsFlat) {
                 pos.rotateX(ecliptic);
@@ -42770,7 +42779,6 @@ define('wwtlib', ['ss'], function(ss) {
     },
     addFilesToCabinet: function(fc) {
       var fName = this._filename$1;
-      var copy = true;
       var fileName = fc.tempDirectory + ss.format('{0}\\{1}.txt', fc.get_packageID(), this.id.toString());
       var path = fName.substring(0, fName.lastIndexOf('\\') + 1);
       var path2 = fileName.substring(0, fileName.lastIndexOf('\\') + 1);
