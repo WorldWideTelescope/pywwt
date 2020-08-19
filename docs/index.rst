@@ -47,13 +47,13 @@ can do straight in your browser with our cloud-based Jupyter notebooks. Here
 are some examples:
 
 * `Visualize Tabular Data from the NASA Exoplanet Archive
-  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/NASA%20Exoplanet%20Archive.ipynb>`__
+  <https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/NASA%20Exoplanet%20Archive.ipynb>`__
 * `Visualize Imagery of W5 and SN2011fe
-  <http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Visualizing%20Imagery.ipynb>`__
+  <https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Visualizing%20Imagery.ipynb>`__
 
 To browse our complete collection of live example notebooks, go to `our index
 page
-<http://binder.wwt-forum.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Start%20Here.ipynb>`__.
+<https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Start%20Here.ipynb>`__.
 
 *Note: it is usually fast to launch these notebooks, but if the code has been
 recently updated, you may have to wait a few minutes for the backing software
