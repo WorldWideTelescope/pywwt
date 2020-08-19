@@ -21,7 +21,7 @@ import tempfile
 # The WWT web control API is described here:
 # https://worldwidetelescope.gitbook.io/html5-control-reference/
 
-DEFAULT_SURVEYS_URL = 'https://WorldWideTelescope.github.io/pywwt/surveys.xml'
+DEFAULT_SURVEYS_URL = 'https://worldwidetelescope.github.io/pywwt/surveys.xml'
 
 VIEW_MODES_2D = ['sky', 'sun', 'mercury', 'venus', 'earth', 'moon', 'mars',
                  'jupiter', 'callisto', 'europa', 'ganymede', 'io',

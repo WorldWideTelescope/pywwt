@@ -115,7 +115,7 @@ function loadWwtFigure() {
         return;
     }
     //TODO allow loading more collections
-    wwt.loadImageCollection('https://WorldWideTelescope.github.io/pywwt/surveys.xml')
+    wwt.loadImageCollection('https://worldwidetelescope.github.io/pywwt/surveys.xml')
 
     var viewSettings = wwtInitialState['view_settings'];
     wwt_apply_json_message(wwt, {
