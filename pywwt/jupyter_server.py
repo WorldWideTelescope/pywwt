@@ -107,7 +107,7 @@ def _compute_notebook_server_base_url():
         try:
             response = requests.get(
                 requests.compat.urljoin(s['url'], 'api/sessions'),
-                params = {'token': token}
+                params={'token': token}
             )
 
             for n in json.loads(response.text):
