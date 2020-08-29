@@ -1,3 +1,9 @@
+trigger:
+  branches:
+    include:
+      - master
+      - "refs/tags/v*"
+
 resources:
   repositories:
   - repository: OpenAstronomy
