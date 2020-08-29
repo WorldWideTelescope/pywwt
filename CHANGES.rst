@@ -1,4 +1,4 @@
-0.9.0 (unreleased)
+0.9.0 (2020-08-29)
 ------------------
 
 - pywwt now obtains the WWT WebGL SDK code from web.wwtassets.org, rather than
@@ -6,6 +6,9 @@
 
 - Live notebook links now point to mybinder.org rather than the old private WWT
   instance of BinderHub, because HTTPS support is now working!
+
+- Fix Jupyter server plumbing when operating in the JupyterHub single-user
+  environment.
 
 0.8.0 (2020-04-03)
 ------------------

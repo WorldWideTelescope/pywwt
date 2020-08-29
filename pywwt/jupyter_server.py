@@ -1,7 +1,7 @@
 """Routines for the pywwt notebook server extension.
 
 In order to make files available to the WWT engine, we need to serve them over
-HTTP. Here we extend the Notebook server to be able to server both static
+HTTP. Here we extend the Notebook server to be able to serve both static
 pywwt HTML/JS assets and custom local files specified by the user.
 
 The tricky part is that the Notebook server and the kernel are in separate
@@ -85,15 +85,41 @@ def _compute_notebook_server_base_url():
 
     # Now, check all of the running servers known on this machine. We have to
     # talk to each server to figure out if it's ours or somebody else's.
-    for s in list_running_servers():
-        response = requests.get(
-            requests.compat.urljoin(s['url'], 'api/sessions'),
-            params={'token': s.get('token', '')}
-        )
+    running_server_info = list(list_running_servers())
 
-        for n in json.loads(response.text):
-            if n['kernel']['id'] == kernel_id:
-                return s['base_url']  # Found it!
+    for s in running_server_info:
+        # We need an API token that in most cases is provided in the runtime
+        # JSON files. In (recent versions of?) the JupyterHub single-user
+        # server, it seems that the token is instead obtained from an
+        # environment variable. Cf.
+        # https://github.com/jupyterhub/jupyterhub/blob/master/jupyterhub/singleuser/mixins.py
+        token = s.get('token', '')
+        if not token:
+            token = os.environ.get('JUPYTERHUB_API_TOKEN', '')
+        if not token:
+            token = os.environ.get('JPY_API_TOKEN', '')  # deprecated as of 0.7.2
+
+        # Request/response paranoia due to "fun" figuring out how to fix the
+        # JupyterHub single-user problem - the API call would fail due to auth
+        # issues and break pywwt, even though there was only one running server
+        # so we actually didn't even need the API call. In case something breaks
+        # in the future, add a fallback mode.
+        try:
+            response = requests.get(
+                requests.compat.urljoin(s['url'], 'api/sessions'),
+                params={'token': token}
+            )
+
+            for n in json.loads(response.text):
+                if n['kernel']['id'] == kernel_id:
+                    return s['base_url']  # Found it!
+        except Exception:
+            pass
+
+    # If we got here, we might have auth issues with the api/sessions request.
+    # If there's only one server, just give it a try.
+    if len(running_server_info) == 1:
+        return running_server_info[0]['base_url']
 
     raise Exception('cannot locate our notebook server; is this code running in a Jupyter kernel?')
 
