@@ -20,7 +20,7 @@ from setupbase import (
 
 from setuptools import setup
 
-ensure_python('>=3.6')
+ensure_python('>=3.7')
 
 # Gather package metadata.
 
@@ -101,13 +101,12 @@ setup_args = dict(
         'Topic :: Multimedia :: Graphics',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Framework :: Jupyter',
     ],
     include_package_data = True,
-    python_requires = '>=3.6',
+    python_requires = '>=3.7',
     install_requires = [
         'numpy>=1.9',
         'matplotlib>1.5',

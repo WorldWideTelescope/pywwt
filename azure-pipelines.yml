@@ -31,32 +31,32 @@ jobs:
       coverage: 'false'
       name: codestyle
 
-    - linux: py36-test
-      name: linux_py36_test
-
     - linux: py37-test
       name: linux_py37_test
 
-    - windows: py36-test
-      name: windows_py36_test
+    - linux: py38-test
+      name: linux_py38_test
 
     - windows: py37-test
       name: windows_py37_test
 
-    # - macos: py36-test
-    #   name: macos_py36_test
+    - windows: py38-test
+      name: windows_py38_test
 
     # - macos: py37-test
     #   name: macos_py37_test
 
-    - linux: py36-docs
-      name: linux_py36_docs
+    # - macos: py38-test
+    #   name: macos_py38_test
+
+    - linux: py38-docs
+      name: linux_py38_docs
 
     - windows: py37-docs
       name: windows_py37_docs
 
     - macos: py37-docs
-      name: macos_py37_test
+      name: macos_py37_docs
 
 - template: publish.yml@OpenAstronomy
   parameters:
@@ -77,5 +77,5 @@ jobs:
     # don't require the other jobs to pass since they can sometimes be flakey.
     dependsOn:
     - codestyle
-    - linux_py36_test
     - linux_py37_test
+    - linux_py38_test

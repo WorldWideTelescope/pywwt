@@ -60,7 +60,7 @@ If you install pywwt using pip or conda as described above, any required
 dependencies will get installed automatically (with the exception of PyQt/PySide
 if using pip). For the record, these dependencies are as follows:
 
-* `Python <https://www.python.org>`_ 3.6 or later
+* `Python <https://www.python.org>`_ 3.7 or later
 * `NumPy <https://numpy.org>`_ 1.9 or later
 * `Matplotlib <https://matplotlib.org>`_ 1.5 or later
 * `Astropy <https://www.astropy.org>`_ 1.0 or later
