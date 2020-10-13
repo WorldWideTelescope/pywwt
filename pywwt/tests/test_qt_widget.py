@@ -121,7 +121,7 @@ def assert_widget_image(tmpdir, widget, filename):
         print_exc()
 
     if msg is not None:
-        if os.environ.get('CI'):
+        if os.environ.get('CI') or os.environ.get('AGENT_OS'):
             from base64 import b64encode
 
             with open(expected, 'rb') as f:
