@@ -31,8 +31,10 @@ if QT_INSTALLED:
     elif sys.platform.startswith('darwin'):
         FRAMEWORK += '_osx'
 
-    if 'Mesa' in _cached_opengl_renderer or 'llvmpipe' in _cached_opengl_renderer:
+    if 'Mesa' in _cached_opengl_renderer:
         FRAMEWORK_VARIANT = '_mesa'
+    elif 'llvmpipe' in _cached_opengl_renderer:
+        FRAMEWORK_VARIANT = '_llvmpipe'
 
 
 # Reproduction helper
