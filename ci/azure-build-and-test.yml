@@ -52,7 +52,7 @@ jobs:
         set -euo pipefail
         source activate-conda.sh
         set -x
-        \conda create -y -n build setuptools pip python="$PYTHON_SERIES"
+        \conda create -y -n build setuptools matplotlib pip python="$PYTHON_SERIES" qtpy
         conda activate build
         pip install $BASH_WORKSPACE/sdist/*.tar.gz
       displayName: Install from sdist
@@ -86,6 +86,7 @@ jobs:
         source activate-conda.sh
         conda activate build
         set -x
+        \conda install -y jupyterlab
         jupyter nbextension list
         jupyter serverextension list
         jupyter labextension list
@@ -150,7 +151,7 @@ jobs:
       source activate-conda.sh
       conda activate build
       set -x
-      \conda install -y astropy jupyter_sphinx numpydoc sphinx sphinx-automodapi
+      \conda install -y astropy jupyter_sphinx numpydoc sphinx sphinx-automodapi sphinx_rtd_theme
       pip install astropy-sphinx-theme
       cd docs
       make html
