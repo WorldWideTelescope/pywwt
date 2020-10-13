@@ -97,7 +97,7 @@ def assert_widget_image(tmpdir, widget, filename):
     elif sys.platform.startswith('darwin'):
         framework += '_osx'
 
-    if 'Mesa' in _cached_opengl_renderer:
+    if 'Mesa' in _cached_opengl_renderer or 'llvmpipe' in _cached_opengl_renderer:
         framework_variant = '_mesa'
     else:  # may need to add further variants in the future
         framework_variant = None
