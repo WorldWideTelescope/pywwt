@@ -1,6 +1,5 @@
 /docs/_static/embed-bundle.js
 /docs/_static/embed-bundle.js.map
-/package-lock.json
 /pywwt/labextension
 /pywwt/nbextension/static/index.js
 /pywwt/nbextension/static/index.js.map
@@ -66,6 +65,4 @@ distribute-*.tar.gz
 # Mac OSX
 .DS_Store
 
-js/node_modules
-node_modules
 *.whl
