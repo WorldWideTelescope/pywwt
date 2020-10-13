@@ -1,0 +1,53 @@
+# First stage of CI: create the `sdist` and (soon) Cranko release commit.
+
+jobs:
+
+- job: sdist
+  pool:
+    vmImage: ubuntu-20.04
+
+  steps:
+
+  - checkout: self
+
+  # TODO: it seems that at the moment, there is no better way to create an
+  # sdist than to invoke setup.py directly. People seem to be working on
+  # alternatives but nothing is official yet.
+
+  - bash: |
+      set -euo pipefail
+      eval "$($CONDA/bin/conda shell.bash hook)"
+      set -x
+      conda activate
+      conda config --add channels conda-forge
+      conda install -y \
+        astropy \
+        beautifulsoup4 \
+        ipyevents \
+        ipywidgets \
+        lxml \
+        matplotlib \
+        numpy \
+        python-dateutil \
+        pytz \
+        qtpy \
+        reproject \
+        requests \
+        tornado \
+        traitlets
+    displayName: Set up dependencies
+
+  - bash: |
+      set -euo pipefail
+      eval "$($CONDA/bin/conda shell.bash hook)"
+      conda activate
+      set -x
+      python setup.py sdist
+      tar tzf dist/*.tar.gz |sort
+    displayName: Create sdist
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish sdist artifact
+    inputs:
+      targetPath: dist
+      artifactName: sdist
