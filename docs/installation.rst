@@ -20,7 +20,7 @@ release of pywwt using::
 
     conda install -c wwt pywwt
 
-This will automatically install pywwt, its `dependencies <Dependencies>`_, and
+This will automatically install pywwt, its `dependencies`_, and
 will enable the Jupyter extension.
 
 If you want to use WWT inside Jupyter Lab, see `Using Jupyter Lab`_.
