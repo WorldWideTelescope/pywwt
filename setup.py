@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-# coding: utf-8
-
+#! /usr/bin/env python
+# -*- mode: python; coding: utf-8 -*-
 # Copyright (c) Jupyter Development Team.
 # Distributed under the terms of the Modified BSD License.
 
@@ -12,7 +11,6 @@ import sys
 from glob import glob
 from os.path import join as pjoin
 
-
 sys.path.append('.')
 from setupbase import (
     create_cmdclass, install_npm, ensure_targets,
@@ -22,24 +20,34 @@ from setupbase import (
 
 from setuptools import setup
 
-
-# The name of the project
-name = 'pywwt'
-
-# Ensure a valid python version
 ensure_python('>=3.6')
 
-# Get our version
+# Gather package metadata.
+
+name = 'pywwt'
 version = get_version(pjoin(name, '_version.py'))
 
-nb_path = pjoin(HERE, name, 'nbextension', 'static')
-lab_path = pjoin(HERE, name, 'labextension')
+with io.open('README.rst', encoding='utf_8') as f:
+    LONG_DESCRIPTION = f.read()
 
-# Representative files that should exist after a successful build
-jstargets = [
+# Wire up the NPM build to the Python package build -- we generate JavaScript
+# artifacts from the `frontend/` package and then include them as data assets in
+# the pywwt Python package.
+
+nb_path = pjoin(name, 'nbextension', 'static')
+
+js_outputs = [
     pjoin(nb_path, 'index.js'),
-    pjoin(HERE, 'lib', 'plugin.js'),
 ]
+
+js_content_command = combine_commands(
+    install_npm('frontend', build_cmd='pywwt-export'),
+    ensure_targets(js_outputs),
+)
+
+# Custom "command class" that (1) makes sure to create the JS content, (2)
+# includes that content as extra "package data" in the Python package, and (3)
+# can install special metadata files in the Python environment root.
 
 package_data_spec = {
     name: [
@@ -52,32 +60,32 @@ package_data_spec = {
     ]
 }
 
+lab_path = pjoin(name, 'labextension')
+local_nbdotd_path = pjoin('jupyter.d', 'notebook.d')
+local_jnbcfgdotd_path = pjoin('jupyter.d', 'jupyter_notebook_config.d')
+
 data_files_spec = [
     ('share/jupyter/nbextensions/pywwt', nb_path, '*.js*'),
     ('share/jupyter/nbextensions/pywwt', nb_path, '*.html'),
     ('share/jupyter/lab/extensions', lab_path, '*.tgz'),
-    ('etc/jupyter/nbconfig/notebook.d' ,
-     os.path.join(HERE, 'jupyter.d', 'notebook.d'), 'pywwt.json'),
-    ('etc/jupyter/jupyter_notebook_config.d' ,
-     os.path.join(HERE, 'jupyter.d', 'jupyter_notebook_config.d'), 'pywwt.json')]
+    ('etc/jupyter/nbconfig/notebook.d', local_nbdotd_path, 'pywwt.json'),
+    ('etc/jupyter/jupyter_notebook_config.d' ,local_jnbcfgdotd_path, 'pywwt.json'),
+]
 
-
-cmdclass = create_cmdclass('jsdeps', package_data_spec=package_data_spec,
-    data_files_spec=data_files_spec)
-cmdclass['jsdeps'] = combine_commands(
-    install_npm(HERE, build_cmd='build'),
-    ensure_targets(jstargets),
+cmdclass = create_cmdclass(
+    'js-content',
+    package_data_spec = package_data_spec,
+    data_files_spec = data_files_spec
 )
+cmdclass['js-content'] = js_content_command
 
-with io.open('README.rst', encoding='utf_8') as f:
-    LONG_DESCRIPTION = f.read()
+# Ready to go!
 
 setup_args = dict(
     name            = name,
     description     = 'The AAS WorldWide Telescope from Python',
     long_description = LONG_DESCRIPTION,
     version         = version,
-    scripts         = glob(pjoin('scripts', '*')),
     cmdclass        = cmdclass,
     packages        = find_packages(),
     author          = 'Thomas P. Robitaille, O. Justin Otor, and John ZuHone',
