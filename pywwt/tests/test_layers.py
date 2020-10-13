@@ -10,7 +10,7 @@ from astropy.coordinates import SkyCoord
 
 from pywwt.conftest import QT_INSTALLED  # noqa
 
-from .test_qt_widget import assert_widget_image
+from . import assert_widget_image
 
 from ..core import BaseWWTWidget
 from ..layers import TableLayer, guess_lon_lat_columns, guess_xyz_columns, csv_table_win_newline

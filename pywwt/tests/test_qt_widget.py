@@ -1,24 +1,12 @@
-import os
-import sys
-from traceback import print_exc
-
-import pytest
-
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+import pytest
 
-from pywwt.conftest import QT_INSTALLED
+from . import assert_widget_image
 
-if QT_INSTALLED:
-    from qtpy.QtWebEngineWidgets import WEBENGINE
-else:
-    pytestmark = pytest.mark.skip
-
-from matplotlib.testing.compare import compare_images  # noqa
 
 WAIT_TIME = 10
 M42 = SkyCoord.from_name('M42')
-DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 
 
 def check_silent_output(capsys):
@@ -54,94 +42,18 @@ class TestWWTWidget:
         check_silent_output(capsys)
 
 
-# The following is a template for a script that will allow developers who see
-# a failure in CI to re-create the files that were generated in the
-# continuous integration easily.
-REPRODUCIBILITY_SCRIPT = """
-################################################################################
-# Export the images that were generated in the continuous integration for pywwt.
-# Just copy and paste all the code between here and '# End of script' into a
-# local file and run it with Python. You can then check if the differences
-# make sense, and if so, update the expected images.
-
-import base64
-
-expected = base64.b64decode('{expected}')
-
-with open('expected.png', 'wb') as f:
-    f.write(expected)
-
-actual = base64.b64decode('{actual}')
-
-with open('actual.png', 'wb') as f:
-    f.write(actual)
-
-# End of script
-################################################################################
-"""
-
-
-def assert_widget_image(tmpdir, widget, filename):
-    actual = tmpdir.join(filename).strpath
-    widget.render(actual)
-
-    from ..conftest import _cached_opengl_renderer
-
-    # Get the path to the "expected" image. There are can be a variety of
-    # versions, unfortunately, due to differences between different OpenGL
-    # renderers.
-
-    framework = 'webengine' if WEBENGINE else 'webkit'
-    if sys.platform.startswith('win') and not WEBENGINE and 'GDI' in _cached_opengl_renderer:
-        framework += '_win'
-    elif sys.platform.startswith('darwin'):
-        framework += '_osx'
-
-    if 'Mesa' in _cached_opengl_renderer or 'llvmpipe' in _cached_opengl_renderer:
-        framework_variant = '_mesa'
-    else:  # may need to add further variants in the future
-        framework_variant = None
-
-    expected = None
-
-    if framework_variant is not None:
-        p = os.path.join(DATA, framework + framework_variant, filename)
-        if os.path.exists(p):
-            expected = p
-
-    if expected is None:
-        expected = os.path.join(DATA, framework, filename)
-
-    # Do the actual comparison.
-
-    try:
-        msg = compare_images(expected, actual, tol=1.6)
-    except Exception:
-        msg = 'Image comparison failed:'
-        print_exc()
-
-    if msg is not None:
-        if os.environ.get('CI') or os.environ.get('AGENT_OS'):
-            from base64 import b64encode
-
-            with open(expected, 'rb') as f:
-                expected = b64encode(f.read()).decode()
-
-            with open(actual, 'rb') as f:
-                actual = b64encode(f.read()).decode()
-
-            # TODO: in Azure Pipelines, we could figure out a way to expose the
-            # test outputs as build artifacts.
-            print(REPRODUCIBILITY_SCRIPT.format(actual=actual, expected=expected))
-
-        pytest.fail(msg, pytrace=False)
-
-
 def test_full(tmpdir, capsys, wwt_qt_client):
+    """
+    Test a whole Qt session, with image comparison along the way. We don't
+    immediately fail if the images disagree, to allow building up a full
+    database of disagreeing images to help understand what's going on.
+    """
 
-    # Test a whole session, with image comparison along the way.
-
+    failures = []
     wwt = wwt_qt_client
+
+    # Step 0
+
     wwt.foreground_opacity = 1.
 
     # The crosshairs are currently broken on Mac/Linux but work on Windows.
@@ -151,14 +63,22 @@ def test_full(tmpdir, capsys, wwt_qt_client):
 
     wwt.wait(WAIT_TIME)
 
-    assert_widget_image(tmpdir, wwt, 'test_full_step0.png')
+    msg = assert_widget_image(tmpdir, wwt, 'test_full_step0.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Step 1
 
     gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='galactic')
     wwt.center_on_coordinates(gc, 60 * u.deg)
 
     wwt.wait(WAIT_TIME)
 
-    assert_widget_image(tmpdir, wwt, 'test_full_step1.png')
+    msg = assert_widget_image(tmpdir, wwt, 'test_full_step1.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Step 2
 
     wwt.constellation_boundary_color = 'red'
     wwt.constellation_figure_color = 'green'
@@ -169,7 +89,11 @@ def test_full(tmpdir, capsys, wwt_qt_client):
 
     wwt.wait(WAIT_TIME)
 
-    assert_widget_image(tmpdir, wwt, 'test_full_step2.png')
+    msg = assert_widget_image(tmpdir, wwt, 'test_full_step2.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Step 3
 
     wwt.constellation_selection = True
 
@@ -179,13 +103,21 @@ def test_full(tmpdir, capsys, wwt_qt_client):
 
     wwt.wait(WAIT_TIME)
 
-    assert_widget_image(tmpdir, wwt, 'test_full_step3.png')
+    msg = assert_widget_image(tmpdir, wwt, 'test_full_step3.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Step 4
 
     wwt.foreground = 'SFD Dust Map (Infrared)'
 
     wwt.wait(WAIT_TIME)
 
-    assert_widget_image(tmpdir, wwt, 'test_full_step4.png')
+    msg = assert_widget_image(tmpdir, wwt, 'test_full_step4.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Step 5
 
     wwt.foreground = "Black Sky Background"
     wwt.background = "Black Sky Background"
@@ -236,4 +168,11 @@ def test_full(tmpdir, capsys, wwt_qt_client):
 
     wwt.wait(WAIT_TIME)
 
-    assert_widget_image(tmpdir, wwt, 'test_full_step5.png')
+    msg = assert_widget_image(tmpdir, wwt, 'test_full_step5.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Summarize
+
+    if failures:
+        pytest.fail('\n'.join(failures), pytrace=False)
