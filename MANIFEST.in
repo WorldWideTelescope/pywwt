@@ -8,8 +8,14 @@ include setupbase.py
 include pytest.ini
 include .coverage.rc
 
-include package.json
-include webpack.config.js
+# JavaScript frontend package source
+graft frontend
+prune frontend/dist
+exclude frontend/pywwt-*.tgz
+prune **/node_modules
+
+# Built Javascript files, exported into the Python tree
+graft pywwt/nbextension
 include pywwt/labextension/*.tgz
 
 # Documentation
@@ -25,11 +31,6 @@ graft examples
 # Tests
 graft tests
 prune tests/build
-
-# Javascript files
-graft pywwt/nbextension
-graft lib
-prune **/node_modules
 prune coverage
 
 # Patterns to exclude from any directory
