@@ -118,7 +118,7 @@ setup_args = dict(
         'lxml',
         'ipywidgets>=7.0.0',
         'ipyevents',
-        'traitlets',
+        'traitlets>=5',
         'reproject>=0.4',
         'qtpy',
         'tornado',

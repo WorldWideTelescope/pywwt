@@ -61,7 +61,7 @@ class Unicode(OriginalUnicode):
 
 class AstropyQuantity(TraitType):
 
-    default = 0 * u.one
+    default_value = 0 * u.one
     info_text = '\'Custom trait to handle astropy quantities with units\''
 
     def __init__(self, *args, **kwargs):
