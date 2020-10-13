@@ -18,6 +18,7 @@ from ..layers import TableLayer, guess_lon_lat_columns, guess_xyz_columns, csv_t
 
 WAIT_TIME = 10
 
+
 class TestLayers:
 
     def setup_method(self, method):
