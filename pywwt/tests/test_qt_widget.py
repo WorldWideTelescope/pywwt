@@ -57,7 +57,7 @@ class TestWWTWidget:
 # The following is a template for a script that will allow developers who see
 # a failure in CI to re-create the files that were generated in the
 # continuous integration easily.
-REPRODUCABILITY_SCRIPT = """
+REPRODUCIBILITY_SCRIPT = """
 ################################################################################
 # Export the images that were generated in the continuous integration for pywwt.
 # Just copy and paste all the code between here and '# End of script' into a
@@ -121,17 +121,18 @@ def assert_widget_image(tmpdir, widget, filename):
         print_exc()
 
     if msg is not None:
+        if os.environ.get('CI'):
+            from base64 import b64encode
 
-        from base64 import b64encode
+            with open(expected, 'rb') as f:
+                expected = b64encode(f.read()).decode()
 
-        with open(expected, 'rb') as f:
-            expected = b64encode(f.read()).decode()
+            with open(actual, 'rb') as f:
+                actual = b64encode(f.read()).decode()
 
-        with open(actual, 'rb') as f:
-            actual = b64encode(f.read()).decode()
-
-        if os.environ.get('CI', 'false').lower() == 'true':
-            print(REPRODUCABILITY_SCRIPT.format(actual=actual, expected=expected))
+            # TODO: in Azure Pipelines, we could figure out a way to expose the
+            # test outputs as build artifacts.
+            print(REPRODUCIBILITY_SCRIPT.format(actual=actual, expected=expected))
 
         pytest.fail(msg, pytrace=False)
 
