@@ -80,6 +80,15 @@ jobs:
         \conda install -y pytest-remotedata
         pytest pywwt -p no:warnings
       displayName: Test
+      env:
+        PYWWT_TEST_IMAGE_DIR: $(Build.ArtifactStagingDirectory)
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish generated test images
+      condition: true  # run even (especially!) if test fails
+      inputs:
+        targetPath: $(Build.ArtifactStagingDirectory)
+        artifactName: ${{ format('test_images_{0}', build.name) }}
 
     - bash: |
         set -euo pipefail
