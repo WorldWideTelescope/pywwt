@@ -16,7 +16,7 @@ from ..core import BaseWWTWidget
 from ..layers import TableLayer, guess_lon_lat_columns, guess_xyz_columns, csv_table_win_newline
 
 
-WAIT_TIME = 10
+WAIT_TIME = 60
 
 
 class TestLayers:

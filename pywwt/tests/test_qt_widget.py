@@ -5,7 +5,7 @@ import pytest
 from . import assert_widget_image
 
 
-WAIT_TIME = 10
+WAIT_TIME = 60
 M42 = SkyCoord.from_name('M42')
 
 
