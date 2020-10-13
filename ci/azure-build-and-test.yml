@@ -117,6 +117,21 @@ jobs:
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
 
+  # NB: `set -x` interferes with task.setvariable
+  - bash: |
+      set -euo pipefail
+      echo "##vso[task.setvariable variable=DISPLAY;]:99"
+      set -x
+      sudo apt-get install -y \
+        libxkbcommon-x11-0 \
+        libgl1-mesa-dev
+      /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+        --make-pidfile --background --exec /usr/bin/Xvfb \
+        -- :99 -screen 0 1920x1200x24 -ac \
+        +extension GLX +render -noreset
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    displayName: Set up Xvfb/OpenGL (Linux)
+
   - bash: |
       set -euo pipefail
       source activate-conda.sh
