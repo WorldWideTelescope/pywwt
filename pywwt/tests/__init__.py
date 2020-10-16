@@ -31,6 +31,9 @@ if QT_INSTALLED:
     elif sys.platform.startswith('darwin'):
         FRAMEWORK += '_osx'
 
+        if 'Software' in _cached_opengl_renderer:
+            FRAMEWORK_VARIANT = '_sw'
+
     if 'Mesa' in _cached_opengl_renderer:
         FRAMEWORK_VARIANT = '_mesa'
 
