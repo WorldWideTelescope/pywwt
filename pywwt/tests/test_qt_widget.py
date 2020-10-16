@@ -43,7 +43,7 @@ class TestWWTWidget:
         check_silent_output(capsys)
 
 
-def test_full(tmpdir, capsys, wwt_qt_client):
+def test_full(tmpdir, wwt_qt_client_isolated):
     """
     Test a whole Qt session, with image comparison along the way. We don't
     immediately fail if the images disagree, to allow building up a full
@@ -51,7 +51,7 @@ def test_full(tmpdir, capsys, wwt_qt_client):
     """
 
     failures = []
-    wwt = wwt_qt_client
+    wwt = wwt_qt_client_isolated
 
     # Step 0
 
