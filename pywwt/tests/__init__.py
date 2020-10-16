@@ -4,7 +4,7 @@ This package contains the pywwt tests. This particular module contains some
 infrastructure to help with the image-output tests, which can be pretty finicky.
 """
 
-__all__ = ['assert_widget_image']
+__all__ = ['assert_widget_image', 'wait_for_test']
 
 from base64 import b64encode
 import os.path
@@ -129,3 +129,20 @@ def assert_widget_image(tmpdir, widget, filename, fail_now=True):
         pytest.fail(msg, pytrace=False)
 
     return '{}: {}'.format(filename, msg)
+
+
+def wait_for_test(wwt, timeout):
+    """
+    On at least macOS, a single call to `app.processEvents()` can take many
+    seconds on when the WWT widget is being initialized. This means that
+    sometimes we only process a single event, while it is necessary to run the
+    event loop for many iterations in order to process all events. This function
+    works around this problem.
+
+    In principle we should maybe iterate the event loop until we know that all
+    events have been processed, but the documentation seems to suggest that
+    `hasPendingEvents()` should not be used.
+
+    """
+    wwt.wait(0.01)
+    wwt.wait(timeout)

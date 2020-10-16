@@ -2,7 +2,7 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 import pytest
 
-from . import assert_widget_image
+from . import assert_widget_image, wait_for_test
 from ..conftest import RUNNING_ON_CI
 
 
@@ -21,25 +21,25 @@ class TestWWTWidget:
     def test_settings(self, capsys, wwt_qt_client):
         wwt_qt_client.constellation_figures = True
         wwt_qt_client.constellation_figures = False
-        wwt_qt_client.wait(WAIT_TIME)
+        wait_for_test(wwt_qt_client, WAIT_TIME)
         check_silent_output(capsys)
 
     def test_methods(self, capsys, wwt_qt_client):
         wwt_qt_client.center_on_coordinates(M42, fov=10 * u.deg)
-        wwt_qt_client.wait(WAIT_TIME)
+        wait_for_test(wwt_qt_client, WAIT_TIME)
         check_silent_output(capsys)
 
     def test_coordinates(self, capsys, wwt_qt_client):
         wwt_qt_client.center_on_coordinates(M42, fov=10 * u.deg)
         assert M42.separation(wwt_qt_client.get_center()).arcsec < 1.e-6
-        wwt_qt_client.wait(WAIT_TIME)
+        wait_for_test(wwt_qt_client, WAIT_TIME)
         check_silent_output(capsys)
 
     def test_annotations(self, capsys, wwt_qt_client):
         circle = wwt_qt_client.add_circle()
         circle.opacity = 0.8
         circle.set_center(M42)
-        wwt_qt_client.wait(WAIT_TIME)
+        wait_for_test(wwt_qt_client, WAIT_TIME)
         check_silent_output(capsys)
 
 
@@ -62,7 +62,7 @@ def test_full(tmpdir, capsys, wwt_qt_client):
     # on all platforms.
     wwt.crosshairs = False
 
-    wwt.wait(WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step0.png', fail_now=False)
     if msg:
@@ -73,7 +73,7 @@ def test_full(tmpdir, capsys, wwt_qt_client):
     gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='galactic')
     wwt.center_on_coordinates(gc, 60 * u.deg)
 
-    wwt.wait(WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step1.png', fail_now=False)
     if msg:
@@ -88,7 +88,7 @@ def test_full(tmpdir, capsys, wwt_qt_client):
     wwt.constellation_boundaries = True
     wwt.constellation_figures = True
 
-    wwt.wait(WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step2.png', fail_now=False)
     if msg:
@@ -102,7 +102,7 @@ def test_full(tmpdir, capsys, wwt_qt_client):
     wwt.ecliptic = True
     wwt.grid = True
 
-    wwt.wait(WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step3.png', fail_now=False)
     if msg:
@@ -112,7 +112,7 @@ def test_full(tmpdir, capsys, wwt_qt_client):
 
     wwt.foreground = 'SFD Dust Map (Infrared)'
 
-    wwt.wait(WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step4.png', fail_now=False)
     if msg:
@@ -167,7 +167,7 @@ def test_full(tmpdir, capsys, wwt_qt_client):
     polyline.color = 'green'
     polyline.width = 3 * u.pixel
 
-    wwt.wait(WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step5.png', fail_now=False)
     if msg:
