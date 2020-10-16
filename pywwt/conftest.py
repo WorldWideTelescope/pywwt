@@ -45,6 +45,9 @@ if QT_INSTALLED and OPENGL_INSTALLED:
 _cached_opengl_renderer = ''
 
 
+RUNNING_ON_CI = os.environ.get('CI') or os.environ.get('AGENT_OS')
+
+
 def pytest_report_header(config):
     global _cached_opengl_renderer
 

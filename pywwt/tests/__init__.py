@@ -20,7 +20,7 @@ import pytest
 FRAMEWORK = 'none'
 FRAMEWORK_VARIANT = None
 
-from ..conftest import _cached_opengl_renderer, QT_INSTALLED  # noqa
+from ..conftest import _cached_opengl_renderer, RUNNING_ON_CI, QT_INSTALLED  # noqa
 
 if QT_INSTALLED:
     from qtpy.QtWebEngineWidgets import WEBENGINE
@@ -112,7 +112,7 @@ def assert_widget_image(tmpdir, widget, filename, fail_now=True):
 
     # If we're on a CI environment, output a script to regenerate the images.
 
-    if os.environ.get('CI') or os.environ.get('AGENT_OS'):
+    if RUNNING_ON_CI:
         with open(expected, 'rb') as f:
             expected = b64encode(f.read()).decode()
 

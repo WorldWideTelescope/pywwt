@@ -1,17 +1,12 @@
-import os
-import pytest
-
-import numpy as np
-
 from astropy.wcs import WCS
 from astropy.table import Table
 from astropy import units as u
 from astropy.coordinates import SkyCoord
-
-from pywwt.conftest import QT_INSTALLED  # noqa
+import numpy as np
+import pytest
 
 from . import assert_widget_image
-
+from ..conftest import RUNNING_ON_CI, QT_INSTALLED  # noqa
 from ..core import BaseWWTWidget
 from ..layers import TableLayer, guess_lon_lat_columns, guess_xyz_columns, csv_table_win_newline
 
@@ -382,7 +377,7 @@ def test_table_layers_image(tmpdir, wwt_qt_client):
 
     # For now this test doesn't work in CI, seemingly because of some
     # OpenGL features that aren't available there.
-    if os.environ.get('CI', 'false').lower() == 'false':
+    if RUNNING_ON_CI:
         assert_widget_image(tmpdir, wwt, 'sky_layers.png')
 
 
@@ -424,7 +419,7 @@ def test_table_layers_cartesian_image(tmpdir, wwt_qt_client):
 
     # For now this test doesn't work in CI, seemingly because of some
     # OpenGL features that aren't available there.
-    if os.environ.get('CI', 'false').lower() == 'false':
+    if RUNNING_ON_CI:
         assert_widget_image(tmpdir, wwt, 'sky_layers_cartesian.png')
 
 
@@ -460,7 +455,7 @@ def test_image_layer_equ(tmpdir, wwt_qt_client_isolated):
 
     # For now this test doesn't work in CI, seemingly because of some
     # OpenGL features that aren't available there.
-    if os.environ.get('CI', 'false').lower() == 'false':
+    if RUNNING_ON_CI:
         assert_widget_image(tmpdir, wwt, 'image_layer_equ.png')
 
 
@@ -510,5 +505,5 @@ def test_image_layer_gal(tmpdir, wwt_qt_client_isolated):
 
     # For now this test doesn't work in CI, seemingly because of some
     # OpenGL features that aren't available there.
-    if os.environ.get('CI', 'false').lower() == 'false':
+    if RUNNING_ON_CI:
         assert_widget_image(tmpdir, wwt, 'image_layer_gal.png')
