@@ -33,8 +33,6 @@ if QT_INSTALLED:
 
     if 'Mesa' in _cached_opengl_renderer:
         FRAMEWORK_VARIANT = '_mesa'
-    elif 'llvmpipe' in _cached_opengl_renderer:
-        FRAMEWORK_VARIANT = '_llvmpipe'
 
 
 # Reproduction helper
