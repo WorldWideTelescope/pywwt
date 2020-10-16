@@ -104,17 +104,12 @@ if QT_INSTALLED:
     def wwt_qt_client():
         from .qt import WWTQtClient
         wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
-        return wwt
+        yield wwt
+        wwt.close()
 
     @pytest.fixture(scope='function')
     def wwt_qt_client_isolated():
         from .qt import WWTQtClient
         wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
-        return wwt
-
-    @pytest.fixture(autouse=True)
-    def reset_state(wwt_qt_client):
-        wwt_qt_client.reset()
-        wwt_qt_client.pause_time()
-        wwt_qt_client.set_current_time(REFERENCE_TIME)
-        yield  # This yields the test itself
+        yield wwt
+        wwt.close()
