@@ -147,11 +147,22 @@ def wait_for_test(wwt, timeout):
 
     In principle we should maybe iterate the event loop until we know that all
     events have been processed, but the documentation seems to suggest that
-    `hasPendingEvents()` should not be used.
+    `hasPendingEvents()` should not be used. Trying it anyyway, we seem to loop
+    infinitely -- the WWT rendering engine may mean that there are always events
+    to process.
 
     """
-    wwt.wait(0.01)
-    wwt.wait(timeout / 2)
-    wwt.wait(0.01)
-    wwt.wait(timeout / 2)
-    wwt.wait(0.01)
+    from time import time
+    from ..app import get_qapp
+    MIN_ITERS = 128
+
+    app = get_qapp()
+    t0 = time()
+
+    # Iterate for *at least* MIN_ITERS and *at least* `timeout` seconds.
+
+    for _ in range(MIN_ITERS):
+        app.processEvents()
+
+    while time() - t0 < timeout:
+        app.processEvents()
