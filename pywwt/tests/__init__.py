@@ -145,4 +145,7 @@ def wait_for_test(wwt, timeout):
 
     """
     wwt.wait(0.01)
-    wwt.wait(timeout)
+    wwt.wait(timeout / 2)
+    wwt.wait(0.01)
+    wwt.wait(timeout / 2)
+    wwt.wait(0.01)
