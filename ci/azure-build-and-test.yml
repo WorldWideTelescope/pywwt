@@ -73,6 +73,13 @@ jobs:
       displayName: Set up Xvfb/OpenGL (Linux)
 
     - bash: |
+        set -e
+        git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
+        powershell gl-ci-helpers/appveyor/install_opengl.ps1
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+      displayName: Set up OpenGL (Windows)
+
+    - bash: |
         set -euo pipefail
         source activate-conda.sh
         conda activate build
