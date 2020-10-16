@@ -3,9 +3,10 @@ from astropy import units as u
 import pytest
 
 from . import assert_widget_image
+from ..conftest import RUNNING_ON_CI
 
 
-WAIT_TIME = 60
+WAIT_TIME = 5 if RUNNING_ON_CI else 1
 M42 = SkyCoord.from_name('M42')
 
 
