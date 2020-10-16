@@ -27,7 +27,7 @@ if QT_INSTALLED:
 
     FRAMEWORK = 'webengine' if WEBENGINE else 'webkit'
     if sys.platform.startswith('win') and not WEBENGINE and 'GDI' in _cached_opengl_renderer:
-        FRAMEWORK += '_win'
+        FRAMEWORK += '_gdi'
     elif sys.platform.startswith('darwin'):
         FRAMEWORK += '_osx'
 
