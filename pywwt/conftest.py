@@ -107,6 +107,8 @@ if QT_INSTALLED:
     def wwt_qt_client():
         from .qt import WWTQtClient
         wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
+        wwt.set_current_time(REFERENCE_TIME)
+        wwt.pause_time()
         yield wwt
         wwt.close()
 
@@ -114,5 +116,7 @@ if QT_INSTALLED:
     def wwt_qt_client_isolated():
         from .qt import WWTQtClient
         wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
+        wwt.set_current_time(REFERENCE_TIME)
+        wwt.pause_time()
         yield wwt
         wwt.close()
