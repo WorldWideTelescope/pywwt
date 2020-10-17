@@ -11,14 +11,10 @@ from ipyevents import Event as DOMListener
 from .core import BaseWWTWidget
 from .layers import ImageLayer
 from .jupyter_server import serve_file
-from . import __version__
 
 __all__ = ['WWTJupyterWidget']
 
-_npm_version = (__version__.replace('.alpha', '-alpha.')
-                           .replace('.beta', '-beta.')
-                           .replace('.dev', '-dev.')
-                           .replace('.rc', '-rc.'))
+_npm_version = '0.0.0-dev.0'  # cranko internal-req npm:pywwt
 VIEW_MODULE_VERSION = _npm_version
 MODEL_MODULE_VERSION = _npm_version
 

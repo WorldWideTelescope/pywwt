@@ -1,6 +1,5 @@
-include LICENSE.rst
-include README.rst
-include CHANGES.rst
+include *.md
+include *.rst
 include pyproject.toml
 
 include setup.py

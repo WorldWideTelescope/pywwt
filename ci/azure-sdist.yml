@@ -1,4 +1,4 @@
-# First stage of CI: create the `sdist` and (soon) Cranko release commit.
+# First stage of CI: create the `sdist` and Cranko release commit.
 
 jobs:
 
@@ -9,6 +9,34 @@ jobs:
   steps:
 
   - checkout: self
+
+  - bash: |
+      set -euo pipefail
+      d="$(mktemp -d /tmp/cranko.XXXXXX)"
+      cd "$d"
+      curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
+      echo "##vso[task.prependpath]$d"
+    displayName: Install latest Cranko
+
+  - bash: |
+      set -xeuo pipefail
+      cranko release-workflow apply-versions
+      git add .
+      cranko release-workflow commit
+      git show
+    displayName: Make release commit
+
+  - bash: |
+      artifact_dir="$(Build.ArtifactStagingDirectory)/git-release"
+      mkdir -p "$artifact_dir"
+      git bundle create "$artifact_dir/release.bundle" origin/master..HEAD
+    displayName: Bundle release commit
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish release git bundle artifact
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/git-release'
+      artifactName: git-release
 
   # TODO: it seems that at the moment, there is no better way to create an
   # sdist than to invoke setup.py directly. People seem to be working on

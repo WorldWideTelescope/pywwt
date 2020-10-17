@@ -15,3 +15,11 @@ stages:
 - stage: MainBuild
   jobs:
   - template: azure-build-and-test.yml
+
+- stage: Deploy
+  condition: and(succeeded('MainBuild'), ne(variables['build.reason'], 'PullRequest'))
+  jobs:
+  - template: azure-deployment.yml
+    parameters:
+      isMainDev: ${{ ne(variables['Build.SourceBranchName'], 'rc') }}
+      isRelease: ${{ eq(variables['Build.SourceBranchName'], 'rc') }}

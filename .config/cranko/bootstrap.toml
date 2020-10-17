@@ -1,0 +1,13 @@
+[[project]]
+qnames = [
+    'pywwt',
+    'pypa',
+]
+version = '0.9.0'
+
+[[project]]
+qnames = [
+    'pywwt',
+    'npm',
+]
+version = '0.9.0'

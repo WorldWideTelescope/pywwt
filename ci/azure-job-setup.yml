@@ -8,7 +8,15 @@ parameters:
   type: boolean
   default: false
 
+- name: setupCranko
+  type: boolean
+  default: false
+
 - name: setupGit
+  type: boolean
+  default: false
+
+- name: setupNpm
   type: boolean
   default: false
 
@@ -17,6 +25,26 @@ steps:
 
 - checkout: self
   submodules: recursive
+
+- ${{ if parameters.setupCranko }}:
+  - bash: |
+      set -euo pipefail
+      d="$(mktemp -d /tmp/cranko.XXXXXX)"
+      cd "$d"
+      curl --proto '=https' --tlsv1.2 -sSf https://pkgw.github.io/cranko/fetch-latest.sh | sh
+      echo "##vso[task.prependpath]$d"
+    displayName: Install latest Cranko (not Windows)
+    condition: and(succeeded(), ne(variables['Agent.OS'], 'Windows_NT'))
+
+  - pwsh: |
+      $d = Join-Path $Env:Temp cranko-$(New-Guid)
+      [void][System.IO.Directory]::CreateDirectory($d)
+      cd $d
+      [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+      iex ((New-Object System.Net.WebClient).DownloadString('https://pkgw.github.io/cranko/fetch-latest.ps1'))
+      echo "##vso[task.prependpath]$d"
+    displayName: Install latest Cranko (Windows)
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
 # work around https://github.com/microsoft/azure-pipelines-tasks/issues/10653
 # also note that `set -x` messes up `task.setvariable`
@@ -36,7 +64,18 @@ steps:
     echo "##vso[task.setvariable variable=ARTIFACT_STAGING;]$ARTIFACT_STAGING"
   displayName: Ensure bash-friendly variable names
 
+- bash: |
+    set -xeuo pipefail
+    git switch -c release
+    git pull --ff-only $BASH_WORKSPACE/git-release/release.bundle
+  displayName: Restore release commit
+
 - ${{ if parameters.setupBuild }}:
+  - task: NodeTool@0
+    displayName: Set up node.js
+    inputs:
+      versionSpec: '>=12'
+
   - bash: |
       set -euo pipefail
 
@@ -70,3 +109,10 @@ steps:
     displayName: Set up Git pushes
     env:
       GITHUB_TOKEN: $(GITHUB_TOKEN)
+
+- ${{ if parameters.setupNpm }}:
+  - bash: |
+      cranko npm install-token
+    displayName: Set up NPM authentication
+    env:
+      NPM_TOKEN: $(NPM_TOKEN)
