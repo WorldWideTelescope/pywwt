@@ -91,7 +91,7 @@ jobs:
         conda activate build
         set -x
         \conda install -y pytest-remotedata
-        pytest pywwt -p no:warnings
+        pytest -v -s pywwt -p no:warnings
       displayName: Test
       env:
         PYWWT_TEST_IMAGE_DIR: $(Build.ArtifactStagingDirectory)
