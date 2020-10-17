@@ -14,7 +14,7 @@ from .jupyter_server import serve_file
 
 __all__ = ['WWTJupyterWidget']
 
-_npm_version = '0.0.0.dev0'  # cranko internal-req npm:pywwt
+_npm_version = '0.0.0-dev.0'  # cranko internal-req npm:pywwt
 VIEW_MODULE_VERSION = _npm_version
 MODEL_MODULE_VERSION = _npm_version
 

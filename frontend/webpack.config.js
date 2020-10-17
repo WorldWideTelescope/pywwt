@@ -9,7 +9,6 @@ module.exports = [
     output: {
         filename: 'bundle.js',
         path: __dirname + '/dist',
-        library: "pywwt",
         libraryTarget: 'amd'
     },
     module: {
