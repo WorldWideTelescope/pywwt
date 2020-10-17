@@ -137,7 +137,7 @@ def assert_widget_image(tmpdir, widget, filename, fail_now=True):
     return '{}: {}'.format(filename, msg)
 
 
-def wait_for_test(wwt, timeout):
+def wait_for_test(wwt, timeout, for_render=False):
     """
     On macOS with software OpenGL, every so often a single call to
     `app.processEvents()` will take 15-30 seconds to execute. In order for the
@@ -157,7 +157,7 @@ def wait_for_test(wwt, timeout):
     from ..app import get_qapp
     MIN_ITERS = 128
 
-    if sys.platform.startswith('darwin'):
+    if for_render and sys.platform.startswith('darwin'):
         timeout = 90
 
     app = get_qapp()

@@ -62,7 +62,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     # on all platforms.
     wwt.crosshairs = False
 
-    wait_for_test(wwt, WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step0.png', fail_now=False)
     if msg:
@@ -73,7 +73,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='galactic')
     wwt.center_on_coordinates(gc, 60 * u.deg)
 
-    wait_for_test(wwt, WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step1.png', fail_now=False)
     if msg:
@@ -88,7 +88,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     wwt.constellation_boundaries = True
     wwt.constellation_figures = True
 
-    wait_for_test(wwt, WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step2.png', fail_now=False)
     if msg:
@@ -102,7 +102,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     wwt.ecliptic = True
     wwt.grid = True
 
-    wait_for_test(wwt, WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step3.png', fail_now=False)
     if msg:
@@ -112,7 +112,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
 
     wwt.foreground = 'SFD Dust Map (Infrared)'
 
-    wait_for_test(wwt, WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step4.png', fail_now=False)
     if msg:
@@ -167,7 +167,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     polyline.color = 'green'
     polyline.width = 3 * u.pixel
 
-    wait_for_test(wwt, WAIT_TIME)
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step5.png', fail_now=False)
     if msg:
