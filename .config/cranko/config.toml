@@ -1,0 +1,5 @@
+[repo]
+upstream_urls = [
+  'git@github.com:WorldWideTelescope/pywwt.git',
+  'https://github.com/WorldWideTelescope/pywwt.git',
+]
