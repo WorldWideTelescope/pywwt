@@ -1,0 +1,72 @@
+# Copyright 2020 the .NET Foundation
+# Licensed under the MIT License
+
+# Setup steps for the build and deployment processes.
+
+parameters:
+- name: setupBuild
+  type: boolean
+  default: false
+
+- name: setupGit
+  type: boolean
+  default: false
+
+steps:
+- download: current
+
+- checkout: self
+  submodules: recursive
+
+# work around https://github.com/microsoft/azure-pipelines-tasks/issues/10653
+# also note that `set -x` messes up `task.setvariable`
+- bash: |
+    set -xeuo pipefail
+
+    BASH_WORKSPACE="$(Pipeline.Workspace)"
+    ARTIFACT_STAGING="$(Build.ArtifactStagingDirectory)"
+
+    if [[ $AGENT_OS == Windows_NT ]] ; then
+      BASH_WORKSPACE=$(echo "$BASH_WORKSPACE" | sed -e 's|\\|\/|g' -e 's|^\([A-Za-z]\)\:/\(.*\)|/\L\1\E/\2|')
+      ARTIFACT_STAGING=$(echo "$ARTIFACT_STAGING" | sed -e 's|\\|\/|g' -e 's|^\([A-Za-z]\)\:/\(.*\)|/\L\1\E/\2|')
+    fi
+
+    set +x
+    echo "##vso[task.setvariable variable=BASH_WORKSPACE;]$BASH_WORKSPACE"
+    echo "##vso[task.setvariable variable=ARTIFACT_STAGING;]$ARTIFACT_STAGING"
+  displayName: Ensure bash-friendly variable names
+
+- ${{ if parameters.setupBuild }}:
+  - bash: |
+      set -euo pipefail
+
+      if [[ $AGENT_OS == Windows_NT ]] ; then
+        CONDA=$(echo "$CONDA" | sed -e 's|\\|\/|g' -e 's|^\([A-Za-z]\)\:/\(.*\)|/\L\1\E/\2|')
+        condabin="$CONDA/Scripts"
+      else
+        condabin="$CONDA/bin"
+      fi
+
+      if [[ $AGENT_OS == Darwin ]] ; then
+        sudo chown -R $USER $CONDA
+      fi
+
+      cat >activate-conda.sh <<EOF
+      eval "\$($condabin/conda shell.bash hook)"
+      conda activate
+      EOF
+    displayName: Set up Conda activation
+
+  - bash: |
+      set -euo pipefail
+      source activate-conda.sh
+      set -x
+      conda config --add channels conda-forge
+    displayName: Activate conda-forge
+
+- ${{ if parameters.setupGit }}:
+  - bash: |
+      cranko github install-credential-helper
+    displayName: Set up Git pushes
+    env:
+      GITHUB_TOKEN: $(GITHUB_TOKEN)

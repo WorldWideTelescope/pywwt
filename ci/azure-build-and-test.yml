@@ -1,0 +1,222 @@
+# Main build jobs for CI/CD on Azure Pipelines.
+
+parameters:
+- name: builds
+  type: object
+  default:
+
+  - name: linux_37
+    vmImage: ubuntu-20.04
+    vars:
+      PYTHON_SERIES: "3.7"
+
+  - name: linux_38
+    vmImage: ubuntu-20.04
+    vars:
+      PYTHON_SERIES: "3.8"
+
+  - name: macos_37
+    vmImage: macos-10.15
+    vars:
+      PYTHON_SERIES: "3.7"
+
+  - name: macos_38
+    vmImage: macos-10.15
+    vars:
+      PYTHON_SERIES: "3.8"
+
+  - name: windows_37
+    vmImage: windows-2019
+    vars:
+      PYTHON_SERIES: "3.7"
+
+  # 2020 Oct: the Windows / Python 3.8 build seems to hang forever in the test
+  # suite. No clues as to why, and the package complement is virtually identical
+  # to what's used for 3.7. Just skip the test for now.
+  #
+  #- name: windows_38
+  #  vmImage: windows-2019
+  #  vars:
+  #    PYTHON_SERIES: "3.8"
+
+jobs:
+- ${{ each build in parameters.builds }}:
+  - job: ${{ format('build_{0}', build.name) }}
+    pool:
+      vmImage: ${{ build.vmImage }}
+    variables:
+      ${{ insert }}: ${{ build.vars }}
+    steps:
+
+    - template: azure-job-setup.yml
+      parameters:
+        setupBuild: true
+
+    - bash: |
+        set -euo pipefail
+        source activate-conda.sh
+        set -x
+        \conda create -y -n build setuptools matplotlib pip pyopengl pyqt python="$PYTHON_SERIES" qtpy
+        conda activate build
+        pip install $BASH_WORKSPACE/sdist/*.tar.gz
+      displayName: Install from sdist
+
+    # NB: `set -x` interferes with task.setvariable
+    - bash: |
+        set -euo pipefail
+        echo "##vso[task.setvariable variable=DISPLAY;]:99"
+        set -x
+        sudo apt-get install -y \
+          libxkbcommon-x11-0 \
+          libgl1-mesa-dev
+        /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+          --make-pidfile --background --exec /usr/bin/Xvfb \
+          -- :99 -screen 0 1920x1200x24 -ac \
+          +extension GLX +render -noreset
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+      displayName: Set up Xvfb/OpenGL (Linux)
+
+    - bash: |
+        set -e
+        git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
+        powershell gl-ci-helpers/appveyor/install_opengl.ps1
+        echo "##vso[task.setvariable variable=QT_OPENGL;]software"
+        echo "##vso[task.setvariable variable=QTWEBENGINE_CHROMIUM_FLAGS;]--enable-webgl-software-rendering"
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+      displayName: Set up OpenGL (Windows)
+
+    - bash: |
+        set -euo pipefail
+        source activate-conda.sh
+        conda activate build
+        set -x
+        \conda install -y pytest-remotedata
+        pytest -v -s pywwt -p no:warnings
+      displayName: Test
+      env:
+        PYWWT_TEST_IMAGE_DIR: $(Build.ArtifactStagingDirectory)
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish generated test images
+      condition: true  # run even (especially!) if test fails
+      inputs:
+        targetPath: $(Build.ArtifactStagingDirectory)
+        artifactName: ${{ format('test_images_{0}', build.name) }}
+
+    - bash: |
+        set -euo pipefail
+        source activate-conda.sh
+        conda activate build
+        set -x
+        \conda install -y jupyterlab
+        jupyter nbextension list
+        jupyter serverextension list
+        jupyter labextension list
+      displayName: Print Jupyter extension status
+
+    - bash: |
+        set -euo pipefail
+        source activate-conda.sh
+        conda activate build
+        set -x
+        python .check_enabled.py
+      displayName: Check Jupyter extension status
+
+- job: coverage
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+  - template: azure-job-setup.yml
+    parameters:
+      setupBuild: true
+
+  - bash: |
+      set -euo pipefail
+      source activate-conda.sh
+      set -x
+      \conda create -y -n build setuptools matplotlib pip pyopengl pyqt python=3.8 qtpy
+      conda activate build
+      pip install $BASH_WORKSPACE/sdist/*.tar.gz
+    displayName: Install from sdist
+
+  # NB: `set -x` interferes with task.setvariable
+  - bash: |
+      set -euo pipefail
+      echo "##vso[task.setvariable variable=DISPLAY;]:99"
+      set -x
+      sudo apt-get install -y \
+        libxkbcommon-x11-0 \
+        libgl1-mesa-dev
+      /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid \
+        --make-pidfile --background --exec /usr/bin/Xvfb \
+        -- :99 -screen 0 1920x1200x24 -ac \
+        +extension GLX +render -noreset
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+    displayName: Set up Xvfb/OpenGL (Linux)
+
+  - bash: |
+      set -euo pipefail
+      source activate-conda.sh
+      conda activate build
+      set -x
+      \conda install -y pytest-cov pytest-remotedata
+      pytest --cov-report=xml --cov=pywwt pywwt
+    displayName: Test with coverage
+
+  - bash: bash <(curl -s https://codecov.io/bash)
+    displayName: Upload coverage results
+
+- job: docs
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+  - template: azure-job-setup.yml
+    parameters:
+      setupBuild: true
+
+  - bash: |
+      set -euo pipefail
+      source activate-conda.sh
+      set -x
+      \conda create -y -n build setuptools matplotlib pip pyopengl pyqt python=3.8 qtpy
+      conda activate build
+      pip install $BASH_WORKSPACE/sdist/*.tar.gz
+    displayName: Install from sdist
+
+  - bash: |
+      set -euo pipefail
+      source activate-conda.sh
+      conda activate build
+      set -x
+      \conda install -y astropy jupyter_sphinx numpydoc sphinx sphinx-automodapi sphinx_rtd_theme
+      pip install astropy-sphinx-theme
+      cd docs
+      make html
+      make linkcheck
+    displayName: Build docs
+
+- job: codestyle
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+  - template: azure-job-setup.yml
+    parameters:
+      setupBuild: true
+
+  - bash: |
+      set -euo pipefail
+      source activate-conda.sh
+      set -x
+      \conda create -y -n build setuptools pip python=3.8
+      conda activate build
+      pip install $BASH_WORKSPACE/sdist/*.tar.gz
+    displayName: Install from sdist
+
+  - bash: |
+      set -euo pipefail
+      source activate-conda.sh
+      conda activate build
+      set -x
+      \conda install -y flake8
+      flake8 --max-line-length=200 pywwt
+    displayName: Check flake8

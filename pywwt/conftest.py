@@ -45,6 +45,9 @@ if QT_INSTALLED and OPENGL_INSTALLED:
 _cached_opengl_renderer = ''
 
 
+RUNNING_ON_CI = os.environ.get('CI') or os.environ.get('AGENT_OS')
+
+
 def pytest_report_header(config):
     global _cached_opengl_renderer
 
@@ -104,17 +107,16 @@ if QT_INSTALLED:
     def wwt_qt_client():
         from .qt import WWTQtClient
         wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
-        return wwt
+        wwt.set_current_time(REFERENCE_TIME)
+        wwt.pause_time()
+        yield wwt
+        wwt.close()
 
     @pytest.fixture(scope='function')
     def wwt_qt_client_isolated():
         from .qt import WWTQtClient
         wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
-        return wwt
-
-    @pytest.fixture(autouse=True)
-    def reset_state(wwt_qt_client):
-        wwt_qt_client.reset()
-        wwt_qt_client.pause_time()
-        wwt_qt_client.set_current_time(REFERENCE_TIME)
-        yield  # This yields the test itself
+        wwt.set_current_time(REFERENCE_TIME)
+        wwt.pause_time()
+        yield wwt
+        wwt.close()

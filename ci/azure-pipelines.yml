@@ -1,0 +1,17 @@
+# Copyright 2020 the .NET Foundation
+# Licensed under the MIT License
+
+trigger:
+  branches:
+    include:
+    - master
+    - rc
+
+stages:
+- stage: SourceDist
+  jobs:
+  - template: azure-sdist.yml
+
+- stage: MainBuild
+  jobs:
+  - template: azure-build-and-test.yml

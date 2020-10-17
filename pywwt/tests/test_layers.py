@@ -1,19 +1,17 @@
-import os
-import pytest
-
-import numpy as np
-
 from astropy.wcs import WCS
 from astropy.table import Table
 from astropy import units as u
 from astropy.coordinates import SkyCoord
+import numpy as np
+import pytest
 
-from pywwt.conftest import QT_INSTALLED  # noqa
-
-from .test_qt_widget import assert_widget_image
-
+from . import assert_widget_image, wait_for_test
+from ..conftest import RUNNING_ON_CI, QT_INSTALLED  # noqa
 from ..core import BaseWWTWidget
 from ..layers import TableLayer, guess_lon_lat_columns, guess_xyz_columns, csv_table_win_newline
+
+
+WAIT_TIME = 10 if RUNNING_ON_CI else 2
 
 
 class TestLayers:
@@ -342,7 +340,7 @@ def test_table_layers_image(tmpdir, wwt_qt_client):
 
     layer3 = wwt.layers.add_table_layer(table=table)
 
-    wwt.wait(2)
+    wait_for_test(wwt, WAIT_TIME)
 
     layer3.color = 'green'
     layer3.lon_att = 'other'
@@ -369,17 +367,17 @@ def test_table_layers_image(tmpdir, wwt_qt_client):
 
     layer5 = wwt.layers.add_table_layer(table=table)
 
-    wwt.wait(2)
+    wait_for_test(wwt, WAIT_TIME)
 
     layer5.cmap_att = 'other'
     layer5.size_att = 'flux'
     layer5.size_scale = 100
 
-    wwt.wait(2)
+    wait_for_test(wwt, WAIT_TIME)
 
     # For now this test doesn't work in CI, seemingly because of some
     # OpenGL features that aren't available there.
-    if os.environ.get('CI', 'false').lower() == 'false':
+    if RUNNING_ON_CI:
         assert_widget_image(tmpdir, wwt, 'sky_layers.png')
 
 
@@ -417,11 +415,11 @@ def test_table_layers_cartesian_image(tmpdir, wwt_qt_client):
     layer2.size_att = 'x'
     layer2.size_scale = 100
 
-    wwt.wait(2)
+    wait_for_test(wwt, WAIT_TIME)
 
     # For now this test doesn't work in CI, seemingly because of some
     # OpenGL features that aren't available there.
-    if os.environ.get('CI', 'false').lower() == 'false':
+    if RUNNING_ON_CI:
         assert_widget_image(tmpdir, wwt, 'sky_layers_cartesian.png')
 
 
@@ -453,11 +451,11 @@ def test_image_layer_equ(tmpdir, wwt_qt_client_isolated):
 
     wwt.layers.add_image_layer(image=(array, wcs))
 
-    wwt.wait(2)
+    wait_for_test(wwt, WAIT_TIME)
 
     # For now this test doesn't work in CI, seemingly because of some
     # OpenGL features that aren't available there.
-    if os.environ.get('CI', 'false').lower() == 'false':
+    if RUNNING_ON_CI:
         assert_widget_image(tmpdir, wwt, 'image_layer_equ.png')
 
 
@@ -499,13 +497,13 @@ def test_image_layer_gal(tmpdir, wwt_qt_client_isolated):
     layer4 = wwt.layers.add_image_layer(image=(array, wcs))
     layer4.opacity = 0.5
 
-    wwt.wait(2)
+    wait_for_test(wwt, WAIT_TIME)
 
     wwt.center_on_coordinates(SkyCoord(30 * u.deg, 40 * u.deg, frame='galactic'), fov=14 * u.deg)
 
-    wwt.wait(2)
+    wait_for_test(wwt, WAIT_TIME)
 
     # For now this test doesn't work in CI, seemingly because of some
     # OpenGL features that aren't available there.
-    if os.environ.get('CI', 'false').lower() == 'false':
+    if RUNNING_ON_CI:
         assert_widget_image(tmpdir, wwt, 'image_layer_gal.png')

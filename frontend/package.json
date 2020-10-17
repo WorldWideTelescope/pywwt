@@ -23,18 +23,16 @@
     "lib/*.js"
   ],
   "scripts": {
-    "build": "npm run build:labextension && npm run build:nbextension",
-    "build:labextension": "cd pywwt && rimraf labextension && mkdir labextension && cd labextension && npm pack ../..",
-    "build:nbextension": "webpack",
-    "clean": "npm run clean:labextension && npm run clean:nbextension",
-    "clean:labextension": "rimraf pywwt/labextension",
-    "clean:nbextension": "rimraf pywwt/nbextension/static/index.js"
+    "build": "webpack",
+    "clean": "shx rm -rf dist",
+    "pywwt-export": "npm run build && npm pack && node pywwt-export.js"
   },
   "dependencies": {
     "@jupyter-widgets/base": "^2  || ^3"
   },
   "devDependencies": {
-    "rimraf": "^2.6.2",
+    "shelljs": "^0.8",
+    "shx": "^0.3",
     "source-map-loader": "^0.2.1",
     "webpack": "^3.4.1"
   },
