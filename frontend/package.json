@@ -1,42 +1,42 @@
 {
-  "name": "pywwt",
-  "version": "0.10.0-dev.0",
-  "description": "AAS WorldWide Telescope from Python",
-  "keywords": [
-    "jupyter",
-    "jupyterlab",
-    "jupyterlab-extension",
-    "widgets"
-  ],
-  "homepage": "https://github.com/WorldWideTelescope/pywwt",
+  "author": "",
   "bugs": {
     "url": "https://github.com/WorldWideTelescope/pywwt/issues"
-  },
-  "license": "BSD-3-Clause",
-  "author": "",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/WorldWideTelescope/pywwt"
-  },
-  "main": "lib/index.js",
-  "files": [
-    "lib/*.js"
-  ],
-  "scripts": {
-    "build": "webpack",
-    "clean": "shx rm -rf dist",
-    "pywwt-export": "npm run build && npm pack && node pywwt-export.js"
   },
   "dependencies": {
     "@jupyter-widgets/base": "^2  || ^3"
   },
+  "description": "AAS WorldWide Telescope from Python",
   "devDependencies": {
     "shelljs": "^0.8",
     "shx": "^0.3",
     "source-map-loader": "^0.2.1",
     "webpack": "^3.4.1"
   },
+  "files": [
+    "lib/*.js"
+  ],
+  "homepage": "https://github.com/WorldWideTelescope/pywwt",
   "jupyterlab": {
     "extension": "lib/plugin"
-  }
+  },
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension",
+    "widgets"
+  ],
+  "license": "BSD-3-Clause",
+  "main": "lib/index.js",
+  "name": "pywwt",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WorldWideTelescope/pywwt"
+  },
+  "scripts": {
+    "build": "webpack",
+    "clean": "shx rm -rf dist",
+    "pywwt-export": "npm run build && npm pack && node pywwt-export.js"
+  },
+  "version": "0.9.0"
 }
