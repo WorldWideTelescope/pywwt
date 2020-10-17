@@ -11,7 +11,6 @@ from ipyevents import Event as DOMListener
 from .core import BaseWWTWidget
 from .layers import ImageLayer
 from .jupyter_server import serve_file
-from . import __version__
 
 __all__ = ['WWTJupyterWidget']
 
