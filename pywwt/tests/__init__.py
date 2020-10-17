@@ -139,22 +139,26 @@ def assert_widget_image(tmpdir, widget, filename, fail_now=True):
 
 def wait_for_test(wwt, timeout):
     """
-    On at least macOS, a single call to `app.processEvents()` can take many
-    seconds on when the WWT widget is being initialized. This means that
-    sometimes we only process a single event, while it is necessary to run the
-    event loop for many iterations in order to process all events. This function
-    works around this problem.
+    On macOS with software OpenGL, every so often a single call to
+    `app.processEvents()` will take 15-30 seconds to execute. In order for the
+    tests like `test_full` to properly update the WWT rendering, it seems that
+    *several* such "long" iterations have to occur -- something happens during
+    those iterations that doesn't happen during the short ones. So, this
+    function hacks MacOS to ensure that we iterate for a *long* time and that we
+    execute a nontrivial number of event loop iterations. Note that `wwt.wait()`
+    will not necessarily run many mainloop iterations, if one of them takes a
+    long time.
 
-    In principle we should maybe iterate the event loop until we know that all
-    events have been processed, but the documentation seems to suggest that
-    `hasPendingEvents()` should not be used. Trying it anyyway, we seem to loop
-    infinitely -- the WWT rendering engine may mean that there are always events
-    to process.
+    It would be nice to know why this is happening and fix the root cause!
+    Preliminary investigation does not yield any clues.
 
     """
     from time import time
     from ..app import get_qapp
     MIN_ITERS = 128
+
+    if sys.platform.startswith('darwin'):
+        timeout = 90
 
     app = get_qapp()
     t0 = time()
