@@ -373,12 +373,8 @@ def test_table_layers_image(tmpdir, wwt_qt_client):
     layer5.size_att = 'flux'
     layer5.size_scale = 100
 
-    wait_for_test(wwt, WAIT_TIME)
-
-    # For now this test doesn't work in CI, seemingly because of some
-    # OpenGL features that aren't available there.
-    if RUNNING_ON_CI:
-        assert_widget_image(tmpdir, wwt, 'sky_layers.png')
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+    assert_widget_image(tmpdir, wwt, 'sky_layers.png')
 
 
 @pytest.mark.skipif('not QT_INSTALLED')
@@ -415,12 +411,8 @@ def test_table_layers_cartesian_image(tmpdir, wwt_qt_client):
     layer2.size_att = 'x'
     layer2.size_scale = 100
 
-    wait_for_test(wwt, WAIT_TIME)
-
-    # For now this test doesn't work in CI, seemingly because of some
-    # OpenGL features that aren't available there.
-    if RUNNING_ON_CI:
-        assert_widget_image(tmpdir, wwt, 'sky_layers_cartesian.png')
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+    assert_widget_image(tmpdir, wwt, 'sky_layers_cartesian.png')
 
 
 @pytest.mark.skipif('not QT_INSTALLED')
@@ -451,12 +443,8 @@ def test_image_layer_equ(tmpdir, wwt_qt_client_isolated):
 
     wwt.layers.add_image_layer(image=(array, wcs))
 
-    wait_for_test(wwt, WAIT_TIME)
-
-    # For now this test doesn't work in CI, seemingly because of some
-    # OpenGL features that aren't available there.
-    if RUNNING_ON_CI:
-        assert_widget_image(tmpdir, wwt, 'image_layer_equ.png')
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+    assert_widget_image(tmpdir, wwt, 'image_layer_equ.png')
 
 
 @pytest.mark.skipif('not QT_INSTALLED')
@@ -501,9 +489,5 @@ def test_image_layer_gal(tmpdir, wwt_qt_client_isolated):
 
     wwt.center_on_coordinates(SkyCoord(30 * u.deg, 40 * u.deg, frame='galactic'), fov=14 * u.deg)
 
-    wait_for_test(wwt, WAIT_TIME)
-
-    # For now this test doesn't work in CI, seemingly because of some
-    # OpenGL features that aren't available there.
-    if RUNNING_ON_CI:
-        assert_widget_image(tmpdir, wwt, 'image_layer_gal.png')
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+    assert_widget_image(tmpdir, wwt, 'image_layer_gal.png')
