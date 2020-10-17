@@ -13,4 +13,3 @@
 
 - [ ] Changed code has some test coverage (or justify why not)
 - [ ] Changes in functionality documented (or justify why not)
-- [ ] Changes summarized in `CHANGES.rst` file, if they merit mention in release notes
