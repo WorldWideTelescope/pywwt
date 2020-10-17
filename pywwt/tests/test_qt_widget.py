@@ -103,7 +103,6 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     wwt.grid = True
 
     wait_for_test(wwt, WAIT_TIME)
-    wait_for_test(wwt, WAIT_TIME)  # wait more; helps with CI reliability on macOS
 
     msg = assert_widget_image(tmpdir, wwt, 'test_full_step3.png', fail_now=False)
     if msg:
