@@ -27,7 +27,7 @@ ensure_python('>=3.7')
 name = 'pywwt'
 version = get_version(pjoin(name, '_version.py'))
 
-with io.open('README.rst', encoding='utf_8') as f:
+with io.open('README.md', encoding='utf_8') as f:
     LONG_DESCRIPTION = f.read()
 
 # Wire up the NPM build to the Python package build -- we generate JavaScript
@@ -85,6 +85,7 @@ setup_args = dict(
     name            = name,
     description     = 'The AAS WorldWide Telescope from Python',
     long_description = LONG_DESCRIPTION,
+    long_description_content_type = 'text/markdown',
     version         = version,
     cmdclass        = cmdclass,
     packages        = find_packages(),
