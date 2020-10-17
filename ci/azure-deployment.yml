@@ -1,0 +1,105 @@
+# Deployment workflows, run when all CI tests pass on the `master` or `rc
+# branches. NB: right now we do nothing on `master`! (But we need a dummy job to
+# keep Pipelines happy.) That could change.
+
+parameters:
+  - name: isMainDev
+    type: boolean
+    default: false
+  - name: isRelease
+    type: boolean
+    default: false
+
+jobs:
+
+- ${{ if parameters.isMainDev }}:
+  - job: dummy_setup_only
+    pool:
+      vmImage: ubuntu-20.04
+    steps:
+    - template: azure-job-setup.yml
+
+- ${{ if parameters.isRelease }}:
+  - job: branch_and_tag
+    pool:
+      vmImage: ubuntu-20.04
+    variables:
+    - group: Deployment Credentials
+    steps:
+    - template: azure-job-setup.yml
+      parameters:
+        setupCranko: true
+        setupGit: true
+    - bash: |
+        set -xeou pipefail
+        cranko release-workflow tag
+        git push --tags origin release:release
+      displayName: Tag and push
+      env:
+        GITHUB_TOKEN: $(GITHUB_TOKEN)
+
+  - job: github_releases
+    dependsOn: branch_and_tag # otherwise, GitHub creates the tag itself
+    pool:
+      vmImage: ubuntu-20.04
+    variables:
+    - group: Deployment Credentials
+    steps:
+    - template: azure-job-setup.yml
+      parameters:
+        setupCranko: true
+        setupGit: true
+    - bash: |
+        set -xeou pipefail
+        cranko github create-releases
+      displayName: Create GitHub releases
+      env:
+        GITHUB_TOKEN: $(GITHUB_TOKEN)
+
+  - job: python_publish
+    pool:
+      vmImage: ubuntu-20.04
+    variables:
+    - group: Deployment Credentials
+    steps:
+    - template: azure-job-setup.yml
+      parameters:
+        setupBuild: true
+        setupCranko: true
+    - bash: |
+        set -euo pipefail
+        source activate-conda.sh
+        set -x
+        \conda install -y twine
+
+        cranko python install-token
+
+        # If we ever become a monorepo, we'll need to figure out how to make sure
+        # that we only upload the proper packages.
+        if cranko show if-released --exit-code pywwt ; then
+          twine upload $BASH_WORKSPACE/sdist/*.tar.gz
+        fi
+      displayName: Publish PyPI releases
+      env:
+        PYPI_TOKEN: $(PYPI_TOKEN)
+
+  - job: npm_publish
+    pool:
+      vmImage: ubuntu-20.04
+    variables:
+    - group: Deployment Credentials
+    steps:
+    - template: azure-job-setup.yml
+      parameters:
+        setupBuild: true
+        setupNpm: true
+    - bash: cd frontend && npm install
+      displayName: NPM install
+    - bash: cd frontend && npm run build
+      displayName: NPM build
+    - bash: |
+        set -xeou pipefail
+        cranko npm foreach-released npm publish
+      displayName: Publish to NPM
+    - bash: shred ~/.npmrc
+      displayName: Clean up credentials
