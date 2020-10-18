@@ -92,6 +92,7 @@ jobs:
     - template: azure-job-setup.yml
       parameters:
         setupBuild: true
+        setupCranko: true
         setupNpm: true
     - bash: cd frontend && npm install
       displayName: NPM install
