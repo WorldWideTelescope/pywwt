@@ -80,17 +80,17 @@ var WWTView = widgets.DOMWidgetView.extend({
     },
 
     processLuminoMessage: function(msg) {
-      // We listen for lumino resize events so that when Jupyter Lab is
-      // used, we adjust the canvas size to the tab/panel in Jupyter Lab.
-      // See relayout for more details.
-      WWTView.__super__.processLuminoMessage.apply(this, arguments);
-      switch (msg.type) {
-      case 'resize':
-      case 'after-show':
-          this.relayout();
-          break;
-      }
-  },
+        // We listen for lumino resize events so that when Jupyter Lab is
+        // used, we adjust the canvas size to the tab/panel in Jupyter Lab.
+        // See relayout for more details.
+        WWTView.__super__.processLuminoMessage.apply(this, arguments);
+        switch (msg.type) {
+        case 'resize':
+        case 'after-show':
+            this.relayout();
+            break;
+        }
+    },
 
     relayout: function() {
         // Only do resizing if we are not in the notebook context but in a
@@ -147,11 +147,11 @@ var WWTView = widgets.DOMWidgetView.extend({
     handle_custom_message: function(msg) {
 
       if (this.wwt_window == null && !this._try_init_wwt_window()) {
-        return;
+          return;
       }
 
       if (msg['url'] != null && msg['url'].slice(4) == '/wwt') {
-        msg['url'] = this.wwt_base_url + msg['url'];
+          msg['url'] = this.wwt_base_url + msg['url'];
       }
 
       // If the user has created a view for our widget and then hidden it, our
@@ -169,15 +169,15 @@ var WWTView = widgets.DOMWidgetView.extend({
       // have been loaded.
 
       try {
-        this.wwt_window.wwt_apply_json_message(this.wwt_window.wwt, msg);
+          this.wwt_window.wwt_apply_json_message(this.wwt_window.wwt, msg);
 
-        if (msg['event'] === 'center_on_coordinates') {
-          this.update_view_data();
-        }
+          if (msg['event'] === 'center_on_coordinates') {
+            this.update_view_data();
+          }
       } catch (e) {
-        console.log('failed to process custom_message for a pyWWT Jupyter widget view:');
-        console.log(msg);
-        (console.error || console.log).call(console, e.stack || e);
+          console.log('failed to process custom_message for a pyWWT Jupyter widget view:');
+          console.log(msg);
+          (console.error || console.log).call(console, e.stack || e);
       }
     },
 
@@ -189,28 +189,28 @@ var WWTView = widgets.DOMWidgetView.extend({
         var needUpdate = false;
 
         if (this.model.get('_ra') != this.wwt_window.wwt.getRA()) {
-          this.model.set({ '_ra': this.wwt_window.wwt.getRA() });
-          needUpdate = true;
+            this.model.set({ '_ra': this.wwt_window.wwt.getRA() });
+            needUpdate = true;
         }
 
         if (this.model.get('_dec') != this.wwt_window.wwt.getDec()) {
-          this.model.set({ '_dec': this.wwt_window.wwt.getDec() });
-          needUpdate = true;
+            this.model.set({ '_dec': this.wwt_window.wwt.getDec() });
+            needUpdate = true;
         }
 
         if (this.model.get('_fov') != this.wwt_window.wwt.get_fov()) {
-          this.model.set({ '_fov': this.wwt_window.wwt.get_fov() });
-          needUpdate = true;
+            this.model.set({ '_fov': this.wwt_window.wwt.get_fov() });
+            needUpdate = true;
         }
 
         var stc = this.wwt_window.wwtlib.SpaceTimeController;
         if (this.model.get('_datetime') != stc.get_now().toISOString()) {
-          this.model.set({ '_datetime': stc.get_now().toISOString() });
-          needUpdate = true;
+            this.model.set({ '_datetime': stc.get_now().toISOString() });
+            needUpdate = true;
         }
 
         if (needUpdate) {
-          this.touch();
+            this.touch();
         }
     }
 
