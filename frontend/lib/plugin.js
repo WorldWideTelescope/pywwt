@@ -1,3 +1,6 @@
+// This file implements the JupyterLab extension, as linked up through this
+// module's `package.json` file (`jupyerlab.extension` keyword).
+
 var wwt = require('./index');
 
 var base = require('@jupyter-widgets/base');

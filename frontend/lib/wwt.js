@@ -1,7 +1,7 @@
 var widgets = require('@jupyter-widgets/base');
 var _ = require("underscore");
 
-var version = require('./version').version;
+var version = require('./index').version;
 
 var WWTModel = widgets.DOMWidgetModel.extend({
     defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
