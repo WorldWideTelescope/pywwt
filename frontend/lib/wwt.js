@@ -24,7 +24,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
 
 var WWTView = widgets.DOMWidgetView.extend({
 
-    initialize : function() {
+    initialize: function() {
 
         // We use an iframe to show WorldWideTelescope, because it does not
         // otherwise support having multiple instances running on the same
@@ -42,11 +42,14 @@ var WWTView = widgets.DOMWidgetView.extend({
 
         WWTView.__super__.initialize.apply(this, arguments);
 
+        // Monitor the view data so that we can transmit updates. We handle the
+        // clock specially so as not to be sending updates continually.
+        this.lastClockUpdate = 0;
         var self = this;
-        setInterval(function () { self.update_view_data(); }, 100);
+        setInterval(function () { self.update_view_data(); }, 150);
     },
 
-    _try_init_wwt_window : function() {
+    _try_init_wwt_window: function() {
         iframe = this.el.getElementsByTagName('iframe')[0];
         if (iframe != null) {
             this.wwt_window = iframe.contentWindow;
@@ -145,42 +148,52 @@ var WWTView = widgets.DOMWidgetView.extend({
     },
 
     handle_custom_message: function(msg) {
+        if (this.wwt_window == null && !this._try_init_wwt_window()) {
+            return;
+        }
 
-      if (this.wwt_window == null && !this._try_init_wwt_window()) {
-          return;
-      }
+        if (msg['url'] != null && msg['url'].slice(4) == '/wwt') {
+            msg['url'] = this.wwt_base_url + msg['url'];
+        }
 
-      if (msg['url'] != null && msg['url'].slice(4) == '/wwt') {
-          msg['url'] = this.wwt_base_url + msg['url'];
-      }
+        // If the user has created a view for our widget and then hidden it, our
+        // iframe gets removed and all sorts of things stop working (e.g.,
+        // Chrome will refuse to send XMLHttpRequests anymore, and Firefox won't
+        // set timeouts). If we let exceptions from these operations bubble up,
+        // they break the code that applies widget events to *all* views, which
+        // then breaks the JupyterLab use case of (1) setting up a WWT widget,
+        // (2) creating a view of it in a separate tab, and then (3) hiding the
+        // view in the original notebook, because the second view will never
+        // receive any messages. We should handle things better when widgets get
+        // hidden, but in the meantime, try to keep things limping along by
+        // swallowing exceptions here. Note that this approach will mean that
+        // the two views will get out of sync regarding, e.g., image layers that
+        // have been loaded.
 
-      // If the user has created a view for our widget and then hidden it, our
-      // iframe gets removed and all sorts of things stop working (e.g.,
-      // Chrome will refuse to send XMLHttpRequests anymore, and Firefox won't
-      // set timeouts). If we let exceptions from these operations bubble up,
-      // they break the code that applies widget events to *all* views, which
-      // then breaks the JupyterLab use case of (1) setting up a WWT widget,
-      // (2) creating a view of it in a separate tab, and then (3) hiding the
-      // view in the original notebook, because the second view will never
-      // receive any messages. We should handle things better when widgets get
-      // hidden, but in the meantime, try to keep things limping along by
-      // swallowing exceptions here. Note that this approach will mean that
-      // the two views will get out of sync regarding, e.g., image layers that
-      // have been loaded.
+        try {
+            this.wwt_window.wwt_apply_json_message(this.wwt_window.wwt, msg);
 
-      try {
-          this.wwt_window.wwt_apply_json_message(this.wwt_window.wwt, msg);
-
-          if (msg['event'] === 'center_on_coordinates') {
-            this.update_view_data();
-          }
-      } catch (e) {
-          console.log('failed to process custom_message for a pyWWT Jupyter widget view:');
-          console.log(msg);
-          (console.error || console.log).call(console, e.stack || e);
-      }
+            switch(msg['event']) {
+                case 'load_tour':
+                case 'resume_tour':
+                case 'pause_tour':
+                case 'resume_time':
+                case 'pause_time':
+                case 'set_datetime':
+                    this.lastClockUpdate = 0;
+                    break;
+            }
+        } catch (e) {
+            console.log('failed to process custom_message for a pyWWT Jupyter widget view:');
+            console.log(msg);
+            (console.error || console.log).call(console, e.stack || e);
+        }
     },
 
+    // This function is called very frequently, so we make sure to not send
+    // updates unless something has changed. Ideally we'd be triggered on
+    // updates rather than polling, but we're not well set up to do that right
+    // now.
     update_view_data: function () {
         if ((this.wwt_window == null && !this._try_init_wwt_window()) || !this.wwt_window.wwt) {
             return;
@@ -203,9 +216,34 @@ var WWTView = widgets.DOMWidgetView.extend({
             needUpdate = true;
         }
 
-        var stc = this.wwt_window.wwtlib.SpaceTimeController;
-        if (this.model.get('_datetime') != stc.get_now().toISOString()) {
-            this.model.set({ '_datetime': stc.get_now().toISOString() });
+        // By default, the clock is always ticking. We throttle updates by having
+        // the listener extrapolate the clock itself given reference times and the
+        // "time rate".
+        //
+        // For compatibility reasons, the engine's time must be exposed using a
+        // trait named `_datetime`. If any of the time-related parameters are
+        // changed discontinuously, set lastClockUpdate to 0 to force an update.
+        var nowUnixMs = Date.now();
+        var updateTimeParams = (nowUnixMs - this.lastClockUpdate) > 60000;
+
+        if (updateTimeParams) {
+            var stc = this.wwt_window.wwtlib.SpaceTimeController;
+            var rate = stc.get_timeRate();
+
+            if (!stc.get_syncToClock()) {
+                // When time is paused by setting syncToClock to false, the WWT
+                // "rate" remains unchanged, but as far as the Python layer is
+                // concerned, the rate should be 0.
+                rate = 0.0;
+            }
+
+            this.model.set({
+                '_datetime': stc.get_now().toISOString(),
+                '_systemDatetime': (new Date()).toISOString(),
+                '_timeRate': rate
+            });
+
+            this.lastClockUpdate = nowUnixMs;
             needUpdate = true;
         }
 
@@ -213,11 +251,9 @@ var WWTView = widgets.DOMWidgetView.extend({
             this.touch();
         }
     }
-
 });
 
-
 module.exports = {
-    WWTModel : WWTModel,
-    WWTView : WWTView
+    WWTModel: WWTModel,
+    WWTView: WWTView
 };
