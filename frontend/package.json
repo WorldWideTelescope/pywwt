@@ -19,7 +19,7 @@
   ],
   "homepage": "https://github.com/WorldWideTelescope/pywwt",
   "jupyterlab": {
-    "extension": "lib/plugin"
+    "extension": "lib/jupyterlab"
   },
   "keywords": [
     "jupyter",
