@@ -109,7 +109,7 @@ If you want to use the Jupyter widget, you will also need to run::
 
 And if you additionally want to use the widget in JupyterLab, run::
 
-    jupyter labextension install .
+    jupyter labextension install frontend
     jupyter labextension list  # check that the output shows pywwt as enabled and OK
 
 Besides ``pywwt``, the ``@jupyter-widgets/jupyterlab-manager`` and
