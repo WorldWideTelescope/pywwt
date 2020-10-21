@@ -56,7 +56,7 @@ jobs:
         set -euo pipefail
         source activate-conda.sh
         set -x
-        \conda create -y -n build setuptools matplotlib pip pyopengl pyqt python="$PYTHON_SERIES" qtpy
+        \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' python="$PYTHON_SERIES" qtpy
         conda activate build
         pip install $BASH_WORKSPACE/sdist/*.tar.gz
       displayName: Install from sdist
@@ -134,7 +134,7 @@ jobs:
       set -euo pipefail
       source activate-conda.sh
       set -x
-      \conda create -y -n build setuptools matplotlib pip pyopengl pyqt python=3.8 qtpy
+      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' python=3.8 qtpy
       conda activate build
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
@@ -178,7 +178,7 @@ jobs:
       set -euo pipefail
       source activate-conda.sh
       set -x
-      \conda create -y -n build setuptools matplotlib pip pyopengl pyqt python=3.8 qtpy
+      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' python=3.8 qtpy
       conda activate build
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist

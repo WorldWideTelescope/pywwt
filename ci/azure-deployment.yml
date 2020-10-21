@@ -76,7 +76,7 @@ jobs:
 
         # If we ever become a monorepo, we'll need to figure out how to make sure
         # that we only upload the proper packages.
-        if cranko show if-released --exit-code pywwt ; then
+        if cranko show if-released --exit-code pypa:pywwt ; then
           twine upload $BASH_WORKSPACE/sdist/*.tar.gz
         fi
       displayName: Publish PyPI releases
