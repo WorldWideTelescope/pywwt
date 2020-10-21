@@ -129,7 +129,6 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'annotation_set':
-
       var name = msg['setting'];
       // TODO: nice error message if annotation doesn't exist
       annotation = wwt.annotations[msg['id']];
@@ -137,7 +136,6 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'remove_annotation':
-
       var name = msg["setting"];
       // TODO: nice error message if annotation doesn't exist
       shape = wwt.annotations[msg['id']];
@@ -145,7 +143,6 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'circle_set_center':
-
       var name = msg["setting"];
       // TODO: nice error message if annotation doesn't exist
       circle = wwt.annotations[msg['id']];
@@ -153,7 +150,6 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'polygon_add_point':
-
       var name = msg["setting"];
       // same TODO as above
       polygon = wwt.annotations[msg['id']];
@@ -161,7 +157,6 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'line_add_point':
-
       var name = msg["setting"];
       // same TODO as above
       line = wwt.annotations[msg['id']];
@@ -169,9 +164,7 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'set_datetime':
-
       var date = new Date(msg['isot']);
-
       stc = wwtlib.SpaceTimeController;
       stc.set_timeRate(1);
       stc.set_now(date);
@@ -190,16 +183,13 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'image_layer_create':
-
       layer = wwt.loadFits(msg['url']);
       layer._stretch_version = 0;
       layer._cmap_version = 0;
-
       wwt.layers[msg['id']] = layer;
       break;
 
     case 'image_layer_stretch':
-
       var layer = wwt.layers[msg['id']];
 
       if (layer.get_imageSet() == null) {
@@ -228,42 +218,33 @@ function wwt_apply_json_message(wwt, msg) {
       }
       break;
 
-      case 'image_layer_cmap':
+    case 'image_layer_cmap':
+      // See image_layer_stretch for why we need to do what we do below
+      var layer = wwt.layers[msg['id']];
 
-        // See image_layer_stretch for why we need to do what we do below
-
-        var layer = wwt.layers[msg['id']];
-
-        if (layer.get_imageSet() == null) {
-          setTimeout(function(){ wwt_apply_json_message(wwt, msg); }, 200);
-        } else {
-          if (msg['version'] > layer._cmap_version) {
-            layer.set_colorMapperName(msg['cmap']);
-            layer._cmap_version = msg['version'];
-          }
-
+      if (layer.get_imageSet() == null) {
+        setTimeout(function(){ wwt_apply_json_message(wwt, msg); }, 200);
+      } else {
+        if (msg['version'] > layer._cmap_version) {
+          layer.set_colorMapperName(msg['cmap']);
+          layer._cmap_version = msg['version'];
         }
-        break;
+      }
+      break;
 
     case 'image_layer_set':
-
       var layer = wwt.layers[msg['id']];
       var name = msg['setting'];
-
       layer["set_" + name](msg['value']);
-
       break;
 
     case 'image_layer_remove':
-
       // TODO: could combine with table_layer_remove
-
       var layer = wwt.layers[msg['id']];
       wwtlib.LayerManager.deleteLayerByID(layer.id, true, true);
       break;
 
     case 'table_layer_create':
-
       // Decode table from base64
       csv = atob(msg['table'])
 
@@ -306,7 +287,6 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'table_layer_update':
-
       var layer = wwt.layers[msg['id']];
 
       // Decode table from base64
@@ -319,7 +299,6 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'table_layer_set':
-
       var layer = wwt.layers[msg['id']];
       var name = msg['setting'];
 
@@ -351,13 +330,10 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'table_layer_remove':
-
       var layer = wwt.layers[msg['id']];
       wwtlib.LayerManager.deleteLayerByID(layer.id, true, true);
       break;
-
   }
-
 }
 
 // We need to do this so that wwt_apply_json_message is available as a global

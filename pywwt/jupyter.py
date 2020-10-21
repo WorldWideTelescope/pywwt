@@ -3,6 +3,7 @@
 # because we instead use JSON messages to transmit any changes between the
 # Python and Javascript parts so that we can re-use this for the Qt client.
 
+from astropy.time import Time
 import ipywidgets as widgets
 from traitlets import Unicode, Float, default, link, directional_link
 
@@ -14,7 +15,7 @@ from .jupyter_server import serve_file
 
 __all__ = ['WWTJupyterWidget']
 
-_npm_version = '^0.9.0'  # cranko internal-req npm:pywwt
+_npm_version = '^1.0.0'  # cranko internal-req npm:pywwt
 VIEW_MODULE_VERSION = _npm_version
 MODEL_MODULE_VERSION = _npm_version
 
@@ -34,12 +35,17 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     _view_module_version = Unicode(VIEW_MODULE_VERSION).tag(sync=True)
     _model_module_version = Unicode(MODEL_MODULE_VERSION).tag(sync=True)
 
+    # wwt=None tag needed to avoid linkage to 'wwt.settings.set_' type traits
+    # (see _on_trait_change() in core.py)
     _ra = Float(0.0).tag(sync=True, wwt=None)
     _dec = Float(0.0).tag(sync=True, wwt=None)
     _fov = Float(60.0).tag(sync=True, wwt=None)
+    # this is the WWT engine's clock at last check-in:
     _datetime = Unicode('2017-03-09T12:30:00').tag(sync=True, wwt=None)
-    # wwt=None tag needed to avoid linkage to 'wwt.settings.set_' type traits
-    # (see _on_trait_change() in core.py)
+    # this is system clock at last check-in:
+    _systemDatetime = Unicode('2017-03-09T12:30:00').tag(sync=True, wwt=None)
+    # this is the rate at which the WWT engine clock proceeds relative to the system clock:
+    _timeRate = Float(1.0).tag(sync=True, wwt=None)
 
     def __init__(self):
         widgets.DOMWidget.__init__(self)
@@ -67,7 +73,10 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         elif field == 'fov':
             return self._fov
         elif field == 'datetime':
-            return self._datetime
+            engine_time = Time(self._datetime, format='isot')
+            system_time = Time(self._systemDatetime, format='isot')
+            engine_delta = self._timeRate * (Time.now() - system_time)
+            return engine_time + engine_delta
         else:
             raise ValueError("'field' should be one of: 'ra', 'dec', "
                              "'fov', or 'datetime'")
