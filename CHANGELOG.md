@@ -1,4 +1,11 @@
-# rc: minor bump
+# rc: micro bump
+
+- Update the bundled NPM package to fix various corner cases with multiple
+  and/or evolving views of the Jupyter widget.
+- Set the initial widget view to the Galactic Center, so that it's more obvious
+  that everything is working when you start up the widget.
+
+# pypa:pywwt 0.10.0 (2020-10-21)
 
 - Fix build for traitlets >= 5.0 and in fact start requiring it.
 - Update minimum Python version to 3.7, as required by traitlets 5.
