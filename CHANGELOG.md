@@ -1,3 +1,10 @@
+# pypa:pywwt 0.10.1 (2020-10-22)
+
+- Update the bundled NPM package to fix various corner cases with multiple
+  and/or evolving views of the Jupyter widget.
+- Set the initial widget view to the Galactic Center, so that it's more obvious
+  that everything is working when you start up the widget.
+
 # pypa:pywwt 0.10.0 (2020-10-21)
 
 - Fix build for traitlets >= 5.0 and in fact start requiring it.
