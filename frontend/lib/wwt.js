@@ -55,7 +55,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
         _dec : 0.0,
         _fov : 60.0,
         _datetime : '2017-03-09T16:30:00',
-
+        _viewConnected : false,
     }),
 
     initialize: function() {
@@ -85,12 +85,22 @@ var WWTModel = widgets.DOMWidgetModel.extend({
     // well set up to do that right now, especially given the possible presence
     // of multiple views.
     updateViewData: function () {
+        var needUpdate = false;
         var window = this.getCurrentWindow();
-        if (window === null) {
-            return;
+        var viewConnected = (window !== null);
+
+        if (this.get('_viewConnected') != viewConnected) {
+            this.set({ '_viewConnected': viewConnected });
+            needUpdate = true;
         }
 
-        var needUpdate = false;
+        if (window === null) {
+            if (needUpdate) {
+                this.save_changes();
+            }
+
+            return;
+        }
 
         if (this.get('_ra') != window.wwt.getRA()) {
             this.set({ '_ra': window.wwt.getRA() });
