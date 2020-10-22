@@ -56,10 +56,8 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     # Step 0
 
     wwt.foreground_opacity = 1.
-
-    # The crosshairs are currently broken on Mac/Linux but work on Windows.
-    # For consistency, we turn it off here so that the results are the same
-    # on all platforms.
+    gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='icrs')
+    wwt.center_on_coordinates(gc, 60 * u.deg)
     wwt.crosshairs = False
 
     wait_for_test(wwt, WAIT_TIME, for_render=True)
@@ -84,7 +82,6 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     wwt.constellation_boundary_color = 'red'
     wwt.constellation_figure_color = 'green'
     wwt.constellation_selection_color = 'blue'
-
     wwt.constellation_boundaries = True
     wwt.constellation_figures = True
 
@@ -97,8 +94,6 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     # Step 3
 
     wwt.constellation_selection = True
-
-    wwt.crosshairs = False
     wwt.ecliptic = True
     wwt.grid = True
 
