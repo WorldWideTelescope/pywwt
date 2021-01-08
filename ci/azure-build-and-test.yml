@@ -66,6 +66,7 @@ jobs:
         set -euo pipefail
         echo "##vso[task.setvariable variable=DISPLAY;]:99"
         set -x
+        sudo apt-get update
         sudo apt-get install -y \
           libxkbcommon-x11-0 \
           libgl1-mesa-dev
@@ -144,6 +145,7 @@ jobs:
       set -euo pipefail
       echo "##vso[task.setvariable variable=DISPLAY;]:99"
       set -x
+      sudo apt-get update
       sudo apt-get install -y \
         libxkbcommon-x11-0 \
         libgl1-mesa-dev

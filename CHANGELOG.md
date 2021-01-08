@@ -1,3 +1,8 @@
+# pypa:pywwt 0.10.2 (2021-01-08)
+
+- Fix URL identification for JupyerLab 3
+- CI fixes
+
 # pypa:pywwt 0.10.1 (2020-10-22)
 
 - Update the bundled NPM package to fix various corner cases with multiple
