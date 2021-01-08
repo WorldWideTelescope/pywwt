@@ -1,5 +1,10 @@
 # rc: micro bump
 
+- Fix URL identification for JupyerLab 3
+- CI fixes
+
+# pypa:pywwt 0.10.1 (2020-10-22)
+
 - Update the bundled NPM package to fix various corner cases with multiple
   and/or evolving views of the Jupyter widget.
 - Set the initial widget view to the Galactic Center, so that it's more obvious
