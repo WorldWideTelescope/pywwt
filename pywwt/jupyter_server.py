@@ -62,6 +62,37 @@ class WWTFileHandler(IPythonHandler):
         self.finish(content)
 
 
+# January 2021: Derived from notebook.notebookapp.list_running_servers, with a
+# fix for JupyterLab 3.x (or something recent??), where the JSON files start
+# with `jpserver` not `nbserver`.
+def _list_running_servers_jl3():
+    import io
+    import json
+    from notebook.utils import check_pid
+    from jupyter_core.paths import jupyter_runtime_dir
+    import os.path
+    import re
+
+    runtime_dir = jupyter_runtime_dir()
+
+    if not os.path.isdir(runtime_dir):
+        return
+
+    for file_name in os.listdir(runtime_dir):
+        # here is the fix:
+        if re.match('nbserver-(.+).json', file_name) or re.match('jpserver-(.+).json', file_name):
+            with io.open(os.path.join(runtime_dir, file_name), encoding='utf-8') as f:
+                info = json.load(f)
+
+            if ('pid' in info) and check_pid(info['pid']):
+                yield info
+            else:
+                try:
+                    os.unlink(os.path.join(runtime_dir, file_name))
+                except OSError:
+                    pass
+
+
 def _compute_notebook_server_base_url():
     """Figure out the base_url of the current Jupyter notebook server.
 
@@ -73,7 +104,6 @@ def _compute_notebook_server_base_url():
     """
     import ipykernel
     import json
-    from notebook.notebookapp import list_running_servers
     import re
     import requests
 
@@ -85,7 +115,7 @@ def _compute_notebook_server_base_url():
 
     # Now, check all of the running servers known on this machine. We have to
     # talk to each server to figure out if it's ours or somebody else's.
-    running_server_info = list(list_running_servers())
+    running_server_info = list(_list_running_servers_jl3())
 
     for s in running_server_info:
         # We need an API token that in most cases is provided in the runtime
