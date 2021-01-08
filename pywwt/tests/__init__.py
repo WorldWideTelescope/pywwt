@@ -30,7 +30,7 @@ if QT_INSTALLED:
         if not WEBENGINE and 'GDI' in _cached_opengl_renderer:
             FRAMEWORK += '_gdi'
         elif WEBENGINE and 'could not be' in _cached_opengl_renderer:
-            FRAMEWORK_VARIANT = '_llvmpipe'
+            FRAMEWORK_VARIANT = '_windows'
     elif sys.platform.startswith('darwin'):
         FRAMEWORK += '_osx'
 
