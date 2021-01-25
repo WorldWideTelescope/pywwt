@@ -27,18 +27,17 @@
     </script>
 
     <script>
-
       var wwt;
       var wwt_ready = 0;
 
       function initialize() {
         wwt = wwtlib.WWTControl.initControl6(
           'WWTCanvas',  // divId
-          true,  // startRenderLoop
+          true,   // startRenderLoop
           -28.9,  // startLat (deg) -- galactic center
-          93.6,  // startLng (deg) -- RA = 360 - lng
+          93.6,   // startLng (deg) -- RA = 360 - lng
           240.0,  // startZoom -- 6 * (viewport height in deg)
-          'Sky',  // startMode
+          'Sky'   // startMode
         );
         wwt.add_ready(wwtReady);
         wwt.add_ready(keyScroll);
