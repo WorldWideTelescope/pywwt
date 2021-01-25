@@ -1,4 +1,4 @@
-version_info = (0, 10, 2, 'final', 0)  # cranko project-version tuple
+version_info = (0, 10, 3, 'final', 0)  # cranko project-version tuple
 
 _specifier_ = {'alpha': '.a', 'beta': '.b', 'candidate': '.rc', 'final': '', 'dev': '.dev'}
 
