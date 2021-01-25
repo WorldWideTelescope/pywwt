@@ -1,7 +1,15 @@
 # rc: micro bump
 
-- Fix URL identification for JupyerLab 3
+- Attempt to fix the Qt widget on macOS computers. It appears that a recent
+  update to our HTML introduced some JavaScript syntax that the Qt framework
+  doesn't allow.
+
+
+# pypa:pywwt 0.10.2 (2021-01-08)
+
+- Fix URL identification for JupyterLab 3
 - CI fixes
+
 
 # pypa:pywwt 0.10.1 (2020-10-22)
 
@@ -9,6 +17,7 @@
   and/or evolving views of the Jupyter widget.
 - Set the initial widget view to the Galactic Center, so that it's more obvious
   that everything is working when you start up the widget.
+
 
 # pypa:pywwt 0.10.0 (2020-10-21)
 
