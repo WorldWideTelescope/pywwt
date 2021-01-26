@@ -1,5 +1,12 @@
 # rc: micro bump
 
+- Fix the sizing of circle annotations upon creation
+- Include the latest bundled version of the JavaScript frontend, which should
+  hopefully fix the widget in JupyterLab 3.x.
+
+
+# pypa:pywwt 0.10.3 (2021-01-25)
+
 - Attempt to fix the Qt widget on macOS computers. It appears that a recent
   update to our HTML introduced some JavaScript syntax that the Qt framework
   doesn't allow.
