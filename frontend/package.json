@@ -4,7 +4,7 @@
     "url": "https://github.com/WorldWideTelescope/pywwt/issues"
   },
   "dependencies": {
-    "@jupyter-widgets/base": "^2  || ^3",
+    "@jupyter-widgets/base": "^2  || ^3 || ^4",
     "underscore": "^1"
   },
   "description": "AAS WorldWide Telescope from Python",
