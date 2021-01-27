@@ -45,7 +45,16 @@ class Annotation(HasTraits):
 
         self.parent._send_msg(event='annotation_create',
                               id=self.id, shape=self.shape)
-        super(Annotation, self).__init__(**kwargs)
+
+        # Normally we would pass the kwargs off to super().__init__(), but it
+        # seems that doing so bypasses the validation functions, which (at a
+        # minimum) causes problems for circles because it doesn't normalize
+        # their radius measurements to the proper units. Just apply the settings
+        # manually, which invokes the validation machinery properly.
+        super(Annotation, self).__init__()
+
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
         self.parent._annotation_set.add(self)
 
@@ -103,7 +112,7 @@ class Circle(Annotation):
     line_width = AstropyQuantity(1 * u.pixel,
                                  help='Assigns line width in pixels '
                                       '(:class:`~astropy.units.Quantity`)').tag(wwt='lineWidth')
-    radius = AstropyQuantity(80 * u.pixel,
+    radius = AstropyQuantity(1 * u.degree,
                              help='Sets the radius for the circle '
                                   '(:class:`~astropy.units.Quantity`)').tag(wwt='radius')
 

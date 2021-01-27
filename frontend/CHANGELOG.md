@@ -1,3 +1,8 @@
+# npm:pywwt 1.1.1 (2021-01-27)
+
+- Proclaim compatibility with the 4.x series of @jupyter-widgets/base. This
+  should get the widget to work in the JupyterLab 3.x series.
+
 # npm:pywwt 1.1.0 (2020-10-22)
 
 - The Jupyter widget has reworked multi-view management to behave much better
