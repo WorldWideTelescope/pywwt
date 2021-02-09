@@ -1,27 +1,8 @@
-# rc: micro bump
+# See elsewhere for changelog
 
-- Proclaim compatibility with the 4.x series of @jupyter-widgets/base. This
-  should get the widget to work in the JupyterLab 3.x series.
+This project’s release notes are curated from the Git history of its main
+branch. You can find them by looking at [the version of this file on the
+`release` branch][branch] or the [GitHub release history][gh-releases].
 
-# npm:pywwt 1.1.0 (2020-10-22)
-
-- The Jupyter widget has reworked multi-view management to behave much better
-  when there are multiple views for the same widget model, or when views are
-  hidden and recreated.
-- The Jupyter widget now exposes a _viewConnected trait to indicate the case
-  when the widget has been created, but there are no active views presented to
-  the user. This isn't wired up to the Python layer, but it could be useful
-  later.
-
-# npm:pywwt 1.0.0 (2020-10-21)
-
-- Address #258 by transmitting WWT clock information using a reference point and
-  a rate, rather than constantly transmitting the current time. Dramatically
-  reduces JS <=> Python traffic.
-- Tidy up the JavaScript files.
-
-# npm:pywwt 0.9.1 (2020-10-18)
-
-- First release with version number decoupled from the pywwt Python package.
-- No code chages, but internal reorganizations including the use of Cranko for
-  release automation.
+[branch]: https://github.com/WorldWideTelescope/pywwt/blob/release/frontend/CHANGELOG.md
+[gh-releases]: https://github.com/WorldWideTelescope/pywwt/releases

@@ -1,4 +1,14 @@
-# rc: micro bump
+# rc: minor bump
+
+- First-draft support for the JupyterLab application. Rather then providing the
+  WWT view as a widget tied to a specific notebook cell, the application
+  provides it as a freestanding window that can exist separately from any one
+  notebook or cell. This app is developed independently as a Vue app, so it's a
+  lot easier to add native UI to it, as compared to the HTML widget that we have
+  to provide in our plugin here.
+
+
+# pypa:pywwt 0.10.4 (2021-01-27)
 
 - Fix the sizing of circle annotations upon creation
 - Include the latest bundled version of the JavaScript frontend, which should
