@@ -1,23 +1,28 @@
-# This file contains the defintion of the Python part of the WWT Jupyter
+# This file contains the definition of the Python part of the WWT Jupyter
 # widget. Note that we don't tag each trait from BaseWWTWidget as sync=True
 # because we instead use JSON messages to transmit any changes between the
 # Python and Javascript parts so that we can re-use this for the Qt client.
 
 from astropy.time import Time
 import ipywidgets as widgets
+import numpy as np
 from traitlets import Unicode, Float, default, link, directional_link
 
 from ipyevents import Event as DOMListener
+from ipykernel.comm import Comm
 
 from .core import BaseWWTWidget
 from .layers import ImageLayer
 from .jupyter_server import serve_file
 
-__all__ = ['WWTJupyterWidget']
+__all__ = ['WWTJupyterWidget', 'WWTLabApplication', 'connect_to_app']
 
 _npm_version = '^1.0.0'  # cranko internal-req npm:pywwt
 VIEW_MODULE_VERSION = _npm_version
 MODEL_MODULE_VERSION = _npm_version
+
+R2D = 180 / np.pi
+R2H = 12 / np.pi
 
 dom_listener = DOMListener()
 
@@ -195,3 +200,116 @@ class JupyterImageLayer(ImageLayer):
 
     def _vrange_slider_updated(self, change):
         self.vmin, self.vmax = change['new']
+
+
+class WWTLabApplication(BaseWWTWidget):
+    """
+    A handle the WWT JupyterLab application.
+
+    While other parts of pywwt create "widgets", bound to variables running
+    inside Python notebooks, this class represents a connection to the
+    standalone "application", which exists in JupyterLab independently of any
+    one specific notebook. The Python API is the same, it's just that the JSON
+    messages we send are routed to the separate application rather than our own
+    iframe.
+
+    """
+    _comm = None
+    _controls = None
+
+    # View state that gets synchronized back to us. This is the same scheme as
+    # the widget, just with manual synchronization over our comm to the viewer
+    # app.
+    _raRad = 0.0
+    _decRad = 0.0
+    _fovDeg = 60.0
+    _engineTime = Time('2017-03-09T12:30:00', format='isot')
+    _systemTime = Time('2017-03-09T12:30:00', format='isot')
+    _timeRate = 1.0
+
+    def __init__(self):
+        self._comm = Comm(target_name='@wwtelescope/jupyterlab:research', data={})
+        self._comm.on_msg(self._on_message_received)
+        self._comm.open()
+        self._send_msg(event='trigger')  # get bidirectional updates flowing
+
+        BaseWWTWidget.__init__(self)
+
+    def _send_msg(self, **kwargs):
+        self._comm.send(kwargs)
+
+    def _on_message_received(self, msg):
+        payload = msg['content']['data']
+        if payload['type'] != 'wwt_view_state':
+            return
+
+        try:
+            self._raRad = float(payload['raRad'])
+            self._decRad = float(payload['decRad'])
+            self._fovDeg = float(payload['fovDeg'])
+            self._engineTime = Time(payload['engineClockISOT'], format='isot')
+            self._systemTime = Time(payload['systemClockISOT'], format='isot')
+            self._timeRate = float(payload['engineClockRateFactor'])
+        except ValueError:
+            pass  # report a warning somehow?
+
+    def _serve_file(self, filename, extension=''):
+        return serve_file(filename, extension=extension)
+
+    def _get_view_data(self, field):
+        if field == 'ra':
+            return self._raRad * R2H
+        elif field == 'dec':
+            return self._decRad * R2D
+        elif field == 'fov':
+            return self._fovDeg
+        elif field == 'datetime':
+            engine_delta = self._timeRate * (Time.now() - self._systemTime)
+            return self._engineTime + engine_delta
+        else:
+            raise ValueError('internal problem: unexpected "field" value')
+
+    def _create_image_layer(self, **kwargs):
+        """Returns a specialized subclass of ImageLayer that has some extra hooks for
+        creating UI control points.
+
+        """
+        return JupyterImageLayer(parent=self, **kwargs)
+
+    @property
+    def layer_controls(self):
+        if self._controls is None:
+            opacity_slider = widgets.FloatSlider(value=self.foreground_opacity,
+                                                 min=0, max=1, readout=False)
+            foreground_menu = widgets.Dropdown(options=self.available_layers,
+                                               value=self.foreground)
+            background_menu = widgets.Dropdown(options=self.available_layers,
+                                               value=self.background)
+            link((opacity_slider, 'value'), (self, 'foreground_opacity'))
+            link((foreground_menu, 'value'), (self, 'foreground'))
+            link((background_menu, 'value'), (self, 'background'))
+            self._controls = widgets.HBox([background_menu, opacity_slider, foreground_menu])
+        return self._controls
+
+
+def connect_to_app():
+    """
+    Connect to a WWT application running inside a JupyterLab computational
+    environment.
+
+    For the time being, you must have opened the AAS WorldWide Telescope app
+    inside JupyterLab. You can do this by clicking the large WWT icon in the
+    JupyterLab launcher, or by invoking the "AAS WorldWide Telescope" command.
+    You can open the JupyterLab command palette by typing
+    Control/Command-Shift-C.
+
+    Returns
+    -------
+    app : :class:`~pywwt.jupyter.WWTLabApplication`
+        A connection to the WWT application running in JupyterLab.
+
+    """
+    # This function just exists because it seems nicer from a UX standpoint to
+    # have the user call a function with this name, than to create a "connection
+    # object".
+    return WWTLabApplication()

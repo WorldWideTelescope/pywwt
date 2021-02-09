@@ -56,6 +56,11 @@ class WWTFileHandler(IPythonHandler):
         # Do our best to set an appropriate Content-Type.
         self.set_header('Content-Type', mimetypes.guess_type(filename)[0])
 
+        # Add wide-open CORS headers to allow external WWT apps to access data.
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Access-Control-Allow-Methods', 'GET,HEAD')
+        self.set_header('Access-Control-Allow-Headers', 'Content-Disposition,Content-Encoding,Content-Length,Content-Type')
+
         with open(path, 'rb') as f:
             content = f.read()
 
