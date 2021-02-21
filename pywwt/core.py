@@ -17,7 +17,7 @@ from .utils import ensure_utc
 import json
 import shutil
 import tempfile
-
+DEFAULT_CATALOG_HIPS_URL = 'http://localhost:8888/wwt/available_layers.xml'
 DEFAULT_SURVEYS_URL = 'https://worldwidetelescope.github.io/pywwt/surveys.xml'
 
 VIEW_MODES_2D = ['sky', 'sun', 'mercury', 'venus', 'earth', 'moon', 'mars',
@@ -41,6 +41,7 @@ class BaseWWTWidget(HasTraits):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
+        self._available_catalog_hips_layers = get_imagery_layers(DEFAULT_CATALOG_HIPS_URL)
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
         self._instruments = Instruments()
@@ -398,6 +399,13 @@ class BaseWWTWidget(HasTraits):
         A list of the layers that are currently available in the viewer.
         """
         return sorted(self._available_layers)
+
+    @property
+    def available_catalog_hips_layers(self):
+        """
+        A list of the catalog HiPS layers that are currently available in the viewer.
+        """
+        return sorted(self._available_catalog_hips_layers)
 
     foreground = Unicode('Digitized Sky Survey (Color)',
                          help='The layer to show in the foreground (`str`)').tag(wwt=None, wwt_reset=True)
