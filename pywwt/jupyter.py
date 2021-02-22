@@ -3,6 +3,9 @@
 # because we instead use JSON messages to transmit any changes between the
 # Python and Javascript parts so that we can re-use this for the Qt client.
 
+import time
+import json
+
 from astropy.time import Time
 import ipywidgets as widgets
 import numpy as np
@@ -58,6 +61,8 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         dom_listener.source = self
         dom_listener.prevent_default_action = True
         dom_listener.watched_events = ['wheel']
+        self._msg_id = 0
+        self.messageTimeOut = 10.0
         self._controls = None
 
     @default('layout')
@@ -66,6 +71,40 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
 
     def _send_msg(self, **kwargs):
         self.send(kwargs)
+
+    def _send_msg_and_wait(self, **kwargs):
+        content = dict()
+        for key, value in kwargs.items(): 
+            content[key] = value
+        self._msg_id += 1
+        content['msgId'] = self._msg_id
+
+        super().send(content)
+        startTime = time.time()
+        while time.time() - startTime < self.messageTimeOut:
+            val = self._loopMessageQueue()
+            if val is not None:
+                if val == "No return value":
+                    return None
+                else:
+                    return val
+            time.sleep(0.1)
+        raise(TimeoutError("Request timed out"))
+
+    def _loopMessageQueue(self):
+        for stream in self.comm.kernel.shell_streams:
+            stream.flush()
+        for item in self.comm.kernel.msg_queue._queue:
+            msg = item[3][1][6]
+            msg = json.loads(str(msg))
+            if int(msg['data']['content']['msgId']) == self._msg_id:
+                self.comm.kernel.msg_queue._queue.remove(item)
+                self.comm.kernel.msg_queue.task_done()
+
+                if 'response' in msg['data']['content'].keys():
+                    return msg['data']['content']['response']
+                else:
+                    return "No return value"
 
     def _serve_file(self, filename, extension=''):
         return serve_file(filename, extension=extension)

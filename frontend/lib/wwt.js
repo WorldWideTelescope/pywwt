@@ -56,6 +56,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
         _fov : 60.0,
         _datetime : '2017-03-09T16:30:00',
         _viewConnected : false,
+        _view_module_ids : []
     }),
 
     initialize: function() {
@@ -232,9 +233,13 @@ var WWTModel = widgets.DOMWidgetModel.extend({
 // reset :-(
 var WWTView = widgets.DOMWidgetView.extend({
     initialize: function() {
+		this.modelId = "wwtFrame" + Math.random().toString(36).substr(2,10);
+		var moduleIds = this.model.get('_view_module_ids')
+		moduleIds.push(this.modelId)
+		this.model.set('_view_module_ids', moduleIds)
         // TODO: I this could just be put in render now?
         var div = document.createElement("div");
-        div.innerHTML = "<iframe width='100%' height='400' style='border: none;' src='" + this.model.wwtBaseUrl + "wwt/wwt.html'></iframe>"
+        div.innerHTML = "<iframe width='100%' height='400' id='" + this.modelId + "'style='border: none;' src='" + this.model.wwtBaseUrl + "wwt/wwt.html'></iframe>"
         this.el.appendChild(div);
         this.model.registerViewDiv(div);
 
@@ -246,6 +251,16 @@ var WWTView = widgets.DOMWidgetView.extend({
         // because we just want to use the same JSON messaging interface for
         // the Qt widget and the Jupyter widget.
         this.model.on('msg:custom', this.handle_custom_message, this);
+
+        this.oldMsgId = null
+
+		window.addEventListener("message",(e)=>{
+			var data = e.data;
+			if(this.oldMsgId != data.msgId){
+				this.oldMsgId = data.msgId
+				this.model.send(data,null,null);
+			}
+		});
     },
 
     // Note: processPhosphorMessage is needed for Jupyter Lab <2 and
@@ -361,6 +376,19 @@ var WWTView = widgets.DOMWidgetView.extend({
         if (msg['url'] != null && msg['url'].slice(4) == '/wwt') {
             msg['url'] = this.model.wwtBaseUrl + msg['url'];
         }
+        modelIds = this.model.get('_view_module_ids')
+        for (var i = modelIds.length-1; i >= 0; i--) {
+            currActiveId = modelIds[i]; 
+            if(document.getElementById(currActiveId) != null){
+                break;
+            }
+        }
+        if(this.oldMsgIdToFront != msg.msgId){
+            if(this.modelId == currActiveId){
+                this.oldMsgIdToFront = msg.msgId;
+                window.postMessage(msg, this.model.wwtBaseUrl)
+            }
+        }
 
         // If the user has created a view for our widget and then hidden it, our
         // iframe gets removed and all sorts of things stop working (e.g.,
@@ -371,13 +399,6 @@ var WWTView = widgets.DOMWidgetView.extend({
         // meantime, try to keep things limping along by swallowing exceptions
         // here.
 
-        try {
-            window.wwt_apply_json_message(window.wwt, msg);
-        } catch (e) {
-            console.log('failed to process custom_message for a pyWWT Jupyter widget view:');
-            console.log(msg);
-            (console.error || console.log).call(console, e.stack || e);
-        }
     },
 });
 

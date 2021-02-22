@@ -299,7 +299,7 @@ function wwt_apply_json_message(wwt, msg) {
       break;
 
     case 'table_layer_set':
-      var layer = wwt.layers[msg['id']];
+      var layer = wwt.getLayers()[msg['id']];
       var name = msg['setting'];
 
       //if (name.includes('Column')) { // compatability issues?
@@ -335,6 +335,62 @@ function wwt_apply_json_message(wwt, msg) {
       break;
   }
 }
+
+window.addEventListener("message", (event) => {
+    var msg = event.data;
+    var returnMsg = { msgId : msg.msgId }
+    switch(msg.event) {
+      case 'get_table':
+        returnMsg.response = window.wwt.getLayers()[msg.id].getTableDataInView();
+        event.source.postMessage(returnMsg, event.origin);
+        break;
+      case 'add_catalog_hips':
+        window.wwt.addCatalogHipsByNameWithCallback(msg.name, ()=>{
+          returnMsg.response = window.wwt.getLayers()[msg.name];
+          event.source.postMessage(returnMsg, event.origin);
+        })
+        break;
+      case 'remove_catalog_hips':
+        window.wwt.removeCatalogHipsByName(msg.name);
+        break;
+      case 'get_ra_unit_from_value':
+        returnMsg.response = Object.keys(wwtlib.RAUnits)[msg['value']].slice(0, -1);
+        event.source.postMessage(returnMsg, event.origin);
+        break;
+      case 'get_coord_type_from_value':
+        returnMsg.response = Object.keys(wwtlib.CoordinatesTypes)[msg['value']];
+        event.source.postMessage(returnMsg, event.origin);
+        break;
+      case 'get_alt_type_from_value':
+        returnMsg.response = Object.keys(wwtlib.AltTypes)[msg['value']];
+        event.source.postMessage(returnMsg, event.origin);
+        break;
+      case 'get_alt_unit_from_value':
+        returnMsg.response = Object.keys(wwtlib.AltUnits)[msg['value'] - 1].slice(0, -1);
+        event.source.postMessage(returnMsg, event.origin);
+        break;
+      case 'get_color_mapper_from_argb':
+        returnMsg.response = wwtlib.ColorMapContainer.fromArgbList([msg['value']]);
+        event.source.postMessage(returnMsg, event.origin);
+        break;
+      case 'get_color_from_hex':
+        returnMsg.response = wwtlib.Color.fromHex[msg['value']];
+        event.source.postMessage(returnMsg, event.origin);
+        break;
+      case 'get_plot_type_from_value':
+        returnMsg.response = Object.keys(wwtlib.PlotTypes)[msg['value']];
+        event.source.postMessage(returnMsg, event.origin);
+        break;
+      case 'get_marker_scale_from_value':
+        returnMsg.response = Object.keys(wwtlib.MarkerScales)[msg['value']];
+        event.source.postMessage(returnMsg, event.origin);
+        break;
+      default:
+        window.wwt_apply_json_message(window.wwt, msg);
+        break;
+    }
+
+});
 
 // We need to do this so that wwt_apply_json_message is available as a global
 // function in the Jupyter widgets code.

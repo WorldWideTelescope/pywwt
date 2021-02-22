@@ -78,6 +78,10 @@ class BaseWWTWidget(HasTraits):
         # This method should be overridden and should send the message to WWT
         pass
 
+    def _send_msg_and_wait(self, **kwargs):
+        # This method should be overridden and should send the message to WWT
+        pass
+
     def _get_view_data(self, field):
         # This method should be overwritten to get the RA, Dec, and FoV of the current view
         pass
