@@ -963,7 +963,7 @@ class CatalogHipsLayer(TableLayer):
 
 
         self.id = name
-        self.get_table()
+        self.get_visible_data_in_view()
 
         self.coord_type = parent._send_msg_and_wait(event='get_coord_type_from_value', value=layerFromEngine['_coordinatesType$1'])
 
@@ -1009,8 +1009,54 @@ class CatalogHipsLayer(TableLayer):
         self.notify_changes = True
 
 
-    def get_table(self):
-        tableFromEngine = self.parent._send_msg_and_wait(event='get_table', id=self.id)
+    def get_visible_data_in_view(self):
+        """
+        Get a table with all currently visible sources. 
+        This will omit sources which are too faint to show at the current zoom level. 
+        To fetch every source in the field of view, use get_all_data_in_view 
+
+        Returns
+        -------
+        table : :class:`~astropy.table.Table`
+        """
+        tableFromEngine = self.parent._send_msg_and_wait(event='get_visible_data_in_view', id=self.id)
+        self.table = Table.read(tableFromEngine, format='ascii.tab')
+        return self.table
+
+    def get_all_data_in_view(self, limit=True):
+        """
+        Get a table with all sources in this field of view. 
+        This operation may take significant time at large field of views.
+        By default the operation will abort after ~5 minutes, and return whaterver
+        has finished loading by then. This limitation can be overriden by setting 
+        limit=False. This allows the sources to be loaded faster, but the 
+        operation is only abortable by restarting the kernel and reloading 
+        the browser. Use with care.
+
+        Parameters
+        ----------
+        limit : bool, optional
+            Setting this to False will force the operation to run until completion.
+            This allows the sources to be loaded faster, but the 
+            operation is only abortable by restarting the kernel and reloading 
+            the browser. Use with care.
+            By default limit is set to True, which causes the operation to return 
+            a truncated table after ~5 minutes, if it has not already finished by then. 
+
+        Returns
+        -------
+        table : :class:`~astropy.table.Table`
+        """
+        timeout = 60 * 7
+        if not limit:
+            timeout = 60 * 60 * 24
+        response = self.parent._send_msg_and_wait(event='get_all_data_in_view', id=self.id, limit=limit, timeout=timeout)
+        tableFromEngine = response['table']
+        if response['aborted'] == True:
+            warnings.warn("The result is truncated. The operation was aborted because"
+                " it took too long. You can override this limitation by setting the limit"
+                " flag to False. Warning: This creates a non abortable operation, which may"
+                " take a very long time for large field of views.")
         self.table = Table.read(tableFromEngine, format='ascii.tab')
         return self.table
 
@@ -1029,7 +1075,7 @@ class CatalogHipsLayer(TableLayer):
         return 'Catalog HiPS are can only be updated by changing the field of view'
 
     def _get_table(self):
-        return self.get_table()
+        return self.get_visible_data_in_view()
 
     def __str__(self):
         return 'Catalog HiPS Layer: {0}'.format(self.id)

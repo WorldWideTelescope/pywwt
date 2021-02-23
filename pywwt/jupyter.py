@@ -62,7 +62,7 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         dom_listener.prevent_default_action = True
         dom_listener.watched_events = ['wheel']
         self._msg_id = 0
-        self.messageTimeOut = 10.0
+        self.messageTimeout = 15.0
         self._controls = None
 
     @default('layout')
@@ -73,15 +73,19 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         self.send(kwargs)
 
     def _send_msg_and_wait(self, **kwargs):
+        timeout = self.messageTimeout
         content = dict()
         for key, value in kwargs.items(): 
-            content[key] = value
+            if(key == "timeout"):
+                timeout = value
+            else:
+                content[key] = value
         self._msg_id += 1
         content['msgId'] = self._msg_id
 
         super().send(content)
         startTime = time.time()
-        while time.time() - startTime < self.messageTimeOut:
+        while time.time() - startTime < timeout:
             val = self._loopMessageQueue()
             if val is not None:
                 if val == "No return value":
@@ -97,7 +101,8 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         for item in self.comm.kernel.msg_queue._queue:
             msg = item[3][1][6]
             msg = json.loads(str(msg))
-            if int(msg['data']['content']['msgId']) == self._msg_id:
+            if ('data' in msg and 'content' in msg['data'] 
+                and int(msg['data']['content']['msgId']) == self._msg_id):
                 self.comm.kernel.msg_queue._queue.remove(item)
                 self.comm.kernel.msg_queue.task_done()
 

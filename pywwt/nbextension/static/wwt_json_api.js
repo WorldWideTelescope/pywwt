@@ -340,9 +340,15 @@ window.addEventListener("message", (event) => {
     var msg = event.data;
     var returnMsg = { msgId : msg.msgId }
     switch(msg.event) {
-      case 'get_table':
+      case 'get_visible_data_in_view':
         returnMsg.response = window.wwt.getLayers()[msg.id].getTableDataInView();
         event.source.postMessage(returnMsg, event.origin);
+        break;
+      case 'get_all_data_in_view':
+        window.wwt.getCatalogHipsDataInView(msg.id, msg.limit, (response)=>{
+          returnMsg.response = response;
+          event.source.postMessage(returnMsg, event.origin);
+        });
         break;
       case 'add_catalog_hips':
         window.wwt.addCatalogHipsByNameWithCallback(msg.name, ()=>{
