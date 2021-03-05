@@ -70,6 +70,8 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         return widgets.Layout(height='400px', align_self='stretch')
 
     def _send_msg(self, **kwargs):
+        self._msg_id += 1
+        kwargs['msgId'] = self._msg_id
         self.send(kwargs)
 
     def _send_msg_and_wait(self, **kwargs):
