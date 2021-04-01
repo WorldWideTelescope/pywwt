@@ -53,11 +53,12 @@ If you run into any issues, please open an issue [here](https://github.com/World
 The AAS WorldWide Telescope (WWT) system, including pywwt, is a [.NET
 Foundation][dnf] project. Work on WWT and pywwt has been supported by the
 [American Astronomical Society][aas] (AAS), the US [National Science Foundation][nsf]
-(grants [1550701] and [1642446]), the [Gordon and Betty Moore Foundation][moore], and
+(grants [1550701], [1642446], and [2004840]), the [Gordon and Betty Moore Foundation][moore], and
 [Microsoft][msft].
 
 [nsf]: https://www.nsf.gov/
 [1550701]: https://www.nsf.gov/awardsearch/showAward?AWD_ID=1550701
 [1642446]: https://www.nsf.gov/awardsearch/showAward?AWD_ID=1642446
+[2004840]: https://www.nsf.gov/awardsearch/showAward?AWD_ID=2004840
 [moore]: https://www.moore.org/
 [msft]: https://microsoft.com/
