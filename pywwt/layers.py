@@ -1180,8 +1180,6 @@ class ImageLayer(HasTraits):
 
     @observe('cmap')
     def _on_cmap_change(self, *value):
-        if(not self.notify_changes):
-            return
         self._cmap_version += 1
         self.parent._send_msg(event='image_layer_cmap',
                               id=self.id,
@@ -1190,9 +1188,6 @@ class ImageLayer(HasTraits):
                               version=self._cmap_version)
 
     def _on_trait_change(self, changed):
-        if(not self.notify_changes):
-            return
-
         if changed['name'] in ('stretch', 'vmin', 'vmax'):
             if self.vmin is not None and self.vmax is not None:
                 stretch_id = VALID_STRETCHES.index(self.stretch)
