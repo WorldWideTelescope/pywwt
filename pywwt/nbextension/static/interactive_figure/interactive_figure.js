@@ -172,7 +172,7 @@ function loadImageLayer(layerInfo) {
                                stretchInfo['vmin'],
                                stretchInfo['vmax']);
         wwtLayer.set_colorMapperName(stretchInfo['cmap']);
-        layer.getFitsImage().transparentBlack = false;
+        layer.get_imageSet().get_fitsProperties().transparentBlack = false;
         var settings = layerInfo['settings'];
         for (name in settings) {
             wwt_apply_json_message(wwt, {

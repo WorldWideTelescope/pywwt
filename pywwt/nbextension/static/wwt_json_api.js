@@ -212,7 +212,7 @@ function wwt_apply_json_message(wwt, msg) {
         if (msg['version'] > layer._stretch_version) {
           layer.setImageScalePhysical(msg['stretch'], msg['vmin'], msg['vmax']);
           layer._stretch_version = msg['version'];
-          layer.getFitsImage().transparentBlack = false;
+          layer.get_imageSet().get_fitsProperties().transparentBlack = false;
         }
 
       }
