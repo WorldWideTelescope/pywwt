@@ -172,7 +172,17 @@ function loadImageLayer(layerInfo) {
                                stretchInfo['vmin'],
                                stretchInfo['vmax']);
         wwtLayer.set_colorMapperName(stretchInfo['cmap']);
-        layer.get_imageSet().get_fitsProperties().transparentBlack = false;
+
+        // old transparentBlack API, @wwtelescope/engine <= 7.10. With
+        // newer engines, this is a harmless no-op.
+        layer.getFitsImage().transparentBlack = false;
+        
+        // new transparentBlack API
+        var imageset = layer.get_imageSet();
+        if (typeof imageset['get_fitsProperties'] !== 'undefined') {
+            imageset.get_fitsProperties().transparentBlack = false;
+        }
+        
         var settings = layerInfo['settings'];
         for (name in settings) {
             wwt_apply_json_message(wwt, {
