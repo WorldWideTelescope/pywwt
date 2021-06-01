@@ -212,7 +212,16 @@ function wwt_apply_json_message(wwt, msg) {
         if (msg['version'] > layer._stretch_version) {
           layer.setImageScalePhysical(msg['stretch'], msg['vmin'], msg['vmax']);
           layer._stretch_version = msg['version'];
+
+          // old transparentBlack API, @wwtelescope/engine <= 7.10. With
+          // newer engines, this is a harmless no-op.
           layer.getFitsImage().transparentBlack = false;
+          
+          // new transparentBlack API
+          var imageset = layer.get_imageSet();
+          if (typeof imageset['get_fitsProperties'] !== 'undefined') {
+              imageset.get_fitsProperties().transparentBlack = false;
+          }
         }
 
       }
