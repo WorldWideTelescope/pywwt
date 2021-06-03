@@ -1,3 +1,14 @@
+# pypa:pywwt 0.11.1 (2021-06-03)
+
+- Add compatibility with the change in how the engine handles the
+  transparentBlack setting for FITS datasets. The code is written to maintain
+  compatibility with older versions of the engine as well (@imbasimba).
+- Update some test-suite images to account for the changes in the new
+  WebGL-based fits rendering (@pkgw).
+- Temporarily disable checking of outgoing links in the docs, since
+  Matplotlib currently has a problem that causes the check to fail (@pkgw).
+
+
 # pypa:pywwt 0.11.0 (2021-02-09)
 
 - First-draft support for the JupyterLab application. Rather then providing the

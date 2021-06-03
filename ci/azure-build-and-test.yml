@@ -185,6 +185,9 @@ jobs:
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
 
+  # 2021 June: we used to finish with a `make linkcheck`, but Matplotlib's
+  # intersphinx file currently causes that step to fail in a way that we can't
+  # do anything about. We should put it back once that's straightened out.
   - bash: |
       set -euo pipefail
       source activate-conda.sh
@@ -194,7 +197,6 @@ jobs:
       pip install astropy-sphinx-theme
       cd docs
       make html
-      make linkcheck
     displayName: Build docs
 
 - job: codestyle
