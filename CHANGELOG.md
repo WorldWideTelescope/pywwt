@@ -1,4 +1,11 @@
-# rc: minor bump
+# rc: micro bump
+
+- Add backwards-compatible support for the WebGL engine's new FITS
+  implementation, which changes the way that the "transparentBlack" setting has
+  to be handled.
+
+
+# pypa:pywwt 0.11.0 (2021-02-09)
 
 - First-draft support for the JupyterLab application. Rather then providing the
   WWT view as a widget tied to a specific notebook cell, the application
