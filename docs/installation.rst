@@ -4,54 +4,172 @@ Installation
 Try without installing
 ----------------------
 
-You can try out the pywwt Jupyter widget without installing anything locally
-by using one of our example notebooks, served from the cloud! Visit `the
-pywwt-notebooks repository`_ on GitHub for quick links to the latest examples.
+You can try out the pywwt Jupyter widget without installing anything locally by
+using one of our example notebooks, served from the cloud! `Click here
+<https://bit.ly/pywwt-notebooks>`_ to launch our examples using the great
+`MyBinder <https://mybinder.org/>`_ service. These notebooks are defined in `the
+pywwt-notebooks repository`_ on GitHub, which has further links and information
+about these samples.
 
 .. _the pywwt-notebooks repository: https://github.com/WorldWideTelescope/pywwt-notebooks#readme
 
 
-Installing pywwt with conda (recommended)
------------------------------------------
+Install pywwt with conda-forge (recommended)
+--------------------------------------------
 
-If you use the `Anaconda Distribution <https://www.anaconda.com/products/individual>`_
-(or `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_), you can install the latest
-release of pywwt using::
+The recommended way to install pywwt is using the `conda`_ package manager and
+packages provided by the `conda-forge`_ project. If you’re already using a
+conda-based Python environment, you can install the latest release of pywwt with:
 
-    conda install -c wwt pywwt
+.. code-block:: sh
 
-This will automatically install pywwt, its `dependencies`_, and
-will enable the Jupyter extension.
+    conda install -c conda-forge pywwt
 
-If you want to use WWT inside Jupyter Lab, see `Using Jupyter Lab`_.
+.. _conda: https://conda.io/
 
-Installing pywwt with pip
--------------------------
+.. _conda-forge: https://conda-forge.org/
+
+This will install pywwt, its `dependencies`_, and the Jupyter extension. **If
+you want to use pywwt inside JupyterLab** — which we heartily recommend — see
+`Set Up pywwt’s JupyterLab Integration`_ below.
+
+We recommend that you `permanently enable conda-forge`_ in your Python
+environment to ensure that your packages are self-consistent and get the latest
+updates. Be advised that activating conda-forge may update a whole bunch of your
+software at once, which might be something to avoid right before a proposal
+deadline.
+
+.. _permanently enable conda-forge: https://conda-forge.org/docs/user/introduction.html#how-can-i-install-packages-from-conda-forge
+
+If you aren’t using a conda-based Python environment, it’s easy to set one up.
+The `Anaconda Distribution <https://www.anaconda.com/products/individual>`_ is
+popular and widely supported, or you can use `Miniforge
+<https://github.com/conda-forge/miniforge#install>`_ or `Miniconda
+<https://docs.conda.io/en/latest/miniconda.html>`_ for a smaller download. These
+environments install in a fully self-contained manner, so you can try them out
+without modifying your computer’s existing Python installation(s).
+
+
+Install pywwt with pip
+----------------------
 
 You can also install the latest release of pywwt using `pip
-<https://pip.pypa.io/en/stable/>`_::
+<https://pip.pypa.io/en/stable/>`_:
+
+.. code-block:: sh
 
     pip install pywwt
 
-If you want to use the Qt widget, you will need to install `PyQt
+While ``pip`` will automatically install most dependencies as needed, to use the
+Qt widget you will need to install `PyQt
 <https://riverbankcomputing.com/software/pyqt/intro>`_ and `PyQtWebEngine
-<https://riverbankcomputing.com/software/pyqtwebengine/intro>`_, or
-`PySide <https://wiki.qt.io/PySide>`_ separately.
+<https://riverbankcomputing.com/software/pyqtwebengine/intro>`_, or `PySide
+<https://wiki.qt.io/PySide>`_ separately. See the full list of dependencies
+below.
 
-If you want to use WWT inside Jupyter Lab, see `Using Jupyter Lab`_.
 
-Using Jupyter Lab
------------------
+Set Up pywwt’s JupyterLab Integration
+-------------------------------------
 
-If you want to use the PyWWT widget inside Jupyter Lab, and you haven't used it
-or other widgets before in Jupyter Lab, you may need to also run::
+To use pywwt in an interactive computing environment, we recommend combining it
+with `JupyterLab <https://jupyterlab.readthedocs.io/>`_. It’s worth noting that
+the JupyterLab web application is a separate thing than just “Jupyter,” the
+lower-level system upon which it is built. `Learn how to install JupyterLab here
+<https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html>`_.
 
-    jupyter labextension install @jupyter-widgets/jupyterlab-manager
+Once you’ve installed JupyterLab, the following commands should ensure that
+pywwt’s integration is set up:
 
-In addition, while Jupyter Lab should offer to do a re-build when it detects
-a new version of PyWWT, you can also do a build manually with::
+.. code-block:: sh
+
+    jupyter labextension install --no-build @jupyter-widgets/jupyterlab-manager
+    jupyter labextension install --no-build @wwtelescope/jupyterlab
+    jupyter lab build
+
+If the installation is successful, then the next time you start up JupyterLab
+the “Launcher” display should now contain an AAS WorldWide Telescope icon:
+
+.. image:: images/jlab-launcher.jpg
+   :scale: 50%
+   :alt: Screenshot of JupyterLab launcher with WWT icon
+   :align: center
+
+Clicking on this icon should open up the `WWT research app
+<https://docs.worldwidetelescope.org/research-app/latest/>`_, which you can then
+control using pywwt, via :func:`pywwt.jupyter.connect_to_app`.
+
+
+The pywwt Jupyter Widget
+------------------------
+
+If you are using a Jupyter notebook, either within JupyterLab or in “vanilla
+“Jupyter, you may also wish to set up pywwt’s “Jupyter widget” support. This
+integration *should* be set up automatically if you install pywwt through one of
+the standard methods, but it can be somewhat finicky. To check whether the
+widget is working, run the following Python commands inside of a Jupyter
+notebook::
+
+    from pywwt.jupyter import WWTJupyterWidget
+    wwt = WWTJupyterWidget()
+    wwt  # just "print" this variable on its own line
+
+If everything is working, you should see a WWT window open up inside your
+notebook, like so:
+
+.. image:: images/jupyter.jpg
+   :scale: 25%
+   :alt: Screenshot of Jupyter notebook with WWT widget
+   :align: center
+
+If you get any other result, some troubleshooting may be necessary.
+
+Troubleshooting the Widget Integration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The first thing to check is the “notebook extension”. Run:
+
+.. code-block:: sh
+
+    jupyter nbextension install --py --sys-prefix pywwt
+    jupyter nbextension enable --py --sys-prefix pywwt
+    jupyter nbextension list
+
+These commands should not report any error messages, and should indicate at the
+end that the ``pywwt`` extension is installed, enabled, and validated. The
+``ipyevents`` extension should also be available. Unfortunately, if there is a
+problem at this stage, there might be a lot of possible reasons. For help, try
+`filing an issue on our GitHub
+<https://github.com/WorldWideTelescope/pywwt/issues/new>`_ with a copy-paste of
+the output from the commands above.
+
+Next is the Jupyter “server extension”, which is controlled similarly but lacks
+an install step:
+
+.. code-block:: sh
+
+    jupyter serverextension enable --py --sys-prefix pywwt
+    jupyter serverextension list
+
+Here too, the commands should report that the ``pywwt`` extension is installed
+and enabled, without any apparent errors.
+
+Finally, if you wish to use the specific combination of the pywwt *widget* (not
+app) inside of JupyterLab (not vanilla Jupyter), you may also need to ensure
+that the secondary “lab extension” is installed:
+
+.. code-block:: sh
+
+    jupyter labextension install --no-build @jupyter-widgets/jupyterlab-manager
+    jupyter labextension install --no-build ipyevents
+    jupyter labextension install --no-build pywwt
+    jupyter labextension list
+
+If the commands seem to be OK but report that a “build” is needed, that is OK:
+
+.. code-block:: sh
 
     jupyter lab build
+
 
 Dependencies
 ------------
@@ -88,6 +206,7 @@ For the Jupyter widget, you will need:
 * `Jupyter <https://jupyter.org/>`__ 1.0.0 or later
 * `notebook <https://jupyter-notebook.readthedocs.io/en/stable/>`__ 5.0.0 or later
 
+
 Installing the developer version
 --------------------------------
 
@@ -114,11 +233,3 @@ And if you additionally want to use the widget in JupyterLab, run::
 
 Besides ``pywwt``, the ``@jupyter-widgets/jupyterlab-manager`` and
 ``ipyevents`` lab-extensions must be installed and enabled.
-
-If you use conda, you can alternatively install a recent developer version
-using::
-
-    conda install -c conda-forge -c wwt/label/dev pywwt
-
-This will install a version built in the last 24 hours so may not strictly be
-the absolute latest version in some cases.
