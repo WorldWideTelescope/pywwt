@@ -8,6 +8,9 @@ sphinx:
 
 python:
   version: 3.8
+  install:
+    - method: setuptools
+      path: .
 
 conda:
   environment: .readthedocs_env.yml
