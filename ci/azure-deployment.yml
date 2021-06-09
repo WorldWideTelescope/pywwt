@@ -31,9 +31,15 @@ jobs:
         setupCranko: true
         setupGit: true
     - bash: |
-        set -xeou pipefail
+        set -xeuo pipefail
         cranko release-workflow tag
         git push --tags origin release:release
+
+        if cranko show if-released --exit-code pypa:pywwt ; then
+          # Special "stable" branch that ReadTheDocs watches. It doesn't seem
+          # possible to customize the name.
+          git push origin release:stable
+        fi
       displayName: Tag and push
       env:
         GITHUB_TOKEN: $(GITHUB_TOKEN)
@@ -50,7 +56,7 @@ jobs:
         setupCranko: true
         setupGit: true
     - bash: |
-        set -xeou pipefail
+        set -xeuo pipefail
         cranko github create-releases
       displayName: Create GitHub releases
       env:
@@ -99,7 +105,7 @@ jobs:
     - bash: cd frontend && npm run build
       displayName: NPM build
     - bash: |
-        set -xeou pipefail
+        set -xeuo pipefail
         cranko npm foreach-released npm publish
       displayName: Publish to NPM
     - bash: shred ~/.npmrc
