@@ -8,12 +8,6 @@ sphinx:
 
 python:
   version: 3.8
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
-        - qt
 
 conda:
   environment: .readthedocs_env.yml

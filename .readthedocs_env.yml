@@ -9,6 +9,8 @@ dependencies:
   - ipywidgets
   - jupyterlab
   - jupyterlab_widgets
+  - krb5
+  - lxml
   - matplotlib
   - nodejs
   - notebook
@@ -17,7 +19,7 @@ dependencies:
   - pyopengl
   - pyqt
   - pyqtwebengine
-  - python=3.9
+  - python=3.8
   - qt
   - qtpy
   - reproject
