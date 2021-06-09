@@ -358,6 +358,15 @@ def install_npm(path=None, build_dir=None, source_dir=None, build_cmd='build', f
                           .format(npm_cmd[0]))
                 return
 
+            # ReadTheDocs currently (2021 Jun) uses a *super* old version of NPM
+            # that can't handle some of the metadata in our dependencies somehow
+            # (https://github.com/npm/cli/issues/681 ;
+            # https://github.com/readthedocs/readthedocs.org/issues/8249). Try to
+            # work around this by self-upgrading:
+            if os.environ.get('READTHEDOCS', ''):
+                log.info('Upgrading npm for ReadTheDocs workaround ...')
+                run(npm_cmd + ['install', '-g', 'npm@latest'])
+
             if force or is_stale(node_modules, pjoin(node_package, 'package.json')):
                 log.info('Installing build dependencies with npm.  This may '
                          'take a while...')
