@@ -1,3 +1,10 @@
+# pypa:pywwt 0.11.2 (2021-06-09)
+
+- Tidy up and modernize the installation instructions. Our ReadTheDocs defaults
+  to the "stable" version of the docs, so we need to make a release to get them
+  to show up for most folks.
+
+
 # pypa:pywwt 0.11.1 (2021-06-03)
 
 - Add compatibility with the change in how the engine handles the
