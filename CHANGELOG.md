@@ -1,5 +1,12 @@
 # rc: micro bump
 
+- Tidy up and modernize the installation instructions. Our ReadTheDocs defaults
+  to the "stable" version of the docs, so we need to make a release to get them
+  to show up for most folks.
+
+
+# pypa:pywwt 0.11.1 (2021-06-03)
+
 - Add compatibility with the change in how the engine handles the
   transparentBlack setting for FITS datasets. The code is written to maintain
   compatibility with older versions of the engine as well (@imbasimba).
