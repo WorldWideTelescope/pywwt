@@ -4,6 +4,7 @@ channels:
 
 dependencies:
   - astropy
+  - commonmark
   - ipyevents
   - ipython
   - ipywidgets
@@ -22,6 +23,7 @@ dependencies:
   - python=3.8
   - qt
   - qtpy
+  - recommonmark
   - reproject
   - scipy
   - setuptools
