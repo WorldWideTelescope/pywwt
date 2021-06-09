@@ -1,0 +1,33 @@
+name: pywwt_rtd
+channels:
+  - conda-forge
+
+dependencies:
+  - astropy
+  - commonmark
+  - ipyevents
+  - ipython
+  - ipywidgets
+  - jupyterlab
+  - jupyterlab_widgets
+  - krb5
+  - lxml
+  - matplotlib
+  - nodejs
+  - notebook
+  - numpydoc
+  - pip
+  - pyopengl
+  - pyqt
+  - pyqtwebengine
+  - python=3.8
+  - qt
+  - qtpy
+  - recommonmark
+  - reproject
+  - scipy
+  - setuptools
+  - sphinx
+  - sphinx-automodapi
+  - sphinx_rtd_theme
+  - widgetsnbextension

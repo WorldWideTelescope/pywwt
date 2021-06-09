@@ -1,3 +1,9 @@
+# pypa:pywwt 0.11.3 (2021-06-09)
+
+- Another attempt to get ReadTheDocs to update the "stable" version of the
+  documentation. We need to automate updating of the `stable` Git branch.
+
+
 # pypa:pywwt 0.11.2 (2021-06-09)
 
 - Tidy up and modernize the installation instructions. Our ReadTheDocs defaults
