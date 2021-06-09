@@ -1,5 +1,11 @@
 # rc: micro bump
 
+- Another attempt to get ReadTheDocs to update the "stable" version of the
+  documentation. We need to automate updating of the `stable` Git branch.
+
+
+# pypa:pywwt 0.11.2 (2021-06-09)
+
 - Tidy up and modernize the installation instructions. Our ReadTheDocs defaults
   to the "stable" version of the docs, so we need to make a release to get them
   to show up for most folks.
