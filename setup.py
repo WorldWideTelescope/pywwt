@@ -51,11 +51,11 @@ js_content_command = combine_commands(
 
 package_data_spec = {
     name: [
+        'interactive_figure/*.html',
+        'interactive_figure/*.js',
+        'labextension/*.tgz',
         'nbextension/static/*.*js*',
         'nbextension/static/*.html',
-        'nbextension/static/interactive_figure/*.html',
-        'nbextension/static/interactive_figure/*.js',
-        'labextension/*.tgz',
         'tests/data/*/*.png'
     ]
 }

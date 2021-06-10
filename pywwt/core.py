@@ -606,7 +606,7 @@ class BaseWWTWidget(HasTraits):
             figure_dir = dest
 
         nbexten_dir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
-        fig_src_dir = os.path.join(nbexten_dir, 'interactive_figure')
+        fig_src_dir = os.path.join(os.path.dirname(__file__), 'interactive_figure')
         shutil.copy(os.path.join(fig_src_dir, "index.html"), figure_dir)
 
         script_dir = os.path.join(figure_dir, 'scripts')
