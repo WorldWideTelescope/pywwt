@@ -1,2 +1,2 @@
-module.exports = require('./wwt.js');
+module.exports = require('./widget.js');
 module.exports['version'] = require('../package.json').version;
