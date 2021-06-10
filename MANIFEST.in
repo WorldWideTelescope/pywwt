@@ -24,9 +24,6 @@ prune docs/build
 prune docs/gh-pages
 prune docs/dist
 
-# Examples
-graft examples
-
 # Tests
 graft tests
 prune tests/build
