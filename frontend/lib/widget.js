@@ -34,6 +34,17 @@
 // - New views are understood to be created as "clean slates" compared to
 //   preexisting views. We could try to inherit properties of the current view,
 //   but don't right now.
+//
+// Communication between this frontend and the Jupyter backend (presumably
+// pywwt, but in principle other backends could be added) is done using
+// ipywidgets "custom" messages. Both the WWTModel and the WWTViews can listen
+// for these messages and react to them. Because the actual WWT viewer logic is
+// all embedded inside an <iframe>, the main role of the code here is to relay
+// those messages to iframe implementation using the `wwt_apply_json_message`
+// function that is set up by the `wwt.html` <iframe> implementation. The
+// message inteface is documented as [@wwtelescope/research-app-messages].
+//
+// [@wwtelescope/research-app-messages]: https://docs.worldwidetelescope.org/webgl-reference/latest/apiref/research-app-messages/modules/classicpywwt.html
 
 var widgets = require('@jupyter-widgets/base');
 var _ = require("underscore");
@@ -256,7 +267,7 @@ var WWTView = widgets.DOMWidgetView.extend({
         // We pass all messages via msg:custom rather than look for trait events
         // because we just want to use the same JSON messaging interface for
         // the Qt widget and the Jupyter widget.
-        this.model.on('msg:custom', this.handle_custom_message, this);
+        this.model.on('msg:custom', this.handleCustomMessage, this);
     },
 
     // Note: processPhosphorMessage is needed for Jupyter Lab <2 and
@@ -359,7 +370,7 @@ var WWTView = widgets.DOMWidgetView.extend({
         return window;
     },
 
-    handle_custom_message: function (msg) {
+    handleCustomMessage: function (msg) {
         var window = this.tryGetWindow();
         if (!window) {
             // TODO? we could queue up messages and replay them once the window
