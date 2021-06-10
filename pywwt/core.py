@@ -51,11 +51,11 @@ class BaseWWTWidget(HasTraits):
         self._annotation_set = set()
 
         # NOTE: we deliberately don't force _on_trait_change to be called here
-        # for the WWT settings, as the default values are hard-coded in wwt.html
-        # This is done because there is otherwise no reliable way of making sure
-        # that we would call _on_trait_change once WWT is ready to receive
-        # commands. There is a test in test_core.py that ensures that the
-        # defaults here are in sync with the defaults in wwt.html
+        # for the WWT settings, as the default values are hard-coded in the
+        # widget HTML. This is done because there is otherwise no reliable way
+        # of making sure that we would call _on_trait_change once WWT is ready
+        # to receive commands. There is a test in test_core.py that ensures that
+        # the defaults here are in sync with the defaults in the widget HTML.
 
     def _on_trait_change(self, changed):
         # This method gets called anytime a trait gets changed. Since this class
@@ -96,8 +96,8 @@ class BaseWWTWidget(HasTraits):
                                     'points with a fixed size '
                                     '(`bool`)').tag(wwt='actualPlanetScale', wwt_reset=True)
 
-    # TODO: need to add all settings as traits
-    # check wwt.html for comments on settings that are disabled below
+    # TODO: need to add all settings as traits check the widget HTML for
+    # comments on settings that are disabled below
 
     constellation_boundary_color = Color('blue',
                                          help='The color of the constellation '
@@ -605,15 +605,13 @@ class BaseWWTWidget(HasTraits):
                 os.makedirs(os.path.abspath(dest))
             figure_dir = dest
 
-        nbexten_dir = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
         fig_src_dir = os.path.join(os.path.dirname(__file__), 'interactive_figure')
         shutil.copy(os.path.join(fig_src_dir, "index.html"), figure_dir)
-
         script_dir = os.path.join(figure_dir, 'scripts')
         if not os.path.exists(script_dir):
             os.mkdir(script_dir)
-        shutil.copy(os.path.join(nbexten_dir, 'wwt_json_api.js'), script_dir)
         shutil.copy(os.path.join(fig_src_dir, "interactive_figure.js"), script_dir)
+        shutil.copy(os.path.join(os.path.dirname(__file__), 'web_static', 'widget', 'wwt_json_api.js'), script_dir)
 
         self._serialize_to_json(os.path.join(figure_dir, 'wwt_figure.json'), title, max_width, max_height)
 

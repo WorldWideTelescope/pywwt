@@ -17,6 +17,10 @@ prune **/node_modules
 graft pywwt/nbextension
 include pywwt/labextension/*.tgz
 
+# Other static resource files
+graft pywwt/interactive_figure
+graft pywwt/web_static
+
 # Documentation
 graft docs
 exclude docs/\#*

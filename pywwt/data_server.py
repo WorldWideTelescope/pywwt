@@ -1,4 +1,4 @@
-import os
+import os.path
 import time
 import asyncio
 import socket
@@ -23,7 +23,7 @@ def get_data_server(verbose=True):
         return _data_server
 
     from tornado.ioloop import IOLoop
-    from tornado.web import RequestHandler, Application
+    from tornado.web import RequestHandler, Application, StaticFileHandler
     from tornado.routing import PathMatches
 
     class WebServer(Application):
@@ -86,6 +86,9 @@ def get_data_server(verbose=True):
             self._files[hash] = os.path.abspath(filename)
             return 'http://' + self.host + ':' + str(self.port) + '/data/' + hash
 
+        def static_url(self, rest):
+            return 'http://' + self.host + ':' + str(self.port) + '/static/' + rest
+
         def get_file_contents(self, hash):
             with open(self._files[hash], 'rb') as f:
                 return f.read()
@@ -96,7 +99,13 @@ def get_data_server(verbose=True):
         async def get(self, hash):
             self.write(ds.get_file_contents(hash))
 
-    app = WebServer([(PathMatches(r"/data/(?P<hash>\S+)"), DataHandler)])
+    app = WebServer([
+        (PathMatches(r'/data/(?P<hash>\S+)'), DataHandler),
+        (r'/static/(.*)', StaticFileHandler, {
+            'path': os.path.join(os.path.dirname(__file__), 'web_static'),
+            'default_filename': 'index.html',
+        }),
+    ])
 
     ds.start(app)
 

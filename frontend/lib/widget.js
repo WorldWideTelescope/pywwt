@@ -41,7 +41,7 @@
 // for these messages and react to them. Because the actual WWT viewer logic is
 // all embedded inside an <iframe>, the main role of the code here is to relay
 // those messages to iframe implementation using the `wwt_apply_json_message`
-// function that is set up by the `wwt.html` <iframe> implementation. The
+// function that is set up by the widget HTML <iframe> implementation. The
 // message inteface is documented as [@wwtelescope/research-app-messages].
 //
 // [@wwtelescope/research-app-messages]: https://docs.worldwidetelescope.org/webgl-reference/latest/apiref/research-app-messages/modules/classicpywwt.html
@@ -256,7 +256,7 @@ var WWTView = widgets.DOMWidgetView.extend({
     initialize: function () {
         // TODO: I this could just be put in render now?
         var div = document.createElement("div");
-        div.innerHTML = "<iframe width='100%' height='400' style='border: none;' src='" + this.model.wwtBaseUrl + "wwt/wwt.html'></iframe>"
+        div.innerHTML = "<iframe width='100%' height='400' style='border: none;' src='" + this.model.wwtBaseUrl + "wwt/widget/'></iframe>"
         this.el.appendChild(div);
         this.model.registerViewDiv(div);
 

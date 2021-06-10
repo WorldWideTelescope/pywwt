@@ -55,8 +55,9 @@ package_data_spec = {
         'interactive_figure/*.js',
         'labextension/*.tgz',
         'nbextension/static/*.*js*',
-        'nbextension/static/*.html',
-        'tests/data/*/*.png'
+        'tests/data/*/*.png',
+        'web_static/widget/*.*js*',
+        'web_static/widget/*.html',
     ]
 }
 
@@ -66,7 +67,6 @@ local_jnbcfgdotd_path = pjoin('jupyter.d', 'jupyter_notebook_config.d')
 
 data_files_spec = [
     ('share/jupyter/nbextensions/pywwt', nb_path, '*.js*'),
-    ('share/jupyter/nbextensions/pywwt', nb_path, '*.html'),
     ('share/jupyter/lab/extensions', lab_path, '*.tgz'),
     ('etc/jupyter/nbconfig/notebook.d', local_nbdotd_path, 'pywwt.json'),
     ('etc/jupyter/jupyter_notebook_config.d' ,local_jnbcfgdotd_path, 'pywwt.json'),

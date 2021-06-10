@@ -19,12 +19,12 @@ from .data_server import get_data_server
 
 __all__ = ['WWTQtClient']
 
-WWT_JSON_FILE = os.path.join(os.path.dirname(__file__), 'nbextension', 'static', 'wwt_json_api.js')
+WWT_JSON_FILE = os.path.join(os.path.dirname(__file__), 'web_static', 'widget', 'wwt_json_api.js')
 
 with open(WWT_JSON_FILE) as f:
     WWT_JSON = f.read()
 
-WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), 'nbextension', 'static', 'wwt.html')
+WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), 'web_static', 'widget', 'index.html')
 
 
 class WWTWebEngineView(QWebEngineView):
@@ -212,8 +212,7 @@ class WWTQtClient(BaseWWTWidget):
         app = get_qapp()
 
         self._data_server = get_data_server()
-        self._data_server.serve_file(WWT_JSON_FILE, real_name=True)
-        wwt_url = self._data_server.serve_file(WWT_HTML_FILE, real_name=True)
+        wwt_url = self._data_server.static_url('widget/')
 
         self.widget = WWTQtWidget(url=wwt_url)
         if size is not None:
