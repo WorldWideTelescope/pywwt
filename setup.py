@@ -56,6 +56,7 @@ package_data_spec = {
         'labextension/*.tgz',
         'nbextension/static/*.*js*',
         'tests/data/*/*.png',
+        'tests/data/*.fits',
         'web_static/widget/*.*js*',
         'web_static/widget/*.html',
     ]
