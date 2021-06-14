@@ -4,6 +4,8 @@ from ..core import BaseWWTWidget
 from ..layers import SIZE_COLUMN_NAME, CMAP_COLUMN_NAME
 
 import numpy as np
+import os
+import tempfile
 
 from astropy.wcs import WCS
 from astropy.table import Table
@@ -32,6 +34,12 @@ class MockWWTWidget(BaseWWTWidget):
 
     def _serve_file(self, filename, extension=''):
         return filename
+
+    def smoketest_bundling(self):
+        dest = tempfile.NamedTemporaryFile(suffix='.zip', delete=False)
+        dest.close()
+        self.save_as_html_bundle(dest.name)
+        os.unlink(dest.name)
 
 
 def test_basic_serialization():
@@ -65,6 +73,8 @@ def test_basic_serialization():
 
     assert 'annotations' in test_state
     assert test_state['annotations'] == []
+
+    widget.smoketest_bundling()
 
 
 def test_widget_settings_serialization():
@@ -110,6 +120,8 @@ def test_widget_settings_serialization():
     state = widget.quick_serialize()
     assert state['wwt_settings'] == expected_settings
 
+    widget.smoketest_bundling()
+
 
 def test_mode_serialization():
     view_mode_map = {'sky': 'sky',
@@ -138,6 +150,8 @@ def test_mode_serialization():
         widget.set_view(in_mode)
         assert widget.quick_serialize()['view_settings']['mode'] == out_mode, \
             'Mismatch for requested mode: {0}'.format(in_mode)
+
+    widget.smoketest_bundling()
 
 
 def test_3d_serialization():
@@ -197,6 +211,8 @@ def test_3d_serialization():
         assert widget.quick_serialize()['view_settings']['tracked_object_id'] == obj_id, \
             "ID mismatch for {0}".format(obj_name)
 
+    widget.smoketest_bundling()
+
 
 def test_add_remove_annotation_serialization():
     widget = MockWWTWidget()
@@ -217,6 +233,8 @@ def test_add_remove_annotation_serialization():
     widget.clear_annotations()
     state = widget.quick_serialize()
     assert len(state['annotations']) == 0
+
+    widget.smoketest_bundling()
 
 
 def test_circle_annotation_serialization():
@@ -275,6 +293,8 @@ def test_circle_annotation_serialization():
     assert center['ra'] == 15
     assert center['dec'] == 16
 
+    widget.smoketest_bundling()
+
 
 def test_poly_annotation_setting():
     widget = MockWWTWidget()
@@ -313,6 +333,8 @@ def test_poly_annotation_setting():
     assert 'settings' in annot_state
     assert annot_state['settings'] == expected_settings
 
+    widget.smoketest_bundling()
+
 
 def test_line_annotation_setting():
     widget = MockWWTWidget()
@@ -347,6 +369,8 @@ def test_line_annotation_setting():
 
     assert 'settings' in annot_state
     assert annot_state['settings'] == expected_settings
+
+    widget.smoketest_bundling()
 
 
 def test_add_remove_layer_serialization():
@@ -391,6 +415,8 @@ def test_add_remove_layer_serialization():
     widget.reset()
     state = widget.quick_serialize()
     assert len(state['layers']) == 0
+
+    widget.smoketest_bundling()
 
 
 def test_table_setting_serialization():
@@ -452,6 +478,9 @@ def test_table_setting_serialization():
 
     assert widget.quick_serialize()['layers'][0]['settings'] == expected_settings
 
+    # Broken! We're trying to serialize a Quantity here.
+    # widget.smoketest_bundling()
+
 
 def test_image_setting_serialization():
     widget = MockWWTWidget()
@@ -487,3 +516,5 @@ def test_image_setting_serialization():
         layer.stretch = stretch_name
         assert widget.quick_serialize()['layers'][0]['stretch_info']['stretch'] == stretch_id, \
             "Stretch id mismatch for: {0}".format(stretch_name)
+
+    widget.smoketest_bundling()

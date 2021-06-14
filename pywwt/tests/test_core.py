@@ -5,7 +5,7 @@ from traitlets import TraitError
 
 from ..core import BaseWWTWidget, DEFAULT_SURVEYS_URL
 
-WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), '..', 'nbextension', 'static', 'wwt.html')
+WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), '..', 'web_static', 'widget', 'index.html')
 
 with open(WWT_HTML_FILE) as f:
     WWT_HTML = f.read()
@@ -13,7 +13,7 @@ with open(WWT_HTML_FILE) as f:
 
 def test_settings_in_html():
 
-    # Test to make sure that the initial settings listed in wwt.html match
+    # Test to make sure that the initial settings listed in the widget HTML match
     # the defaults for the traits.
 
     widget = BaseWWTWidget()

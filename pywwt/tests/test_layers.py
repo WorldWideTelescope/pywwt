@@ -3,9 +3,10 @@ from astropy.table import Table
 from astropy import units as u
 from astropy.coordinates import SkyCoord
 import numpy as np
+import os.path
 import pytest
 
-from . import assert_widget_image, wait_for_test
+from . import assert_widget_image, wait_for_test, DATA
 from ..conftest import RUNNING_ON_CI, QT_INSTALLED  # noqa
 from ..core import BaseWWTWidget
 from ..layers import TableLayer, guess_lon_lat_columns, guess_xyz_columns, csv_table_win_newline
@@ -491,3 +492,15 @@ def test_image_layer_gal(tmpdir, wwt_qt_client_isolated):
 
     wait_for_test(wwt, WAIT_TIME, for_render=True)
     assert_widget_image(tmpdir, wwt, 'image_layer_gal.png')
+
+
+@pytest.mark.skipif('not QT_INSTALLED')
+def test_image_layer_fitsfile(tmpdir, wwt_qt_client_isolated):
+    """Currently just a smoketest for the FITS data server."""
+
+    wwt = wwt_qt_client_isolated
+    wwt.layers.add_image_layer(os.path.join(DATA, 'm101_swiftx.fits'))
+    # Note: if we want to make this an image test, the wait time will need to be
+    # lengthy to give the viewer time to pan to the image. Unless we wire up a
+    # way to snap right there.
+    wait_for_test(wwt, WAIT_TIME, for_render=True)

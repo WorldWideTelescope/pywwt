@@ -1,3 +1,10 @@
+# npm:pywwt 1.2.0 (2021-06-14)
+
+- New release to track internal cleanups in the pywwt Python code; the built-in
+  widget HTML is now served from `$baseurl/wwt/widget/`, instead of
+  `$baseurl/wwt/wwt.html`.
+- Internal cleanups.
+
 # npm:pywwt 1.1.1 (2021-01-27)
 
 - Proclaim compatibility with the 4.x series of @jupyter-widgets/base. This

@@ -1,3 +1,12 @@
+# pypa:pywwt 0.12.0 (2021-06-14)
+
+- A variety of internal cleanups relating to the HTML and JS files that are
+  bundled with pywwt. These shouldn't affect anything user-visible, yet,
+  but we want to publish the cleaned-up code to validate that everything is
+  still working correctly.
+- Some improvements to the documentation and test suite.
+
+
 # pypa:pywwt 0.11.3 (2021-06-09)
 
 - Another attempt to get ReadTheDocs to update the "stable" version of the
