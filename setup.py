@@ -51,12 +51,14 @@ js_content_command = combine_commands(
 
 package_data_spec = {
     name: [
-        'nbextension/static/*.*js*',
-        'nbextension/static/*.html',
-        'nbextension/static/interactive_figure/*.html',
-        'nbextension/static/interactive_figure/*.js',
+        'interactive_figure/*.html',
+        'interactive_figure/*.js',
         'labextension/*.tgz',
-        'tests/data/*/*.png'
+        'nbextension/static/*.*js*',
+        'tests/data/*/*.png',
+        'tests/data/*.fits',
+        'web_static/widget/*.*js*',
+        'web_static/widget/*.html',
     ]
 }
 
@@ -66,7 +68,6 @@ local_jnbcfgdotd_path = pjoin('jupyter.d', 'jupyter_notebook_config.d')
 
 data_files_spec = [
     ('share/jupyter/nbextensions/pywwt', nb_path, '*.js*'),
-    ('share/jupyter/nbextensions/pywwt', nb_path, '*.html'),
     ('share/jupyter/lab/extensions', lab_path, '*.tgz'),
     ('etc/jupyter/nbconfig/notebook.d', local_nbdotd_path, 'pywwt.json'),
     ('etc/jupyter/jupyter_notebook_config.d' ,local_jnbcfgdotd_path, 'pywwt.json'),

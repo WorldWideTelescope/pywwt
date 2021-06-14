@@ -28,26 +28,36 @@ from notebook.base.handlers import IPythonHandler
 __all__ = ['load_jupyter_server_extension']
 
 
-STATIC_DIR = os.path.join(os.path.dirname(__file__), 'nbextension', 'static')
+STATIC_DIR = os.path.join(os.path.dirname(__file__), 'web_static')
 CONFIG = os.path.expanduser('~/.pywwt')
 
 
 class WWTFileHandler(IPythonHandler):
 
     def get(self, filename):
-
-        filename = os.path.basename(filename)
-
         # First we check if this is a standard file in the static directory
-        if os.path.exists(os.path.join(STATIC_DIR, filename)):
-            path = os.path.join(STATIC_DIR, filename)
+        static_path = os.path.join(STATIC_DIR, filename)
+
+        if os.path.exists(static_path):
+            if os.path.isdir(static_path):
+                path = os.path.join(static_path, 'index.html')
+                filename = 'index.html'  # for mime-type guess below
+            else:
+                path = static_path
         else:
             # If not, we open the config file which should contain a JSON
             # dictionary with filenames and paths.
+
+            # I believe that this transformation is not needed, but it's been in
+            # place for a while ...
+            filename = os.path.basename(filename)
+
             if not os.path.exists(CONFIG):
                 raise web.HTTPError(404)
+
             with open(CONFIG) as f:
                 config = json.load(f)
+
             if filename in config['paths']:
                 path = config['paths'][filename]
             else:
@@ -197,7 +207,6 @@ def serve_file(path, extension=''):
 
 
 def load_jupyter_server_extension(nb_server_app):
-
     web_app = nb_server_app.web_app
     host_pattern = '.*$'
 

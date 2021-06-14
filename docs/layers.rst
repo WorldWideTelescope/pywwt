@@ -243,8 +243,8 @@ You can remove a layer by either doing::
 
 or::
 
-    >>> wwt.layers.remove(layer)
+    >>> wwt.layers.remove_layer(layer)
 
 If you don't have a reference to the layer, you can always do::
 
-    >>> wwt.layers.remove(wwt.layers[0])
+    >>> wwt.layers.remove_layer(wwt.layers[0])

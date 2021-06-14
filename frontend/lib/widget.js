@@ -34,31 +34,48 @@
 // - New views are understood to be created as "clean slates" compared to
 //   preexisting views. We could try to inherit properties of the current view,
 //   but don't right now.
+//
+// Communication between this frontend and the Jupyter backend (presumably
+// pywwt, but in principle other backends could be added) is done using
+// ipywidgets "custom" messages. Both the WWTModel and the WWTViews can listen
+// for these messages and react to them. Because the actual WWT viewer logic is
+// all embedded inside an <iframe>, the main role of the code here is to relay
+// those messages to iframe implementation using the `wwt_apply_json_message`
+// function that is set up by the widget HTML <iframe> implementation. The
+// message inteface is documented as [@wwtelescope/research-app-messages].
+//
+// [@wwtelescope/research-app-messages]: https://docs.worldwidetelescope.org/webgl-reference/latest/apiref/research-app-messages/modules/classicpywwt.html
 
 var widgets = require('@jupyter-widgets/base');
 var _ = require("underscore");
 
 var version = require('./index').version;
 
+// The widget model class.
+//
+// For each ipywidget widget, there is one model in JS that synchronizes its
+// state with a Python model over Jupyter's comms. Our implementation is
+// unusually gnarly because the widget state is actually stored in the *view*,
+// inside the WWT iframe, as described above.
 var WWTModel = widgets.DOMWidgetModel.extend({
     defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
 
-        _model_name : 'WWTModel',
-        _model_module : 'pywwt',
-        _model_module_version : version,
+        _model_name: 'WWTModel',
+        _model_module: 'pywwt',
+        _model_module_version: version,
 
-        _view_name : 'WWTView',
-        _view_module : 'pywwt',
-        _view_module_version : version,
+        _view_name: 'WWTView',
+        _view_module: 'pywwt',
+        _view_module_version: version,
 
-        _ra : 0.0,
-        _dec : 0.0,
-        _fov : 60.0,
-        _datetime : '2017-03-09T16:30:00',
-        _viewConnected : false,
+        _ra: 0.0,
+        _dec: 0.0,
+        _fov: 60.0,
+        _datetime: '2017-03-09T16:30:00',
+        _viewConnected: false,
     }),
 
-    initialize: function() {
+    initialize: function () {
         WWTModel.__super__.initialize.apply(this, arguments);
 
         // NOTE: we deliberately call the following twice to make sure that it
@@ -156,14 +173,14 @@ var WWTModel = widgets.DOMWidgetModel.extend({
     // Make sure that we fully sync up our state with the current view. At the
     // moment, all we need to do is ensure that the clock is resynced.
     // Everything else is stateless.
-    forceViewDataUpdate: function() {
+    forceViewDataUpdate: function () {
         this.lastClockUpdate = 0;
     },
 
     // The views do all of the real work in message processing, but we do keep
     // an eye out to know when to force a clock update.
-    handleCustomMessage: function(msg) {
-        switch(msg['event']) {
+    handleCustomMessage: function (msg) {
+        switch (msg['event']) {
             case 'load_tour':
             case 'resume_tour':
             case 'pause_tour':
@@ -178,7 +195,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
     // There is a `views` attribute that is a dict of promises to known views,
     // but for our purposes it's easiest to DIY, since there is a lot of
     // unpredictable timing having to do with iframe creation and destruction.
-    registerViewDiv: function(div) {
+    registerViewDiv: function (div) {
         this.wwtViewDivs.splice(0, 0, div);
 
         // An update should be forced by getCurrentWindow() noticing that we're
@@ -189,7 +206,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
     // Note that this will still work if multiple views are created and
     // destroyed. It is hard to imagine that the list of divs will ever get long
     // enough to be an issue. Famous last words?
-    getCurrentWindow: function() {
+    getCurrentWindow: function () {
         for (var i = 0; i < this.wwtViewDivs.length; i++) {
             var iframe = this.wwtViewDivs[i].getElementsByTagName('iframe')[0];
             if (!iframe)
@@ -225,59 +242,64 @@ var WWTModel = widgets.DOMWidgetModel.extend({
     },
 });
 
+// The pywwt ipywidget view implementation.
+//
+// The views are the things that are actually connected to DOM elements. There
+// may be multiple views for one JS model.
+//
 // Note that a view can be hidden, e.g. by clicking to the left of its
 // containing cell. This removes the view element from the DOM but does not
 // destroy the element. However, re-adding an iframe to the DOM causes it to
 // reload, so hiding and re-showing a WWT view causes its internal state to be
 // reset :-(
 var WWTView = widgets.DOMWidgetView.extend({
-    initialize: function() {
+    initialize: function () {
         // TODO: I this could just be put in render now?
         var div = document.createElement("div");
-        div.innerHTML = "<iframe width='100%' height='400' style='border: none;' src='" + this.model.wwtBaseUrl + "wwt/wwt.html'></iframe>"
+        div.innerHTML = "<iframe width='100%' height='400' style='border: none;' src='" + this.model.wwtBaseUrl + "wwt/widget/'></iframe>"
         this.el.appendChild(div);
         this.model.registerViewDiv(div);
 
         WWTView.__super__.initialize.apply(this, arguments);
     },
 
-    render: function() {
+    render: function () {
         // We pass all messages via msg:custom rather than look for trait events
         // because we just want to use the same JSON messaging interface for
         // the Qt widget and the Jupyter widget.
-        this.model.on('msg:custom', this.handle_custom_message, this);
+        this.model.on('msg:custom', this.handleCustomMessage, this);
     },
 
     // Note: processPhosphorMessage is needed for Jupyter Lab <2 and
     // processLuminoMessage is needed for Jupyter Lab 2.0+
 
-    processPhosphorMessage: function(msg) {
+    processPhosphorMessage: function (msg) {
         // We listen for phosphor resize events so that when Jupyter Lab is
         // used, we adjust the canvas size to the tab/panel in Jupyter Lab.
         // See relayout for more details.
         WWTView.__super__.processPhosphorMessage.apply(this, arguments);
         switch (msg.type) {
-        case 'resize':
-        case 'after-show':
-            this.relayout();
-            break;
+            case 'resize':
+            case 'after-show':
+                this.relayout();
+                break;
         }
     },
 
-    processLuminoMessage: function(msg) {
+    processLuminoMessage: function (msg) {
         // We listen for lumino resize events so that when Jupyter Lab is
         // used, we adjust the canvas size to the tab/panel in Jupyter Lab.
         // See relayout for more details.
         WWTView.__super__.processLuminoMessage.apply(this, arguments);
         switch (msg.type) {
-        case 'resize':
-        case 'after-show':
-            this.relayout();
-            break;
+            case 'resize':
+            case 'after-show':
+                this.relayout();
+                break;
         }
     },
 
-    relayout: function() {
+    relayout: function () {
         // Only do resizing if we are not in the notebook context but in a
         // split panel context. We find this out by checking if one of the
         // parents of the current element has the jp-MainAreaWidget class --
@@ -333,7 +355,7 @@ var WWTView = widgets.DOMWidgetView.extend({
     // if this widget view is hidden and then re-shown, the iframe will reload,
     // and the contentWindow will acquire a new value. So we can't cache too
     // aggressively.
-    tryGetWindow: function() {
+    tryGetWindow: function () {
         var iframe = this.el.getElementsByTagName('iframe')[0];
         if (!iframe)
             return null;
@@ -348,7 +370,7 @@ var WWTView = widgets.DOMWidgetView.extend({
         return window;
     },
 
-    handle_custom_message: function(msg) {
+    handleCustomMessage: function (msg) {
         var window = this.tryGetWindow();
         if (!window) {
             // TODO? we could queue up messages and replay them once the window
@@ -366,7 +388,7 @@ var WWTView = widgets.DOMWidgetView.extend({
         // iframe gets removed and all sorts of things stop working (e.g.,
         // Chrome will refuse to send XMLHttpRequests anymore, and Firefox won't
         // set timeouts). If we let exceptions from these operations bubble up,
-        // they break the code that applies widget events to *all* views We
+        // they break the code that applies widget events to *all* views. We
         // should handle things better when widgets get hidden, but in the
         // meantime, try to keep things limping along by swallowing exceptions
         // here.
