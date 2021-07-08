@@ -27,7 +27,19 @@ VIEW_MODES_2D = ['sky', 'sun', 'mercury', 'venus', 'earth', 'moon', 'mars',
 VIEW_MODES_3D = ['solar system', 'milky way', 'universe']
 
 
-__all__ = ['BaseWWTWidget']
+__all__ = [
+    'BaseWWTWidget',
+    'DataPublishingNotAvailableError',
+]
+
+class DataPublishingNotAvailableError(Exception):
+    """
+    Raised if data need to be published, but publishing service isn't available.
+    """
+    def __init__(self, msg=None):
+        if msg is None:
+            msg = 'there is no mechanism available for pywwt to publish data to the WWT frontend'
+        super(DataPublishingNotAvailableError, self).__init__(msg)
 
 
 class BaseWWTWidget(HasTraits):
@@ -80,6 +92,48 @@ class BaseWWTWidget(HasTraits):
     def _get_view_data(self, field):
         # This method should be overwritten to get the RA, Dec, and FoV of the current view
         pass
+
+    def _serve_file(self, filename, extension=''):
+        """
+        Publish a single file in a web server, for use by the WWT frontend.
+
+        Parameters
+        ----------
+        filename : :class:`str`
+            The filesystem path of the data file
+        extension : optional :class:`str`, default ``""``
+            A custom filename extension to be included in the published URL.
+
+        Returns
+        -------
+        url : :class:`str`
+            A URL, possibly incomplete, at which the file is available.
+
+        Raises
+        ------
+        :exc:`DataPublishingNotAvailableError`
+            Raised if no data publishing service is available.
+
+        Notes
+        -----
+        Because the WWT engine is a web application, the only way to get data
+        into it is to make those data available over HTTP. This method provides
+        user Python code with a consistent interface for doing so. The actual
+        mechanism will depend on which backend (Qt, Jupyter) is being used.
+
+        The returned URL may be incomplete -- in Jupyter, it is not possible for
+        the kernel to know the ultimate URL at which its server is accessible.
+        Frontend code has to join these URLs with the server origin in order to
+        obtain an actually retrievable URL.
+
+        Data publishing may not be available -- in Jupyter, it requires a server
+        extension, which may not be installed.
+
+        The *extension* parameter is basically a hack to deal with some pywwt
+        temporary files that are created on-disk without the "right" extension.
+        """
+
+        raise DataPublishingNotAvailableError()
 
     def _create_image_layer(self, **kwargs):
         """This method can be overridden to return specialized subclasses of
