@@ -32,6 +32,7 @@ __all__ = [
     'DataPublishingNotAvailableError',
 ]
 
+
 class DataPublishingNotAvailableError(Exception):
     """
     Raised if data need to be published, but publishing service isn't available.
