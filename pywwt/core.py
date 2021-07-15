@@ -62,6 +62,7 @@ class BaseWWTWidget(HasTraits):
         self._last_sent_view_mode = 'sky'
         self.layers = LayerManager(parent=self)
         self._annotation_set = set()
+        self._seqNum = 0
 
         # NOTE: we deliberately don't force _on_trait_change to be called here
         # for the WWT settings, as the default values are hard-coded in the
@@ -85,6 +86,22 @@ class BaseWWTWidget(HasTraits):
             self._send_msg(event='setting_set',
                            setting=wwt_name,
                            value=new_value)
+
+    def _next_seq(self):
+        """
+        When we send requests to the app, we have to be mindful that replies
+        will arrive asynchronously. This means that we need to have some kind of
+        unique identifier for each "conversation" helping us understand their
+        individual progression. This field is called the "threadId" in the
+        research app messaging API.
+
+        To generate these unique IDs, we use a simple sequence number as needed.
+        The underlying message transport implementation should further uniquify
+        these IDs if needed -- this well depend on the message transport
+        mechanism.
+        """
+        self._seqNum += 1
+        return str(self._seqNum)
 
     def _send_msg(self, **kwargs):
         # This method should be overridden and should send the message to WWT
@@ -445,7 +462,11 @@ class BaseWWTWidget(HasTraits):
             The URL of the desired image collection.
         """
         self._available_layers.update(get_imagery_layers(url))
-        self._send_msg(event='load_image_collection', url=url)
+        self._send_msg(
+            event = 'load_image_collection',
+            url = url,
+            threadId = self._next_seq(),
+        )
 
     @property
     def available_layers(self):
