@@ -1,3 +1,4 @@
+import numpy as np
 import os
 from traitlets import HasTraits, observe, validate, TraitError
 from astropy import units as u
@@ -28,6 +29,7 @@ VIEW_MODES_3D = ['solar system', 'milky way', 'universe']
 
 
 __all__ = [
+    'AppBasedWWTWidget',
     'BaseWWTWidget',
     'DataPublishingNotAvailableError',
 ]
@@ -463,9 +465,9 @@ class BaseWWTWidget(HasTraits):
         """
         self._available_layers.update(get_imagery_layers(url))
         self._send_msg(
-            event = 'load_image_collection',
-            url = url,
-            threadId = self._next_seq(),
+            event='load_image_collection',
+            url=url,
+            threadId=self._next_seq(),
         )
 
     @property
@@ -746,3 +748,144 @@ class BaseWWTWidget(HasTraits):
 
     def _save_added_data(self, dir):
         self.layers._save_all_data_for_serialization(dir)
+
+
+R2D = 180 / np.pi
+R2H = 12 / np.pi
+
+
+class AppBasedWWTWidget(BaseWWTWidget):
+    """
+    A WWT widget based on the WWT research application.
+
+    While the basic pywwt widget was based on a hand-coded HTML/JS interface,
+    we're trying to build everything off of the more sophisticated "research
+    application" (@wwtelescope/research-app), which has a standardized control
+    interface (@wwtelescope/research-app-messages). This layer of code builds up
+    functionality based on that messaging interface.
+
+    Subclasses need to set up some kind of mechanism that will call
+    ``_on_app_ready`` when the app is ready to receive messages, and
+    ``_on_app_message_received`` when a message from the frontend app is
+    received. They need to implement ``_actually_send_msg`` which will deliver a
+    message to the app.
+
+    This functionality will eventually be merged into the ``BaseWWTWidget``
+    class.
+
+    """
+    _messageQueue = None
+
+    # View state that the frontend sends to us.
+    _raRad = 0.0
+    _decRad = 0.0
+    _fovDeg = 60.0
+    _engineTime = Time('2017-03-09T12:30:00', format='isot')
+    _systemTime = Time('2017-03-09T12:30:00', format='isot')
+    _timeRate = 1.0
+
+    def __init__(self):
+        # If _messageQueue is None, that means that the app is ready and we
+        # should send it messages. Otherwise, we need to queue up messages.
+        #
+        # Various property-get/set APIs should pay attention to this and refuse
+        # to run until the app is ready. For instance, the following code:
+        #
+        # ```
+        # wwt = connect_to_app()
+        # wwt.load_image_collection("http://example.com/myspecialcollection.wtml")
+        # wwt.background = "My special image"
+        # ```
+        #
+        # Won't work, because we need to wait for the image collection load to
+        # actually happen before the lookup of "My special image" will succeed.
+        self._messageQueue = []
+
+        super(AppBasedWWTWidget, self).__init__()
+
+        # pywwt's surveys.xml has slightly different contents than
+        # builtin-image-sets.wtml (for the time being), so we want to make sure
+        # that the frontend agrees with us about which named imagesets are
+        # available.
+        self._send_msg(
+            event='load_image_collection',
+            url=DEFAULT_SURVEYS_URL,
+            threadId=self._next_seq(),
+        )
+
+        # Forcibly set up the app's configuration to match the pywwt default.
+        # Most things align, but not everything. Note that fg/bg imageset names
+        # can't rely on items that are unique to DEFAULT_SURVEYS_URL since it
+        # won't necessarily have loaded by the time these messages reach the
+        # app.
+
+        self._send_msg(
+            event='set_background_by_name',
+            name=self.background,
+        )
+
+        self._send_msg(
+            event='set_foreground_by_name',
+            name=self.foreground,
+        )
+
+        self._send_msg(
+            event='set_foreground_opacity',
+            value=self.foreground_opacity * 100,
+        )
+
+    def _send_msg(self, **kwargs):
+        if self._messageQueue is None:
+            # The app is ready!
+            self._actually_send_msg(kwargs)
+        else:
+            self._messageQueue.append(kwargs)
+
+    def _actually_send_msg(self, payload):
+        """
+        Note that the API here is different than ``_send_msg``: we take a dict,
+        not ``**kwargs``.
+        """
+        raise NotImplementedError()
+
+    def _on_app_ready(self):
+        """
+        Try to keep it so that nothing bad will happen if this function ends up
+        being called multiple times.
+        """
+        queue = self._messageQueue
+        self._messageQueue = None
+
+        if queue is not None:
+            for msg in queue:
+                self._actually_send_msg(msg)
+
+    def _on_app_message_received(self, payload):
+        ptype = payload.get('type')
+        # some events don't have type but do have: pevent = payload.get('event')
+
+        if ptype != 'wwt_view_state':
+            return
+
+        try:
+            self._raRad = float(payload['raRad'])
+            self._decRad = float(payload['decRad'])
+            self._fovDeg = float(payload['fovDeg'])
+            self._engineTime = Time(payload['engineClockISOT'], format='isot')
+            self._systemTime = Time(payload['systemClockISOT'], format='isot')
+            self._timeRate = float(payload['engineClockRateFactor'])
+        except ValueError:
+            pass  # report a warning somehow?
+
+    def _get_view_data(self, field):
+        if field == 'ra':
+            return self._raRad * R2H
+        elif field == 'dec':
+            return self._decRad * R2D
+        elif field == 'fov':
+            return self._fovDeg
+        elif field == 'datetime':
+            engine_delta = self._timeRate * (Time.now() - self._systemTime)
+            return self._engineTime + engine_delta
+        else:
+            raise ValueError('internal problem: unexpected "field" value')

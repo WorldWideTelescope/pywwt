@@ -3,15 +3,14 @@
 # because we instead use JSON messages to transmit any changes between the
 # Python and Javascript parts so that we can re-use this for the Qt client.
 
-from astropy.time import Time
 import ipywidgets as widgets
 import numpy as np
-from traitlets import Unicode, Float, default, link, directional_link
+from traitlets import Unicode, default, link, directional_link
 
 from ipyevents import Event as DOMListener
 from ipykernel.comm import Comm
 
-from .core import BaseWWTWidget
+from .core import AppBasedWWTWidget
 from .layers import ImageLayer
 from .jupyter_server import serve_file
 
@@ -28,7 +27,7 @@ dom_listener = DOMListener()
 
 
 @widgets.register
-class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
+class WWTJupyterWidget(widgets.DOMWidget, AppBasedWWTWidget):
     """
     An AAS WorldWide Telescope Jupyter widget.
     """
@@ -40,51 +39,56 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     _view_module_version = Unicode(VIEW_MODULE_VERSION).tag(sync=True)
     _model_module_version = Unicode(MODEL_MODULE_VERSION).tag(sync=True)
 
-    # wwt=None tag needed to avoid linkage to 'wwt.settings.set_' type traits
-    # (see _on_trait_change() in core.py)
-    _ra = Float(0.0).tag(sync=True, wwt=None)
-    _dec = Float(0.0).tag(sync=True, wwt=None)
-    _fov = Float(60.0).tag(sync=True, wwt=None)
-    # this is the WWT engine's clock at last check-in:
-    _datetime = Unicode('2017-03-09T12:30:00').tag(sync=True, wwt=None)
-    # this is system clock at last check-in:
-    _systemDatetime = Unicode('2017-03-09T12:30:00').tag(sync=True, wwt=None)
-    # this is the rate at which the WWT engine clock proceeds relative to the system clock:
-    _timeRate = Float(1.0).tag(sync=True, wwt=None)
+    _appUrl = Unicode('').tag(sync=True)
 
     def __init__(self):
+        # In the future we might want to make it possible to use the WWT-hosted
+        # app instead of the bundled version.
+        #
+        # The JS frontend will automagically prepend the Jupyter base URL if
+        # needed and turn this into an absolute URL.
+        self._appUrl = '/wwt/research/'
+
         widgets.DOMWidget.__init__(self)
-        BaseWWTWidget.__init__(self)
         dom_listener.source = self
         dom_listener.prevent_default_action = True
         dom_listener.watched_events = ['wheel']
+
         self._controls = None
+
+        self.on_msg(self._on_ipywidgets_message)
+
+        AppBasedWWTWidget.__init__(self)
+
+    def _on_ipywidgets_message(self, widget, content, buffers):
+        """
+        Called when we receive a "custom" ipywidgets message.
+
+        NOTE: because this code is run asynchronously in Jupyter's comms
+        architecture, exceptions and printouts don't get reported to the user --
+        they just disappear. I don't know if there's a "right" way to address
+        that.
+        """
+
+        # Special message from the ipywidgets bridge to indicate
+        # when the first widget view is ready to accept messages.
+        if content.get('type') == 'wwt_jupyter_widget_ready':
+            self._on_app_ready()
+
+        self._on_app_message_received(content)
+
+    def _actually_send_msg(self, payload):
+        """
+        Send a message to the app. In ipywidgets this is easy.
+        """
+        self.send(payload)
 
     @default('layout')
     def _default_layout(self):
         return widgets.Layout(height='400px', align_self='stretch')
 
-    def _send_msg(self, **kwargs):
-        self.send(kwargs)
-
     def _serve_file(self, filename, extension=''):
         return serve_file(filename, extension=extension)
-
-    def _get_view_data(self, field):
-        if field == 'ra':
-            return self._ra
-        elif field == 'dec':
-            return self._dec
-        elif field == 'fov':
-            return self._fov
-        elif field == 'datetime':
-            engine_time = Time(self._datetime, format='isot')
-            system_time = Time(self._systemDatetime, format='isot')
-            engine_delta = self._timeRate * (Time.now() - system_time)
-            return engine_time + engine_delta
-        else:
-            raise ValueError("'field' should be one of: 'ra', 'dec', "
-                             "'fov', or 'datetime'")
 
     def _create_image_layer(self, **kwargs):
         """Returns a specialized subclass of ImageLayer that has some extra hooks for
@@ -202,7 +206,7 @@ class JupyterImageLayer(ImageLayer):
         self.vmin, self.vmax = change['new']
 
 
-class WWTLabApplication(BaseWWTWidget):
+class WWTLabApplication(AppBasedWWTWidget):
     """
     A handle the WWT JupyterLab application.
 
@@ -217,57 +221,25 @@ class WWTLabApplication(BaseWWTWidget):
     _comm = None
     _controls = None
 
-    # View state that gets synchronized back to us. This is the same scheme as
-    # the widget, just with manual synchronization over our comm to the viewer
-    # app.
-    _raRad = 0.0
-    _decRad = 0.0
-    _fovDeg = 60.0
-    _engineTime = Time('2017-03-09T12:30:00', format='isot')
-    _systemTime = Time('2017-03-09T12:30:00', format='isot')
-    _timeRate = 1.0
-
     def __init__(self):
         self._comm = Comm(target_name='@wwtelescope/jupyterlab:research', data={})
-        self._comm.on_msg(self._on_message_received)
+        self._comm.on_msg(self._on_comm_message_received)
         self._comm.open()
-        self._send_msg(event='trigger')  # get bidirectional updates flowing
 
-        BaseWWTWidget.__init__(self)
+        # TODO: the JLab extension needs to learn to use the ping-pong API and
+        # give us a ready notification.
+        self._on_app_ready()
 
-    def _send_msg(self, **kwargs):
-        self._comm.send(kwargs)
+        super(WWTLabApplication, self).__init__(self)
 
-    def _on_message_received(self, msg):
-        payload = msg['content']['data']
-        if payload['type'] != 'wwt_view_state':
-            return
+    def _on_comm_message_received(self, msg):
+        self._on_app_message_received(msg['content']['data'])
 
-        try:
-            self._raRad = float(payload['raRad'])
-            self._decRad = float(payload['decRad'])
-            self._fovDeg = float(payload['fovDeg'])
-            self._engineTime = Time(payload['engineClockISOT'], format='isot')
-            self._systemTime = Time(payload['systemClockISOT'], format='isot')
-            self._timeRate = float(payload['engineClockRateFactor'])
-        except ValueError:
-            pass  # report a warning somehow?
+    def _actually_send_msg(self, payload):
+        self._comm.send(payload)
 
     def _serve_file(self, filename, extension=''):
         return serve_file(filename, extension=extension)
-
-    def _get_view_data(self, field):
-        if field == 'ra':
-            return self._raRad * R2H
-        elif field == 'dec':
-            return self._decRad * R2D
-        elif field == 'fov':
-            return self._fovDeg
-        elif field == 'datetime':
-            engine_delta = self._timeRate * (Time.now() - self._systemTime)
-            return self._engineTime + engine_delta
-        else:
-            raise ValueError('internal problem: unexpected "field" value')
 
     def _create_image_layer(self, **kwargs):
         """Returns a specialized subclass of ImageLayer that has some extra hooks for
