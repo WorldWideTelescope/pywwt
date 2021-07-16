@@ -542,14 +542,22 @@ class BaseWWTWidget(HasTraits):
 
     def set_current_time(self, dt=None):
         """
-        Set the viewer time to match the real-world time.
+        Set WWT's internal clock.
 
         Parameters
         ----------
         dt : `~datetime.datetime` or `~astropy.time.Time`
-            The current time, either as a `datetime.datetime` object or an
+            A time, either as a `datetime.datetime` object or an
             astropy :class:`astropy.time.Time` object. If not specified, this
-            uses the current time
+            uses the current time.
+
+        Notes
+        -----
+        If you call this function and then immediately call
+        :meth:`get_current_time`, the results will not necessarily agree. This
+        is because this function has to send a command to WWT to tell it to
+        update its internal clock, and in some environments this operation is
+        not instantaneous.
         """
         # Ensure the object received is a datetime or Time; convert it to UTC
         utc_tm = ensure_utc(dt, str_allowed=False)
@@ -565,6 +573,15 @@ class BaseWWTWidget(HasTraits):
         ----------
         url : `str`
             The URL of the desired image collection.
+
+        Notes
+        -----
+        The request to load the image collection must be relayed to the WWT
+        JavaScript code, which will then issue a web request and process the
+        response that it gets. Therefore, you can't rely on this function to
+        take immediate effect; to use an image in a collection that you've
+        loaded, you'll need to pause and give WWT time to receive and process
+        your request.
         """
         self._available_layers.update(get_imagery_layers(url))
         self._send_msg(
