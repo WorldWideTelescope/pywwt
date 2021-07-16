@@ -52,6 +52,7 @@ class BaseWWTWidget(HasTraits):
     This class provides a common interface to modify settings and interact with
     the AAS WorldWide Telescope.
     """
+
     def __init__(self, **kwargs):
         super(BaseWWTWidget, self).__init__()
         self.observe(self._on_trait_change, type='change')
@@ -104,6 +105,8 @@ class BaseWWTWidget(HasTraits):
         """
         self._seqNum += 1
         return str(self._seqNum)
+
+    # Support methods that can/should be overridden by subclasses
 
     def _send_msg(self, **kwargs):
         # This method should be overridden and should send the message to WWT
@@ -165,22 +168,56 @@ class BaseWWTWidget(HasTraits):
         from .layers import ImageLayer
         return ImageLayer(self, **kwargs)
 
+    # Main attributes
+
+    current_mode = None
+    "The current rendering mode of the engine"
+
+    imagery = None
+    "Access to the engine's available imagesets"
+
+    @property
+    def instruments(self):
+        """
+        A list of instruments available for use in `add_fov`.
+        """
+        return self._instruments
+
+    layers = None
+    "Access to the active rendering layers"
+
+    solar_system = None
+    "Access to solar-system settings and data"
+
+    # Settings.
+    #
+    # TODO: implement the remaining ones that haven't been wired up yet.
+
     actual_planet_scale = Bool(False,
                                help='Whether to show planets to scale or as '
                                     'points with a fixed size '
                                     '(`bool`)').tag(wwt='actualPlanetScale', wwt_reset=True)
 
-    # TODO: need to add all settings as traits check the widget HTML for
-    # comments on settings that are disabled below
+    alt_az_grid = Bool(False, help='Whether to show an altitude-azimuth grid '
+                                   '(`bool`)').tag(wwt='showAltAzGrid', wwt_reset=True)
+
+    # alt_az_text = Bool(False,
+    #                    help='Whether to show labels for the altitude-azimuth grid\'s text '
+    #                         '(`bool`)').tag(wwt='showAltAzGridText', wwt_reset=True)
+
+    background = Unicode('Hydrogen Alpha Full Sky Map',
+                         help='The layer to show in the background (`str`)').tag(wwt=None, wwt_reset=True)
 
     constellation_boundary_color = Color('blue',
                                          help='The color of the constellation '
                                          'boundaries (`str` or '
                                          '`tuple`)').tag(wwt='constellationBoundryColor', wwt_reset=True)
+
     constellation_figure_color = Color('red',
                                        help='The color of the constellation '
                                             'figure (`str` or '
                                             '`tuple`)').tag(wwt='constellationFigureColor', wwt_reset=True)
+
     constellation_selection_color = Color('yellow',
                                           help='The color of the constellation '
                                                'selection (`str` or '
@@ -190,9 +227,11 @@ class BaseWWTWidget(HasTraits):
                                     help='Whether to show boundaries for the '
                                          'selected constellations '
                                          '(`bool`)').tag(wwt='showConstellationBoundries', wwt_reset=True)
+
     constellation_figures = Bool(False,
                                  help='Whether to show the constellations '
                                       '(`bool`)').tag(wwt='showConstellationFigures', wwt_reset=True)
+
     constellation_selection = Bool(False,
                                    help='Whether to only show boundaries for '
                                         'the selected constellation '
@@ -202,30 +241,127 @@ class BaseWWTWidget(HasTraits):
     #                               help='Whether to show pictures of the constellations\' '
     #                                    'mythological representations '
     #                                    '(`bool`)').tag(wwt='showConstellationPictures', wwt_reset=True)
+
     # constellation_labels = Bool(False,
     #                             help='Whether to show labelss for constellations '
     #                                  '(`bool`)').tag(wwt='showConstellationLabels', wwt_reset=True)
 
     crosshairs = Bool(False, help='Whether to show crosshairs at the center of '
                                   'the field (`bool`)').tag(wwt='showCrosshairs', wwt_reset=True)
+
     crosshairs_color = Color('white',
                              help='The color of the crosshairs '
                                   '(`str` or `tuple`)').tag(wwt='crosshairsColor', wwt_reset=True)
-    grid = Bool(False, help='Whether to show the equatorial grid '
-                            '(`bool`)').tag(wwt='showGrid', wwt_reset=True)
+
     ecliptic = Bool(False, help='Whether to show the path of the ecliptic '
                                 '(`bool`)').tag(wwt='showEcliptic', wwt_reset=True)
+
     ecliptic_grid = Bool(False, help='Whether to show a grid relative to the '
                                      'ecliptic plane (`bool`)').tag(wwt='showEclipticGrid', wwt_reset=True)
 
-    # TODO: need to add more methods here.
+    foreground = Unicode('Digitized Sky Survey (Color)',
+                         help='The layer to show in the foreground (`str`)').tag(wwt=None, wwt_reset=True)
 
-    def clear_annotations(self):
-        """
-        Clears all annotations from the current view.
-        """
-        self._annotation_set.clear()
-        return self._send_msg(event='clear_annotations')
+    foreground_opacity = Float(0.8, help='The opacity of the foreground layer '
+                                         '(`float`)').tag(wwt=None, wwt_reset=True)
+
+    galactic_mode = Bool(False,
+                         help='Whether the galactic plane should be horizontal '
+                              'in the viewer (`bool`)').tag(wwt='galacticMode', wwt_reset=True)
+
+    galactic_grid = Bool(False, help='Whether to show a grid relative to the '
+                                     'galactic plane (`bool`)').tag(wwt='showGalacticGrid', wwt_reset=True)
+
+    # galactic_text = Bool(False,
+    #                      help='Whether to show labels for the galactic grid\'s text '
+    #                           '(`bool`)').tag(wwt='showGalacticGridText', wwt_reset=True)
+
+    grid = Bool(False, help='Whether to show the equatorial grid '
+                            '(`bool`)').tag(wwt='showGrid', wwt_reset=True)
+
+    local_horizon_mode = Bool(False, help='Whether the view should be that of '
+                                          'a local latitude, longitude, and '
+                                          'altitude (`bool`)').tag(wwt='localHorizonMode', wwt_reset=True)
+
+    location_altitude = AstropyQuantity(0 * u.m,
+                                        help='The altitude of the viewing '
+                                             'location in local horizon mode '
+                                             '(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude', wwt_reset=True)
+
+    location_latitude = AstropyQuantity(47.633 * u.deg,
+                                        help='The latitude of the viewing '
+                                             'location in local horizon mode '
+                                             '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLat', wwt_reset=True)
+
+    location_longitude = AstropyQuantity(122.133333 * u.deg,
+                                         help='The longitude of the viewing '
+                                              'location in local horizon mode '
+                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLng', wwt_reset=True)
+
+    # Validators / observers for the settings above that need custom support.
+
+    @observe('background')
+    def _on_background_change(self, changed):
+        self._send_msg(event='set_background_by_name', name=changed['new'])
+        # Changing a layer resets the opacity, so we re-trigger the opacity setting
+        self._send_msg(event='set_foreground_opacity',
+                       value=self.foreground_opacity * 100)
+
+    @validate('background')
+    def _validate_background(self, proposal):
+        if proposal['value'] in self.available_layers:
+            return proposal['value']
+        else:
+            raise TraitError('background is not one of the available layers')
+
+    @observe('foreground')
+    def _on_foreground_change(self, changed):
+        self._send_msg(event='set_foreground_by_name', name=changed['new'])
+        # Changing a layer resets the opacity, so we re-trigger the opacity setting
+        self._send_msg(event='set_foreground_opacity',
+                       value=self.foreground_opacity * 100)
+
+    @validate('foreground')
+    def _validate_foreground(self, proposal):
+        if proposal['value'] in self.available_layers:
+            return proposal['value']
+        else:
+            raise TraitError('foreground is not one of the available layers')
+
+    @observe('foreground_opacity')
+    def _on_foreground_opacity_change(self, changed):
+        self._send_msg(event='set_foreground_opacity',
+                       value=changed['new'] * 100)
+
+    @validate('foreground_opacity')
+    def _validate_foreground_opacity(self, proposal):
+        if 0 <= proposal['value'] <= 1:
+            return proposal['value']
+        else:
+            raise TraitError('foreground_opacity should be between 0 and 1')
+
+    @validate('location_altitude')
+    def _validate_altitude(self, proposal):
+        if proposal['value'].unit.physical_type == 'length':
+            return proposal['value'].to(u.meter)
+        else:
+            raise TraitError('location_altitude not in units of length')
+
+    @validate('location_latitude')
+    def _validate_latitude(self, proposal):
+        if proposal['value'].unit.physical_type == 'angle':
+            return proposal['value'].to(u.degree)
+        else:
+            raise TraitError('location_latitude not in angle units')
+
+    @validate('location_longitude')
+    def _validate_longitude(self, proposal):
+        if proposal['value'].unit.physical_type == 'angle':
+            return proposal['value'].to(u.degree)
+        else:
+            raise TraitError('location_longitude not in angle units')
+
+    # Basic view controls
 
     def get_center(self):
         """
@@ -240,72 +376,6 @@ class BaseWWTWidget(HasTraits):
         Return the view's current field of view in degrees.
         """
         return self._get_view_data('fov') * u.deg
-
-    def load_tour(self, url):
-        """
-        Load and begin playing a tour based on the URL to a .wtt file from
-        the WorldWideTelescope website.
-
-        Parameters
-        ----------
-        url : `str`
-            The URL of the chosen tour -- must be a .wtt file.
-        """
-        # throw error if url doesn't end in .wtt
-        if url[-4:] == '.wtt':
-            self._send_msg(event='load_tour', url=url)
-        else:
-            raise ValueError('url must end in \'.wwt\'')
-
-    def pause_tour(self):
-        """
-        Pause a loaded tour.
-        """
-        self._send_msg(event='pause_tour')
-
-    def resume_tour(self):
-        """
-        Resume a paused tour.
-        """
-        self._send_msg(event='resume_tour')
-
-    def pause_time(self):
-        """
-        Pause the progression of time in the viewer.
-        """
-        self._send_msg(event='pause_time')
-
-    def play_time(self, rate=1):
-        """
-        Resume the progression of time in the viewer.
-
-        Parameters
-        ----------
-        rate : int or float
-            The rate at which time passes (1 meaning real-time)
-        """
-        self._send_msg(event='resume_time', rate=rate)
-
-    def get_current_time(self):
-        """
-        Return the viewer's current time as an `~astropy.time.Time` object.
-        """
-        return Time(self._get_view_data('datetime'), format='isot')
-
-    def set_current_time(self, dt=None):
-        """
-        Set the viewer time to match the real-world time.
-
-        Parameters
-        ----------
-        dt : `~datetime.datetime` or `~astropy.time.Time`
-            The current time, either as a `datetime.datetime` object or an
-            astropy :class:`astropy.time.Time` object. If not specified, this
-            uses the current time
-        """
-        # Ensure the object received is a datetime or Time; convert it to UTC
-        utc_tm = ensure_utc(dt, str_allowed=False)
-        self._send_msg(event='set_datetime', isot=utc_tm)
 
     def center_on_coordinates(self, coord, fov=60 * u.deg, instant=True):
         """
@@ -329,57 +399,6 @@ class BaseWWTWidget(HasTraits):
                        dec=coord_icrs.dec.deg,
                        fov=fov.to(u.deg).value,
                        instant=instant)
-
-    galactic_mode = Bool(False,
-                         help='Whether the galactic plane should be horizontal '
-                              'in the viewer (`bool`)').tag(wwt='galacticMode', wwt_reset=True)
-    galactic_grid = Bool(False, help='Whether to show a grid relative to the '
-                                     'galactic plane (`bool`)').tag(wwt='showGalacticGrid', wwt_reset=True)
-    # galactic_text = Bool(False,
-    #                      help='Whether to show labels for the galactic grid\'s text '
-    #                           '(`bool`)').tag(wwt='showGalacticGridText', wwt_reset=True)
-    alt_az_grid = Bool(False, help='Whether to show an altitude-azimuth grid '
-                                   '(`bool`)').tag(wwt='showAltAzGrid', wwt_reset=True)
-    # alt_az_text = Bool(False,
-    #                    help='Whether to show labels for the altitude-azimuth grid\'s text '
-    #                         '(`bool`)').tag(wwt='showAltAzGridText', wwt_reset=True)
-
-    local_horizon_mode = Bool(False, help='Whether the view should be that of '
-                                          'a local latitude, longitude, and '
-                                          'altitude (`bool`)').tag(wwt='localHorizonMode', wwt_reset=True)
-    location_altitude = AstropyQuantity(0 * u.m,
-                                        help='The altitude of the viewing '
-                                             'location in local horizon mode '
-                                             '(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude', wwt_reset=True)
-    location_latitude = AstropyQuantity(47.633 * u.deg,
-                                        help='The latitude of the viewing '
-                                             'location in local horizon mode '
-                                             '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLat', wwt_reset=True)
-    location_longitude = AstropyQuantity(122.133333 * u.deg,
-                                         help='The longitude of the viewing '
-                                              'location in local horizon mode '
-                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLng', wwt_reset=True)
-
-    @validate('location_altitude')
-    def _validate_altitude(self, proposal):
-        if proposal['value'].unit.physical_type == 'length':
-            return proposal['value'].to(u.meter)
-        else:
-            raise TraitError('location_altitude not in units of length')
-
-    @validate('location_latitude')
-    def _validate_latitude(self, proposal):
-        if proposal['value'].unit.physical_type == 'angle':
-            return proposal['value'].to(u.degree)
-        else:
-            raise TraitError('location_latitude not in angle units')
-
-    @validate('location_longitude')
-    def _validate_longitude(self, proposal):
-        if proposal['value'].unit.physical_type == 'angle':
-            return proposal['value'].to(u.degree)
-        else:
-            raise TraitError('location_longitude not in angle units')
 
     def set_view(self, mode):
         """
@@ -454,6 +473,66 @@ class BaseWWTWidget(HasTraits):
         """
         return sorted(VIEW_MODES_2D + VIEW_MODES_3D)
 
+    def reset(self):
+        """
+        Reset WWT to initial state.
+        """
+
+        # Remove any existing layers (not using a for loop since we're removing elements)
+        while len(self.layers) > 0:
+            self.layers[0].remove()
+
+        # Reset coordinates to initial view
+        gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='icrs')
+        self.center_on_coordinates(gc, 60 * u.deg)
+
+        # Reset only traits with the wwt_reset tag
+        for trait_name, trait in self.traits().items():
+            if trait.metadata.get('wwt_reset'):
+                setattr(self, trait_name, trait.default_value)
+
+    # Clock controls
+
+    def pause_time(self):
+        """
+        Pause the progression of time in the viewer.
+        """
+        self._send_msg(event='pause_time')
+
+    def play_time(self, rate=1):
+        """
+        Resume the progression of time in the viewer.
+
+        Parameters
+        ----------
+        rate : int or float
+            The rate at which time passes (1 meaning real-time)
+        """
+        self._send_msg(event='resume_time', rate=rate)
+
+    def get_current_time(self):
+        """
+        Return the viewer's current time as an `~astropy.time.Time` object.
+        """
+        return Time(self._get_view_data('datetime'), format='isot')
+
+    def set_current_time(self, dt=None):
+        """
+        Set the viewer time to match the real-world time.
+
+        Parameters
+        ----------
+        dt : `~datetime.datetime` or `~astropy.time.Time`
+            The current time, either as a `datetime.datetime` object or an
+            astropy :class:`astropy.time.Time` object. If not specified, this
+            uses the current time
+        """
+        # Ensure the object received is a datetime or Time; convert it to UTC
+        utc_tm = ensure_utc(dt, str_allowed=False)
+        self._send_msg(event='set_datetime', isot=utc_tm)
+
+    # Data loading
+
     def load_image_collection(self, url):
         """
         Load a collection of layers for possible use in the viewer.
@@ -477,55 +556,14 @@ class BaseWWTWidget(HasTraits):
         """
         return sorted(self._available_layers)
 
-    foreground = Unicode('Digitized Sky Survey (Color)',
-                         help='The layer to show in the foreground (`str`)').tag(wwt=None, wwt_reset=True)
+    # Annotations
 
-    @observe('foreground')
-    def _on_foreground_change(self, changed):
-        self._send_msg(event='set_foreground_by_name', name=changed['new'])
-        # Changing a layer resets the opacity, so we re-trigger the opacity setting
-        self._send_msg(event='set_foreground_opacity',
-                       value=self.foreground_opacity * 100)
-
-    @validate('foreground')
-    def _validate_foreground(self, proposal):
-        if proposal['value'] in self.available_layers:
-            return proposal['value']
-        else:
-            raise TraitError('foreground is not one of the available layers')
-
-    background = Unicode('Hydrogen Alpha Full Sky Map',
-                         help='The layer to show in the background (`str`)').tag(wwt=None, wwt_reset=True)
-
-    @observe('background')
-    def _on_background_change(self, changed):
-        self._send_msg(event='set_background_by_name', name=changed['new'])
-        # Changing a layer resets the opacity, so we re-trigger the opacity setting
-        self._send_msg(event='set_foreground_opacity',
-                       value=self.foreground_opacity * 100)
-
-    @validate('background')
-    def _validate_background(self, proposal):
-        if proposal['value'] in self.available_layers:
-            return proposal['value']
-        else:
-            raise TraitError('background is not one of the available layers')
-
-    foreground_opacity = Float(0.8, help='The opacity of the foreground layer '
-                                         '(`float`)').tag(wwt=None,
-                                                          wwt_reset=True)
-
-    @observe('foreground_opacity')
-    def _on_foreground_opacity_change(self, changed):
-        self._send_msg(event='set_foreground_opacity',
-                       value=changed['new'] * 100)
-
-    @validate('foreground_opacity')
-    def _validate_foreground_opacity(self, proposal):
-        if 0 <= proposal['value'] <= 1:
-            return proposal['value']
-        else:
-            raise TraitError('foreground_opacity should be between 0 and 1')
+    def clear_annotations(self):
+        """
+        Clears all annotations from the current view.
+        """
+        self._annotation_set.clear()
+        return self._send_msg(event='clear_annotations')
 
     def add_circle(self, center=None, **kwargs):
         """
@@ -586,12 +624,54 @@ class BaseWWTWidget(HasTraits):
             line.add_point(points)
         return line
 
-    @property
-    def instruments(self):
+    def add_collection(self, points, **kwargs):
         """
-        A list of instruments available for use in `add_fov`.
+        Add a CircleCollection to the current view.
+
+        Parameters
+        ----------
+        points : `~astropy.units.Quantity`
+            The desired points that will serve as the centers of the
+            circles that make up the collection. Requires at least two
+            sets of coordinates for initialization.
+        kwargs
+            Optional arguments that allow corresponding Circle or
+            Annotation attributes to be set upon shape initialization.
         """
-        return self._instruments
+        collection = CircleCollection(self, points, **kwargs)
+        return collection
+
+    # Tours
+
+    def load_tour(self, url):
+        """
+        Load and begin playing a tour based on the URL to a .wtt file from
+        the WorldWideTelescope website.
+
+        Parameters
+        ----------
+        url : `str`
+            The URL of the chosen tour -- must be a .wtt file.
+        """
+        # throw error if url doesn't end in .wtt
+        if url[-4:] == '.wtt':
+            self._send_msg(event='load_tour', url=url)
+        else:
+            raise ValueError('url must end in \'.wwt\'')
+
+    def pause_tour(self):
+        """
+        Pause a loaded tour.
+        """
+        self._send_msg(event='pause_tour')
+
+    def resume_tour(self):
+        """
+        Resume a paused tour.
+        """
+        self._send_msg(event='resume_tour')
+
+    # Instrumental FOV support (built on the annotation support)
 
     def add_fov(self, telescope, center=None, rotate=0*u.rad, **kwargs):
         """
@@ -615,40 +695,7 @@ class BaseWWTWidget(HasTraits):
         """
         return FieldOfView(self, telescope, center, rotate, **kwargs)
 
-    def add_collection(self, points, **kwargs):
-        """
-        Add a CircleCollection to the current view.
-
-        Parameters
-        ----------
-        points : `~astropy.units.Quantity`
-            The desired points that will serve as the centers of the
-            circles that make up the collection. Requires at least two
-            sets of coordinates for initialization.
-        kwargs
-            Optional arguments that allow corresponding Circle or
-            Annotation attributes to be set upon shape initialization.
-        """
-        collection = CircleCollection(self, points, **kwargs)
-        return collection
-
-    def reset(self):
-        """
-        Reset WWT to initial state.
-        """
-
-        # Remove any existing layers (not using a for loop since we're removing elements)
-        while len(self.layers) > 0:
-            self.layers[0].remove()
-
-        # Reset coordinates to initial view
-        gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='icrs')
-        self.center_on_coordinates(gc, 60 * u.deg)
-
-        # Reset only traits with the wwt_reset tag
-        for trait_name, trait in self.traits().items():
-            if trait.metadata.get('wwt_reset'):
-                setattr(self, trait_name, trait.default_value)
+    # HTML (interactive figure) export
 
     def save_as_html_bundle(self, dest, title=None, max_width=None, max_height=None):
         """
