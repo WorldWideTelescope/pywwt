@@ -1,37 +1,61 @@
-import numpy as np
-import os
-from traitlets import HasTraits, observe, validate, TraitError
-from astropy import units as u
-from astropy.time import Time
-from astropy.coordinates import SkyCoord
+# Copyright 2018-2021 the .NET Foundation
+# Licensed under the BSD license
 
-# We import the trait classes from .traits since we do various customizations
-from .traits import Color, Bool, Float, Unicode, AstropyQuantity
-
-from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
-from .imagery import get_imagery_layers, ImageryLayers
-from .solar_system import SolarSystem
-from .layers import LayerManager
-from .instruments import Instruments
-from .utils import ensure_utc
+"""
+The core WWT widget implementation.
+"""
 
 import json
+import os
 import shutil
 import tempfile
 
-DEFAULT_SURVEYS_URL = 'https://worldwidetelescope.github.io/pywwt/surveys.xml'
+from astropy import units as u
+from astropy.time import Time
+from astropy.coordinates import SkyCoord
+import numpy as np
+from traitlets import HasTraits, observe, validate, TraitError
 
-VIEW_MODES_2D = ['sky', 'sun', 'mercury', 'venus', 'earth', 'moon', 'mars',
-                 'jupiter', 'callisto', 'europa', 'ganymede', 'io',
-                 'saturn', 'uranus', 'neptune', 'pluto',
-                 'panorama']
-VIEW_MODES_3D = ['solar system', 'milky way', 'universe']
-
+from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
+from .imagery import get_imagery_layers, ImageryLayers
+from .instruments import Instruments
+from .layers import LayerManager
+from .solar_system import SolarSystem
+from .traits import Color, Bool, Float, Unicode, AstropyQuantity
+from .utils import ensure_utc
 
 __all__ = [
     'AppBasedWWTWidget',
     'BaseWWTWidget',
     'DataPublishingNotAvailableError',
+]
+
+DEFAULT_SURVEYS_URL = 'https://worldwidetelescope.github.io/pywwt/surveys.xml'
+
+VIEW_MODES_2D = [
+    'sky',
+    'sun',
+    'mercury',
+    'venus',
+    'earth',
+    'moon',
+    'mars',
+    'jupiter',
+    'callisto',
+    'europa',
+    'ganymede',
+    'io',
+    'saturn',
+    'uranus',
+    'neptune',
+    'pluto',
+    'panorama',
+]
+
+VIEW_MODES_3D = [
+    'solar system',
+    'milky way',
+    'universe',
 ]
 
 
