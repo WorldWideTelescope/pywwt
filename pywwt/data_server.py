@@ -76,13 +76,11 @@ def get_data_server(verbose=True):
 
             self._app.run(host=host, port=port)
 
-        def serve_file(self, filename, real_name=True, extension=''):
-            if real_name:
-                hash = os.path.basename(filename)
-            else:
-                with open(filename, 'rb') as f:
-                    content = f.read()
-                hash = md5(content).hexdigest() + extension
+        def serve_file(self, filename, extension=''):
+            with open(filename, 'rb') as f:
+                content = f.read()
+
+            hash = md5(content).hexdigest() + extension
             self._files[hash] = os.path.abspath(filename)
             return 'http://' + self.host + ':' + str(self.port) + '/data/' + hash
 

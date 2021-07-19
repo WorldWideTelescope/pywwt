@@ -9,7 +9,6 @@ Most of the code here deals with differences between WebEngine and WebKit
 know once WWT is set up.
 """
 
-import os
 import json
 import time
 
@@ -17,16 +16,11 @@ from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
 from qtpy import QtWidgets, QtGui, QtCore
 
 from .app import get_qapp
-from .core import BaseWWTWidget
+from .core import AppBasedWWTWidget
 from .logger import logger
 from .data_server import get_data_server
 
 __all__ = ['WWTQtClient']
-
-_WWT_JSON_FILE = os.path.join(os.path.dirname(__file__), 'web_static', 'widget', 'wwt_json_api.js')
-
-with open(_WWT_JSON_FILE) as f:
-    WWT_JSON = f.read()
 
 
 class WWTWebEngineView(QWebEngineView):
@@ -61,80 +55,82 @@ class WWTWebEngineView(QWebEngineView):
 
 class WWTQWebEnginePage(QWebEnginePage):
     """
-    Subclass of QWebEnginePage that can check when WWT is ready for
-    commands.
+    Subclass of QWebEnginePage that abstracts the JavaScript invocation
+    mechanism.
     """
 
-    wwt_ready = QtCore.Signal()
+    app_message_callback = None
 
     def __init__(self, parent=None):
         super(WWTQWebEnginePage, self).__init__(parent=parent)
-        self._timer = QtCore.QTimer()
-        self._timer.timeout.connect(self._check_ready)
-        self._timer.start(500)
-        self._check_running = False
 
-        if not WEBENGINE:
+        if WEBENGINE:
+            self._js_response_received = False
+            self._js_response = None
+        else:
             self._frame = self.mainFrame()
 
     if WEBENGINE:
 
-        def _wwt_ready_callback(self, result):
-            if result == 1:
-                self._timer.stop()
-                self.wwt_ready.emit()
-
-            self._check_running = False
-
-        def javaScriptConsoleMessage(self, level=None, message=None,
-                                     line_number=None, source_id=None):
-            if not self._check_running or 'wwt_ready' not in message:
-                print('{0} (level={1}, line_number={2}, source_id={3})'.format(message, level, line_number, source_id))
-
-        def _check_ready(self):
-            if not self._check_running:
-                self._check_running = True
-                super(WWTQWebEnginePage, self).runJavaScript('wwt_ready;', self._wwt_ready_callback)
+        def javaScriptConsoleMessage(
+            self,
+            level=None,
+            message=None,
+            line_number=None,
+            source_id=None
+        ):
+            context = 'level={0}, line_number={1}, source_id={2}'.format(level, line_number, source_id)
+            self._common_console_handler(message, context)
 
         def _process_js_response(self, result):
             self._js_response_received = True
             self._js_response = result
 
-        def runJavaScript(self, code, asynchronous=True):
+        def runJavaScript(self, code):
             app = get_qapp()
+            self._js_response_received = False
+            self._js_response = None
+            super(WWTQWebEnginePage, self).runJavaScript(code, self._process_js_response)
 
-            if asynchronous:
-                super(WWTQWebEnginePage, self).runJavaScript(code)
-            else:
-                self._js_response_received = False
-                self._js_response = None
-                super(WWTQWebEnginePage, self).runJavaScript(code, self._process_js_response)
+            while not self._js_response_received:
+                app.processEvents()
 
-                while not self._js_response_received:
-                    app.processEvents()
-
-                return self._js_response
+            return self._js_response
 
     else:
 
-        def javaScriptConsoleMessage(self, message=None, line_number=None,
-                                     source_id=None):
-            if 'wwt_ready' not in message:
-                print('{0} (line_number={1}, source_id={2})'.format(message, line_number, source_id))
+        def javaScriptConsoleMessage(
+            self,
+            message=None,
+            line_number=None,
+            source_id=None
+        ):
+            context = 'line_number={0}, source_id={1}'.format(line_number, source_id)
+            self._common_console_handler(message, context)
 
-        def runJavaScript(self, code, asynchronous=False):
+        def runJavaScript(self, code):
             return self._frame.evaluateJavaScript(code)
 
-        def _check_ready(self):
-            result = self.runJavaScript('wwt_ready;')
+    def _common_console_handler(self, message, context):
+        if message.startswith('pywwtMessage:'):
+            try:
+                payload = json.loads(message[13:])
+            except Exception as e:
+                logger.warning('invalid pywwtMessage JSON: %s', e)
 
-            if result == 1:
-                self._timer.stop()
-                self.wwt_ready.emit()
+            if self.app_message_callback is None:
+                logger.warning('received app message, but no handler available; message: %s', payload)
+            else:
+                try:
+                    self.app_message_callback(payload)
+                except Exception:
+                    logger.exception('error handling app message; payload: %s', payload)
+        else:
+            logger.debug('JS console message: %s (%s)', message, context)
 
 
 class WWTQtWidget(QtWidgets.QWidget):
-    def __init__(self, url=None, parent=None):
+    def __init__(self, url, parent=None):
         super(WWTQtWidget, self).__init__(parent=parent)
 
         self.web = WWTWebEngineView()
@@ -148,31 +144,7 @@ class WWTQtWidget(QtWidgets.QWidget):
         self.setLayout(layout)
         layout.addWidget(self.web)
 
-        self._wwt_ready = False
-        self._js_queue = ""
-
-        self.page.wwt_ready.connect(self._on_wwt_ready)
-
-    def send_msg(self, **kwargs):
-        msg = json.dumps(kwargs)
-        return self._run_js("wwt_apply_json_message(wwt, {0})".format(msg))
-
-    def _on_wwt_ready(self):
-        self._run_js(WWT_JSON)
-        self._wwt_ready = True
-        self._run_js(self._js_queue, asynchronous=True)
-        self._js_queue = ""
-
-    def _run_js(self, js, asynchronous=True):
-        if not js:
-            return
-
-        if self._wwt_ready:
-            logger.debug('Running javascript: %s' % js)
-            return self.page.runJavaScript(js, asynchronous=asynchronous)
-        else:
-            logger.debug('Caching javascript: %s' % js)
-            self._js_queue += js + '\n'
+    # More mouse-drag helpers
 
     def dragEnterEvent(self, event):
         if self.parent() is None:
@@ -199,7 +171,7 @@ class WWTQtWidget(QtWidgets.QWidget):
             return self.parent().dropEvent(event)
 
 
-class WWTQtClient(BaseWWTWidget):
+class WWTQtClient(AppBasedWWTWidget):
     """
     A client to create and drive the Qt widget.
 
@@ -217,22 +189,58 @@ class WWTQtClient(BaseWWTWidget):
         app = get_qapp()
 
         self._data_server = get_data_server()
-        
-        wwt_url = self._data_server.static_url('widget/')
+
+        wwt_url = self._data_server.static_url('qtwrapper.html')
         self.widget = WWTQtWidget(url=wwt_url)
 
         if size is not None:
             self.widget.resize(*size)
 
+        self.widget.page.app_message_callback = self._on_app_message
         self.widget.show()
 
         super(WWTQtClient, self).__init__()
 
+        # Start polling for the app to start responding to messages
+
+        self._last_pong_timestamp = 0
+        self._timer = QtCore.QTimer()
+        self._timer.timeout.connect(self._check_ready)
+        self._timer.start(1000)
+
+        # TODO: this should be more generic
         if block_until_ready:
             while True:
                 app.processEvents()
-                if self.widget._wwt_ready:
+                if self._appAlive:
                     break
+
+    def _check_ready(self):
+        # Send the ping
+
+        self._actually_send_msg({
+            'type': 'wwt_ping_pong',
+            'sessionId': 'qt',
+            'threadId': str(time.time()),
+        })
+
+        # Evaluate pong status
+
+        alive = (time.time() - self._last_pong_timestamp) < 2.5
+        self._on_app_status_change(alive=alive)
+
+    def _on_app_message(self, payload):
+        ptype = payload.get('type')
+
+        if ptype == 'wwt_ping_pong':
+            try:
+                ts = float(payload['threadId'])
+            except Exception:
+                logger.exception('invalid timestamp in pywwt Qt pingpong response')
+            else:
+                self._last_pong_timestamp = ts
+        else:
+            self._on_app_message_received(payload)
 
     def wait(self, duration=None):
         """
@@ -254,16 +262,9 @@ class WWTQtClient(BaseWWTWidget):
             while time.time() - time1 < duration:
                 app.processEvents()
 
-    def _send_msg(self, asynchronous=True, **kwargs):
-        msg = json.dumps(kwargs)
-        return self.widget._run_js("wwt_apply_json_message(wwt, {0});".format(msg), asynchronous=asynchronous)
-
-    def _get_view_data(self, field):
-        if field in ['ra', 'dec', 'fov', 'datetime']:
-            return self._send_msg(event='get_'+field, asynchronous=False)
-
-        raise ValueError("'field' should be one of: 'ra', 'dec', "
-                            "'fov', or 'datetime'")
+    def _actually_send_msg(self, payload):
+        jmsg = json.dumps(payload)
+        return self.widget.page.runJavaScript("pywwtSendMessage({0});".format(jmsg))
 
     def _serve_file(self, filename, extension=''):
         return self._data_server.serve_file(filename, extension=extension)
