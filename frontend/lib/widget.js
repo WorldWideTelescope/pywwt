@@ -1,4 +1,10 @@
-// The main WWT ipywidgets implementation.
+// The main WWT ipywidgets (Jupyter widget) implementation.
+//
+// This used to use a hand-coded interface to the WWT engine, but now uses the
+// "research app" and its standardized messaging framework. This package is
+// needed to bridge the research app and ipywidgets. Our recommended way to use
+// WWT in Jupyter is now to use the app extension, not this widget, but needs
+// might vary.
 //
 // The most important thing to remember about this implementation is that
 // IPywidgets has a model/view breakdown: on the JavaScript/browser side, you
@@ -21,7 +27,9 @@
 //
 // My initial thought was that we could create one <iframe> and "warp" it
 // between views, but that turns out not to work because iframes are reloaded
-// when they're reparented in the DOM, destroying the WWT state.
+// when they're reparented in the DOM, destroying the WWT state. For the same
+// reason, the WWT state can also be destroyed if you hide and un-hide a single
+// widget view in JupyterLab, unfortunately.
 //
 // Given these constraints, our current approach is:
 //
@@ -35,14 +43,14 @@
 //   preexisting views. We could try to inherit properties of the current view,
 //   but don't right now.
 //
-// Communication between this frontend and the Jupyter backend (presumably
-// pywwt, but in principle other backends could be added) is done using
-// ipywidgets "custom" messages. Both the WWTModel and the WWTViews can listen
-// for these messages and react to them. Because the actual WWT viewer logic is
-// all embedded inside an <iframe>, the main role of the code here is to relay
-// those messages to iframe implementation using the `wwt_apply_json_message`
-// function that is set up by the widget HTML <iframe> implementation. The
-// message inteface is documented as [@wwtelescope/research-app-messages].
+// Communication between the WWT app and the kernel (presumably Python/pywwt,
+// but in principle other backends could be added) is done using JSON-compatible
+// messages, documented as [@wwtelescope/research-app-messages]. The ipywidgets
+// implementation is particularly gnarly because (1) each "widget" might
+// actually talk to multiple apps, due to the model-view architecture of
+// ipywidgets, and (2) each widget will receive messages from other widgets, due
+// to the way that the Web messaging spec works. This layer has to do a lot of
+// work to pretend to the kernel that it's only talking to one app.
 //
 // [@wwtelescope/research-app-messages]: https://docs.worldwidetelescope.org/webgl-reference/latest/apiref/research-app-messages/modules/classicpywwt.html
 
@@ -54,12 +62,13 @@ var version = require('./index').version;
 // The widget model class.
 //
 // For each ipywidget widget, there is one model in JS that synchronizes its
-// state with a Python model over Jupyter's comms. Our implementation is
-// unusually gnarly because the widget state is actually stored in the *view*,
-// inside the WWT iframe, as described above.
+// state with a Python model over Jupyter's comms. Since WWT's state is actually
+// in the view, the model is mostly concerned about relaying messages correctly.
+// Which is a hairy busines, because not only does our one widget potentially
+// have multiple views, but there are also potentially multiple active widgets,
+// and we'll see all of their messages.
 var WWTModel = widgets.DOMWidgetModel.extend({
     defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
-
         _model_name: 'WWTModel',
         _model_module: 'pywwt',
         _model_module_version: version,
@@ -68,11 +77,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
         _view_module: 'pywwt',
         _view_module_version: version,
 
-        _ra: 0.0,
-        _dec: 0.0,
-        _fov: 60.0,
-        _datetime: '2017-03-09T16:30:00',
-        _viewConnected: false,
+        _appUrl: ''
     }),
 
     initialize: function () {
@@ -83,163 +88,181 @@ var WWTModel = widgets.DOMWidgetModel.extend({
         this.wwtBaseUrl = require('@jupyterlab/coreutils').PageConfig.getBaseUrl();
         this.wwtBaseUrl = require('@jupyterlab/coreutils').PageConfig.getBaseUrl();
 
-        this.wwtViewDivs = [];
-        this.currentViewWindowId = 0;
-        this.nextViewWindowId = 1;
+        // Management of our multiple views
+        this._currentView = null;
+        this._nextViewSeqNumber = 0;
+        this._kernelThinksWidgetIsAlive = false;
 
-        // Monitor the view data so that we can transmit updates. We handle the
-        // clock specially so as not to be sending updates continually.
-        this.lastClockUpdate = 0;
-        var self = this;
-        setInterval(function () { self.updateViewData(); }, 150);
-        this.on('msg:custom', this.handleCustomMessage, this);
+        // We're not going to even try to honor updates to this property.
+        const appUrl = this.canonicalizeUrl(this.get('_appUrl'));
+        this._appOrigin = new URL(appUrl).origin;
+
+        // Listen for events emerging from the kernel, via ipywidgets's "custom"
+        // message API.
+        this.on('msg:custom', this.processIpyWidgetsMessage, this);
+
+        // Listen for events emerging from the apps. Note that this function will
+        // receive messages from *all* views of *all* instantiated widgets, so
+        // it needs to be picky about which events it pays attention to.
+
+        const self = this;
+
+        window.addEventListener(
+            'message',
+            function (event) { self.processDomWindowMessage(event); },
+            false
+        );
     },
 
-    // This function is called very frequently, so we must make sure to not send
-    // updates unless something has changed. (If you're viewing a notebook
-    // running on a remote server, that's constant cross-internet traffic!)
-    // Ideally we'd be triggered on updates rather than polling, but we're not
-    // well set up to do that right now, especially given the possible presence
-    // of multiple views.
-    updateViewData: function () {
-        var needUpdate = false;
-        var window = this.getCurrentWindow();
-        var viewConnected = (window !== null);
-
-        if (this.get('_viewConnected') != viewConnected) {
-            this.set({ '_viewConnected': viewConnected });
-            needUpdate = true;
+    // The kernel can generate partial URLs, but doesn't (and can't) know the
+    // full URL where data are ultimately exposed. So in various places we need
+    // to edit URLs emerging from the client to make them complete.
+    canonicalizeUrl: function (url) {
+        // Sketchy heuristic to deal with the Jupyter "base URL", which still
+        // isn't an absolute URL. It's a URL path used by multi-user Jupyter
+        // servers and the like. The Python kernel code can determine the base
+        // URL on its own, but it requires some super hackery (reading various
+        // magical JSON config files and making API calls).
+        if (url.slice(4) == '/wwt') {
+            url = this.wwtBaseUrl + url;
         }
 
-        if (window === null) {
-            if (needUpdate) {
-                this.save_changes();
+        return new URL(url, location.toString()).toString();
+    },
+
+    // Get a unique ID and sequence number for distinguishing views. Note that
+    // while each model might have multiple views, there might also be multiple
+    // widget models too, and we have to distinguish them all.
+    mintViewIds: function() {
+        var seq = this._nextViewSeqNumber;
+        this._nextViewSeqNumber++;
+        return [this.model_id + "v" + seq, seq];
+    },
+
+    // Called by a widget view when the "liveness" state of its app changes.
+    onViewStatusChange: function(view, alive) {
+        if (alive) {
+            // Should this view become the current view?
+            //
+            // TODO: if the current view changes, we should signal to the kernel
+            // that its idea of the current view settings, preferences, layers,
+            // etc. have all been invalidated. We don't currently have a
+            // mechanism to do that.
+
+            if (this._currentView === null || this._currentView.seqNumber < view.seqNumber) {
+                this._currentView = view;
             }
 
+            // Does the kernel need to be notified about the overall liveness?
+
+            if (!this._kernelThinksWidgetIsAlive) {
+                this._kernelThinksWidgetIsAlive = true;
+                this.send({
+                    type: 'wwt_jupyter_widget_status',
+                    alive: true
+                });
+            }
+        } else {
+            // Here we only care if we just lost the *current* view. If that
+            // happened, we could imagine selecting a new current view from
+            // among the other ones that are alive, but that raises a ton of
+            // invalidation issues and doesn't really make sense within the
+            // ipywidgets UX that we can offer. So, just clear out everything.
+
+            if (this._currentView !== null && this._currentView.seqNumber == view.seqNumber) {
+                this._currentView = null;
+
+                if (this._kernelThinksWidgetIsAlive) {
+                    this._kernelThinksWidgetIsAlive = false;
+                    this.send({
+                        type: 'wwt_jupyter_widget_status',
+                        alive: false
+                    });
+                }
+            }
+        }
+    },
+
+    // Relay a message from the kernel to the active view. In order to keep
+    // things tractable, we only route messages to the "current" view. For
+    // instance, if the client were to issue a data-request message and we
+    // routed it to multiple views, we'd get multiple responses, with no
+    // sensible way to know which to prefer.
+    processIpyWidgetsMessage: function (msg) {
+        if (this._currentView === null) {
+            // We could queue up messages here. The kernel "shouldn't" send us
+            // any messages until a view is ready, but it's always possible that
+            // all of our views will go away after startup anyway.
+            console.warn("pywwt jupyter widget: dropping message on floor", msg);
             return;
         }
 
-        if (this.get('_ra') != window.wwt.getRA()) {
-            this.set({ '_ra': window.wwt.getRA() });
-            needUpdate = true;
+        // The "official" implementation here is in
+        // @wwtelescope/research-app-messages in
+        // classic_pywwt.applyBaseUrlIfApplicable.
+        if (msg['url']) {
+            msg['url'] = this.canonicalizeUrl(msg['url']);
         }
 
-        if (this.get('_dec') != window.wwt.getDec()) {
-            this.set({ '_dec': window.wwt.getDec() });
-            needUpdate = true;
-        }
-
-        if (this.get('_fov') != window.wwt.get_fov()) {
-            this.set({ '_fov': window.wwt.get_fov() });
-            needUpdate = true;
-        }
-
-        // By default, the clock is always ticking. We throttle updates by having
-        // the listener extrapolate the clock itself given reference times and the
-        // "time rate".
+        // If there are multiple active widgets (models+views), our listener
+        // will get messages from all of them. In order to be able to
+        // disambiguate, we need to make sure that threadIds are uniquified by
+        // widget.
         //
-        // For compatibility reasons, the engine's time must be exposed using a
-        // trait named `_datetime`. If any of the time-related parameters are
-        // changed discontinuously, set lastClockUpdate to 0 to force an update.
-        var nowUnixMs = Date.now();
-        var updateTimeParams = (nowUnixMs - this.lastClockUpdate) > 60000;
+        // On the other hand, we don't want to tag messages by *view*
+        // unique-ids: if we send a message to one view, then another view
+        // becomes active, then we get a reply to the earlier message, we should
+        // still honor that reply.
+        if (msg['threadId']) {
+            msg['threadId'] = this.model_id + "|" + msg['threadId'];
+        }
 
-        if (updateTimeParams) {
-            var stc = window.wwtlib.SpaceTimeController;
-            var rate = stc.get_timeRate();
+        this._currentView.relayIpyWidgetsMessage(msg);
+    },
 
-            if (!stc.get_syncToClock()) {
-                // When time is paused by setting syncToClock to false, the WWT
-                // "rate" remains unchanged, but as far as the Python layer is
-                // concerned, the rate should be 0.
-                rate = 0.0;
+    // Process messages from the WWT apps, potentially relaying them to the
+    // kernel.
+    //
+    // This is annoying because we're going to receive messages for all views
+    // associated with all widgets. We need to pay attention to the right ones.
+    //
+    // The message is relayed to the kernel using ipywidgets "custom" messages,
+    // which is basically trivial once we've dealt with the above.
+    processDomWindowMessage: function (event) {
+        var payload = event.data;
+
+        if (event.origin !== this._appOrigin)
+            return;
+
+        // Unsolicited messages will be tagged with a sessionId. These should
+        // match the sessionId associated with the "current" view -- the only
+        // way that we can sensibly work in the ipywidgets framework is to
+        // pretend non-current views don't exist.
+        //
+        // The ping-pong messages triggered by the views while waiting for the
+        // apps to get ready will have sessionIds that don't match this scheme,
+        // but that's OK because this function doesn't need to handle those
+        // messages.
+        if (payload['sessionId']) {
+            if (!this._currentView || payload['sessionId'] != this._currentView.wwtId) {
+                return;
+            }
+        }
+
+        // Reply messages will be tagged with a threadId. We should make sure that
+        // these are relevant to our widget (model ID) and un-munge our disambiguator.
+        if (payload['threadId']) {
+            const pieces = payload['threadId'].split('|');
+
+            if (pieces[0] != this.model_id) {
+                return;
             }
 
-            this.set({
-                '_datetime': stc.get_now().toISOString(),
-                '_systemDatetime': (new Date()).toISOString(),
-                '_timeRate': rate,
-            });
-
-            this.lastClockUpdate = nowUnixMs;
-            needUpdate = true;
+            payload['threadId'] = pieces.slice(1).join('|');
         }
 
-        if (needUpdate) {
-            this.save_changes();
-        }
-    },
-
-    // Make sure that we fully sync up our state with the current view. At the
-    // moment, all we need to do is ensure that the clock is resynced.
-    // Everything else is stateless.
-    forceViewDataUpdate: function () {
-        this.lastClockUpdate = 0;
-    },
-
-    // The views do all of the real work in message processing, but we do keep
-    // an eye out to know when to force a clock update.
-    handleCustomMessage: function (msg) {
-        switch (msg['event']) {
-            case 'load_tour':
-            case 'resume_tour':
-            case 'pause_tour':
-            case 'resume_time':
-            case 'pause_time':
-            case 'set_datetime':
-                this.forceViewDataUpdate();
-                break;
-        }
-    },
-
-    // There is a `views` attribute that is a dict of promises to known views,
-    // but for our purposes it's easiest to DIY, since there is a lot of
-    // unpredictable timing having to do with iframe creation and destruction.
-    registerViewDiv: function (div) {
-        this.wwtViewDivs.splice(0, 0, div);
-
-        // An update should be forced by getCurrentWindow() noticing that we're
-        // looking at a new div, but it doesn't hurt to double-force.
-        this.forceViewDataUpdate();
-    },
-
-    // Note that this will still work if multiple views are created and
-    // destroyed. It is hard to imagine that the list of divs will ever get long
-    // enough to be an issue. Famous last words?
-    getCurrentWindow: function () {
-        for (var i = 0; i < this.wwtViewDivs.length; i++) {
-            var iframe = this.wwtViewDivs[i].getElementsByTagName('iframe')[0];
-            if (!iframe)
-                continue;
-
-            var window = iframe.contentWindow;
-            if (!window)
-                continue;
-
-            if (!window.wwt)
-                continue;
-
-            // OK, we have our winner! If it is a different view than before,
-            // make sure to force-update the model values. Hiding and re-showing
-            // the same div reloads the WWT iframe, which causes the engine
-            // state to be reset. So even if the active div hasn't changed, we
-            // might still need a force.
-
-            if (window.wwtWidgetModelId === undefined) {
-                window.wwtWidgetModelId = this.nextViewWindowId;
-                this.nextViewWindowId += 1;
-            }
-
-            if (window.wwtWidgetModelId != this.currentViewWindowId) {
-                this.currentViewWindowId = window.wwtWidgetModelId;
-                this.forceViewDataUpdate();
-            }
-
-            return window;
-        }
-
-        return null;
-    },
+        this.send(payload);
+    }
 });
 
 // The pywwt ipywidget view implementation.
@@ -253,21 +276,101 @@ var WWTModel = widgets.DOMWidgetModel.extend({
 // reload, so hiding and re-showing a WWT view causes its internal state to be
 // reset :-(
 var WWTView = widgets.DOMWidgetView.extend({
-    initialize: function () {
-        // TODO: I this could just be put in render now?
-        var div = document.createElement("div");
-        div.innerHTML = "<iframe width='100%' height='400' style='border: none;' src='" + this.model.wwtBaseUrl + "wwt/widget/'></iframe>"
-        this.el.appendChild(div);
-        this.model.registerViewDiv(div);
+    render: function () {
+        this._appUrl = this.model.canonicalizeUrl(this.model.get('_appUrl'));
+        this._appOrigin = new URL(this._appUrl).origin;
 
-        WWTView.__super__.initialize.apply(this, arguments);
+        const ids = this.model.mintViewIds();
+        this.wwtId = ids[0];
+        this.seqNumber = ids[1];
+
+        var iframe = document.createElement('iframe');
+        // Pass our origin so that the iframe can validate the provenance of the
+        // messages that are posted to it. This isn't acceptable for real XSS
+        // prevention, but so long as the research app can't do anything on behalf
+        // of the user (which it can't right now because we don't even have
+        // "users"), that's OK.
+        iframe.src = this._appUrl + '?origin=' + encodeURIComponent(location.origin);
+        iframe.style.setProperty('height', '400px', '');
+        iframe.style.setProperty('width', '100%', '');
+        iframe.style.setProperty('border', 'none', '');
+
+        // 2021 June: Is this wrapper div still necessary?
+        var div = document.createElement('div');
+        div.appendChild(iframe);
+
+        this.el.appendChild(div);
+
+        // We need to ping the app to find out whether it's handling messages,
+        // especially during the startup phase. While the model handles most of
+        // the messaging stuff, it's a lot easier to handle the ready polling
+        // here in the view.
+
+        this._alive = false;
+        this._lastPongTimestamp = 0;
+        const self = this;
+
+        window.addEventListener(
+            'message',
+            function (event) { self.processDomWindowMessage(event); },
+            false
+        );
+
+        setInterval(function () { self.checkApp(); }, 1000);
     },
 
-    render: function () {
-        // We pass all messages via msg:custom rather than look for trait events
-        // because we just want to use the same JSON messaging interface for
-        // the Qt widget and the Jupyter widget.
-        this.model.on('msg:custom', this.handleCustomMessage, this);
+    checkApp: function() {
+        // Send our next ping ...
+
+        var window = this.tryGetWindow();
+        if (window) {
+            window.postMessage({
+                type: "wwt_ping_pong",
+                threadId: "" + Date.now(),
+                sessionId: this.wwtId,
+            }, this._appUrl);
+        }
+
+        // Has there been a recent pong?
+
+        var alive = (Date.now() - this._lastPongTimestamp) < 2500;
+
+        if (this._alive != alive) {
+            this._alive = alive;
+            this.model.onViewStatusChange(this, alive);
+        }
+    },
+
+    // Process a message sent to the browser window. This function's only job is
+    // to look for responses to our pings. It will be called for messages from
+    // all views of all widgets, though, so it needs to be careful about which
+    // messages to process.
+    processDomWindowMessage: function (event) {
+        var payload = event.data;
+
+        if (event.origin !== this._appOrigin)
+            return;
+
+        if (payload.type == "wwt_ping_pong" && payload.sessionId == this.wwtId) {
+            var ts = +payload.threadId;
+
+            if (!isNaN(ts)) {
+                this._lastPongTimestamp = ts;
+            }
+        }
+    },
+
+    // Called by the model when there's a message from the kernel that should go
+    // to this view. The model "shouldn't" give us any messages if/when our
+    // window is nonfunctional, but the window might always die underneath us.
+    relayIpyWidgetsMessage: function (msg) {
+        var window = this.tryGetWindow();
+        if (!window) {
+            // TODO? Tell the model that we failed?
+            return;
+        }
+
+        window.postMessage(msg, this._appUrl);
     },
 
     // Note: processPhosphorMessage is needed for Jupyter Lab <2 and
@@ -351,10 +454,10 @@ var WWTView = widgets.DOMWidgetView.extend({
         iframe.height = height - 10;
     },
 
-    // Get the WWT window, if it is actually fully initialized. Note that
-    // if this widget view is hidden and then re-shown, the iframe will reload,
-    // and the contentWindow will acquire a new value. So we can't cache too
-    // aggressively.
+    // Get the WWT window, if it is actually fully initialized. Note that in
+    // JupyterLab if this widget view is hidden and then re-shown, the iframe
+    // will reload, and the contentWindow will acquire a new value. So we can't
+    // cache too aggressively.
     tryGetWindow: function () {
         var iframe = this.el.getElementsByTagName('iframe')[0];
         if (!iframe)
@@ -364,43 +467,8 @@ var WWTView = widgets.DOMWidgetView.extend({
         if (!window)
             return null;
 
-        if (!window.wwt)
-            return null; // not fully initialized yet
-
         return window;
-    },
-
-    handleCustomMessage: function (msg) {
-        var window = this.tryGetWindow();
-        if (!window) {
-            // TODO? we could queue up messages and replay them once the window
-            // is ready. But if we've been hidden, that might take a long time
-            // to happen. And it's not clear how we'd find out *when* the window
-            // is ready anyway.
-            return;
-        }
-
-        if (msg['url'] != null && msg['url'].slice(4) == '/wwt') {
-            msg['url'] = this.model.wwtBaseUrl + msg['url'];
-        }
-
-        // If the user has created a view for our widget and then hidden it, our
-        // iframe gets removed and all sorts of things stop working (e.g.,
-        // Chrome will refuse to send XMLHttpRequests anymore, and Firefox won't
-        // set timeouts). If we let exceptions from these operations bubble up,
-        // they break the code that applies widget events to *all* views. We
-        // should handle things better when widgets get hidden, but in the
-        // meantime, try to keep things limping along by swallowing exceptions
-        // here.
-
-        try {
-            window.wwt_apply_json_message(window.wwt, msg);
-        } catch (e) {
-            console.log('failed to process custom_message for a pyWWT Jupyter widget view:');
-            console.log(msg);
-            (console.error || console.log).call(console, e.stack || e);
-        }
-    },
+    }
 });
 
 module.exports = {

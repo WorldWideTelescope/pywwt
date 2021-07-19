@@ -172,7 +172,7 @@ def test_3d_serialization():
                             'solarSystemMinorOrbits': False,
                             'solarSystemOrbits': True,
                             'solarSystemPlanets': False,
-                            'solarSystemScale': '8',  # The validation method casts the int to a string
+                            'solarSystemScale': 8,
                             'solarSystemStars': True}
 
     init_state = widget.quick_serialize()
