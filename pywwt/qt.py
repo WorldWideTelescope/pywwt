@@ -10,6 +10,7 @@ know once WWT is set up.
 """
 
 import json
+import sys
 import time
 
 from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
@@ -216,13 +217,26 @@ class WWTQtClient(AppBasedWWTWidget):
                     break
 
     def _check_ready(self):
-        # Send the ping
+        # If this Qt signal callback function raises an unhandled exception, it
+        # can crash the whole process! Which is ridiculous but let's try to do
+        # our part to make that not happen.
+        #
+        # Cf: https://doc.qt.io/qt-5/exceptionsafety.html#signals-and-slots
+        try:
+            self._check_ready_inner()
+        except Exception as e:
+            print('unhandled exception in Qt check-ready callback:', e, file=sys.stderr)
 
-        self._actually_send_msg({
-            'type': 'wwt_ping_pong',
-            'sessionId': 'qt',
-            'threadId': str(time.time()),
-        })
+    def _check_ready_inner(self):
+        # Send the ping. We have some extra paranoia here in case funky
+        # sequencing can happen in the stop() method.
+
+        if self.widget is not None and self.widget.page is not None:
+            self._actually_send_msg({
+                'type': 'wwt_ping_pong',
+                'sessionId': 'qt',
+                'threadId': str(time.time()),
+            })
 
         # Evaluate pong status
 
@@ -285,6 +299,7 @@ class WWTQtClient(AppBasedWWTWidget):
         painter.end()
 
     def close(self):
+        self._timer.stop()
         self.widget.page = None
         self.widget.web = None
         self.widget.close()
