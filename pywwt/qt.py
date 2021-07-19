@@ -1,9 +1,13 @@
-# This file contains the defintion of the Qt widget. Most of the code here
-# deals with differences between WebEngine and WebKit (either of which may be
-# available in Qt) and also deals with figuring out how we know once WWT is
-# set up.
+# Copyright 2018-2021 the .NET Foundation
+# Licensed under the BSD license
 
-from __future__ import absolute_import, division, print_function
+"""
+This file defines the WWT Qt widget.
+
+Most of the code here deals with differences between WebEngine and WebKit
+(either of which may be available in Qt) and also deals with figuring out how we
+know once WWT is set up.
+"""
 
 import os
 import json
@@ -19,16 +23,13 @@ from .data_server import get_data_server
 
 __all__ = ['WWTQtClient']
 
-WWT_JSON_FILE = os.path.join(os.path.dirname(__file__), 'web_static', 'widget', 'wwt_json_api.js')
+_WWT_JSON_FILE = os.path.join(os.path.dirname(__file__), 'web_static', 'widget', 'wwt_json_api.js')
 
-with open(WWT_JSON_FILE) as f:
+with open(_WWT_JSON_FILE) as f:
     WWT_JSON = f.read()
-
-WWT_HTML_FILE = os.path.join(os.path.dirname(__file__), 'web_static', 'widget', 'index.html')
 
 
 class WWTWebEngineView(QWebEngineView):
-
     # Pass drag and drop events back up to the parent
     # as this is needed for cases where applications
     # embed a PyWWT Qt widget.
@@ -72,6 +73,7 @@ class WWTQWebEnginePage(QWebEnginePage):
         self._timer.timeout.connect(self._check_ready)
         self._timer.start(500)
         self._check_running = False
+
         if not WEBENGINE:
             self._frame = self.mainFrame()
 
@@ -81,6 +83,7 @@ class WWTQWebEnginePage(QWebEnginePage):
             if result == 1:
                 self._timer.stop()
                 self.wwt_ready.emit()
+
             self._check_running = False
 
         def javaScriptConsoleMessage(self, level=None, message=None,
@@ -99,14 +102,17 @@ class WWTQWebEnginePage(QWebEnginePage):
 
         def runJavaScript(self, code, asynchronous=True):
             app = get_qapp()
+
             if asynchronous:
                 super(WWTQWebEnginePage, self).runJavaScript(code)
             else:
                 self._js_response_received = False
                 self._js_response = None
                 super(WWTQWebEnginePage, self).runJavaScript(code, self._process_js_response)
+
                 while not self._js_response_received:
                     app.processEvents()
+
                 return self._js_response
 
     else:
@@ -121,15 +127,14 @@ class WWTQWebEnginePage(QWebEnginePage):
 
         def _check_ready(self):
             result = self.runJavaScript('wwt_ready;')
+
             if result == 1:
                 self._timer.stop()
                 self.wwt_ready.emit()
 
 
 class WWTQtWidget(QtWidgets.QWidget):
-
     def __init__(self, url=None, parent=None):
-
         super(WWTQtWidget, self).__init__(parent=parent)
 
         self.web = WWTWebEngineView()
@@ -161,6 +166,7 @@ class WWTQtWidget(QtWidgets.QWidget):
     def _run_js(self, js, asynchronous=True):
         if not js:
             return
+
         if self._wwt_ready:
             logger.debug('Running javascript: %s' % js)
             return self.page.runJavaScript(js, asynchronous=asynchronous)
@@ -208,15 +214,16 @@ class WWTQtClient(BaseWWTWidget):
     """
 
     def __init__(self, block_until_ready=False, size=None):
-
         app = get_qapp()
 
         self._data_server = get_data_server()
+        
         wwt_url = self._data_server.static_url('widget/')
-
         self.widget = WWTQtWidget(url=wwt_url)
+
         if size is not None:
             self.widget.resize(*size)
+
         self.widget.show()
 
         super(WWTQtClient, self).__init__()
@@ -239,6 +246,7 @@ class WWTQtClient(BaseWWTWidget):
             Qt window is closed.
         """
         app = get_qapp()
+
         if duration is None:
             app.exec_()
         else:
@@ -253,9 +261,9 @@ class WWTQtClient(BaseWWTWidget):
     def _get_view_data(self, field):
         if field in ['ra', 'dec', 'fov', 'datetime']:
             return self._send_msg(event='get_'+field, asynchronous=False)
-        else:
-            raise ValueError("'field' should be one of: 'ra', 'dec', "
-                             "'fov', or 'datetime'")
+
+        raise ValueError("'field' should be one of: 'ra', 'dec', "
+                            "'fov', or 'datetime'")
 
     def _serve_file(self, filename, extension=''):
         return self._data_server.serve_file(filename, extension=extension)
