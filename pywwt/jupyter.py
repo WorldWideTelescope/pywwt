@@ -47,6 +47,7 @@ class WWTJupyterWidget(widgets.DOMWidget, AppBasedWWTWidget):
         #
         # The JS frontend will automagically prepend the Jupyter base URL if
         # needed and turn this into an absolute URL.
+
         self._appUrl = '/wwt/research/'
 
         widgets.DOMWidget.__init__(self)
@@ -72,8 +73,8 @@ class WWTJupyterWidget(widgets.DOMWidget, AppBasedWWTWidget):
 
         # Special message from the ipywidgets bridge to indicate
         # when the first widget view is ready to accept messages.
-        if content.get('type') == 'wwt_jupyter_widget_ready':
-            self._on_app_ready()
+        if content.get('type') == 'wwt_jupyter_widget_status':
+            self._on_app_status_change(alive=content['alive'])
 
         self._on_app_message_received(content)
 
@@ -226,14 +227,26 @@ class WWTLabApplication(AppBasedWWTWidget):
         self._comm.on_msg(self._on_comm_message_received)
         self._comm.open()
 
-        # TODO: the JLab extension needs to learn to use the ping-pong API and
-        # give us a ready notification.
-        self._on_app_ready()
-
-        super(WWTLabApplication, self).__init__(self)
+        super(WWTLabApplication, self).__init__()
 
     def _on_comm_message_received(self, msg):
-        self._on_app_message_received(msg['content']['data'])
+        """
+        Called when we receive a comms message.
+
+        NOTE: because this code is run asynchronously in Jupyter's comms
+        architecture, exceptions and printouts don't get reported to the user --
+        they just disappear. I don't know if there's a "right" way to address
+        that.
+        """
+        payload = msg['content']['data']
+
+        # Special message from the hub indicating app liveness status
+        if payload.get('type') == 'wwt_jupyter_viewer_status':
+            self._on_app_status_change(alive=payload['alive'])
+            # don't return -- maybe someone downstream can use this, and message
+            # processing needs to handle all sorts of unexpected messages anyway
+
+        self._on_app_message_received(payload)
 
     def _actually_send_msg(self, payload):
         self._comm.send(payload)

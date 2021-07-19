@@ -29,7 +29,7 @@
 // between views, but that turns out not to work because iframes are reloaded
 // when they're reparented in the DOM, destroying the WWT state. For the same
 // reason, the WWT state can also be destroyed if you hide and un-hide a single
-// widget view, unfortunately.
+// widget view in JupyterLab, unfortunately.
 //
 // Given these constraints, our current approach is:
 //
@@ -88,8 +88,10 @@ var WWTModel = widgets.DOMWidgetModel.extend({
         this.wwtBaseUrl = require('@jupyterlab/coreutils').PageConfig.getBaseUrl();
         this.wwtBaseUrl = require('@jupyterlab/coreutils').PageConfig.getBaseUrl();
 
+        // Management of our multiple views
         this._currentView = null;
         this._nextViewSeqNumber = 0;
+        this._kernelThinksWidgetIsAlive = false;
 
         // We're not going to even try to honor updates to this property.
         const appUrl = this.canonicalizeUrl(this.get('_appUrl'));
@@ -137,20 +139,48 @@ var WWTModel = widgets.DOMWidgetModel.extend({
         return [this.model_id + "v" + seq, seq];
     },
 
-    // Called by a widget view when its app is ready to respond to messages.
-    onViewReady: function(view) {
-        // By definition, this is the most recent view to become ready,
-        // so it should start receiving messages.
+    // Called by a widget view when the "liveness" state of its app changes.
+    onViewStatusChange: function(view, alive) {
+        if (alive) {
+            // Should this view become the current view?
+            //
+            // TODO: if the current view changes, we should signal to the kernel
+            // that its idea of the current view settings, preferences, layers,
+            // etc. have all been invalidated. We don't currently have a
+            // mechanism to do that.
 
-        if (this._currentView === null) {
-            // This is the first view to become ready at all. Signal to the
-            // kernel that we are ready to process messages.
-            this.send({
-                type: 'wwt_jupyter_widget_ready'
-            });
+            if (this._currentView === null || this._currentView.seqNumber < view.seqNumber) {
+                this._currentView = view;
+            }
+
+            // Does the kernel need to be notified about the overall liveness?
+
+            if (!this._kernelThinksWidgetIsAlive) {
+                this._kernelThinksWidgetIsAlive = true;
+                this.send({
+                    type: 'wwt_jupyter_widget_status',
+                    alive: true
+                });
+            }
+        } else {
+            // Here we only care if we just lost the *current* view. If that
+            // happened, we could imagine selecting a new current view from
+            // among the other ones that are alive, but that raises a ton of
+            // invalidation issues and doesn't really make sense within the
+            // ipywidgets UX that we can offer. So, just clear out everything.
+
+            if (this._currentView !== null && this._currentView.seqNumber == view.seqNumber) {
+                this._currentView = null;
+
+                if (this._kernelThinksWidgetIsAlive) {
+                    this._kernelThinksWidgetIsAlive = false;
+                    this.send({
+                        type: 'wwt_jupyter_widget_status',
+                        alive: false
+                    });
+                }
+            }
         }
-
-        this._currentView = view;
     },
 
     // Relay a message from the kernel to the active view. In order to keep
@@ -163,7 +193,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
             // We could queue up messages here. The kernel "shouldn't" send us
             // any messages until a view is ready, but it's always possible that
             // all of our views will go away after startup anyway.
-            console.warn("pywwt jupyer widget: dropping message on floor", msg);
+            console.warn("pywwt jupyter widget: dropping message on floor", msg);
             return;
         }
 
@@ -271,11 +301,13 @@ var WWTView = widgets.DOMWidgetView.extend({
 
         this.el.appendChild(div);
 
-        // We need to ping the app to find out when it's ready to receive
-        // messages. While the model handles most of the messaging stuff, it's a
-        // lot easier to handle the ready polling here in the view.
+        // We need to ping the app to find out whether it's handling messages,
+        // especially during the startup phase. While the model handles most of
+        // the messaging stuff, it's a lot easier to handle the ready polling
+        // here in the view.
 
-        this.ready = false;
+        this._alive = false;
+        this._lastPongTimestamp = 0;
         const self = this;
 
         window.addEventListener(
@@ -284,41 +316,47 @@ var WWTView = widgets.DOMWidgetView.extend({
             false
         );
 
-        this._pingerId = setInterval(function () { self.pingApp(); }, 100);
+        setInterval(function () { self.checkApp(); }, 1000);
     },
 
-    pingApp: function() {
-        // In principle we shouldn't get called once `ready` is true, but ...
-        if (!this.ready) {
-            var window = this.tryGetWindow();
-            if (window) {
-                window.postMessage({
-                    type: "wwt_ping_pong",
-                    threadId: this.wwtId,
-                    sessionId: this.wwtId,
-                }, this._appUrl);
-            }
+    checkApp: function() {
+        // Send our next ping ...
+
+        var window = this.tryGetWindow();
+        if (window) {
+            window.postMessage({
+                type: "wwt_ping_pong",
+                threadId: "" + Date.now(),
+                sessionId: this.wwtId,
+            }, this._appUrl);
+        }
+
+        // Has there been a recent pong?
+
+        var alive = (Date.now() - this._lastPongTimestamp) < 2500;
+
+        if (this._alive != alive) {
+            this._alive = alive;
+            this.model.onViewStatusChange(this, alive);
         }
     },
 
     // Process a message sent to the browser window. This function's only job is
-    // to look for a response to our ready ping from our particular app.
+    // to look for responses to our pings. It will be called for messages from
+    // all views of all widgets, though, so it needs to be careful about which
+    // messages to process.
     processDomWindowMessage: function (event) {
         var payload = event.data;
 
         if (event.origin !== this._appOrigin)
             return;
 
-        if (this.ready)
-            return;
+        if (payload.type == "wwt_ping_pong" && payload.sessionId == this.wwtId) {
+            var ts = +payload.threadId;
 
-        if (payload.type == "wwt_ping_pong" && payload.threadId == this.wwtId) {
-            // Our app is alive! In principle we should now deregister this
-            // event listener, but ... meh.
-            clearInterval(this._pingerId);
-            this._pingerId = null;
-            this.ready = true;
-            this.model.onViewReady(this);
+            if (!isNaN(ts)) {
+                this._lastPongTimestamp = ts;
+            }
         }
     },
 
@@ -416,10 +454,10 @@ var WWTView = widgets.DOMWidgetView.extend({
         iframe.height = height - 10;
     },
 
-    // Get the WWT window, if it is actually fully initialized. Note that
-    // if this widget view is hidden and then re-shown, the iframe will reload,
-    // and the contentWindow will acquire a new value. So we can't cache too
-    // aggressively.
+    // Get the WWT window, if it is actually fully initialized. Note that in
+    // JupyterLab if this widget view is hidden and then re-shown, the iframe
+    // will reload, and the contentWindow will acquire a new value. So we can't
+    // cache too aggressively.
     tryGetWindow: function () {
         var iframe = this.el.getElementsByTagName('iframe')[0];
         if (!iframe)

@@ -28,6 +28,7 @@ __all__ = [
     'AppBasedWWTWidget',
     'BaseWWTWidget',
     'DataPublishingNotAvailableError',
+    'ViewerNotAvailableError',
 ]
 
 DEFAULT_SURVEYS_URL = 'https://worldwidetelescope.github.io/pywwt/surveys.xml'
@@ -67,6 +68,16 @@ class DataPublishingNotAvailableError(Exception):
         if msg is None:
             msg = 'there is no mechanism available for pywwt to publish data to the WWT frontend'
         super(DataPublishingNotAvailableError, self).__init__(msg)
+
+
+class ViewerNotAvailableError(Exception):
+    """
+    Raised if data need to be published, but publishing service isn't available.
+    """
+    def __init__(self, msg=None):
+        if msg is None:
+            msg = 'cannot complete the operation because the WWT viewer isn\'t responding'
+        super(ViewerNotAvailableError, self).__init__(msg)
 
 
 class BaseWWTWidget(HasTraits):
@@ -853,16 +864,17 @@ class AppBasedWWTWidget(BaseWWTWidget):
     functionality based on that messaging interface.
 
     Subclasses need to set up some kind of mechanism that will call
-    ``_on_app_ready`` when the app is ready to receive messages, and
-    ``_on_app_message_received`` when a message from the frontend app is
-    received. They need to implement ``_actually_send_msg`` which will deliver a
-    message to the app.
+    ``_on_app_status_change`` when the app is ready to receive messages (at a
+    minimum), and ``_on_app_message_received`` when a message from the frontend
+    app is received. They need to implement ``_actually_send_msg`` which will
+    deliver a message to the app.
 
     This functionality will eventually be merged into the ``BaseWWTWidget``
     class.
 
     """
-    _messageQueue = None
+    _startupMessageQueue = None
+    _appAlive = False
 
     # View state that the frontend sends to us.
     _raRad = 0.0
@@ -873,21 +885,7 @@ class AppBasedWWTWidget(BaseWWTWidget):
     _timeRate = 1.0
 
     def __init__(self):
-        # If _messageQueue is None, that means that the app is ready and we
-        # should send it messages. Otherwise, we need to queue up messages.
-        #
-        # Various property-get/set APIs should pay attention to this and refuse
-        # to run until the app is ready. For instance, the following code:
-        #
-        # ```
-        # wwt = connect_to_app()
-        # wwt.load_image_collection("http://example.com/myspecialcollection.wtml")
-        # wwt.background = "My special image"
-        # ```
-        #
-        # Won't work, because we need to wait for the image collection load to
-        # actually happen before the lookup of "My special image" will succeed.
-        self._messageQueue = []
+        self._startupMessageQueue = []
 
         super(AppBasedWWTWidget, self).__init__()
 
@@ -923,11 +921,12 @@ class AppBasedWWTWidget(BaseWWTWidget):
         )
 
     def _send_msg(self, **kwargs):
-        if self._messageQueue is None:
-            # The app is ready!
+        if self._startupMessageQueue is not None:
+            self._startupMessageQueue.append(kwargs)
+        elif self._appAlive:
             self._actually_send_msg(kwargs)
         else:
-            self._messageQueue.append(kwargs)
+            raise ViewerNotAvailableError()
 
     def _actually_send_msg(self, payload):
         """
@@ -936,17 +935,24 @@ class AppBasedWWTWidget(BaseWWTWidget):
         """
         raise NotImplementedError()
 
-    def _on_app_ready(self):
+    def _on_app_status_change(self, alive=None):
         """
-        Try to keep it so that nothing bad will happen if this function ends up
-        being called multiple times.
-        """
-        queue = self._messageQueue
-        self._messageQueue = None
+        Extensibility API: if a keyword is None, that means no change in status.
 
-        if queue is not None:
-            for msg in queue:
-                self._actually_send_msg(msg)
+        This function should be prepared to handle redundant "status change"
+        updates because that's the just kind of thing that's going to happen in
+        this asynchronous messaging environment.
+        """
+
+        if alive is not None:
+            self._appAlive = alive
+
+            if alive and self._startupMessageQueue:
+                queue = self._startupMessageQueue
+                self._startupMessageQueue = None
+
+                for msg in queue:
+                    self._actually_send_msg(msg)
 
     def _on_app_message_received(self, payload):
         ptype = payload.get('type')
@@ -966,6 +972,9 @@ class AppBasedWWTWidget(BaseWWTWidget):
             pass  # report a warning somehow?
 
     def _get_view_data(self, field):
+        if not self._appAlive:
+            raise ViewerNotAvailableError()
+
         if field == 'ra':
             return self._raRad * R2H
         elif field == 'dec':
