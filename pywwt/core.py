@@ -920,6 +920,21 @@ class AppBasedWWTWidget(BaseWWTWidget):
             value=self.foreground_opacity * 100,
         )
 
+        SETTINGS = [
+            'actual_planet_scale',
+            'constellation_boundary_color',
+            'constellation_figure_color',
+            'constellation_selection_color',
+        ]
+
+        for s in SETTINGS:
+            wwt_name = self.trait_metadata(s, 'wwt')
+            self._send_msg(
+                event='setting_set',
+                setting=wwt_name,
+                value=getattr(self, s),
+            )
+
     def _send_msg(self, **kwargs):
         if self._startupMessageQueue is not None:
             self._startupMessageQueue.append(kwargs)
