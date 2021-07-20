@@ -102,9 +102,15 @@ def pytest_unconfigure(config):
 REFERENCE_TIME = datetime(2017, 2, 1, 0, 0, 0, 0)
 
 if QT_INSTALLED:
+    def _check_app_available():
+        import os.path
+        f = os.path.join(os.path.dirname(__file__), 'web_static', 'research', 'index.html')
+        if not os.path.exists(f):
+            raise Exception('You must run `python setup.py build` before running these tests (to get research app files)')
 
     @pytest.fixture(scope='session')
     def wwt_qt_client():
+        _check_app_available()
         from .qt import WWTQtClient
         wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
         wwt.set_current_time(REFERENCE_TIME)
@@ -114,6 +120,7 @@ if QT_INSTALLED:
 
     @pytest.fixture(scope='function')
     def wwt_qt_client_isolated():
+        _check_app_available()
         from .qt import WWTQtClient
         wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
         wwt.set_current_time(REFERENCE_TIME)

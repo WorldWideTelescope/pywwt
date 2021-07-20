@@ -91,8 +91,9 @@ jobs:
         source activate-conda.sh
         conda activate build
         set -x
-        \conda install -y pytest-remotedata
-        pytest -v -s pywwt -p no:warnings
+        \conda install -y pytest-remotedata pytest-timeout
+        python setup.py build
+        pytest -v -s pywwt -p no:warnings --timeout=180 --timeout_method=thread
       displayName: Test
       env:
         PYWWT_TEST_IMAGE_DIR: $(Build.ArtifactStagingDirectory)
@@ -161,8 +162,9 @@ jobs:
       source activate-conda.sh
       conda activate build
       set -x
-      \conda install -y pytest-cov pytest-remotedata
-      pytest --cov-report=xml --cov=pywwt pywwt
+      \conda install -y pytest-cov pytest-remotedata pytest-timeout
+      python setup.py build
+      pytest -v -s pywwt -p no:warnings --timeout=180 --timeout_method=thread --cov-report=xml --cov=pywwt
     displayName: Test with coverage
 
   - bash: bash <(curl -s https://codecov.io/bash)
