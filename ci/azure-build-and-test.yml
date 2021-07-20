@@ -87,6 +87,11 @@ jobs:
       displayName: Set up OpenGL (Windows)
 
     - bash: |
+        echo "##vso[task.setvariable variable=QTWEBENGINE_CHROMIUM_FLAGS;]--ignore-gpu-blacklist"
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      displayName: Set up OpenGL (macOS)
+
+    - bash: |
         set -euo pipefail
         source activate-conda.sh
         conda activate build
