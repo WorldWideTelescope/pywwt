@@ -62,7 +62,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
 
     wait_for_test(wwt, WAIT_TIME, for_render=True)
 
-    msg = assert_widget_image(tmpdir, wwt, 'test_full_step0.png', fail_now=False)
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step0.png', fail_now=False)
     if msg:
         failures.append(msg)
 
@@ -73,7 +73,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
 
     wait_for_test(wwt, WAIT_TIME, for_render=True)
 
-    msg = assert_widget_image(tmpdir, wwt, 'test_full_step1.png', fail_now=False)
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step1.png', fail_now=False)
     if msg:
         failures.append(msg)
 
@@ -87,7 +87,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
 
     wait_for_test(wwt, WAIT_TIME, for_render=True)
 
-    msg = assert_widget_image(tmpdir, wwt, 'test_full_step2.png', fail_now=False)
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step2.png', fail_now=False)
     if msg:
         failures.append(msg)
 
@@ -99,7 +99,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
 
     wait_for_test(wwt, WAIT_TIME, for_render=True)
 
-    msg = assert_widget_image(tmpdir, wwt, 'test_full_step3.png', fail_now=False)
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step3.png', fail_now=False)
     if msg:
         failures.append(msg)
 
@@ -109,7 +109,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
 
     wait_for_test(wwt, WAIT_TIME, for_render=True)
 
-    msg = assert_widget_image(tmpdir, wwt, 'test_full_step4.png', fail_now=False)
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step4.png', fail_now=False)
     if msg:
         failures.append(msg)
 
@@ -164,7 +164,7 @@ def test_full(tmpdir, wwt_qt_client_isolated):
 
     wait_for_test(wwt, WAIT_TIME, for_render=True)
 
-    msg = assert_widget_image(tmpdir, wwt, 'test_full_step5.png', fail_now=False)
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step5.png', fail_now=False)
     if msg:
         failures.append(msg)
 

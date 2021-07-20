@@ -1,4 +1,6 @@
+# Copyright 2018-2021 the .NET Foundation
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
+
 """
 This package contains the pywwt tests. This particular module contains some
 infrastructure to help with the image-output tests, which can be pretty finicky.
@@ -6,81 +8,28 @@ infrastructure to help with the image-output tests, which can be pretty finicky.
 
 __all__ = ['assert_widget_image', 'wait_for_test']
 
-from base64 import b64encode
 import os.path
 import sys
-from traceback import print_exc
 
 from matplotlib.testing.compare import compare_images  # noqa
 import pytest
 
-
-# Figure out which reference images we'll use.
-
-FRAMEWORK = 'none'
-FRAMEWORK_VARIANT = None
-
-from ..conftest import _cached_opengl_renderer, RUNNING_ON_CI, QT_INSTALLED  # noqa
-
-if QT_INSTALLED:
-    from qtpy.QtWebEngineWidgets import WEBENGINE
-
-    FRAMEWORK = 'webengine' if WEBENGINE else 'webkit'
-    if sys.platform.startswith('win'):
-        if not WEBENGINE and 'GDI' in _cached_opengl_renderer:
-            FRAMEWORK += '_gdi'
-        elif WEBENGINE and 'could not be' in _cached_opengl_renderer:
-            FRAMEWORK_VARIANT = '_windows'
-    elif sys.platform.startswith('darwin'):
-        FRAMEWORK += '_osx'
-
-        if 'Software' in _cached_opengl_renderer:
-            FRAMEWORK_VARIANT = '_sw'
-
-    if 'Mesa' in _cached_opengl_renderer:
-        FRAMEWORK_VARIANT = '_mesa'
-    elif 'llvmpipe' in _cached_opengl_renderer:
-        FRAMEWORK_VARIANT = '_llvmpipe'
-
-
-# Reproduction helper
-
-REPRODUCIBILITY_SCRIPT = """
-################################################################################
-# pywwt reproduction script for test image `{filename}`
-#
-# Export the images that were generated in the continuous integration for pywwt.
-# Just copy and paste all the code between here and '# End of script' into a
-# local file and run it with Python. You can then check if the differences
-# make sense, and if so, update the expected images.
-
-import base64
-
-expected = base64.b64decode('{expected}')
-
-with open('expected.png', 'wb') as f:
-    f.write(expected)
-
-actual = base64.b64decode('{actual}')
-
-with open('actual.png', 'wb') as f:
-    f.write(actual)
-
-# End of script
-################################################################################
-"""
-
 DATA = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
-
 IMAGE_OUTPUT_DIR = os.environ.get('PYWWT_TEST_IMAGE_DIR')
+IMAGE_COMPARISON_TOLERANCE = 1.6
 
 
 def assert_widget_image(tmpdir, widget, filename, fail_now=True):
     """
     Render an image from the given WWT widget and assert that it matches an
     expected version. The expected version might vary depending on the platform
-    and/or OpenGL renderer.
+    and/or OpenGL renderer, so we allow for multiple references and just check
+    if *any* of them matches well enough.
+
+    We used to have specific test images identified for each platform, but the
+    bookkeeping for that gets very finicky.
     """
+
     # If requested, save the "actual" images in another directory that will be
     # preserved beyond the test run.
 
@@ -91,45 +40,40 @@ def assert_widget_image(tmpdir, widget, filename, fail_now=True):
 
     widget.render(actual)
 
-    # Get the path to the "expected" image. There are can be a variety of
-    # versions, unfortunately, due to differences between different OpenGL
-    # renderers.
+    # Compare to the references
 
-    expected = None
+    refdir = os.path.join(DATA, 'refimg_' + os.path.splitext(filename)[0])
+    results = []
 
-    if FRAMEWORK_VARIANT is not None:
-        p = os.path.join(DATA, FRAMEWORK + FRAMEWORK_VARIANT, filename)
-        if os.path.exists(p):
-            expected = p
+    for refbase in sorted(os.listdir(refdir)):
+        refname = os.path.splitext(refbase)[0]
+        expected = os.path.join(refdir, refbase)
+        rv = compare_images(
+            expected,
+            actual,
+            tol=IMAGE_COMPARISON_TOLERANCE,
+            in_decorator=True
+        )
 
-    if expected is None:
-        expected = os.path.join(DATA, FRAMEWORK, filename)
+        if rv is None:
+            return None  # success!
 
-    # Do the actual comparison.
+        failpath = actual.replace('.png', '-failed-diff.png')
+        newfailpath = actual.replace('.png', '_vs_%s.png' % refname)
+        os.rename(failpath, newfailpath)
+        results.append((refname, rv['rms']))
 
-    try:
-        msg = compare_images(expected, actual, tol=1.6)
-    except Exception as e:
-        msg = 'Image comparison failed with exception: {}'.format(e)
-        print_exc()
+    # Nothing was good enough :-(
+    #
+    # We used to have machinery here to emit a "reproduction script" that
+    # printed out Python code to recreate the image files using big
+    # BASE64-encoded strings, but now we can just use Azure Pipelines artifacts.
+    # Consult the Git history if the reproduction script stuff is needed again.
 
-    if msg is None:
-        return  # success!
-
-    # If we're on a CI environment, output a script to regenerate the images.
-
-    if RUNNING_ON_CI:
-        with open(expected, 'rb') as f:
-            expected = b64encode(f.read()).decode()
-
-        with open(actual, 'rb') as f:
-            actual = b64encode(f.read()).decode()
-
-        print(REPRODUCIBILITY_SCRIPT.format(
-            actual=actual,
-            expected=expected,
-            filename=filename,
-        ))
+    msg = (
+        'observed image %s did not match any references to required RMS tolerance of '
+        '%.2f; results were: %s'
+    ) % (actual, IMAGE_COMPARISON_TOLERANCE, ', '.join('%s=%.2f' % t for t in results))
 
     if fail_now:
         pytest.fail(msg, pytrace=False)
