@@ -184,9 +184,14 @@ class WWTQtClient(AppBasedWWTWidget):
 
     size : `tuple`
         Sets size of widget in pixels (default: (600, 600)).
+
+    hide_all_chrome : optional `bool`
+        Configures the WWT frontend to hide all user-interface "chrome".
+        Defaults to true to maintain compatibility with the historical
+        pywwt user experience.
     """
 
-    def __init__(self, block_until_ready=False, size=None):
+    def __init__(self, block_until_ready=False, size=None, hide_all_chrome=True):
         app = get_qapp()
 
         self._data_server = get_data_server()
@@ -201,6 +206,15 @@ class WWTQtClient(AppBasedWWTWidget):
         self.widget.show()
 
         super(WWTQtClient, self).__init__()
+
+        if hide_all_chrome:
+            self._send_msg(
+                event='modify_settings',
+                target='app',
+                settings=[
+                    ('hideAllChrome', True),
+                ]
+            )
 
         # Start polling for the app to start responding to messages
 
