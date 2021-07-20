@@ -31,6 +31,11 @@
     <iframe id="wwt"></iframe>
 
     <script type="text/javascript">
+      // If you want to hack this file to use a different source for the
+      // research app (e.g., a localhost server on another port to test out
+      // changes), edit the `iframe.src` line, the origin on `postMessage` line,
+      // and the origin in the event-listener origin test `if` statement.
+
       var iframe = document.getElementById("wwt");
       iframe.src = "research/?origin=" + location.origin;
 
