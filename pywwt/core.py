@@ -788,7 +788,7 @@ class BaseWWTWidget(HasTraits):
         if not os.path.exists(script_dir):
             os.mkdir(script_dir)
         shutil.copy(os.path.join(fig_src_dir, "interactive_figure.js"), script_dir)
-        shutil.copy(os.path.join(os.path.dirname(__file__), 'web_static', 'widget', 'wwt_json_api.js'), script_dir)
+        shutil.copy(os.path.join(fig_src_dir, 'wwt_json_api.js'), script_dir)
 
         self._serialize_to_json(os.path.join(figure_dir, 'wwt_figure.json'), title, max_width, max_height)
 
