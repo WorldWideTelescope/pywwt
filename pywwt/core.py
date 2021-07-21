@@ -74,7 +74,8 @@ class DataPublishingNotAvailableError(Exception):
 
 class ViewerNotAvailableError(Exception):
     """
-    Raised if data need to be published, but publishing service isn't available.
+    Raised if an operation needs to communicate with the WWT viewer (app), but
+    the app doesn't seem to be responding to messages.
     """
     def __init__(self, msg=None):
         if msg is None:
@@ -214,7 +215,7 @@ class BaseWWTWidget(HasTraits):
 
         To generate these unique IDs, we use a simple sequence number as needed.
         The underlying message transport implementation should further uniquify
-        these IDs if needed -- this well depend on the message transport
+        these IDs if needed -- this will depend on the message transport
         mechanism.
         """
         self._seqNum += 1
