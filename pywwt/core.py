@@ -788,7 +788,7 @@ class BaseWWTWidget(HasTraits):
         if not os.path.exists(script_dir):
             os.mkdir(script_dir)
         shutil.copy(os.path.join(fig_src_dir, "interactive_figure.js"), script_dir)
-        shutil.copy(os.path.join(os.path.dirname(__file__), 'web_static', 'widget', 'wwt_json_api.js'), script_dir)
+        shutil.copy(os.path.join(fig_src_dir, 'wwt_json_api.js'), script_dir)
 
         self._serialize_to_json(os.path.join(figure_dir, 'wwt_figure.json'), title, max_width, max_height)
 
@@ -919,6 +919,21 @@ class AppBasedWWTWidget(BaseWWTWidget):
             event='set_foreground_opacity',
             value=self.foreground_opacity * 100,
         )
+
+        SETTINGS = [
+            'actual_planet_scale',
+            'constellation_boundary_color',
+            'constellation_figure_color',
+            'constellation_selection_color',
+        ]
+
+        for s in SETTINGS:
+            wwt_name = self.trait_metadata(s, 'wwt')
+            self._send_msg(
+                event='setting_set',
+                setting=wwt_name,
+                value=getattr(self, s),
+            )
 
     def _send_msg(self, **kwargs):
         if self._startupMessageQueue is not None:
