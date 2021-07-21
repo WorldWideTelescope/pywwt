@@ -10,7 +10,7 @@ from traitlets import Unicode, default, link, directional_link
 from ipyevents import Event as DOMListener
 from ipykernel.comm import Comm
 
-from .core import AppBasedWWTWidget
+from .core import BaseWWTWidget
 from .layers import ImageLayer
 from .jupyter_server import serve_file
 
@@ -27,9 +27,16 @@ dom_listener = DOMListener()
 
 
 @widgets.register
-class WWTJupyterWidget(widgets.DOMWidget, AppBasedWWTWidget):
+class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     """
     An AAS WorldWide Telescope Jupyter widget.
+
+    Parameters
+    ----------
+
+    hide_all_chrome : optional `bool`
+        Configures the WWT frontend to hide all user-interface "chrome".
+
     """
 
     _view_name = Unicode('WWTView').tag(sync=True)
@@ -41,7 +48,7 @@ class WWTJupyterWidget(widgets.DOMWidget, AppBasedWWTWidget):
 
     _appUrl = Unicode('').tag(sync=True)
 
-    def __init__(self):
+    def __init__(self, hide_all_chrome=False):
         # In the future we might want to make it possible to use the WWT-hosted
         # app instead of the bundled version.
         #
@@ -59,7 +66,7 @@ class WWTJupyterWidget(widgets.DOMWidget, AppBasedWWTWidget):
 
         self.on_msg(self._on_ipywidgets_message)
 
-        AppBasedWWTWidget.__init__(self)
+        BaseWWTWidget.__init__(self, hide_all_chrome=hide_all_chrome)
 
     def _on_ipywidgets_message(self, widget, content, buffers):
         """
@@ -207,7 +214,7 @@ class JupyterImageLayer(ImageLayer):
         self.vmin, self.vmax = change['new']
 
 
-class WWTLabApplication(AppBasedWWTWidget):
+class WWTLabApplication(BaseWWTWidget):
     """
     A handle the WWT JupyterLab application.
 
@@ -217,8 +224,8 @@ class WWTLabApplication(AppBasedWWTWidget):
     one specific notebook. The Python API is the same, it's just that the JSON
     messages we send are routed to the separate application rather than our own
     iframe.
-
     """
+
     _comm = None
     _controls = None
 

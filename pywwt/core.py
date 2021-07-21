@@ -25,7 +25,6 @@ from .traits import Color, Bool, Float, Unicode, AstropyQuantity
 from .utils import ensure_utc
 
 __all__ = [
-    'AppBasedWWTWidget',
     'BaseWWTWidget',
     'DataPublishingNotAvailableError',
     'ViewerNotAvailableError',
@@ -59,6 +58,9 @@ VIEW_MODES_3D = [
     'universe',
 ]
 
+R2D = 180 / np.pi
+R2H = 12 / np.pi
+
 
 class DataPublishingNotAvailableError(Exception):
     """
@@ -72,7 +74,8 @@ class DataPublishingNotAvailableError(Exception):
 
 class ViewerNotAvailableError(Exception):
     """
-    Raised if data need to be published, but publishing service isn't available.
+    Raised if an operation needs to communicate with the WWT viewer (app), but
+    the app doesn't seem to be responding to messages.
     """
     def __init__(self, msg=None):
         if msg is None:
@@ -82,15 +85,52 @@ class ViewerNotAvailableError(Exception):
 
 class BaseWWTWidget(HasTraits):
     """
-    The core class in common to the Qt and Jupyter widgets.
+    The core WWT "widget" (client) implementation.
+
+    Parameters
+    ----------
+    hide_all_chrome : optional `bool`
+        Configures the WWT frontend to hide all user-interface "chrome".
+        Defaults to true to maintain compatibility with the historical
+        pywwt user experience.
+
+    Notes
+    -----
 
     This class provides a common interface to modify settings and interact with
     the AAS WorldWide Telescope.
-    """
 
-    def __init__(self, **kwargs):
+    This client communications with the WWT "research application"
+    (@wwtelescope/research-app), which has a standardized control interface
+    (@wwtelescope/research-app-messages). This client is fundamentally concerned
+    with communicating using that messaging interface.
+
+    Subclasses need to set up some kind of mechanism that will call
+    ``_on_app_status_change`` when the app is ready to receive messages (at a
+    minimum), and ``_on_app_message_received`` when a message from the frontend
+    app is received. They need to implement ``_actually_send_msg`` which will
+    deliver a message to the app.
+
+    """
+    _startupMessageQueue = None
+    _appAlive = False
+
+    # View state that the frontend sends to us:
+    _raRad = 0.0
+    _decRad = 0.0
+    _fovDeg = 60.0
+    _engineTime = Time('2017-03-09T12:30:00', format='isot')
+    _systemTime = Time('2017-03-09T12:30:00', format='isot')
+    _timeRate = 1.0
+
+    def __init__(self, hide_all_chrome=False):
         super(BaseWWTWidget, self).__init__()
+
         self.observe(self._on_trait_change, type='change')
+
+        self._startupMessageQueue = []
+        self._seqNum = 0
+
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
@@ -100,7 +140,65 @@ class BaseWWTWidget(HasTraits):
         self._last_sent_view_mode = 'sky'
         self.layers = LayerManager(parent=self)
         self._annotation_set = set()
-        self._seqNum = 0
+
+        if hide_all_chrome:
+            self._send_msg(
+                event='modify_settings',
+                target='app',
+                settings=[
+                    ('hideAllChrome', True),
+                ]
+            )
+
+        # pywwt's surveys.xml has slightly different contents than
+        # builtin-image-sets.wtml (for the time being), so we want to make sure
+        # that the frontend agrees with us about which named imagesets are
+        # available.
+        self._send_msg(
+            event='load_image_collection',
+            url=DEFAULT_SURVEYS_URL,
+            threadId=self._next_seq(),
+        )
+
+        # Forcibly set up the app's configuration to match the pywwt default.
+        # Most things align, but not everything. Note that fg/bg imageset names
+        # can't rely on items that are unique to DEFAULT_SURVEYS_URL since it
+        # won't necessarily have loaded by the time these messages reach the
+        # app.
+        #
+        # Note that this implementation is bad because every time you create
+        # a new client, you'll forcible modify the app's state. We need to
+        # move to a system where this initializer can reliably sync its state
+        # to the app's.
+        self._send_msg(
+            event='set_background_by_name',
+            name=self.background,
+        )
+
+        self._send_msg(
+            event='set_foreground_by_name',
+            name=self.foreground,
+        )
+
+        self._send_msg(
+            event='set_foreground_opacity',
+            value=self.foreground_opacity * 100,
+        )
+
+        SETTINGS = [
+            'actual_planet_scale',
+            'constellation_boundary_color',
+            'constellation_figure_color',
+            'constellation_selection_color',
+        ]
+
+        for s in SETTINGS:
+            wwt_name = self.trait_metadata(s, 'wwt')
+            self._send_msg(
+                event='setting_set',
+                setting=wwt_name,
+                value=getattr(self, s),
+            )
 
         # NOTE: we deliberately don't force _on_trait_change to be called here
         # for the WWT settings, as the default values are hard-coded in the
@@ -117,6 +215,7 @@ class BaseWWTWidget(HasTraits):
         # setting).
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         new_value = changed['new']
+
         if wwt_name is not None:
             if isinstance(new_value, u.Quantity):
                 new_value = new_value.value
@@ -135,21 +234,87 @@ class BaseWWTWidget(HasTraits):
 
         To generate these unique IDs, we use a simple sequence number as needed.
         The underlying message transport implementation should further uniquify
-        these IDs if needed -- this well depend on the message transport
+        these IDs if needed -- this will depend on the message transport
         mechanism.
         """
         self._seqNum += 1
         return str(self._seqNum)
 
-    # Support methods that can/should be overridden by subclasses
-
     def _send_msg(self, **kwargs):
-        # This method should be overridden and should send the message to WWT
-        pass
+        if self._startupMessageQueue is not None:
+            self._startupMessageQueue.append(kwargs)
+        elif self._appAlive:
+            self._actually_send_msg(kwargs)
+        else:
+            raise ViewerNotAvailableError()
+
+    def _on_app_status_change(self, alive=None):
+        """
+        Extensibility API: if a keyword is None, that means no change in status.
+
+        This function should be prepared to handle redundant "status change"
+        updates because that's the just kind of thing that's going to happen in
+        this asynchronous messaging environment.
+        """
+
+        if alive is not None:
+            self._appAlive = alive
+
+            if alive and self._startupMessageQueue:
+                queue = self._startupMessageQueue
+                self._startupMessageQueue = None
+
+                for msg in queue:
+                    self._actually_send_msg(msg)
+
+    def _on_app_message_received(self, payload):
+        """
+        Call this function when a message is received from the research app.
+        This will generally happen in some kind of asynchronous event handler,
+        so there is no guarantee that exceptions raised here will be exposed to
+        the user.
+        """
+
+        ptype = payload.get('type')
+        # some events don't have type but do have: pevent = payload.get('event')
+
+        if ptype != 'wwt_view_state':
+            return
+
+        try:
+            self._raRad = float(payload['raRad'])
+            self._decRad = float(payload['decRad'])
+            self._fovDeg = float(payload['fovDeg'])
+            self._engineTime = Time(payload['engineClockISOT'], format='isot')
+            self._systemTime = Time(payload['systemClockISOT'], format='isot')
+            self._timeRate = float(payload['engineClockRateFactor'])
+        except ValueError:
+            pass  # report a warning somehow?
 
     def _get_view_data(self, field):
-        # This method should be overwritten to get the RA, Dec, and FoV of the current view
-        pass
+        if not self._appAlive:
+            raise ViewerNotAvailableError()
+
+        if field == 'ra':
+            return self._raRad * R2H
+        elif field == 'dec':
+            return self._decRad * R2D
+        elif field == 'fov':
+            return self._fovDeg
+        elif field == 'datetime':
+            engine_delta = self._timeRate * (Time.now() - self._systemTime)
+            return self._engineTime + engine_delta
+        else:
+            raise ValueError('internal problem: unexpected "field" value')
+
+    # Support methods that can/should be overridden by subclasses:
+
+    def _actually_send_msg(self, payload):
+        """
+        Note that the API here is different than ``_send_msg``: we take a dict,
+        not ``**kwargs``.
+        """
+        raise NotImplementedError()
 
     def _serve_file(self, filename, extension=''):
         """
@@ -847,157 +1012,3 @@ class BaseWWTWidget(HasTraits):
 
     def _save_added_data(self, dir):
         self.layers._save_all_data_for_serialization(dir)
-
-
-R2D = 180 / np.pi
-R2H = 12 / np.pi
-
-
-class AppBasedWWTWidget(BaseWWTWidget):
-    """
-    A WWT widget based on the WWT research application.
-
-    While the basic pywwt widget was based on a hand-coded HTML/JS interface,
-    we're trying to build everything off of the more sophisticated "research
-    application" (@wwtelescope/research-app), which has a standardized control
-    interface (@wwtelescope/research-app-messages). This layer of code builds up
-    functionality based on that messaging interface.
-
-    Subclasses need to set up some kind of mechanism that will call
-    ``_on_app_status_change`` when the app is ready to receive messages (at a
-    minimum), and ``_on_app_message_received`` when a message from the frontend
-    app is received. They need to implement ``_actually_send_msg`` which will
-    deliver a message to the app.
-
-    This functionality will eventually be merged into the ``BaseWWTWidget``
-    class.
-
-    """
-    _startupMessageQueue = None
-    _appAlive = False
-
-    # View state that the frontend sends to us.
-    _raRad = 0.0
-    _decRad = 0.0
-    _fovDeg = 60.0
-    _engineTime = Time('2017-03-09T12:30:00', format='isot')
-    _systemTime = Time('2017-03-09T12:30:00', format='isot')
-    _timeRate = 1.0
-
-    def __init__(self):
-        self._startupMessageQueue = []
-
-        super(AppBasedWWTWidget, self).__init__()
-
-        # pywwt's surveys.xml has slightly different contents than
-        # builtin-image-sets.wtml (for the time being), so we want to make sure
-        # that the frontend agrees with us about which named imagesets are
-        # available.
-        self._send_msg(
-            event='load_image_collection',
-            url=DEFAULT_SURVEYS_URL,
-            threadId=self._next_seq(),
-        )
-
-        # Forcibly set up the app's configuration to match the pywwt default.
-        # Most things align, but not everything. Note that fg/bg imageset names
-        # can't rely on items that are unique to DEFAULT_SURVEYS_URL since it
-        # won't necessarily have loaded by the time these messages reach the
-        # app.
-
-        self._send_msg(
-            event='set_background_by_name',
-            name=self.background,
-        )
-
-        self._send_msg(
-            event='set_foreground_by_name',
-            name=self.foreground,
-        )
-
-        self._send_msg(
-            event='set_foreground_opacity',
-            value=self.foreground_opacity * 100,
-        )
-
-        SETTINGS = [
-            'actual_planet_scale',
-            'constellation_boundary_color',
-            'constellation_figure_color',
-            'constellation_selection_color',
-        ]
-
-        for s in SETTINGS:
-            wwt_name = self.trait_metadata(s, 'wwt')
-            self._send_msg(
-                event='setting_set',
-                setting=wwt_name,
-                value=getattr(self, s),
-            )
-
-    def _send_msg(self, **kwargs):
-        if self._startupMessageQueue is not None:
-            self._startupMessageQueue.append(kwargs)
-        elif self._appAlive:
-            self._actually_send_msg(kwargs)
-        else:
-            raise ViewerNotAvailableError()
-
-    def _actually_send_msg(self, payload):
-        """
-        Note that the API here is different than ``_send_msg``: we take a dict,
-        not ``**kwargs``.
-        """
-        raise NotImplementedError()
-
-    def _on_app_status_change(self, alive=None):
-        """
-        Extensibility API: if a keyword is None, that means no change in status.
-
-        This function should be prepared to handle redundant "status change"
-        updates because that's the just kind of thing that's going to happen in
-        this asynchronous messaging environment.
-        """
-
-        if alive is not None:
-            self._appAlive = alive
-
-            if alive and self._startupMessageQueue:
-                queue = self._startupMessageQueue
-                self._startupMessageQueue = None
-
-                for msg in queue:
-                    self._actually_send_msg(msg)
-
-    def _on_app_message_received(self, payload):
-        ptype = payload.get('type')
-        # some events don't have type but do have: pevent = payload.get('event')
-
-        if ptype != 'wwt_view_state':
-            return
-
-        try:
-            self._raRad = float(payload['raRad'])
-            self._decRad = float(payload['decRad'])
-            self._fovDeg = float(payload['fovDeg'])
-            self._engineTime = Time(payload['engineClockISOT'], format='isot')
-            self._systemTime = Time(payload['systemClockISOT'], format='isot')
-            self._timeRate = float(payload['engineClockRateFactor'])
-        except ValueError:
-            pass  # report a warning somehow?
-
-    def _get_view_data(self, field):
-        if not self._appAlive:
-            raise ViewerNotAvailableError()
-
-        if field == 'ra':
-            return self._raRad * R2H
-        elif field == 'dec':
-            return self._decRad * R2D
-        elif field == 'fov':
-            return self._fovDeg
-        elif field == 'datetime':
-            engine_delta = self._timeRate * (Time.now() - self._systemTime)
-            return self._engineTime + engine_delta
-        else:
-            raise ValueError('internal problem: unexpected "field" value')

@@ -10,14 +10,13 @@ know once WWT is set up.
 """
 
 import json
-import sys
 import time
 
 from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
 from qtpy import QtWidgets, QtGui, QtCore
 
 from .app import get_qapp
-from .core import AppBasedWWTWidget
+from .core import BaseWWTWidget
 from .logger import logger
 from .data_server import get_data_server
 
@@ -82,8 +81,11 @@ class WWTQWebEnginePage(QWebEnginePage):
             line_number=None,
             source_id=None
         ):
-            context = 'level={0}, line_number={1}, source_id={2}'.format(level, line_number, source_id)
-            self._common_console_handler(message, context)
+            try:
+                context = 'level={0}, line_number={1}, source_id={2}'.format(level, line_number, source_id)
+                self._common_console_handler(message, context)
+            except:  # noqa: E722
+                logger.exception('unhandled Python exception in Qt webengine javaScriptConsoleMessage')  # noqa
 
         def _process_js_response(self, result):
             self._js_response_received = True
@@ -108,8 +110,11 @@ class WWTQWebEnginePage(QWebEnginePage):
             line_number=None,
             source_id=None
         ):
-            context = 'line_number={0}, source_id={1}'.format(line_number, source_id)
-            self._common_console_handler(message, context)
+            try:
+                context = 'line_number={0}, source_id={1}'.format(line_number, source_id)
+                self._common_console_handler(message, context)
+            except:  # noqa: E722
+                logger.exception('unhandled Python exception in Qt webkit javaScriptConsoleMessage')  # noqa
 
         def runJavaScript(self, code):
             return self._frame.evaluateJavaScript(code)
@@ -120,6 +125,7 @@ class WWTQWebEnginePage(QWebEnginePage):
                 payload = json.loads(message[13:])
             except Exception as e:
                 logger.warning('invalid pywwtMessage JSON: %s', e)
+                return
 
             if self.app_message_callback is None:
                 logger.warning('received app message, but no handler available; message: %s', payload)
@@ -127,7 +133,7 @@ class WWTQWebEnginePage(QWebEnginePage):
                 try:
                     self.app_message_callback(payload)
                 except Exception:
-                    logger.exception('error handling app message; payload: %s', payload)
+                    logger.exception('error handling app message; payload: %s', payload)  # noqa
         else:
             logger.debug('JS console message: %s (%s)', message, context)
 
@@ -174,7 +180,7 @@ class WWTQtWidget(QtWidgets.QWidget):
             return self.parent().dropEvent(event)
 
 
-class WWTQtClient(AppBasedWWTWidget):
+class WWTQtClient(BaseWWTWidget):
     """
     A client to create and drive the Qt widget.
 
@@ -207,16 +213,9 @@ class WWTQtClient(AppBasedWWTWidget):
         self.widget.page.app_message_callback = self._on_app_message
         self.widget.show()
 
-        super(WWTQtClient, self).__init__()
-
-        if hide_all_chrome:
-            self._send_msg(
-                event='modify_settings',
-                target='app',
-                settings=[
-                    ('hideAllChrome', True),
-                ]
-            )
+        super(WWTQtClient, self).__init__(
+            hide_all_chrome=hide_all_chrome,
+        )
 
         # Start polling for the app to start responding to messages
 
@@ -240,8 +239,8 @@ class WWTQtClient(AppBasedWWTWidget):
         # Cf: https://doc.qt.io/qt-5/exceptionsafety.html#signals-and-slots
         try:
             self._check_ready_inner()
-        except Exception as e:
-            print('unhandled exception in Qt check-ready callback:', e, file=sys.stderr)
+        except:  # noqa: E722
+            logger.exception('unhandled exception in Qt check-ready callback')
 
     def _check_ready_inner(self):
         # Send the ping. We have some extra paranoia here in case funky
