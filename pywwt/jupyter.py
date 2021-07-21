@@ -30,6 +30,13 @@ dom_listener = DOMListener()
 class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     """
     An AAS WorldWide Telescope Jupyter widget.
+
+    Parameters
+    ----------
+
+    hide_all_chrome : optional `bool`
+        Configures the WWT frontend to hide all user-interface "chrome".
+
     """
 
     _view_name = Unicode('WWTView').tag(sync=True)
@@ -41,7 +48,7 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
 
     _appUrl = Unicode('').tag(sync=True)
 
-    def __init__(self):
+    def __init__(self, hide_all_chrome=False):
         # In the future we might want to make it possible to use the WWT-hosted
         # app instead of the bundled version.
         #
@@ -59,7 +66,7 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
 
         self.on_msg(self._on_ipywidgets_message)
 
-        BaseWWTWidget.__init__(self)
+        BaseWWTWidget.__init__(self, hide_all_chrome=hide_all_chrome)
 
     def _on_ipywidgets_message(self, widget, content, buffers):
         """

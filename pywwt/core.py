@@ -87,6 +87,16 @@ class BaseWWTWidget(HasTraits):
     """
     The core WWT "widget" (client) implementation.
 
+    Parameters
+    ----------
+    hide_all_chrome : optional `bool`
+        Configures the WWT frontend to hide all user-interface "chrome".
+        Defaults to true to maintain compatibility with the historical
+        pywwt user experience.
+
+    Notes
+    -----
+
     This class provides a common interface to modify settings and interact with
     the AAS WorldWide Telescope.
 
@@ -113,7 +123,7 @@ class BaseWWTWidget(HasTraits):
     _systemTime = Time('2017-03-09T12:30:00', format='isot')
     _timeRate = 1.0
 
-    def __init__(self, **kwargs):
+    def __init__(self, hide_all_chrome=False):
         super(BaseWWTWidget, self).__init__()
 
         self.observe(self._on_trait_change, type='change')
@@ -130,6 +140,15 @@ class BaseWWTWidget(HasTraits):
         self._last_sent_view_mode = 'sky'
         self.layers = LayerManager(parent=self)
         self._annotation_set = set()
+
+        if hide_all_chrome:
+            self._send_msg(
+                event='modify_settings',
+                target='app',
+                settings=[
+                    ('hideAllChrome', True),
+                ]
+            )
 
         # pywwt's surveys.xml has slightly different contents than
         # builtin-image-sets.wtml (for the time being), so we want to make sure

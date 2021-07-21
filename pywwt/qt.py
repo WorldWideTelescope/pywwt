@@ -213,16 +213,9 @@ class WWTQtClient(BaseWWTWidget):
         self.widget.page.app_message_callback = self._on_app_message
         self.widget.show()
 
-        super(WWTQtClient, self).__init__()
-
-        if hide_all_chrome:
-            self._send_msg(
-                event='modify_settings',
-                target='app',
-                settings=[
-                    ('hideAllChrome', True),
-                ]
-            )
+        super(WWTQtClient, self).__init__(
+            hide_all_chrome=hide_all_chrome,
+        )
 
         # Start polling for the app to start responding to messages
 
