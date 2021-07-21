@@ -741,7 +741,7 @@ class BaseWWTWidget(HasTraits):
 
     # Data loading
 
-    def load_image_collection(self, url):
+    def load_image_collection(self, url, recursive=False):
         """
         Load a collection of layers for possible use in the viewer.
 
@@ -749,6 +749,12 @@ class BaseWWTWidget(HasTraits):
         ----------
         url : `str`
             The URL of the desired image collection.
+
+        recursive : optional `bool`
+            If true, will also load any child folders referenced in the
+            specified WTML file. The default behavior is only to load the
+            single file and *not* recurse into subfolders. Recursive loading
+            can potentially be very time-consuming.
 
         Notes
         -----
@@ -763,6 +769,7 @@ class BaseWWTWidget(HasTraits):
         self._send_msg(
             event='load_image_collection',
             url=url,
+            loadChildFolders=recursive,
             threadId=self._next_seq(),
         )
 
