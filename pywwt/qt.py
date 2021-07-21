@@ -16,7 +16,7 @@ from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
 from qtpy import QtWidgets, QtGui, QtCore
 
 from .app import get_qapp
-from .core import AppBasedWWTWidget
+from .core import BaseWWTWidget
 from .logger import logger
 from .data_server import get_data_server
 
@@ -180,7 +180,7 @@ class WWTQtWidget(QtWidgets.QWidget):
             return self.parent().dropEvent(event)
 
 
-class WWTQtClient(AppBasedWWTWidget):
+class WWTQtClient(BaseWWTWidget):
     """
     A client to create and drive the Qt widget.
 
