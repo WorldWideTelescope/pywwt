@@ -95,22 +95,22 @@ if QT_INSTALLED:
         if not os.path.exists(f):
             raise Exception('You must run `python setup.py build` before running these tests (to get research app files)')
 
-    @pytest.fixture(scope='session')
-    def wwt_qt_client():
+    @pytest.fixture(scope='function')
+    def wwt_qt_client_isolated():
         _check_app_available()
-        from .qt import WWTQtClient
-        wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
+        from . import qt
+
+        # As mentioned in wait_for_test() in tests/__init__.py, on the CI
+        # system, the macOS tests use software rendering and it is slooooooow.
+        # We need to give a very generous deadline for checking the app's
+        # aliveness since the renders can cause huge amounts of wall-clock time
+        # to elapse.
+        qt.APP_LIVENESS_DEADLINE = 45
+
+        wwt = qt.WWTQtClient(block_until_ready=True, size=(400, 400))
         wwt.set_current_time(REFERENCE_TIME)
         wwt.pause_time()
         yield wwt
         wwt.close()
 
-    @pytest.fixture(scope='function')
-    def wwt_qt_client_isolated():
-        _check_app_available()
-        from .qt import WWTQtClient
-        wwt = WWTQtClient(block_until_ready=True, size=(400, 400))
-        wwt.set_current_time(REFERENCE_TIME)
-        wwt.pause_time()
-        yield wwt
-        wwt.close()
+    wwt_qt_client = wwt_qt_client_isolated

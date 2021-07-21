@@ -31,6 +31,7 @@ class TestWWTWidget:
 
     def test_coordinates(self, capsys, wwt_qt_client):
         wwt_qt_client.center_on_coordinates(M42, fov=10 * u.deg)
+        wait_for_test(wwt_qt_client, WAIT_TIME)
         assert M42.separation(wwt_qt_client.get_center()).arcsec < 1.e-6
         wait_for_test(wwt_qt_client, WAIT_TIME)
         check_silent_output(capsys)

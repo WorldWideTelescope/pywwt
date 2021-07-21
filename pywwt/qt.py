@@ -23,6 +23,8 @@ from .data_server import get_data_server
 
 __all__ = ['WWTQtClient']
 
+APP_LIVENESS_DEADLINE = 2.5  # seconds
+
 
 class WWTWebEngineView(QWebEngineView):
     # Pass drag and drop events back up to the parent
@@ -254,7 +256,7 @@ class WWTQtClient(AppBasedWWTWidget):
 
         # Evaluate pong status
 
-        alive = (time.time() - self._last_pong_timestamp) < 2.5
+        alive = (time.time() - self._last_pong_timestamp) < APP_LIVENESS_DEADLINE
         self._on_app_status_change(alive=alive)
 
     def _on_app_message(self, payload):
