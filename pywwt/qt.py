@@ -63,6 +63,12 @@ class WWTQWebEnginePage(QWebEnginePage):
 
     app_message_callback = None
 
+    wwt_ready = QtCore.Signal()
+    """A signal raised when the WWT app first becomes ready.
+
+    The glue-wwt plugin requires this signal, so we can't move or remove it.
+    """
+
     def __init__(self, parent=None):
         super(WWTQWebEnginePage, self).__init__(parent=parent)
 
@@ -253,9 +259,15 @@ class WWTQtClient(BaseWWTWidget):
                 'threadId': str(time.time()),
             })
 
-        # Evaluate pong status
+        # Evaluate pong status, with a hack for glue-wwt -- we need to emit the
+        # wwt_ready signal on our `page` field. It hardcodes the location of the
+        # field so we can't rationalize this API.
 
         alive = (time.time() - self._last_pong_timestamp) < APP_LIVENESS_DEADLINE
+
+        if not self._appAlive and alive:
+            self.widget.page.wwt_ready.emit()
+
         self._on_app_status_change(alive=alive)
 
     def _on_app_message(self, payload):
