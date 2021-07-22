@@ -3,6 +3,7 @@
 
 var shell = require('shelljs');
 
+shell.mkdir('-p', '../pywwt/nbextension/static');
 shell.cp('dist/bundle.js', '../pywwt/nbextension/static/index.js');
 shell.cp('dist/bundle.js.map', '../pywwt/nbextension/static/index.js.map');
 
