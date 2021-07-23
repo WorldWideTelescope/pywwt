@@ -370,11 +370,11 @@ def _maybe_perpetrate_mega_kernel_hack():
     except Exception:
         logger.exception('failed to set up Jupyter kernel async hack')
 
+
 def _maybe_perpetrate_mega_kernel_hack_inner():
     import asyncio
     import inspect
     import ipykernel.kernelbase
-    from traceback import format_exc
 
     kernel = ipykernel.kernelbase.Kernel.instance()
     orig_schedule_dispatch = kernel.schedule_dispatch
