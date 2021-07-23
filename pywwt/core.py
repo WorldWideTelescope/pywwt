@@ -279,6 +279,7 @@ class BaseWWTWidget(HasTraits):
             def maybe_time_it_out():
                 if not fut.done():
                     fut.set_exception(asyncio.TimeoutError())
+                    del self._futures[seq]
 
             loop.call_later(timeout, maybe_time_it_out)
 
