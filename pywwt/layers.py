@@ -29,7 +29,12 @@ from traitlets import HasTraits, validate, observe
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
 from .utils import sanitize_image, validate_traits, ensure_utc
 
-__all__ = ['LayerManager', 'TableLayer', 'ImageLayer']
+__all__ = [
+    'CatalogHipsLayer',
+    'ImageLayer',
+    'LayerManager',
+    'TableLayer',
+]
 
 VALID_FRAMES = ['sky', 'ecliptic', 'galactic', 'sun', 'mercury', 'venus',
                 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
