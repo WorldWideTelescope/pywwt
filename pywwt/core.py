@@ -5,6 +5,7 @@
 The core WWT widget implementation.
 """
 
+import asyncio
 import json
 import os
 import shutil
@@ -114,6 +115,8 @@ class BaseWWTWidget(HasTraits):
     """
     _startupMessageQueue = None
     _appAlive = False
+    _readyFuture = None
+    _readinessAchieved = False
 
     # View state that the frontend sends to us:
     _raRad = 0.0
@@ -130,8 +133,10 @@ class BaseWWTWidget(HasTraits):
 
         self._startupMessageQueue = []
         self._seqNum = 0
+        self._futures = {}
 
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
+        self._available_hips_catalog_names = []
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
         self._instruments = Instruments()
@@ -248,6 +253,38 @@ class BaseWWTWidget(HasTraits):
         else:
             raise ViewerNotAvailableError()
 
+    def _send_into_future(self, timeout=30, **kwargs):
+        """
+        Send a message and return an asyncio Future that will resolve when the
+        message receives a reply from the app. The value of the future will be
+        the full JSON message received.
+
+        This interface leverages the WWT messaging convention that messages
+        which receive replies will have a field named `threadId` that will be
+        reproduced in the reply. The message handler looks for this threadId and
+        resolves the future if/when the reply is seen.
+
+        By default, the future will timeout eventually. The timeout parameter is
+        measured in seconds. If it's ``None``, no timeout will be applied.
+        """
+
+        seq = self._next_seq()
+        loop = asyncio.get_running_loop()
+        fut = loop.create_future()
+
+        self._futures[seq] = fut
+        self._send_msg(threadId=seq, **kwargs)
+
+        if timeout is not None:
+            def maybe_time_it_out():
+                if not fut.done():
+                    fut.set_exception(asyncio.TimeoutError())
+                    del self._futures[seq]
+
+            loop.call_later(timeout, maybe_time_it_out)
+
+        return fut
+
     def _on_app_status_change(self, alive=None):
         """
         Extensibility API: if a keyword is None, that means no change in status.
@@ -259,6 +296,11 @@ class BaseWWTWidget(HasTraits):
 
         if alive is not None:
             self._appAlive = alive
+
+            if alive and self._readyFuture and not self._readinessAchieved:
+                # See becomes_ready()
+                self._readyFuture.set_result(self)
+                self._readinessAchieved = True
 
             if alive and self._startupMessageQueue:
                 queue = self._startupMessageQueue
@@ -278,18 +320,33 @@ class BaseWWTWidget(HasTraits):
         ptype = payload.get('type')
         # some events don't have type but do have: pevent = payload.get('event')
 
-        if ptype != 'wwt_view_state':
-            return
+        if ptype == 'wwt_view_state':
+            try:
+                self._raRad = float(payload['raRad'])
+                self._decRad = float(payload['decRad'])
+                self._fovDeg = float(payload['fovDeg'])
+                self._engineTime = Time(payload['engineClockISOT'], format='isot')
+                self._systemTime = Time(payload['systemClockISOT'], format='isot')
+                self._timeRate = float(payload['engineClockRateFactor'])
+            except ValueError:
+                pass  # report a warning somehow?
+        elif ptype == 'wwt_application_state':
+            hipscat = payload.get('hipsCatalogNames')
 
-        try:
-            self._raRad = float(payload['raRad'])
-            self._decRad = float(payload['decRad'])
-            self._fovDeg = float(payload['fovDeg'])
-            self._engineTime = Time(payload['engineClockISOT'], format='isot')
-            self._systemTime = Time(payload['systemClockISOT'], format='isot')
-            self._timeRate = float(payload['engineClockRateFactor'])
-        except ValueError:
-            pass  # report a warning somehow?
+            if hipscat is not None:
+                self._available_hips_catalog_names = hipscat
+
+        # Any relevant async future to resolve?
+
+        tid = payload.get('threadId')
+
+        if tid is not None:
+            try:
+                fut = self._futures.pop(tid)
+            except KeyError:
+                pass
+            else:
+                fut.set_result(payload)
 
     def _get_view_data(self, field):
         if not self._appAlive:
@@ -367,6 +424,44 @@ class BaseWWTWidget(HasTraits):
         """
         from .layers import ImageLayer
         return ImageLayer(self, **kwargs)
+
+    # Startup
+
+    async def becomes_ready(self, timeout=30):
+        """
+        An async function that finishes when the WWT app becomes ready.
+
+        Returns
+        -------
+        self
+
+        Notes
+        -----
+
+        The web browser running WWT needs to initialize the application and
+        download some initial data files, which can take an indeterminate amount
+        of time. This async function will complete once the WWT app has
+        initialized and is ready to respond to control messages from pywwt.
+        After this has happened the first time, this function will complete
+        instantly.
+        """
+
+        if self._readinessAchieved:
+            return self
+
+        if self._readyFuture is None:
+            loop = asyncio.get_running_loop()
+            self._readyFuture = fut = loop.create_future()
+
+            def maybe_time_it_out():
+                if not fut.done():
+                    self._readyFuture = None
+                    fut.set_exception(asyncio.TimeoutError())
+
+            loop.call_later(timeout, maybe_time_it_out)
+
+        await self._readyFuture
+        return self
 
     # Main attributes
 
@@ -741,7 +836,7 @@ class BaseWWTWidget(HasTraits):
 
     # Data loading
 
-    def load_image_collection(self, url):
+    def load_image_collection(self, url, recursive=False):
         """
         Load a collection of layers for possible use in the viewer.
 
@@ -749,6 +844,12 @@ class BaseWWTWidget(HasTraits):
         ----------
         url : `str`
             The URL of the desired image collection.
+
+        recursive : optional `bool`
+            If true, will also load any child folders referenced in the
+            specified WTML file. The default behavior is only to load the
+            single file and *not* recurse into subfolders. Recursive loading
+            can potentially be very time-consuming.
 
         Notes
         -----
@@ -759,10 +860,16 @@ class BaseWWTWidget(HasTraits):
         loaded, you'll need to pause and give WWT time to receive and process
         your request.
         """
+        # TODO: this isn't the right approach. We should get knowledge about
+        # available layers from the app, since it might be instructed to load up
+        # WTMLs by other clients that we don't even know about. Also, this
+        # doesn't work for URLs that we serve ourselves, which may only be
+        # fragments when we're running in the Jupyter context.
         self._available_layers.update(get_imagery_layers(url))
         self._send_msg(
             event='load_image_collection',
             url=url,
+            loadChildFolders=recursive,
             threadId=self._next_seq(),
         )
 
@@ -772,6 +879,18 @@ class BaseWWTWidget(HasTraits):
         A list of the layers that are currently available in the viewer.
         """
         return sorted(self._available_layers)
+
+    # HiPS catalog support
+
+    _available_hips_catalog_names = None
+
+    @property
+    def available_hips_catalog_names(self):
+        """
+        A list of the names of HiPS catalog layers that are currently available
+        in the viewer.
+        """
+        return sorted(self._available_hips_catalog_names)
 
     # Annotations
 

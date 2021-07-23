@@ -158,6 +158,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
             if (!this._kernelThinksWidgetIsAlive) {
                 this._kernelThinksWidgetIsAlive = true;
                 this.send({
+                    _pywwtExpedite: true,
                     type: 'wwt_jupyter_widget_status',
                     alive: true
                 });
@@ -175,6 +176,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
                 if (this._kernelThinksWidgetIsAlive) {
                     this._kernelThinksWidgetIsAlive = false;
                     this.send({
+                        _pywwtExpedite: true,
                         type: 'wwt_jupyter_widget_status',
                         alive: false
                     });
@@ -261,6 +263,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
             payload['threadId'] = pieces.slice(1).join('|');
         }
 
+        payload['_pywwtExpedite'] = true;
         this.send(payload);
     }
 });
