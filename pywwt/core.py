@@ -134,6 +134,7 @@ class BaseWWTWidget(HasTraits):
         self._futures = {}
 
         self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
+        self._available_hips_catalog_names = []
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
         self._instruments = Instruments()
@@ -321,6 +322,11 @@ class BaseWWTWidget(HasTraits):
                 self._timeRate = float(payload['engineClockRateFactor'])
             except ValueError:
                 pass  # report a warning somehow?
+        elif ptype == 'wwt_application_state':
+            hipscat = payload.get('hipsCatalogNames')
+
+            if hipscat is not None:
+                self._available_hips_catalog_names = hipscat
 
         # Any relevant async future to resolve?
 
@@ -827,6 +833,18 @@ class BaseWWTWidget(HasTraits):
         A list of the layers that are currently available in the viewer.
         """
         return sorted(self._available_layers)
+
+    # HiPS catalog support
+
+    _available_hips_catalog_names = None
+
+    @property
+    def available_hips_catalog_names(self):
+        """
+        A list of the names of HiPS catalog layers that are currently available
+        in the viewer.
+        """
+        return sorted(self._available_hips_catalog_names)
 
     # Annotations
 
