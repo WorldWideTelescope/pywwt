@@ -12,6 +12,7 @@ from ipykernel.comm import Comm
 
 from .core import BaseWWTWidget
 from .layers import ImageLayer
+from .logger import logger
 from .jupyter_server import serve_file
 
 __all__ = ['WWTJupyterWidget', 'WWTLabApplication', 'connect_to_app']
@@ -54,6 +55,8 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         #
         # The JS frontend will automagically prepend the Jupyter base URL if
         # needed and turn this into an absolute URL.
+
+        _maybe_perpetrate_mega_kernel_hack()
 
         self._appUrl = '/wwt/research/'
 
@@ -230,6 +233,8 @@ class WWTLabApplication(BaseWWTWidget):
     _controls = None
 
     def __init__(self):
+        _maybe_perpetrate_mega_kernel_hack()
+
         self._comm = Comm(target_name='@wwtelescope/jupyterlab:research', data={})
         self._comm.on_msg(self._on_comm_message_received)
         self._comm.open()
@@ -305,3 +310,148 @@ def connect_to_app():
     # have the user call a function with this name, than to create a "connection
     # object".
     return WWTLabApplication()
+
+
+def _maybe_perpetrate_mega_kernel_hack():
+    """
+    OK. So.
+
+    The Python code running in this process is communicating with the WWT
+    JavaScript frontend, which is running in another process that is possibly on
+    the other side of the internet. Various WWT operations such as loading
+    imagery need that frontend to perform web requests and the like. So much of
+    what we want to do is just inherently asynchronous.
+
+    Which is OK! We require sufficiently new Python that we can rely on
+    async/await being available, and the Jupyter infrastructure is extremely
+    async-friendly.
+
+    Except that we have a problem. When our process is running inside Jupyter,
+    all code executions are inherently triggered by "shell messages" telling the
+    kernel to run some code. Shell messages are also used for Jupyter's "comms"
+    infrastructure, which is how kernels get updates from the WWT frontend(s)
+    about things that are going on. The problem is that the Python Jupyter
+    kernels only process shell messages *sequentially*: while message evaluation
+    can be asynchronous, they can't be evaluated simultaneously. So if we've got
+    asynchronous user code that's attempting to do stuff with pywwt, we can't
+    receive any updates from WWT while that code is running. This fundamentally
+    breaks our ability to allow users to write code that interacts with WWT
+    asynchronously.
+
+    Our mega-hack solution is to allow some shell messages to be marked for
+    "expedited" processing. We hack the kernel so that such messages can be
+    processed even while another shell message -- such as an execution request
+    -- is being dealt with. This breaks the logjam.
+
+    Expedited messages have the following structure:
+
+    {
+        'content': {
+            '_pywwtExpedite': true
+        }
+    }
+
+    This allows ipywidgets custom messages to be marked for expedited
+    processing, which we need for our ipywidget support.
+
+    To amp up the debugging spew so that you can see what's going on inside
+    the kernel (which is captured in the Jupyter Server output), run:
+
+    ```
+    import ipykernel.kernelbase
+    ipykernel.kernelbase.Kernel.instance().log.setLevel('DEBUG')
+    ```
+
+    Please forgive me.
+    """
+
+    try:
+        _maybe_perpetrate_mega_kernel_hack_inner()
+    except Exception:
+        logger.exception('failed to set up Jupyter kernel async hack')
+
+def _maybe_perpetrate_mega_kernel_hack_inner():
+    import asyncio
+    import inspect
+    import ipykernel.kernelbase
+    from traceback import format_exc
+
+    kernel = ipykernel.kernelbase.Kernel.instance()
+    orig_schedule_dispatch = kernel.schedule_dispatch
+
+    if getattr(kernel, '_pywwt_mega_hack_installed', False):
+        return
+
+    # If asyncio doesn't think that there's a running event loop, we don't seem
+    # to be running as a client of a full-on Jupyter server. In which case, play
+    # it safe and don't do anything.
+
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return
+
+    # OK, it looks like we should try to do this ...
+
+    async def dispatch_one_expedited_shell_message(idents, msg):
+        """
+        A bastardized version of `kernel.dispatch_shell`. Our arguments will be
+        the result of `kernel.session.feed_identities`.
+
+        Expedited shell messages have to be processed as straightforwardly as
+        possible since their processing can happen while other shell message
+        processing is happening. The kernel code is *not* build to handle the
+        recursive-y, race-y things that can happen in this situation. So we
+        avoid all function calls that we can possible get away with skipping.
+        No set_parent, no should_handle, etc.
+        """
+
+        try:
+            msg = kernel.session.deserialize(msg, content=True, copy=False)
+        except Exception:
+            kernel.log.error("Invalid Expedited Message (pywwt)", exc_info=True)
+            return
+
+        msg_type = msg['header']['msg_type']
+        handler = kernel.shell_handlers.get(msg_type, None)
+
+        if handler is None:
+            kernel.log.warning("Unknown expedited message type (pywwt): %r", msg_type)
+        else:
+            kernel.log.debug("expedited (pywwt) %s: %s", msg_type, msg)
+
+            try:
+                result = handler(kernel.shell_stream, idents, msg)
+                if inspect.isawaitable(result):
+                    kernel.log.error("Expedited message (pywwt) produce an awaitable result")
+            except Exception:
+                kernel.log.error("Exception in expedited message handler (pywwt):", exc_info=True)
+
+    def pywwt_schedule_shell_dispatch_with_expedite(*args):
+        """
+        A replacement of `kernel.schedule_dispatch` for shell messages.
+
+        This peeks inside the message and triggers expedited processing if
+        called for. If there are any issues, we fall back to regular processing.
+
+        """
+        expedited_it = False
+
+        try:
+            (msg,) = args
+            idents, msg = kernel.session.feed_identities(msg, copy=False)
+            # We can't deserialize() here: each message can only be deserialized once
+            # due to the replay prevention framework.
+            peek_content = kernel.session.unpack(msg[4].bytes)
+            expedite_flag = peek_content.get('data', {}).get('content', {}).get('_pywwtExpedite')
+
+            if expedite_flag:
+                kernel.io_loop.add_callback(dispatch_one_expedited_shell_message, idents, msg)
+                expedited_it = True
+        finally:
+            if not expedited_it:
+                orig_schedule_dispatch(kernel.dispatch_shell, *args)
+
+    kernel.shell_stream.on_recv(pywwt_schedule_shell_dispatch_with_expedite, copy=False)
+    kernel._pywwt_mega_hack_installed = True
+    logger.debug('installed Jupyter kernel message expedite hack')
