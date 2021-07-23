@@ -115,6 +115,8 @@ class BaseWWTWidget(HasTraits):
     """
     _startupMessageQueue = None
     _appAlive = False
+    _readyFuture = None
+    _readinessAchieved = False
 
     # View state that the frontend sends to us:
     _raRad = 0.0
@@ -294,6 +296,11 @@ class BaseWWTWidget(HasTraits):
         if alive is not None:
             self._appAlive = alive
 
+            if alive and self._readyFuture and not self._readinessAchieved:
+                # See becomes_ready()
+                self._readyFuture.set_result(self)
+                self._readinessAchieved = True
+
             if alive and self._startupMessageQueue:
                 queue = self._startupMessageQueue
                 self._startupMessageQueue = None
@@ -416,6 +423,44 @@ class BaseWWTWidget(HasTraits):
         """
         from .layers import ImageLayer
         return ImageLayer(self, **kwargs)
+
+    # Startup
+
+    async def becomes_ready(self, timeout=30):
+        """
+        An async function that finishes when the WWT app becomes ready.
+
+        Returns
+        -------
+        self
+
+        Notes
+        -----
+
+        The web browser running WWT needs to initialize the application and
+        download some initial data files, which can take an indeterminate amount
+        of time. This async function will complete once the WWT app has
+        initialized and is ready to respond to control messages from pywwt.
+        After this has happened the first time, this function will complete
+        instantly.
+        """
+
+        if self._readinessAchieved:
+            return self
+
+        if self._readyFuture is None:
+            loop = asyncio.get_running_loop()
+            self._readyFuture = fut = loop.create_future()
+
+            def maybe_time_it_out():
+                if not fut.done():
+                    self._readyFuture = None
+                    fut.set_exception(asyncio.TimeoutError())
+
+            loop.call_later(timeout, maybe_time_it_out)
+
+        await self._readyFuture
+        return self
 
     # Main attributes
 
