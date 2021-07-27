@@ -22,7 +22,7 @@ from .data_server import get_data_server
 
 __all__ = ['WWTQtClient']
 
-APP_LIVENESS_DEADLINE = 2.5  # seconds
+APP_LIVENESS_DEADLINE = 10  # seconds
 
 
 class WWTWebEngineView(QWebEngineView):
