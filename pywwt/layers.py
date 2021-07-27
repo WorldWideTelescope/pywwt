@@ -20,6 +20,7 @@ from astropy.io import fits
 from matplotlib.pyplot import cm
 from matplotlib.colors import Colormap
 from astropy import units as u
+import astropy.units.imperial  # noqa: F401
 from astropy.table import Column
 from astropy.table import Table
 from astropy.time import Time
