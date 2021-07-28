@@ -10,10 +10,10 @@ from traitlets import Unicode, default, link, directional_link
 from ipyevents import Event as DOMListener
 from ipykernel.comm import Comm
 
-from .core import BaseWWTWidget
+from .core import BaseWWTWidget, DataPublishingNotAvailableError
 from .layers import ImageLayer
 from .logger import logger
-from .jupyter_server import serve_file
+from .jupyter_relay import get_relay_hub
 
 __all__ = ['WWTJupyterWidget', 'WWTLabApplication', 'connect_to_app']
 
@@ -50,15 +50,16 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     _appUrl = Unicode('').tag(sync=True)
 
     def __init__(self, hide_all_chrome=False):
-        # In the future we might want to make it possible to use the WWT-hosted
-        # app instead of the bundled version.
+        # Set up to serve the bundled app. In the future we might want to make
+        # it possible to use the WWT-hosted app instead of the bundled version.
         #
         # The JS frontend will automagically prepend the Jupyter base URL if
         # needed and turn this into an absolute URL.
 
         _maybe_perpetrate_mega_kernel_hack()
 
-        self._appUrl = '/wwt/research/'
+        hub = get_relay_hub()
+        self._appUrl = hub.get_static_files_url() + 'research/'
 
         widgets.DOMWidget.__init__(self)
         dom_listener.source = self
@@ -99,7 +100,7 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         return widgets.Layout(height='400px', align_self='stretch')
 
     def _serve_file(self, filename, extension=''):
-        return serve_file(filename, extension=extension)
+        return get_relay_hub().serve_file(filename, extension=extension)
 
     def _create_image_layer(self, **kwargs):
         """Returns a specialized subclass of ImageLayer that has some extra hooks for
@@ -231,6 +232,7 @@ class WWTLabApplication(BaseWWTWidget):
 
     _comm = None
     _controls = None
+    _relayAvailable = False
 
     def __init__(self):
         _maybe_perpetrate_mega_kernel_hack()
@@ -251,12 +253,16 @@ class WWTLabApplication(BaseWWTWidget):
         that.
         """
         payload = msg['content']['data']
+        ptype = payload.get('type')
 
         # Special message from the hub indicating app liveness status
-        if payload.get('type') == 'wwt_jupyter_viewer_status':
+        if ptype == 'wwt_jupyter_viewer_status':
             self._on_app_status_change(alive=payload['alive'])
             # don't return -- maybe someone downstream can use this, and message
             # processing needs to handle all sorts of unexpected messages anyway
+        elif ptype == 'wwt_jupyter_startup_info':
+            self._relayAvailable = payload.get('dataRelayConfirmedAvailable', False)
+            return
 
         self._on_app_message_received(payload)
 
@@ -264,7 +270,14 @@ class WWTLabApplication(BaseWWTWidget):
         self._comm.send(payload)
 
     def _serve_file(self, filename, extension=''):
-        return serve_file(filename, extension=extension)
+        if not self._relayAvailable:
+            raise DataPublishingNotAvailableError(
+                'Unable to complete this operation because it relies on '
+                'data relay services that are not available. Ensure that '
+                'your Jupyter server has the `wwt_kernel_data_relay` package '
+                'installed.'
+            )
+        return get_relay_hub().serve_file(filename, extension=extension)
 
     def _create_image_layer(self, **kwargs):
         """Returns a specialized subclass of ImageLayer that has some extra hooks for
