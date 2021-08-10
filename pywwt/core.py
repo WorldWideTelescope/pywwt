@@ -145,6 +145,7 @@ class BaseWWTWidget(HasTraits):
         self._last_sent_view_mode = 'sky'
         self.layers = LayerManager(parent=self)
         self._annotation_set = set()
+        self._callbacks = {}
 
         if hide_all_chrome:
             self._send_msg(
@@ -320,6 +321,8 @@ class BaseWWTWidget(HasTraits):
         ptype = payload.get('type')
         # some events don't have type but do have: pevent = payload.get('event')
 
+        updated_state_fields = []
+
         if ptype == 'wwt_view_state':
             try:
                 self._raRad = float(payload['raRad'])
@@ -335,6 +338,24 @@ class BaseWWTWidget(HasTraits):
 
             if hipscat is not None:
                 self._available_hips_catalog_names = hipscat
+                updated_state_fields.append('_available_hips_catalog_names')
+
+        elif ptype == 'wwt_selection_state':
+            most_recent = payload.get('mostRecentSource')
+            catalogs = payload.get('selectedCatalogs')
+            sources = payload.get('selectedSources')
+
+            if most_recent is not None:
+                self._most_recent_source = json.loads(most_recent)
+                updated_state_fields.append('most_recent_source')
+
+            if catalogs is not None:
+                self._selected_hips_catalogs = catalogs
+                updated_state_fields.append('selected_hips_catalogs')
+
+            if sources is not None:
+                self._selected_sources = [json.loads(x) for x in sources]
+                updated_state_fields.append('selected_sources')
 
         # Any relevant async future to resolve?
 
@@ -347,6 +368,25 @@ class BaseWWTWidget(HasTraits):
                 pass
             else:
                 fut.set_result(payload)
+
+        # Any client-side callbacks to execute?
+
+        for field in updated_state_fields:
+            callback = self._callbacks.get(field)
+            if callback:
+                callback(getattr(self, field))
+
+    def set_property_change_callback(self, prop, callback):
+        """
+        Set a callback function that will be executed when an incoming message changes
+        the given property.
+
+        Parameters
+        ----------
+        callback:
+            A callable object whose sole argument is the updated value of the field.
+        """
+        self._callbacks[prop] = callback
 
     def _get_view_data(self, field):
         if not self._appAlive:
@@ -891,6 +931,35 @@ class BaseWWTWidget(HasTraits):
         in the viewer.
         """
         return sorted(self._available_hips_catalog_names)
+
+    # Support for source and HiPS catalog selection
+
+    _most_recent_source = None
+
+    @property
+    def most_recent_source(self):
+        """
+        The most recent source selected in the viewer.
+        """
+        return self._most_recent_source
+
+    _selected_hips_catalogs = []
+
+    @property
+    def selected_hips_catalogs(self):
+        """
+        A list of the selected catalogs, as dictionaries.
+        """
+        return self._selected_hips_catalogs
+
+    _selected_sources = []
+
+    @property
+    def selected_sources(self):
+        """
+        A list of the selected sources, as dictionaries.
+        """
+        return self._selected_sources
 
     # Annotations
 
