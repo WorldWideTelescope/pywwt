@@ -145,7 +145,7 @@ class BaseWWTWidget(HasTraits):
         self._last_sent_view_mode = 'sky'
         self.layers = LayerManager(parent=self)
         self._annotation_set = set()
-        self._callbacks = {}
+        self._selection_callback = None
 
         if hide_all_chrome:
             self._send_msg(
@@ -321,7 +321,7 @@ class BaseWWTWidget(HasTraits):
         ptype = payload.get('type')
         # some events don't have type but do have: pevent = payload.get('event')
 
-        updated_state_fields = []
+        updated_fields = []
 
         if ptype == 'wwt_view_state':
             try:
@@ -338,7 +338,6 @@ class BaseWWTWidget(HasTraits):
 
             if hipscat is not None:
                 self._available_hips_catalog_names = hipscat
-                updated_state_fields.append('_available_hips_catalog_names')
 
         elif ptype == 'wwt_selection_state':
             most_recent = payload.get('mostRecentSource')
@@ -347,15 +346,15 @@ class BaseWWTWidget(HasTraits):
 
             if most_recent is not None:
                 self._most_recent_source = json.loads(most_recent)
-                updated_state_fields.append('most_recent_source')
+                updated_fields.append('most_recent_source')
 
             if catalogs is not None:
                 self._selected_hips_catalogs = catalogs
-                updated_state_fields.append('selected_hips_catalogs')
+                updated_fields.append('selected_hips_catalogs')
 
             if sources is not None:
                 self._selected_sources = [json.loads(x) for x in sources]
-                updated_state_fields.append('selected_sources')
+                updated_fields.append('selected_sources')
 
         # Any relevant async future to resolve?
 
@@ -371,12 +370,13 @@ class BaseWWTWidget(HasTraits):
 
         # Any client-side callbacks to execute?
 
-        for field in updated_state_fields:
-            callback = self._callbacks.get(field)
-            if callback:
-                callback(getattr(self, field))
+        if ptype == 'wwt_selection_state' and self._selection_callback:
+            try:
+                self._selection_callback(self, updated_fields)
+            except Exception as e: # TODO: Something better here
+                print("Error when calling selection updated callback:\n%s" % str(e))
 
-    def set_property_change_callback(self, prop, callback):
+    def set_selection_change_callback(self, callback):
         """
         Set a callback function that will be executed when an incoming message changes
         the given property.
@@ -384,9 +384,9 @@ class BaseWWTWidget(HasTraits):
         Parameters
         ----------
         callback:
-            A callable object whose sole argument is the updated value of the field.
+            A callable object which takes two arguments: the WWT widget instance, and a list of updated properties.
         """
-        self._callbacks[prop] = callback
+        self._selection_callback = callback
 
     def _get_view_data(self, field):
         if not self._appAlive:
