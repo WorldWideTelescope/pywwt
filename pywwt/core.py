@@ -145,7 +145,7 @@ class BaseWWTWidget(HasTraits):
         self._last_sent_view_mode = 'sky'
         self.layers = LayerManager(parent=self)
         self._annotation_set = set()
-        self._selection_callback = None
+        self._callbacks = {}
 
         if hide_all_chrome:
             self._send_msg(
@@ -370,23 +370,36 @@ class BaseWWTWidget(HasTraits):
 
         # Any client-side callbacks to execute?
 
-        if ptype == 'wwt_selection_state' and self._selection_callback:
+        callback = self._callbacks.get(ptype)
+        if callback:
             try:
-                self._selection_callback(self, updated_fields)
+                callback(self, updated_fields)
             except Exception as e: # TODO: Something better here
                 print("Error when calling selection updated callback:\n%s" % str(e))
 
+    def _set_message_type_callback(self, ptype, callback):
+        """
+        Set a callback function that will be executed when the widget receives a message with the given type.
+
+        Parameters
+        ----------
+        ptype: str
+            The string that identifies the message type
+        callback: `BaseWWTWidget`
+            A callable object which takes two arguments: the WWT widget instance, and a list of updated properties.
+        """
+        self._callbacks[ptype] = callback
+
     def set_selection_change_callback(self, callback):
         """
-        Set a callback function that will be executed when an incoming message changes
-        the given property.
+        Set a callback function that will be executed when the widget receives a selection change message.
 
         Parameters
         ----------
         callback:
             A callable object which takes two arguments: the WWT widget instance, and a list of updated properties.
         """
-        self._selection_callback = callback
+        self._set_message_type_callback('wwt_selection_state', callback)
 
     def _get_view_data(self, field):
         if not self._appAlive:
