@@ -83,6 +83,15 @@ class ViewerNotAvailableError(Exception):
             msg = 'cannot complete the operation because the WWT viewer isn\'t responding'
         super(ViewerNotAvailableError, self).__init__(msg)
 
+class CallbackError(Exception):
+    """
+    Raised if a callback attached to the WWT viewer raises an Exception
+    during its execution.
+    """
+    def __init__(self, msg=None):
+        if msg is None:
+            msg = 'an exception was raised during a callback operation'
+        super(CallbackError, self).__init__(msg)
 
 class BaseWWTWidget(HasTraits):
     """
@@ -369,8 +378,8 @@ class BaseWWTWidget(HasTraits):
         if callback:
             try:
                 callback(self, updated_fields)
-            except Exception as e: # TODO: Something better here
-                print("Error when calling selection updated callback:\n%s" % str(e))
+            except Exception as e:
+                raise CallbackError() from e
 
     def _set_message_type_callback(self, ptype, callback):
         """
