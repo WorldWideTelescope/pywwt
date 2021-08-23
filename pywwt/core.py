@@ -83,6 +83,7 @@ class ViewerNotAvailableError(Exception):
             msg = 'cannot complete the operation because the WWT viewer isn\'t responding'
         super(ViewerNotAvailableError, self).__init__(msg)
 
+
 class CallbackError(Exception):
     """
     Raised if a callback attached to the WWT viewer raises an Exception
@@ -92,6 +93,7 @@ class CallbackError(Exception):
         if msg is None:
             msg = 'an exception was raised during a callback operation'
         super(CallbackError, self).__init__(msg)
+
 
 class BaseWWTWidget(HasTraits):
     """
