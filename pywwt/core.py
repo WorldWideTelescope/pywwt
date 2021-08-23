@@ -341,19 +341,14 @@ class BaseWWTWidget(HasTraits):
 
         elif ptype == 'wwt_selection_state':
             most_recent = payload.get('mostRecentSource')
-            catalogs = payload.get('selectedCatalogs')
             sources = payload.get('selectedSources')
 
             if most_recent is not None:
-                self._most_recent_source = json.loads(most_recent)
+                self._most_recent_source = most_recent
                 updated_fields.append('most_recent_source')
 
-            if catalogs is not None:
-                self._selected_hips_catalogs = catalogs
-                updated_fields.append('selected_hips_catalogs')
-
             if sources is not None:
-                self._selected_sources = [json.loads(x) for x in sources]
+                self._selected_sources = sources
                 updated_fields.append('selected_sources')
 
         # Any relevant async future to resolve?
@@ -955,15 +950,6 @@ class BaseWWTWidget(HasTraits):
         The most recent source selected in the viewer.
         """
         return self._most_recent_source
-
-    _selected_hips_catalogs = []
-
-    @property
-    def selected_hips_catalogs(self):
-        """
-        A list of the selected catalogs, as dictionaries.
-        """
-        return self._selected_hips_catalogs
 
     _selected_sources = []
 
