@@ -958,7 +958,9 @@ class BaseWWTWidget(HasTraits):
     @property
     def most_recent_source(self):
         """
-        The most recent source selected in the viewer.
+        The most recent source selected in the viewer, represented as a dictionary.
+        The items of this dictionary match the entries of the Source object detailed
+        `here <https://docs.worldwidetelescope.org/webgl-reference/latest/apiref/research-app-messages/interfaces/selections.source.html>`_.
         """
         return self._most_recent_source
 
@@ -967,7 +969,9 @@ class BaseWWTWidget(HasTraits):
     @property
     def selected_sources(self):
         """
-        A list of the selected sources, as dictionaries.
+        A list of the selected sources, with each source represented as a dictionary.
+        The items of these dictionaries match the entries of the Source object detailed
+        `here <https://docs.worldwidetelescope.org/webgl-reference/latest/apiref/research-app-messages/interfaces/selections.source.html>`_.
         """
         return self._selected_sources
 
