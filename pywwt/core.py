@@ -21,6 +21,7 @@ from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
 from .instruments import Instruments
 from .layers import LayerManager
+from .logger import logger
 from .solar_system import SolarSystem
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity
 from .utils import ensure_utc
@@ -82,17 +83,6 @@ class ViewerNotAvailableError(Exception):
         if msg is None:
             msg = 'cannot complete the operation because the WWT viewer isn\'t responding'
         super(ViewerNotAvailableError, self).__init__(msg)
-
-
-class CallbackError(Exception):
-    """
-    Raised if a callback attached to the WWT viewer raises an Exception
-    during its execution.
-    """
-    def __init__(self, msg=None):
-        if msg is None:
-            msg = 'an exception was raised during a callback operation'
-        super(CallbackError, self).__init__(msg)
 
 
 class BaseWWTWidget(HasTraits):
@@ -380,8 +370,8 @@ class BaseWWTWidget(HasTraits):
         if callback:
             try:
                 callback(self, updated_fields)
-            except Exception as e:
-                raise CallbackError() from e
+            except:  # noqa: E722
+                logger.exception('unhandled Python exception during a callback')
 
     def _set_message_type_callback(self, ptype, callback):
         """
