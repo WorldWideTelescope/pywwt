@@ -21,6 +21,7 @@ from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
 from .instruments import Instruments
 from .layers import LayerManager
+from .logger import logger
 from .solar_system import SolarSystem
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity
 from .utils import ensure_utc
@@ -145,6 +146,7 @@ class BaseWWTWidget(HasTraits):
         self._last_sent_view_mode = 'sky'
         self.layers = LayerManager(parent=self)
         self._annotation_set = set()
+        self._callbacks = {}
 
         if hide_all_chrome:
             self._send_msg(
@@ -320,6 +322,8 @@ class BaseWWTWidget(HasTraits):
         ptype = payload.get('type')
         # some events don't have type but do have: pevent = payload.get('event')
 
+        updated_fields = []
+
         if ptype == 'wwt_view_state':
             try:
                 self._raRad = float(payload['raRad'])
@@ -336,6 +340,18 @@ class BaseWWTWidget(HasTraits):
             if hipscat is not None:
                 self._available_hips_catalog_names = hipscat
 
+        elif ptype == 'wwt_selection_state':
+            most_recent = payload.get('mostRecentSource')
+            sources = payload.get('selectedSources')
+
+            if most_recent is not None:
+                self._most_recent_source = most_recent
+                updated_fields.append('most_recent_source')
+
+            if sources is not None:
+                self._selected_sources = sources
+                updated_fields.append('selected_sources')
+
         # Any relevant async future to resolve?
 
         tid = payload.get('threadId')
@@ -347,6 +363,39 @@ class BaseWWTWidget(HasTraits):
                 pass
             else:
                 fut.set_result(payload)
+
+        # Any client-side callbacks to execute?
+
+        callback = self._callbacks.get(ptype)
+        if callback:
+            try:
+                callback(self, updated_fields)
+            except:  # noqa: E722
+                logger.exception('unhandled Python exception during a callback')
+
+    def _set_message_type_callback(self, ptype, callback):
+        """
+        Set a callback function that will be executed when the widget receives a message with the given type.
+
+        Parameters
+        ----------
+        ptype: str
+            The string that identifies the message type
+        callback: `BaseWWTWidget`
+            A callable object which takes two arguments: the WWT widget instance, and a list of updated properties.
+        """
+        self._callbacks[ptype] = callback
+
+    def set_selection_change_callback(self, callback):
+        """
+        Set a callback function that will be executed when the widget receives a selection change message.
+
+        Parameters
+        ----------
+        callback:
+            A callable object which takes two arguments: the WWT widget instance, and a list of updated properties.
+        """
+        self._set_message_type_callback('wwt_selection_state', callback)
 
     def _get_view_data(self, field):
         if not self._appAlive:
@@ -891,6 +940,30 @@ class BaseWWTWidget(HasTraits):
         in the viewer.
         """
         return sorted(self._available_hips_catalog_names)
+
+    # Support for source and HiPS catalog selection
+
+    _most_recent_source = None
+
+    @property
+    def most_recent_source(self):
+        """
+        The most recent source selected in the viewer, represented as a dictionary.
+        The items of this dictionary match the entries of the Source object detailed
+        `here <https://docs.worldwidetelescope.org/webgl-reference/latest/apiref/research-app-messages/interfaces/selections.source.html>`_.
+        """
+        return self._most_recent_source
+
+    _selected_sources = []
+
+    @property
+    def selected_sources(self):
+        """
+        A list of the selected sources, with each source represented as a dictionary.
+        The items of these dictionaries match the entries of the Source object detailed
+        `here <https://docs.worldwidetelescope.org/webgl-reference/latest/apiref/research-app-messages/interfaces/selections.source.html>`_.
+        """
+        return self._selected_sources
 
     # Annotations
 
