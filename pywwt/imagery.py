@@ -30,9 +30,9 @@ def get_imagery_layers(url):
 
     for survey in t.iter('ImageSet'):
         name = survey.attrib['Name']
-        thumbnail_url = survey.find('ThumbnailUrl').text
-        if not thumbnail_url:
-            thumbnail_url = None
+        thumbnail_url = survey.find('ThumbnailUrl')
+        if thumbnail_url is not None:
+            thumbnail_url = getattr(thumbnail_url, 'text', None) or None
         available_layers[name] = {'thumbnail': thumbnail_url}
 
     return available_layers
