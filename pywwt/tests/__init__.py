@@ -104,17 +104,26 @@ def wait_for_test(wwt, timeout, for_render=False):
     from time import time
     from ..app import get_qapp
     MIN_ITERS = 128
+    ALWAYS_EXTRA_LONG = sys.platform.startswith('darwin')
 
-    if for_render and sys.platform.startswith('darwin'):
+    if for_render and ALWAYS_EXTRA_LONG:
         timeout = 90
 
     app = get_qapp()
     t0 = time()
+    iters = 0
 
     # Iterate for *at least* MIN_ITERS and *at least* `timeout` seconds.
 
     for _ in range(MIN_ITERS):
+        iters += 1
         app.processEvents()
 
     while time() - t0 < timeout:
+        iters += 1
         app.processEvents()
+
+    dt = time() - t0
+
+    if for_render:
+        print(f'wait_for_test: iters={iters} dt={dt} timeout={timeout} always={ALWAYS_EXTRA_LONG}')
