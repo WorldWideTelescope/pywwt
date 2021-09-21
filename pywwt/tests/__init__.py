@@ -8,6 +8,7 @@ infrastructure to help with the image-output tests, which can be pretty finicky.
 
 __all__ = ['assert_widget_image', 'wait_for_test']
 
+from glob import glob
 import os.path
 import sys
 
@@ -56,7 +57,10 @@ def assert_widget_image(tmpdir, widget, filename, fail_now=True):
         )
 
         if rv is None:
-            return None  # success!
+            # Success! Clean up any fail images (mostly for the IMAGE_OUTPUT_DIR mode)
+            for p in glob(actual.replace('.png', '_vs_*.png')):
+                os.unlink(p)
+            return None
 
         failpath = actual.replace('.png', '-failed-diff.png')
         newfailpath = actual.replace('.png', '_vs_%s.png' % refname)
