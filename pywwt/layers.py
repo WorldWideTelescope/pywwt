@@ -20,7 +20,9 @@ from astropy.io import fits
 from matplotlib.pyplot import cm
 from matplotlib.colors import Colormap
 from astropy import units as u
+import astropy.units.imperial  # noqa: F401
 from astropy.table import Column
+from astropy.table import Table
 from astropy.time import Time
 from datetime import datetime
 
@@ -28,7 +30,12 @@ from traitlets import HasTraits, validate, observe
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
 from .utils import sanitize_image, validate_traits, ensure_utc
 
-__all__ = ['LayerManager', 'TableLayer', 'ImageLayer']
+__all__ = [
+    'CatalogHipsLayer',
+    'ImageLayer',
+    'LayerManager',
+    'TableLayer',
+]
 
 VALID_FRAMES = ['sky', 'ecliptic', 'galactic', 'sun', 'mercury', 'venus',
                 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune',
@@ -247,6 +254,57 @@ class LayerManager(object):
         self._add_layer(layer)
         return layer
 
+    async def add_hips_catalog_layer(self, name, **kwargs):
+        """
+        Add a HiPS catalog layer to the current view.
+
+        Parameters
+        ----------
+        name : str
+            Name of the HiPS catalog to display. You can list them using the widget's
+            :attr:`~pywwt.BaseWWTWidget.available_hips_catalog_names` attribute
+        **kwargs
+            Additional keyword arguments can be used to set properties on the
+            catalog HiPS layer.
+
+        Returns
+        -------
+        layer : :class:`~pywwt.layers.CatalogHipsLayer`
+
+        Notes
+        -----
+        This function is asynchronous because the engine needs to download the
+        information about the catalog and return its metadata to the Python code.
+        """
+
+        name = self._validate_hips_catalog_name(name)
+        model_id = str(uuid.uuid4())
+
+        fut = self._parent._send_into_future(
+            event='layer_hipscat_load',
+            name=name,
+            tableId=model_id,
+        )
+        reply = await fut
+
+        layer = CatalogHipsLayer(self._parent, model_id, reply)
+        self._add_layer(layer)
+
+        with layer.hold_trait_notifications():
+            for key, value in kwargs.items():
+                if not layer.has_trait(key):
+                    raise TypeError('unexpected keyword argument \'{}\''.format(key))
+                setattr(layer, key, value)
+
+        return layer
+
+    def _validate_hips_catalog_name(self, name):
+        if name not in self._parent.available_hips_catalog_names:
+            raise ValueError('name should be one of {0}'.format(
+                ' /// '.join(sorted(str(x) for x in self._parent.available_hips_catalog_names))
+            ))
+        return name
+
     def add_data_layer(self, *args, **kwargs):
         """
         Deprecated, use ``add_table_layer`` instead.
@@ -399,9 +457,9 @@ class TableLayer(HasTraits):
     # yAxisReverse
     # zAxisReverse
 
-    def __init__(self, parent=None, table=None, frame=None, **kwargs):
-
+    def __init__(self, parent=None, table=None, frame=None, table_from_wwt_engine=False, id=None, **kwargs):
         self.table = table
+        self.notify_changes = True
 
         # Validate frame
         if frame.lower() not in VALID_FRAMES:
@@ -409,32 +467,36 @@ class TableLayer(HasTraits):
         self.frame = frame.capitalize()
 
         self.parent = parent
-        self.id = str(uuid.uuid4())
+
+        if id is None:
+            id = str(uuid.uuid4())
+        self.id = id
 
         # Attribute to keep track of the manager, so that we can notify the
         # manager if a layer is removed.
         self._manager = None
         self._removed = False
 
-        self._initialize_layer()
+        if not table_from_wwt_engine:
+            self._initialize_layer()
 
-        # Force defaults
-        self._on_trait_change({'name': 'alt_type', 'new': self.alt_type})
-        self._on_trait_change({'name': 'size_scale', 'new': self.size_scale})
-        self._on_trait_change({'name': 'color', 'new': self.color})
-        self._on_trait_change({'name': 'opacity', 'new': self.opacity})
-        self._on_trait_change({'name': 'marker_type', 'new': self.marker_type})
-        self._on_trait_change({'name': 'marker_scale',
-                               'new': self.marker_scale})
-        self._on_trait_change({'name': 'far_side_visible',
-                               'new': self.far_side_visible})
-        self._on_trait_change({'name': 'size_att', 'new': self.size_att})
-        self._on_trait_change({'name': 'cmap_att', 'new': self.cmap_att})
-        self._on_trait_change({'name': 'time_att', 'new': self.time_att})
-        self._on_trait_change({'name': 'time_series', 'new': self.time_series})
-        self._on_trait_change({'name': 'time_decay', 'new': self.time_decay})
+            # Force defaults
+            self._on_trait_change({'name': 'alt_type', 'new': self.alt_type})
+            self._on_trait_change({'name': 'size_scale', 'new': self.size_scale})
+            self._on_trait_change({'name': 'color', 'new': self.color})
+            self._on_trait_change({'name': 'opacity', 'new': self.opacity})
+            self._on_trait_change({'name': 'marker_type', 'new': self.marker_type})
+            self._on_trait_change({'name': 'marker_scale',
+                                   'new': self.marker_scale})
+            self._on_trait_change({'name': 'far_side_visible',
+                                   'new': self.far_side_visible})
+            self._on_trait_change({'name': 'size_att', 'new': self.size_att})
+            self._on_trait_change({'name': 'cmap_att', 'new': self.cmap_att})
+            self._on_trait_change({'name': 'time_att', 'new': self.time_att})
+            self._on_trait_change({'name': 'time_series', 'new': self.time_series})
+            self._on_trait_change({'name': 'time_decay', 'new': self.time_decay})
 
-        self._on_trait_change({'name': 'cmap', 'new': self.cmap})
+            self._on_trait_change({'name': 'cmap', 'new': self.cmap})
 
         self.observe(self._on_trait_change, type='change')
 
@@ -443,28 +505,29 @@ class TableLayer(HasTraits):
 
         super(TableLayer, self).__init__(**kwargs)
 
-        if kwargs.get('coord_type') == 'rectangular':
+        if not table_from_wwt_engine:
+            if kwargs.get('coord_type') == 'rectangular':
 
-            x_guess, y_guess, z_guess = guess_xyz_columns(self.table.colnames)
+                x_guess, y_guess, z_guess = guess_xyz_columns(self.table.colnames)
 
-            if 'x_att' not in kwargs:
-                self.x_att = x_guess or self.table.colnames[0]
+                if 'x_att' not in kwargs:
+                    self.x_att = x_guess or self.table.colnames[0]
 
-            if 'y_att' not in kwargs:
-                self.y_att = y_guess or self.table.colnames[1]
+                if 'y_att' not in kwargs:
+                    self.y_att = y_guess or self.table.colnames[1]
 
-            if 'z_att' not in kwargs:
-                self.z_att = z_guess or self.table.colnames[2]
+                if 'z_att' not in kwargs:
+                    self.z_att = z_guess or self.table.colnames[2]
 
-        else:
+            else:
 
-            lon_guess, lat_guess = guess_lon_lat_columns(self.table.colnames)
+                lon_guess, lat_guess = guess_lon_lat_columns(self.table.colnames)
 
-            if 'lon_att' not in kwargs:
-                self.lon_att = lon_guess or self.table.colnames[0]
+                if 'lon_att' not in kwargs:
+                    self.lon_att = lon_guess or self.table.colnames[0]
 
-            if 'lat_att' not in kwargs:
-                self.lat_att = lat_guess or self.table.colnames[1]
+                if 'lat_att' not in kwargs:
+                    self.lat_att = lat_guess or self.table.colnames[1]
 
     @validate('coord_type')
     def _check_coord_type(self, proposal):
@@ -509,7 +572,7 @@ class TableLayer(HasTraits):
     def _check_time_att(self, proposal):
         # Parse the time_att column and make sure it's in the proper format
         # (string in isot format, astropy Time, or datetime)
-        col = self.table[proposal['value']]
+        col = self._get_table()[proposal['value']]
 
         if (all(isinstance(t, datetime) for t in col)
                 or all(isinstance(t, Time) for t in col)):
@@ -539,9 +602,9 @@ class TableLayer(HasTraits):
     @observe('alt_att')
     def _on_alt_att_change(self, *value):
         # Check if we can set the unit of the altitude automatically
-        if len(self.alt_att) == 0:
+        if not self.notify_changes or len(self.alt_att) == 0:
             return
-        column = self.table[self.alt_att]
+        column = self._get_table()[self.alt_att]
         unit = pick_unit_if_available(column.unit, VALID_ALT_UNITS)
         if unit in VALID_ALT_UNITS:
             self.alt_unit = unit
@@ -553,9 +616,9 @@ class TableLayer(HasTraits):
     @observe('lon_att')
     def _on_lon_att_change(self, *value):
         # Check if we can set the unit of the longitude automatically
-        if len(self.lon_att) == 0:
+        if not self.notify_changes or len(self.lon_att) == 0:
             return
-        column = self.table[self.lon_att]
+        column = self._get_table()[self.lon_att]
         unit = pick_unit_if_available(column.unit, VALID_LON_UNITS)
         if unit in VALID_LON_UNITS:
             self.lon_unit = unit
@@ -569,10 +632,12 @@ class TableLayer(HasTraits):
     @observe('x_att', 'y_att', 'z_att')
     def _on_xyz_att_change(self, *value):
         # Check if we can set the unit of the x/y/z positions automatically
+        if not self.notify_changes:
+            return
         for att in (self.x_att, self.y_att, self.z_att):
             if len(att) == 0:
                 continue
-            column = self.table[att]
+            column = self._get_table()[att]
             unit = pick_unit_if_available(column.unit, VALID_ALT_UNITS)
             if unit in VALID_ALT_UNITS:
                 self.xyz_unit = unit
@@ -620,9 +685,9 @@ class TableLayer(HasTraits):
 
     @observe('size_att')
     def _on_size_att_change(self, *value):
-
         # Set the min/max levels automatically based on the min/max values
-
+        if not self.notify_changes:
+            return
         if len(self.size_att) == 0:
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='sizeColumn', value=-1)
@@ -631,23 +696,21 @@ class TableLayer(HasTraits):
         self.size_vmin = None
         self.size_vmax = None
 
-        column = self.table[self.size_att]
+        column = self._get_table()[self.size_att]
 
         self.size_vmin = np.nanmin(column)
         self.size_vmax = np.nanmax(column)
 
     @observe('size_vmin', 'size_vmax')
     def _on_size_vmin_vmax_change(self, *value):
-
         # Update the size column in the table
+        if not self.notify_changes:
+            return
 
         if self._uniform_size():
-
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='sizeColumn', value=-1)
-
         else:
-
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='pointScaleType', value=0)
 
@@ -671,6 +734,9 @@ class TableLayer(HasTraits):
 
         # Set the min/max levels automatically based on the min/max values
 
+        if not self.notify_changes:
+            return
+
         if len(self.cmap_att) == 0:
 
             self.parent._send_msg(event='table_layer_set', id=self.id,
@@ -684,7 +750,7 @@ class TableLayer(HasTraits):
         self.cmap_vmin = None
         self.cmap_vmax = None
 
-        column = self.table[self.cmap_att]
+        column = self._get_table()[self.cmap_att]
 
         self.cmap_vmin = np.nanmin(column)
         self.cmap_vmax = np.nanmax(column)
@@ -693,6 +759,9 @@ class TableLayer(HasTraits):
     def _on_cmap_vmin_vmax_change(self, *value):
 
         # Update the cmap column in the table
+
+        if not self.notify_changes:
+            return
 
         if self._uniform_color():
 
@@ -728,8 +797,8 @@ class TableLayer(HasTraits):
                                       setting='normalizeColorMapMax', value=self.cmap_vmax)
 
             else:
-
-                column = self.table[self.cmap_att]
+                table = self._get_table()
+                column = table[self.cmap_att]
 
                 values = (column - self.cmap_vmin) / (self.cmap_vmax - self.cmap_vmin)
 
@@ -737,7 +806,7 @@ class TableLayer(HasTraits):
                 rgb = self.cmap(values)[:, :-1]
                 hex_values = [to_hex(x) for x in rgb]
 
-                self.table[CMAP_COLUMN_NAME] = hex_values
+                table[CMAP_COLUMN_NAME] = hex_values
 
                 self.parent._send_msg(event='table_layer_update', id=self.id,
                                       table=self._table_b64)
@@ -751,12 +820,12 @@ class TableLayer(HasTraits):
     @observe('time_att')
     def _on_time_att_change(self, *value):
 
-        if len(self.time_att) == 0 or self.time_series is False:
+        if not self.notify_changes or len(self.time_att) == 0 or self.time_series is False:
             self.parent._send_msg(event='table_layer_set', id=self.id,
                                   setting='startDateColumn', value=-1)
             return
 
-        wwt_times = Column(self.table[self.time_att].copy()).tolist()
+        wwt_times = Column(self._get_table()[self.time_att].copy()).tolist()
         # must specify Column so we can use tolist() on astropy Time columns
 
         # Convert time column to UTC so WWT displays points at expected times
@@ -764,7 +833,7 @@ class TableLayer(HasTraits):
             wwt_times[i] = ensure_utc(tm, str_allowed=True)
 
         # Update the table passed to WWT with the new, modified time column
-        self.table[TIME_COLUMN_NAME] = Column(wwt_times)
+        self._get_table()[TIME_COLUMN_NAME] = Column(wwt_times)
 
         self.parent._send_msg(event='table_layer_update', id=self.id,
                               table=self._table_b64)
@@ -773,13 +842,16 @@ class TableLayer(HasTraits):
                               setting='startDateColumn',
                               value=TIME_COLUMN_NAME)
 
+    def _get_table(self):
+        return self.table
+
     @property
     def _table_b64(self):
 
         # TODO: We need to make sure that the table has ra/dec columns since
         # WWT absolutely needs that upon creation.
 
-        csv = csv_table_win_newline(self.table)
+        csv = csv_table_win_newline(self._get_table())
 
         return b64encode(csv.encode('ascii', errors='replace')).decode('ascii')
 
@@ -833,6 +905,9 @@ class TableLayer(HasTraits):
         # traits of its own, we only want to react to changes in traits
         # that have the wwt metadata attribute (which indicates the name of
         # the corresponding WWT setting).
+        if not self.notify_changes:
+            return
+
         wwt_name = self.trait_metadata(changed['name'], 'wwt')
         if wwt_name is not None:
             value = changed['new']
@@ -891,6 +966,127 @@ class TableLayer(HasTraits):
 
     def __repr__(self):
         return '<{0}>'.format(str(self))
+
+
+class CatalogHipsLayer(TableLayer):
+    # Reversing the hack in the baseline TableLayer -- here the sizing is
+    # entirely controlled by the engine, so just respect it.
+
+    size_att = Unicode(
+        help='The column to use for the marker size (`str`)'
+    ).tag(wwt='sizeColumn')
+
+    size_vmin = Float(
+        None,
+        help='The minimum point size. Found automagically once size_att is set (`float`)',
+        allow_none=True
+    ).tag(wwt='normalizeSizeMin')
+
+    size_vmax = Float(
+        None,
+        help='The maximum point size. Found automagically once size_att is set (`float`)',
+        allow_none=True
+    ).tag(wwt='normalizeSizeMax')
+
+    _settingsReverseMap = {}
+    "Intentional class-wide dict - reverse-maps WWT names to pywwt names"
+
+    def __init__(self, parent, id, app_msg):
+        self.parent = parent
+        self.id = id
+
+        # Set up the settings reverse map if needed.
+
+        if not self._settingsReverseMap:
+            for tname, trait in self.traits().items():
+                wwt_name = trait.metadata.get('wwt')
+
+                if wwt_name is not None:
+                    self._settingsReverseMap[wwt_name] = tname
+
+        # Synchronize Python state with what the app has told us. One day, pywwt
+        # should be able to learn about existing non-HiPS table layers in
+        # similar fashion, and do the same thing.
+
+        self.notify_changes = False
+
+        # skeleton table so that we can reverse-map column names:
+        self.table = Table(names=app_msg['spreadsheetInfo']['header'])
+
+        settings = app_msg['spreadsheetInfo']['settings']
+
+        def mapCol(x):
+            if x == -1:
+                return None
+            return self.table.colnames[x]
+
+        for wwt_name, val in settings:
+            pyname = self._settingsReverseMap.get(wwt_name)
+            if pyname is None:
+                continue
+
+            if '_att' in pyname:
+                val = mapCol(val)
+                if val is None:
+                    continue
+            elif pyname in ('alt_unit', 'xyz_unit'):
+                for pyunit, wwtunit in VALID_ALT_UNITS.items():
+                    if val == wwtunit:
+                        val = pyunit
+                        break
+            elif pyname == 'lon_unit':
+                for pyunit, wwtunit in VALID_LON_UNITS.items():
+                    if val == wwtunit:
+                        val = pyunit
+                        break
+            elif pyname == 'time_decay':
+                val = val * u.day
+
+            setattr(self, pyname, val)
+
+        # Regular init, except that we don't override the settings.
+        super().__init__(
+            parent=parent,
+            table=self.table,
+            frame='Sky',
+            id=id,
+            table_from_wwt_engine=True,
+        )
+
+        # Finally, honor any future settings changes.
+        self.notify_changes = True
+
+    def _get_table(self):
+        if not len(self.table):
+            raise Exception('HiPS catalog table must be refreshed asynchronously: `await table.refresh()`')
+        return self.table
+
+    async def refresh(self, timeout=60):
+        """
+        Update the Python table with the data that are currently visible in the
+        WWT viewer.
+
+        Returns
+        -------
+        table : :class:`~astropy.table.Table`
+        """
+
+        fut = self.parent._send_into_future(
+            timeout=timeout,
+            event='layer_hipscat_datainview',
+            tableId=self.id,
+            limit=True
+        )
+
+        reply = await fut
+        self.table = Table.read(reply['data'], format='ascii.tab')
+        return self.table
+
+    def update_data(self, table=None):
+        raise Exception('HiPS catalogs data can only be updated by changing the field of view')
+
+    def __str__(self):
+        return 'Catalog HiPS Layer: {0}'.format(self.id)
 
 
 class ImageLayer(HasTraits):
@@ -1000,7 +1196,6 @@ class ImageLayer(HasTraits):
                               version=self._cmap_version)
 
     def _on_trait_change(self, changed):
-
         if changed['name'] in ('stretch', 'vmin', 'vmax'):
             if self.vmin is not None and self.vmax is not None:
                 stretch_id = VALID_STRETCHES.index(self.stretch)

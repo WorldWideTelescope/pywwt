@@ -43,7 +43,7 @@ jobs:
   # alternatives but nothing is official yet.
 
   - bash: |
-      set -euo pipefail
+      set -eo pipefail  # no -u to work around Conda activatio bug (2021 July)
       eval "$($CONDA/bin/conda shell.bash hook)"
       set -x
       conda activate

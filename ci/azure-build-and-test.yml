@@ -15,6 +15,11 @@ parameters:
     vars:
       PYTHON_SERIES: "3.8"
 
+  - name: linux_39
+    vmImage: ubuntu-20.04
+    vars:
+      PYTHON_SERIES: "3.9"
+
   - name: macos_37
     vmImage: macos-10.15
     vars:
@@ -29,6 +34,11 @@ parameters:
     vmImage: windows-2019
     vars:
       PYTHON_SERIES: "3.7"
+
+  - name: windows_39
+    vmImage: windows-2019
+    vars:
+      PYTHON_SERIES: "3.9"
 
   # 2020 Oct: the Windows / Python 3.8 build seems to hang forever in the test
   # suite. No clues as to why, and the package complement is virtually identical
@@ -87,12 +97,18 @@ jobs:
       displayName: Set up OpenGL (Windows)
 
     - bash: |
+        echo "##vso[task.setvariable variable=QTWEBENGINE_CHROMIUM_FLAGS;]--ignore-gpu-blacklist"
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      displayName: Set up OpenGL (macOS)
+
+    - bash: |
         set -euo pipefail
         source activate-conda.sh
         conda activate build
         set -x
-        \conda install -y pytest-remotedata
-        pytest -v -s pywwt -p no:warnings
+        \conda install -y pytest-qt pytest-remotedata pytest-timeout
+        python setup.py build
+        pytest -v -s pywwt -p no:warnings --timeout=1800 --timeout_method=thread
       displayName: Test
       env:
         PYWWT_TEST_IMAGE_DIR: $(Build.ArtifactStagingDirectory)
@@ -161,8 +177,9 @@ jobs:
       source activate-conda.sh
       conda activate build
       set -x
-      \conda install -y pytest-cov pytest-remotedata
-      pytest --cov-report=xml --cov=pywwt pywwt
+      \conda install -y pytest-cov pytest-remotedata pytest-timeout
+      python setup.py build
+      pytest -v -s pywwt -p no:warnings --timeout=180 --timeout_method=thread --cov-report=xml --cov=pywwt
     displayName: Test with coverage
 
   - bash: bash <(curl -s https://codecov.io/bash)
