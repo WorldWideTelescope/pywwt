@@ -57,8 +57,7 @@ package_data_spec = {
         'nbextension/static/*.*js*',
         'tests/data/*/*.png',
         'tests/data/*.fits',
-        'web_static/widget/*.*js*',
-        'web_static/widget/*.html',
+        'web_static/**',
     ]
 }
 
@@ -120,7 +119,7 @@ setup_args = dict(
         'ipywidgets>=7.0.0',
         'ipyevents',
         'traitlets>=5',
-        'reproject>=0.4',
+        'reproject>=0.8',
         'qtpy',
         'tornado',
         'pytz',

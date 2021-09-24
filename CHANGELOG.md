@@ -1,5 +1,51 @@
 # rc: minor bump
 
+This is an important release, updating all variations of the pywwt UI ­— the Qt
+widget, the ipywidgets widget, and the JupyterLab integration — to use the WWT
+“research app”, instead of the old hand-coded HTML/JS wrapper that was specific
+to pywwt. This enables us to take advantage of the app's much more sophisticated
+UI and robust development framework, and to provide a homogeneous user interface
+across these different variations. (#301, #302, @pkgw)
+
+- This release bundles version 0.7.1 of the research app, which includes support
+  for many new features, including catalog HiPS datasets, tiled FITS rendering,
+  and more.
+- Building in the capabilities of this new framework, the WWT widget has gained
+  `most_recent_source` and `selected_sources` properties that allow code to
+  interact with user selections of sources in the UI. Python code can be
+  notified of selection actions by using the `set_selection_change_callback()`
+  method. (#311, @Carifio24)
+- Also building on the new framework, the WWT widget now knows about HiPS
+  progressive catalogs (#308, @imbasimba, @pkgw). You can query available
+  catalogs (via the `available_hips_catalog_names`) property, add them to the UI
+  programmatically with `wwt.layers.add_hips_catalog_layer`, and obtain the data
+  currently visible in the WWT view with the `layer.refresh()` method.
+- To support the above, pywwt has started adding asynchronous processing support
+  (#308, @pkgw). When pywwt is used inside a Jupyter kernel, the internals of
+  the kernel message queue processing are modified to allow "expedited" message
+  handling, which is needed to properly support certain pywwt interactive
+  functionalities. This hack is relatively self-contained so hopefully it won't
+  be too fragile, but time will have to tell.
+- The `wwt.load_image_collection()` method now has a `recursive` for nested WTML
+  files (#308, @imbasimba).
+- The WWT widget constructors have a new `hide_all_chrome` option that hides all
+  of the research app’s “chrome” (UI features), to enable a user experience that
+  looks similar to the old pre-app style. This mode is the default in the Qt
+  widget, so as to preserve the UX of the Glue app.
+- Fix pywwt to be able to parse ImageSet XML data even when the `ThumbnailUrl`
+  attribute is missing (#312, @Carifio24).
+- Fixes for Astropy 4.3 (#310, @pkgw).
+- The type of the `wwt.solar_system.scale` setting was corrected.
+- The Jupyter server was failing to serve files with unguessable content-types;
+  this is now fixed.
+- Yet more improvements to the CI, test suite, and API documentation.
+
+Tutorial and how-to documentation for all of this new functionality hasn't been
+prepared ... yet.
+
+
+# pypa:pywwt 0.12.0 (2021-06-14)
+
 - A variety of internal cleanups relating to the HTML and JS files that are
   bundled with pywwt. These shouldn't affect anything user-visible, yet,
   but we want to publish the cleaned-up code to validate that everything is

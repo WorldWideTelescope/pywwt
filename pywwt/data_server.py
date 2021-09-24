@@ -1,10 +1,11 @@
-import os.path
-import time
 import asyncio
-import socket
-import logging
 from hashlib import md5
+import logging
+import mimetypes
+import os.path
+import socket
 from threading import Thread
+import time
 
 __all__ = ['get_data_server']
 
@@ -27,7 +28,6 @@ def get_data_server(verbose=True):
     from tornado.routing import PathMatches
 
     class WebServer(Application):
-
         host = None
         port = None
 
@@ -42,7 +42,6 @@ def get_data_server(verbose=True):
                 self.port = None
 
     class DataServer(object):
-
         def start(self, app):
             self._files = {}
             self._thread = Thread(target=self.start_app)
@@ -76,13 +75,11 @@ def get_data_server(verbose=True):
 
             self._app.run(host=host, port=port)
 
-        def serve_file(self, filename, real_name=True, extension=''):
-            if real_name:
-                hash = os.path.basename(filename)
-            else:
-                with open(filename, 'rb') as f:
-                    content = f.read()
-                hash = md5(content).hexdigest() + extension
+        def serve_file(self, filename, extension=''):
+            with open(filename, 'rb') as f:
+                content = f.read()
+
+            hash = md5(content).hexdigest() + extension
             self._files[hash] = os.path.abspath(filename)
             return 'http://' + self.host + ':' + str(self.port) + '/data/' + hash
 
@@ -93,10 +90,32 @@ def get_data_server(verbose=True):
             with open(self._files[hash], 'rb') as f:
                 return f.read()
 
+    mimetypes.add_type('image/fits', '.fits')
+    mimetypes.add_type('image/fits', '.fts')
+    mimetypes.add_type('image/fits', '.fit')
+
     ds = DataServer()
 
     class DataHandler(RequestHandler):
         async def get(self, hash):
+            # Do our best to set an appropriate Content-Type.
+            filename = ds._files[hash]
+            content_type = mimetypes.guess_type(filename)[0]
+            if content_type is None:
+                content_type = 'application/binary'
+            self.set_header('Content-Type', content_type)
+
+            # Add wide-open CORS headers to allow external WWT apps to access
+            # data. This isn't needed in the default case, but comes in handy
+            # when testing updates to the research app with an alternative
+            # localhost port. Note that a hostile actor can just ignore these
+            # settings, and our default stance is that data are globally
+            # accessible, so this really shouldn't affect the level of security
+            # we provide.
+            self.set_header('Access-Control-Allow-Origin', '*')
+            self.set_header('Access-Control-Allow-Methods', 'GET,HEAD')
+            self.set_header('Access-Control-Allow-Headers', 'Content-Disposition,Content-Encoding,Content-Length,Content-Type')
+
             self.write(ds.get_file_contents(hash))
 
     app = WebServer([

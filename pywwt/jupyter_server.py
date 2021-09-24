@@ -25,7 +25,10 @@ from tornado import web
 from notebook.utils import url_path_join
 from notebook.base.handlers import IPythonHandler
 
-__all__ = ['load_jupyter_server_extension']
+__all__ = [
+    'load_jupyter_server_extension',
+    'serve_file',
+]
 
 
 STATIC_DIR = os.path.join(os.path.dirname(__file__), 'web_static')
@@ -64,7 +67,10 @@ class WWTFileHandler(IPythonHandler):
                 raise web.HTTPError(404)
 
         # Do our best to set an appropriate Content-Type.
-        self.set_header('Content-Type', mimetypes.guess_type(filename)[0])
+        content_type = mimetypes.guess_type(filename)[0]
+        if content_type is None:
+            content_type = 'application/binary'
+        self.set_header('Content-Type', content_type)
 
         # Add wide-open CORS headers to allow external WWT apps to access data.
         self.set_header('Access-Control-Allow-Origin', '*')

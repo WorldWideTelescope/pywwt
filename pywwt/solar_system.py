@@ -63,7 +63,7 @@ class SolarSystem(HasTraits):
     @validate('scale')
     def _validate_scale(self, proposal):
         if 1 <= proposal['value'] <= 100:
-            return str(proposal['value'])
+            return proposal['value']
         else:
             raise ValueError('scale takes integers from 1-100')
 
