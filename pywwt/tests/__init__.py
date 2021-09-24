@@ -11,6 +11,7 @@ __all__ = ['assert_widget_image', 'wait_for_test']
 from glob import glob
 import os.path
 import sys
+import tempfile
 
 from matplotlib.testing.compare import compare_images  # noqa
 import pytest
@@ -127,3 +128,111 @@ def wait_for_test(wwt, timeout, for_render=False):
 
     if for_render:
         print(f'wait_for_test: iters={iters} dt={dt} timeout={timeout} always={ALWAYS_EXTRA_LONG}')
+
+
+def analyze_test_image_corpus(args):
+    """
+    This function analyzes the corpus of test images to ultimately report
+    whether references images need to be added or removed.
+
+    The arguments to the function should be sets of imagery that should pass the
+    test suite. Each argument should be a path to either (1) a Zip file
+    downloaded from the Azure Pipelines test suite artifacts or (2) a directory
+    containing images output from the test suite (saved by setting the
+    $PYWWT_TEST_IMAGE_DIR). The latter mode is useful because local developers'
+    machines don't always generate imagery that fully matches with what's
+    created in the CI system, and we want the test suite to pass for them, so we
+    shouldn't restrict ourselves to *only* outputs created by the CI.
+
+    Update the toplevel README.md appropriately if the behavior here is changed.
+    """
+
+    # First: index the existing corpus
+
+    name_to_refs = {}
+
+    for refdir in glob(os.path.join(DATA, 'refimg_*')):
+        name = os.path.basename(refdir).replace('refimg_', '')
+        refs = {}
+
+        for p in os.listdir(refdir):
+            if not p.endswith('.png'):
+                continue
+
+            refs[p.replace('.png', '')] = set()
+
+        name_to_refs[name] = refs
+
+    # Now trawl the samples and see which refimgs we hit
+
+    def directory_to_paths(dir_path):
+        for filename in os.listdir(dir_path):
+            name = filename.replace('.png', '')
+            if name in name_to_refs:
+                yield name, os.path.join(dir_path, filename)
+
+    def zip_to_paths(zip_path):
+        from zipfile import ZipFile
+
+        with tempfile.TemporaryDirectory() as tmpdir, ZipFile(zip_path) as zip:
+            for zipname in zip.namelist():
+                zip.extract(zipname, tmpdir)
+                name = os.path.basename(zipname).replace('.png', '')
+                if name in name_to_refs:
+                    yield name, os.path.join(tmpdir, zipname)
+
+    for path in args:
+        if os.path.isdir(path):
+            paths = directory_to_paths(path)
+            sampname = os.path.basename(path)
+        elif path.endswith('.zip'):
+            paths = zip_to_paths(path)
+            sampname = os.path.basename(path).replace('.zip', '')
+        else:
+            raise Exception(f'don\'t know how to handle input path `{path}`')
+
+        for name, imgpath in paths:
+            refs = name_to_refs[name]
+            refnames = sorted(refs.keys())
+            found_it = False
+            results = []
+
+            for refname in refnames:
+                refpath = os.path.join(DATA, 'refimg_' + name, refname + '.png')
+                rv = compare_images(
+                    refpath,
+                    imgpath,
+                    tol=IMAGE_COMPARISON_TOLERANCE,
+                    in_decorator=True
+                )
+
+                if rv is None:
+                    refs[refname].add(sampname)
+                    found_it = True
+                    break
+
+                failpath = imgpath.replace('.png', '-failed-diff.png')
+                os.unlink(failpath)
+                results.append((refname, rv['rms']))
+
+            if not found_it:
+                print(f'no refimg found for {sampname}::{name}:', ', '.join('%s=%.2f' % t for t in results))
+
+    # Now report
+
+    print()
+    print('Report:')
+    any_reports = False
+
+    for name in sorted(name_to_refs.keys()):
+        refs = name_to_refs[name]
+
+        for refname in sorted(refs.keys()):
+            refdata = refs[refname]
+
+            if not refdata:
+                print(f'- no hits to {name}::{refname}')
+                any_reports = True
+
+    if not any_reports:
+        print('- no suggested modifications')
