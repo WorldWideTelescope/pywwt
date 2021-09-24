@@ -119,7 +119,7 @@ setup_args = dict(
         'ipywidgets>=7.0.0',
         'ipyevents',
         'traitlets>=5',
-        'reproject>=0.4',
+        'reproject>=0.8',
         'qtpy',
         'tornado',
         'pytz',
