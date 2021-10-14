@@ -1,4 +1,10 @@
-# rc: minor bump
+# rc: micro bump
+
+- Update the Jupyter(Lab) frontend code to fix a dumb bug that broke the widget
+  when the "baseUrl" was non-trivial (#314, @pkgw).
+
+
+# pypa:pywwt 0.13.0 (2021-09-24)
 
 This is an important release, updating all variations of the pywwt UI ­— the Qt
 widget, the ipywidgets widget, and the JupyterLab integration — to use the WWT

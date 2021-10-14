@@ -123,8 +123,12 @@ var WWTModel = widgets.DOMWidgetModel.extend({
         // servers and the like. The Python kernel code can determine the base
         // URL on its own, but it requires some super hackery (reading various
         // magical JSON config files and making API calls).
-        if (url.slice(4) == '/wwt') {
-            url = this.wwtBaseUrl + url;
+        if (url.slice(0, 4) == '/wwt') {
+            if (this.wwtBaseUrl.slice(-1) == '/') {
+                url = this.wwtBaseUrl.slice(0, -1) + url;
+            } else {
+                url = this.wwtBaseUrl + url;
+            }
         }
 
         return new URL(url, location.toString()).toString();

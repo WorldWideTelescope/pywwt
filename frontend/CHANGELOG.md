@@ -1,4 +1,11 @@
-# rc: minor bump
+# rc: micro bump
+
+- Fix a dumb string-processing bug in the URL canonicalization code that broke
+  the widget in Jupyter environments where the "base URL" is nontrivial (#314,
+  @pkgw).
+
+
+# npm:pywwt 1.3.0 (2021-09-24)
 
 - Bundle the research app in the pywwt distribution; currently requiring version
   0.7.1 (#301, #313, @pkgw). Compared to the previous release of this package,
