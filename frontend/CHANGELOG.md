@@ -1,3 +1,10 @@
+# npm:pywwt 1.3.1 (2021-10-14)
+
+- Fix a dumb string-processing bug in the URL canonicalization code that broke
+  the widget in Jupyter environments where the "base URL" is nontrivial (#314,
+  @pkgw).
+
+
 # npm:pywwt 1.3.0 (2021-09-24)
 
 - Bundle the research app in the pywwt distribution; currently requiring version

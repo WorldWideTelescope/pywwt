@@ -1,3 +1,9 @@
+# pypa:pywwt 0.13.1 (2021-10-14)
+
+- Update the Jupyter(Lab) frontend code to fix a dumb bug that broke the widget
+  when the "baseUrl" was non-trivial (#314, @pkgw).
+
+
 # pypa:pywwt 0.13.0 (2021-09-24)
 
 This is an important release, updating all variations of the pywwt UI ­— the Qt
