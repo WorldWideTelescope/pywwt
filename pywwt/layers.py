@@ -257,6 +257,26 @@ class LayerManager(object):
         self._add_layer(layer)
         return layer
 
+    def add_preloaded_image_layer(self, url=None, **kwargs):
+        """
+        Add an image layer to the current view, based on its data URL.
+
+        Parameters
+        ----------
+        url : str
+            The URL of the image, as registered with the WWT frontend.
+        kwargs
+            Additional keyword arguments can be used to set properties on the
+            image layer.
+
+        Returns
+        -------
+        layer : :class:`~pywwt.layers.ImageLayer` or a subclass thereof
+        """
+        layer = self._parent._create_image_layer(url=url, **kwargs)
+        self._add_layer(layer)
+        return layer
+
     def add_table_layer(self, table=None, frame="Sky", **kwargs):
         """
         Add a data layer to the current view
@@ -1321,10 +1341,7 @@ class ImageLayer(HasTraits):
         help="The Matplotlib colormap " "(:class:`matplotlib.colors.ListedColormap`)",
     ).tag(wwt=None)
 
-    def __init__(self, parent=None, image=None, **kwargs):
-
-        self._image = image
-
+    def __init__(self, parent=None, image=None, url=None, **kwargs):
         self.parent = parent
         self.id = str(uuid.uuid4())
 
@@ -1333,32 +1350,41 @@ class ImageLayer(HasTraits):
         self._manager = None
         self._removed = False
 
-        # Transform the image so that it is always acceptable to WWT
-        # (Equatorial, TAN projection, double values) and write out to a
-        # temporary file
-        self._sanitized_image = tempfile.mktemp()
-        sanitize_image(image, self._sanitized_image)
-
-        # The first thing we need to do is make sure the image is being served.
-        # For now we assume that image is a filename, but we could do more
-        # detailed checks and reproject on-the-fly for example.
-
-        self._image_url = self.parent._serve_file(
-            self._sanitized_image, extension=".fits"
-        )
-
-        # Default the image rendering parameters. Because of the way the image
-        # loading works in WWT, we may end up with messages being applied out
-        # of order (see notes in image_layer_stretch in wwt_json_api.js)
         self._stretch_version = 0
         self._cmap_version = 0
 
-        data = fits.getdata(self._sanitized_image)
-        self._data_min, self.vmin, self.vmax, self._data_max = np.nanpercentile(
-            data, [0, 0.5, 99.5, 100]
-        )
+        if image is not None:
+            # "Classic" mode, processing a single FITS-like input. Transform the
+            # image so that it is always acceptable to WWT (Equatorial, TAN
+            # projection, double values) and write out to a temporary file.
+            self._sanitized_image = tempfile.mktemp()
+            sanitize_image(image, self._sanitized_image)
 
-        self._initialize_layer()
+            # The first thing we need to do is make sure the image is being served.
+            # For now we assume that image is a filename, but we could do more
+            # detailed checks and reproject on-the-fly for example.
+
+            self._image_url = self.parent._serve_file(
+                self._sanitized_image, extension=".fits"
+            )
+
+            data = fits.getdata(self._sanitized_image)
+            self.vmin, self.vmax = np.nanpercentile(data, [0.5, 99.5])
+
+            self.parent._send_msg(
+                event="image_layer_create", id=self.id, url=self._image_url
+            )
+        elif url is not None:
+            # Loading image by URL.
+            self._sanitized_image = None
+            self._image_url = url
+
+            self.parent._send_msg(
+                event="image_layer_create",
+                id=self.id,
+                url=self._image_url,
+                mode="preloaded",
+            )
 
         # Check that all kwargs are valid -- throws error if not
         validate_traits(self, kwargs)
@@ -1404,11 +1430,6 @@ class ImageLayer(HasTraits):
                     + " (got {0})".format(proposal["value"].name)
                 )
             return proposal["value"]
-
-    def _initialize_layer(self):
-        self.parent._send_msg(
-            event="image_layer_create", id=self.id, url=self._image_url
-        )
 
     def remove(self):
         """
@@ -1481,6 +1502,9 @@ class ImageLayer(HasTraits):
         return state
 
     def _save_data_for_serialization(self, dir):
+        if self._sanitized_image is None:
+            raise Exception("cannot serialize non-local imagery")
+
         file_path = path.join(dir, "{0}.fits".format(self.id))
         shutil.copyfile(self._sanitized_image, file_path)
 
