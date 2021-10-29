@@ -85,6 +85,42 @@ class WWTFileHandler(IPythonHandler):
         self.finish(content)
 
 
+# At the moment the following class is quite redundant with the basic
+# WWTFileHandler. But we expect to remove the non-static handler soon as we
+# switch to using the WWT Kernel Data Relay to serve non-static assets.
+class WWTStaticFileHandler(IPythonHandler):
+    def get(self, filename):
+        static_path = os.path.join(STATIC_DIR, filename)
+
+        if os.path.isdir(static_path):
+            path = os.path.join(static_path, "index.html")
+            filename = "index.html"  # for mime-type guess below
+        else:
+            path = static_path
+
+        # Do our best to set an appropriate Content-Type.
+        content_type = mimetypes.guess_type(filename)[0]
+        if content_type is None:
+            content_type = "application/binary"
+        self.set_header("Content-Type", content_type)
+
+        # Add wide-open CORS headers to allow external WWT apps to access data.
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Methods", "GET,HEAD")
+        self.set_header(
+            "Access-Control-Allow-Headers",
+            "Content-Disposition,Content-Encoding,Content-Length,Content-Type",
+        )
+
+        try:
+            with open(path, "rb") as f:
+                content = f.read()
+        except FileNotFoundError:
+            raise web.HTTPError(404)
+
+        self.finish(content)
+
+
 # January 2021: Derived from notebook.notebookapp.list_running_servers, with a
 # fix for JupyterLab 3.x (or something recent??), where the JSON files start
 # with `jpserver` not `nbserver`.
@@ -230,3 +266,5 @@ def load_jupyter_server_extension(nb_server_app):
 
     route_pattern = url_path_join(web_app.settings["base_url"], "/wwt/(.*)")
     web_app.add_handlers(host_pattern, [(route_pattern, WWTFileHandler)])
+    route_pattern = url_path_join(web_app.settings["base_url"], "/wwtstatic/(.*)")
+    web_app.add_handlers(host_pattern, [(route_pattern, WWTStaticFileHandler)])
