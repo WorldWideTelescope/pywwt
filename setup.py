@@ -123,6 +123,7 @@ setup_args = dict(
         'qtpy',
         'tornado',
         'pytz',
+        'toasty>=0.11.0',
     ],
     extras_require = {
         'test': [
