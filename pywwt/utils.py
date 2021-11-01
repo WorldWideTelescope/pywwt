@@ -10,7 +10,7 @@ from reproject.mosaicking import find_optimal_celestial_wcs
 __all__ = ['sanitize_image']
 
 
-def sanitize_image(image, output_file, overwrite=False):
+def sanitize_image(image, output_file, overwrite=False, **kwargs):
     """
     Transform a FITS image so that it is in equatorial coordinates with a TAN
     projection and floating-point values, all of which are required to work
@@ -19,17 +19,30 @@ def sanitize_image(image, output_file, overwrite=False):
     Image can be a filename, an HDU, or a tuple of (array, WCS).
     """
 
-    # The reproject package understands the different inputs to this function
-    # so we can just transparently pass it through.
+    # In case of a FITS file with more than one HDU, we need to choose one
+    if isinstance(image, str):
+        with fits.open(image) as hdul:
+            if 'hdu_index' in kwargs:
+                image = hdul[kwargs.get('hdu_index')]
+            else:
+                for hdu in hdul:
+                    if (hasattr(hdu, 'shape') and len(hdu.shape) > 1
+                            and type(hdu) is not fits.hdu.table.BinTableHDU):
+                        break
+                image = hdu
+            transform_to_wwt_supported_fits(image, output_file, overwrite)
+    else:
+        transform_to_wwt_supported_fits(image, output_file, overwrite)
 
+
+
+
+def transform_to_wwt_supported_fits(image, output_file, overwrite):
     wcs, shape_out = find_optimal_celestial_wcs([image], frame=ICRS(),
                                                 projection='TAN')
-
     array, footprint = reproject_interp(image, wcs, shape_out=shape_out)
-
     fits.writeto(output_file, array.astype(np.float32),
                  wcs.to_header(), overwrite=overwrite)
-
 
 def validate_traits(cls, traits):
     '''

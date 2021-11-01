@@ -1358,7 +1358,7 @@ class ImageLayer(HasTraits):
             # image so that it is always acceptable to WWT (Equatorial, TAN
             # projection, double values) and write out to a temporary file.
             self._sanitized_image = tempfile.mktemp()
-            sanitize_image(image, self._sanitized_image)
+            sanitize_image(image, self._sanitized_image, **kwargs)
 
             # The first thing we need to do is make sure the image is being served.
             # For now we assume that image is a filename, but we could do more
