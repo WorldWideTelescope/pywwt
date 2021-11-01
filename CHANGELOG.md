@@ -1,4 +1,15 @@
-# rc: micro bump
+# rc: minor bump
+
+- When pywwt is installed as a Jupyter server extension, have it provide its
+  static resource files, most notably the bundled copy of the research app, from
+  the additional URL path `$jupyterBaseUrl/wwtstatic/...`. Coupled with the
+  recent releases of the WWT JupyterLab extension to make the app URL
+  configurable, this should give us a future-proof way to make the WWT
+  JupyterLab experience fully functional even in Jupyter(Lab) installations that
+  reject all cross-origin data requests (#315, @pkgw).
+
+
+# pypa:pywwt 0.13.1 (2021-10-14)
 
 - Update the Jupyter(Lab) frontend code to fix a dumb bug that broke the widget
   when the "baseUrl" was non-trivial (#314, @pkgw).

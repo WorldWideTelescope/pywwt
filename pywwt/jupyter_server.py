@@ -26,25 +26,24 @@ from notebook.utils import url_path_join
 from notebook.base.handlers import IPythonHandler
 
 __all__ = [
-    'load_jupyter_server_extension',
-    'serve_file',
+    "load_jupyter_server_extension",
+    "serve_file",
 ]
 
 
-STATIC_DIR = os.path.join(os.path.dirname(__file__), 'web_static')
-CONFIG = os.path.expanduser('~/.pywwt')
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "web_static")
+CONFIG = os.path.expanduser("~/.pywwt")
 
 
 class WWTFileHandler(IPythonHandler):
-
     def get(self, filename):
         # First we check if this is a standard file in the static directory
         static_path = os.path.join(STATIC_DIR, filename)
 
         if os.path.exists(static_path):
             if os.path.isdir(static_path):
-                path = os.path.join(static_path, 'index.html')
-                filename = 'index.html'  # for mime-type guess below
+                path = os.path.join(static_path, "index.html")
+                filename = "index.html"  # for mime-type guess below
             else:
                 path = static_path
         else:
@@ -61,24 +60,63 @@ class WWTFileHandler(IPythonHandler):
             with open(CONFIG) as f:
                 config = json.load(f)
 
-            if filename in config['paths']:
-                path = config['paths'][filename]
+            if filename in config["paths"]:
+                path = config["paths"][filename]
             else:
                 raise web.HTTPError(404)
 
         # Do our best to set an appropriate Content-Type.
         content_type = mimetypes.guess_type(filename)[0]
         if content_type is None:
-            content_type = 'application/binary'
-        self.set_header('Content-Type', content_type)
+            content_type = "application/binary"
+        self.set_header("Content-Type", content_type)
 
         # Add wide-open CORS headers to allow external WWT apps to access data.
-        self.set_header('Access-Control-Allow-Origin', '*')
-        self.set_header('Access-Control-Allow-Methods', 'GET,HEAD')
-        self.set_header('Access-Control-Allow-Headers', 'Content-Disposition,Content-Encoding,Content-Length,Content-Type')
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Methods", "GET,HEAD")
+        self.set_header(
+            "Access-Control-Allow-Headers",
+            "Content-Disposition,Content-Encoding,Content-Length,Content-Type",
+        )
 
-        with open(path, 'rb') as f:
+        with open(path, "rb") as f:
             content = f.read()
+
+        self.finish(content)
+
+
+# At the moment the following class is quite redundant with the basic
+# WWTFileHandler. But we expect to remove the non-static handler soon as we
+# switch to using the WWT Kernel Data Relay to serve non-static assets.
+class WWTStaticFileHandler(IPythonHandler):
+    def get(self, filename):
+        static_path = os.path.join(STATIC_DIR, filename)
+
+        if os.path.isdir(static_path):
+            path = os.path.join(static_path, "index.html")
+            filename = "index.html"  # for mime-type guess below
+        else:
+            path = static_path
+
+        # Do our best to set an appropriate Content-Type.
+        content_type = mimetypes.guess_type(filename)[0]
+        if content_type is None:
+            content_type = "application/binary"
+        self.set_header("Content-Type", content_type)
+
+        # Add wide-open CORS headers to allow external WWT apps to access data.
+        self.set_header("Access-Control-Allow-Origin", "*")
+        self.set_header("Access-Control-Allow-Methods", "GET,HEAD")
+        self.set_header(
+            "Access-Control-Allow-Headers",
+            "Content-Disposition,Content-Encoding,Content-Length,Content-Type",
+        )
+
+        try:
+            with open(path, "rb") as f:
+                content = f.read()
+        except FileNotFoundError:
+            raise web.HTTPError(404)
 
         self.finish(content)
 
@@ -101,11 +139,13 @@ def _list_running_servers_jl3():
 
     for file_name in os.listdir(runtime_dir):
         # here is the fix:
-        if re.match('nbserver-(.+).json', file_name) or re.match('jpserver-(.+).json', file_name):
-            with io.open(os.path.join(runtime_dir, file_name), encoding='utf-8') as f:
+        if re.match("nbserver-(.+).json", file_name) or re.match(
+            "jpserver-(.+).json", file_name
+        ):
+            with io.open(os.path.join(runtime_dir, file_name), encoding="utf-8") as f:
                 info = json.load(f)
 
-            if ('pid' in info) and check_pid(info['pid']):
+            if ("pid" in info) and check_pid(info["pid"]):
                 yield info
             else:
                 try:
@@ -130,8 +170,7 @@ def _compute_notebook_server_base_url():
 
     # First, find our ID.
     kernel_id = re.search(
-        'kernel-(.*).json',
-        ipykernel.connect.get_connection_file()
+        "kernel-(.*).json", ipykernel.connect.get_connection_file()
     ).group(1)
 
     # Now, check all of the running servers known on this machine. We have to
@@ -144,11 +183,11 @@ def _compute_notebook_server_base_url():
         # server, it seems that the token is instead obtained from an
         # environment variable. Cf.
         # https://github.com/jupyterhub/jupyterhub/blob/master/jupyterhub/singleuser/mixins.py
-        token = s.get('token', '')
+        token = s.get("token", "")
         if not token:
-            token = os.environ.get('JUPYTERHUB_API_TOKEN', '')
+            token = os.environ.get("JUPYTERHUB_API_TOKEN", "")
         if not token:
-            token = os.environ.get('JPY_API_TOKEN', '')  # deprecated as of 0.7.2
+            token = os.environ.get("JPY_API_TOKEN", "")  # deprecated as of 0.7.2
 
         # Request/response paranoia due to "fun" figuring out how to fix the
         # JupyterHub single-user problem - the API call would fail due to auth
@@ -157,38 +196,38 @@ def _compute_notebook_server_base_url():
         # in the future, add a fallback mode.
         try:
             response = requests.get(
-                requests.compat.urljoin(s['url'], 'api/sessions'),
-                params={'token': token}
+                requests.compat.urljoin(s["url"], "api/sessions"),
+                params={"token": token},
             )
 
             for n in json.loads(response.text):
-                if n['kernel']['id'] == kernel_id:
-                    return s['base_url']  # Found it!
+                if n["kernel"]["id"] == kernel_id:
+                    return s["base_url"]  # Found it!
         except Exception:
             pass
 
     # If we got here, we might have auth issues with the api/sessions request.
     # If there's only one server, just give it a try.
     if len(running_server_info) == 1:
-        return running_server_info[0]['base_url']
+        return running_server_info[0]["base_url"]
 
-    raise Exception('cannot locate our notebook server; is this code running in a Jupyter kernel?')
+    raise Exception(
+        "cannot locate our notebook server; is this code running in a Jupyter kernel?"
+    )
 
 
 _server_base_url = None
 
 
 def get_notebook_server_base_url():
-    """Get the "base_url" of the current Jupyter notebook server.
-
-    """
+    """Get the "base_url" of the current Jupyter notebook server."""
     global _server_base_url
     if _server_base_url is None:
         _server_base_url = _compute_notebook_server_base_url()
     return _server_base_url
 
 
-def serve_file(path, extension=''):
+def serve_file(path, extension=""):
     """Given a path to a file on local disk, instruct the notebook server
     to serve it up over HTTP. Returns a relative URL that can be used to
     access the file.
@@ -197,33 +236,35 @@ def serve_file(path, extension=''):
     if not os.path.exists(path):
         raise ValueError("Path {0} does not exist".format(path))
 
-    hash = md5(path.encode('utf-8')).hexdigest() + extension
+    hash = md5(path.encode("utf-8")).hexdigest() + extension
 
     with open(CONFIG) as f:
         config = json.load(f)
 
-    if hash not in config['paths']:
+    if hash not in config["paths"]:
 
-        config['paths'][hash] = os.path.abspath(path)
+        config["paths"][hash] = os.path.abspath(path)
 
-        with open(CONFIG, 'w') as f:
+        with open(CONFIG, "w") as f:
             json.dump(config, f)
 
-    return url_path_join(get_notebook_server_base_url(), '/wwt/' + hash)
+    return url_path_join(get_notebook_server_base_url(), "/wwt/" + hash)
 
 
 def load_jupyter_server_extension(nb_server_app):
     web_app = nb_server_app.web_app
-    host_pattern = '.*$'
+    host_pattern = ".*$"
 
     if not os.path.exists(CONFIG):
-        config = {'paths': {}}
-        with open(CONFIG, 'w') as f:
+        config = {"paths": {}}
+        with open(CONFIG, "w") as f:
             json.dump(config, f)
 
-    mimetypes.add_type('image/fits', '.fits')
-    mimetypes.add_type('image/fits', '.fts')
-    mimetypes.add_type('image/fits', '.fit')
+    mimetypes.add_type("image/fits", ".fits")
+    mimetypes.add_type("image/fits", ".fts")
+    mimetypes.add_type("image/fits", ".fit")
 
-    route_pattern = url_path_join(web_app.settings['base_url'], '/wwt/(.*)')
+    route_pattern = url_path_join(web_app.settings["base_url"], "/wwt/(.*)")
     web_app.add_handlers(host_pattern, [(route_pattern, WWTFileHandler)])
+    route_pattern = url_path_join(web_app.settings["base_url"], "/wwtstatic/(.*)")
+    web_app.add_handlers(host_pattern, [(route_pattern, WWTStaticFileHandler)])
