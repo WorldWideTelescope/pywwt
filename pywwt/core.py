@@ -525,6 +525,10 @@ class BaseWWTWidget(HasTraits):
     imagery = None
     "Access to the engine's available imagesets"
 
+
+    def _serve_tree(self, path):
+        raise DataPublishingNotAvailableError()
+
     @property
     def instruments(self):
         """
@@ -931,7 +935,7 @@ class BaseWWTWidget(HasTraits):
 
     # Data loading
 
-    def load_image_collection(self, url, recursive=False, remote_only=False):
+    async def load_image_collection(self, url, recursive=False, remote_only=False):
         """
         Load a collection of layers for possible use in the viewer.
 
@@ -968,12 +972,14 @@ class BaseWWTWidget(HasTraits):
         if not remote_only:
             self._available_layers.update(get_imagery_layers(url))
 
-        self._send_msg(
+        #TODO probable API break by adding 'async'
+        fut = await self._send_into_future(
             event="load_image_collection",
             url=url,
-            loadChildFolders=recursive,
-            threadId=self._next_seq(),
+            loadChildFolders=recursive
         )
+
+        return fut
 
     @property
     def available_layers(self):

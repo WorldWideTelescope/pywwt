@@ -277,6 +277,73 @@ class LayerManager(object):
         self._add_layer(layer)
         return layer
 
+    async def add_fits_layer(self, fits, **kwargs):
+        """
+        Add a FITS layer to the current view. This method can display any FITS
+        or list of FITS from the local environment. In case of a large FITS
+        (> 20 MB), the file is preprocessed into tiles using the `toasty`
+        library for smooth & fast visualization. You can also use this method
+        to combine multiple FITS files into a single imageset with a common
+        tangential projection.
+
+        Parameters
+        ----------
+        fits : str or list of str
+            The path(s) to the image(s) to show
+        kwargs
+            Additional keyword arguments can be used to set properties on the
+            image layer or settings for the `toasty` tiling process.
+
+        Returns
+        -------
+        layer : :class:`~pywwt.layers.ImageLayer` or a subclass thereof
+        """
+        from pathlib import Path
+        if not isinstance(fits, list):
+            fits = [fits]
+        if len(fits) > 1 or Path(fits[0]).stat().st_size > 20e6: # 20 MB
+            return await self._tile_and_serve(fits, **kwargs)
+        else:
+            return self.add_image_layer(fits[0], **kwargs)
+
+    async def _tile_and_serve(self, fits, **kwargs):
+        name, url_name = self.toast(fits, **kwargs)
+        url = self._parent._serve_tree(path=name)
+        image_collection = await self._parent.load_image_collection(
+            url=url + 'index.wtml',
+            remote_only=True
+        )
+        return self.add_preloaded_image_layer(url + url_name, **kwargs)
+
+    def toast(self, fits_list, **kwargs):
+        # TODO docs
+        # TODO move to toasty
+        from toasty import builder, collection, pyramid, multi_tan
+        if not isinstance(fits_list, list):
+            fits_list = [fits_list]
+
+        out_dir = fits_list[0].split('.')[0]
+
+        pio = pyramid.PyramidIO(out_dir, default_format='fits')
+        bld = builder.Builder(pio)
+        coll = collection.SimpleFitsCollection(fits_list, **kwargs)
+        # TODO do not always use MultiTan
+        mtp = multi_tan.MultiTanProcessor(coll)
+
+        # Using the file name of the first FITS file as the image collection name
+        bld.set_name(out_dir.split('/')[-1])
+
+        mtp.compute_global_pixelization(bld)
+        print('Processing FITS - Step 1 of 2')
+        mtp.tile(pio, cli_progress=True)
+
+        print('Processing FITS - Step 2 of 2')
+        bld.cascade(cli_progress=True)
+
+        bld.write_index_rel_wtml()
+
+        return out_dir, bld.imgset.url
+
     def add_table_layer(self, table=None, frame="Sky", **kwargs):
         """
         Add a data layer to the current view

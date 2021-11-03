@@ -279,6 +279,17 @@ class WWTLabApplication(BaseWWTWidget):
             )
         return get_relay_hub().serve_file(filename, extension=extension)
 
+    def _serve_tree(self, path):
+        if not self._relayAvailable:
+            raise DataPublishingNotAvailableError(
+                'Unable to complete this operation because it relies on '
+                'data relay services that are not available. Ensure that '
+                'your Jupyter server has the `wwt_kernel_data_relay` package '
+                'installed.'
+            )
+        return get_relay_hub().serve_tree(path)
+
+
     def _create_image_layer(self, **kwargs):
         """Returns a specialized subclass of ImageLayer that has some extra hooks for
         creating UI control points.
