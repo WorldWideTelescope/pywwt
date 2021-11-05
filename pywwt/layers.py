@@ -240,23 +240,54 @@ class LayerManager(object):
 
     def add_image_layer(self, image=None, **kwargs):
         """
-        Add an image layer to the current view
+        Add an image layer to the current view. This method can display any
+        image data or FITS or list of FITS from the local environment. In case
+        of a large FITS (> 20 MB), the file is preprocessed into tiles using
+        the `toasty` library for smooth & fast visualization. You can also use
+        this method to combine multiple FITS files into a single image set with
+        a common tangential projection.
 
         Parameters
         ----------
-        image : str or :class:`~astropy.io.fits.ImageHDU` or tuple
+        image : str or list of str or :class:`~astropy.io.fits.ImageHDU` or tuple
             The image to show, which should be given either as a filename,
-            an :class:`~astropy.io.fits.ImageHDU` object, or a tuple of the
-            form ``(array, wcs)`` where ``array`` is a Numpy array and ``wcs``
-            is an astropy :class:`~astropy.wcs.WCS` object
+            a list of FITS file paths, an :class:`~astropy.io.fits.ImageHDU`
+            object, or a tuple of the form ``(array, wcs)`` where ``array`` is
+            a Numpy array and ``wcs`` is an astropy :class:`~astropy.wcs.WCS`
+            object
         kwargs
             Additional keyword arguments can be used to set properties on the
-            image layer.
+            image layer or settings for the `toasty` tiling process. Common
+            toasty settings include 'hdu_index' and 'blankval'.
 
         Returns
         -------
         layer : :class:`~pywwt.layers.ImageLayer` or a subclass thereof
+
+        Add a FITS layer to the current view. 
         """
+
+        if (isinstance(image, astropy.io.fits.ImageHDU) or
+            isinstance(image, astropy.io.fits.PrimaryHDU) or
+            isinstance(image, astropy.io.fits.HDUList)
+            ):
+            unused_file_name = self._get_unused_fits_name()
+            image.writeto(unused_file_name)
+            image = unused_file_name
+        if isinstance(image, str):
+            image = [image]
+        if isinstance(image, list): 
+            if len(image) > 1 or Path(image[0]).stat().st_size > 20e6:  # 20 MB
+                nest_asyncio.apply()
+                loop = asyncio.get_event_loop()
+                return loop.run_until_complete(self._tile_and_serve(fits=image, **kwargs))
+            else:
+                return self._create_and_add_image_layer(image=image[0], **kwargs)
+
+        return self._create_and_add_image_layer(image=image, **kwargs)
+
+    def _create_and_add_image_layer(self, image, **kwargs):
+        # TODO remove toasty settings keywords from kwargs
         layer = self._parent._create_image_layer(image=image, **kwargs)
         self._add_layer(layer)
         return layer
@@ -281,45 +312,17 @@ class LayerManager(object):
         self._add_layer(layer)
         return layer
 
-    def add_fits_layer(self, fits, **kwargs):
-        """
-        Add a FITS layer to the current view. This method can display any FITS
-        or list of FITS from the local environment. In case of a large FITS
-        (> 20 MB), the file is preprocessed into tiles using the `toasty`
-        library for smooth & fast visualization. You can also use this method
-        to combine multiple FITS files into a single imageset with a common
-        tangential projection.
 
-        Parameters
-        ----------
-        fits : str or list of str
-            The path(s) to the image(s) to show
-        kwargs
-            Additional keyword arguments can be used to set properties on the
-            image layer or settings for the `toasty` tiling process. Common
-            toasty settings include 'hdu_index' and 'blankval'.
-
-        Returns
-        -------
-        layer : :class:`~pywwt.layers.ImageLayer` or a subclass thereof
-        """
-        nest_asyncio.apply()
-        loop = asyncio.get_event_loop()
-        return loop.run_until_complete(self._add_fits_layer_async(fits, **kwargs))
-
-    async def _add_fits_layer_async(self, fits, **kwargs):
-        if not isinstance(fits, list):
-            fits = [fits]
-        if len(fits) > 1 or Path(fits[0]).stat().st_size > 20e6: # 20 MB
-            return await self._tile_and_serve(fits, **kwargs)
-        else:
-            # TODO remove toasty settings keywords from kwargs
-            return self.add_image_layer(fits[0], **kwargs)
+    def _get_unused_fits_name(self):
+        file_index = 1
+        while Path("hdu_fits_{}".format(file_index)).is_file():
+            file_index += 1
+        return "hdu_fits_{}".format(file_index)
 
     async def _tile_and_serve(self, fits, **kwargs):
         name, url_name = self.toast(fits, **kwargs)
         url = self._parent._serve_tree(path=name)
-        image_collection = await self._parent.load_image_collection(
+        await self._parent.load_image_collection(
             url=url + 'index.wtml',
             remote_only=True
         )
