@@ -124,6 +124,7 @@ setup_args = dict(
         'tornado',
         'pytz',
         'toasty>=0.11.0',
+        'nest_asyncio',
     ],
     extras_require = {
         'test': [

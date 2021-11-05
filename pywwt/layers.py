@@ -3,6 +3,10 @@ import uuid
 import tempfile
 from os import path
 import shutil
+import asyncio
+
+import nest_asyncio
+from pathlib import Path
 
 import re
 
@@ -277,7 +281,7 @@ class LayerManager(object):
         self._add_layer(layer)
         return layer
 
-    async def add_fits_layer(self, fits, **kwargs):
+    def add_fits_layer(self, fits, **kwargs):
         """
         Add a FITS layer to the current view. This method can display any FITS
         or list of FITS from the local environment. In case of a large FITS
@@ -292,18 +296,24 @@ class LayerManager(object):
             The path(s) to the image(s) to show
         kwargs
             Additional keyword arguments can be used to set properties on the
-            image layer or settings for the `toasty` tiling process.
+            image layer or settings for the `toasty` tiling process. Common
+            toasty settings include 'hdu_index' and 'blankval'.
 
         Returns
         -------
         layer : :class:`~pywwt.layers.ImageLayer` or a subclass thereof
         """
-        from pathlib import Path
+        nest_asyncio.apply()
+        loop = asyncio.get_event_loop()
+        return loop.run_until_complete(self._add_fits_layer_async(fits, **kwargs))
+
+    async def _add_fits_layer_async(self, fits, **kwargs):
         if not isinstance(fits, list):
             fits = [fits]
         if len(fits) > 1 or Path(fits[0]).stat().st_size > 20e6: # 20 MB
             return await self._tile_and_serve(fits, **kwargs)
         else:
+            # TODO remove toasty settings keywords from kwargs
             return self.add_image_layer(fits[0], **kwargs)
 
     async def _tile_and_serve(self, fits, **kwargs):
@@ -313,6 +323,7 @@ class LayerManager(object):
             url=url + 'index.wtml',
             remote_only=True
         )
+        # TODO remove toasty settings keywords from kwargs
         return self.add_preloaded_image_layer(url + url_name, **kwargs)
 
     def toast(self, fits_list, **kwargs):
