@@ -287,7 +287,7 @@ class LayerManager(object):
         return self._create_and_add_image_layer(image=image, **kwargs)
 
     def _create_and_add_image_layer(self, image, **kwargs):
-        # TODO remove toasty settings keywords from kwargs
+        kwargs = self._remove_toasty_keywords(**kwargs)
         layer = self._parent._create_image_layer(image=image, **kwargs)
         self._add_layer(layer)
         return layer
@@ -312,6 +312,10 @@ class LayerManager(object):
         self._add_layer(layer)
         return layer
 
+    def _remove_toasty_keywords(self, **kwargs):
+        kwargs.pop('hdu_index', None)
+        kwargs.pop('blankval', None)
+        return kwargs
 
     def _get_unused_fits_name(self):
         file_index = 1
@@ -321,12 +325,12 @@ class LayerManager(object):
 
     async def _tile_and_serve(self, fits, **kwargs):
         name, url_name = self.toast(fits, **kwargs)
+        kwargs = self._remove_toasty_keywords(**kwargs)
         url = self._parent._serve_tree(path=name)
         self._parent.load_image_collection(
             url=url + 'index.wtml',
             remote_only=True
         )
-        # TODO remove toasty settings keywords from kwargs
         return self.add_preloaded_image_layer(url + url_name, **kwargs)
 
     def toast(self, fits_list, **kwargs):
