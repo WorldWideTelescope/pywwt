@@ -16,6 +16,7 @@ from astropy.time import Time
 from astropy.coordinates import SkyCoord
 import numpy as np
 from traitlets import HasTraits, observe, validate, TraitError
+import nest_asyncio
 
 from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
@@ -935,7 +936,7 @@ class BaseWWTWidget(HasTraits):
 
     # Data loading
 
-    async def load_image_collection(self, url, recursive=False, remote_only=False):
+    def load_image_collection(self, url, recursive=False, remote_only=False):
         """
         Load a collection of layers for possible use in the viewer.
 
@@ -972,14 +973,13 @@ class BaseWWTWidget(HasTraits):
         if not remote_only:
             self._available_layers.update(get_imagery_layers(url))
 
-        #TODO probable API break by adding 'async'
-        fut = await self._send_into_future(
+        nest_asyncio.apply()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self._send_into_future(
             event="load_image_collection",
             url=url,
             loadChildFolders=recursive
-        )
-
-        return fut
+        ))
 
     @property
     def available_layers(self):
