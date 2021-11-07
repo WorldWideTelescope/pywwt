@@ -322,7 +322,7 @@ class LayerManager(object):
     async def _tile_and_serve(self, fits, **kwargs):
         name, url_name = self.toast(fits, **kwargs)
         url = self._parent._serve_tree(path=name)
-        await self._parent.load_image_collection(
+        self._parent.load_image_collection(
             url=url + 'index.wtml',
             remote_only=True
         )
@@ -332,7 +332,8 @@ class LayerManager(object):
     def toast(self, fits_list, **kwargs):
         # TODO docs
         # TODO move to toasty
-        from toasty import builder, collection, pyramid, multi_tan
+        from toasty import builder, collection, pyramid, multi_tan, multi_wcs
+        import reproject
         if not isinstance(fits_list, list):
             fits_list = [fits_list]
 
@@ -341,18 +342,24 @@ class LayerManager(object):
         pio = pyramid.PyramidIO(out_dir, default_format='fits')
         bld = builder.Builder(pio)
         coll = collection.SimpleFitsCollection(fits_list, **kwargs)
-        # TODO do not always use MultiTan
-        mtp = multi_tan.MultiTanProcessor(coll)
+        if coll.is_multi_tan():
+            tile_processor = multi_tan.MultiTanProcessor(coll)
+            tile_processor.compute_global_pixelization(bld)
+            print('Processing FITS - Step 1 of 2')
+            tile_processor.tile(pio, cli_progress=True)
 
-        # Using the file name of the first FITS file as the image collection name
-        bld.set_name(out_dir.split('/')[-1])
-
-        mtp.compute_global_pixelization(bld)
-        print('Processing FITS - Step 1 of 2')
-        mtp.tile(pio, cli_progress=True)
+        else:
+            # TODO require shapely during installation
+            tile_processor = multi_wcs.MultiWcsProcessor(coll)
+            tile_processor.compute_global_pixelization(bld)
+            print('Processing FITS - Step 1 of 2')
+            tile_processor.tile(pio, reproject.reproject_interp, cli_progress=True)
 
         print('Processing FITS - Step 2 of 2')
         bld.cascade(cli_progress=True)
+
+        # Using the file name of the first FITS file as the image collection name
+        bld.set_name(out_dir.split('/')[-1])
 
         bld.write_index_rel_wtml()
 
