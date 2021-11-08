@@ -29,6 +29,7 @@ from astropy.table import Column
 from astropy.table import Table
 from astropy.time import Time
 from datetime import datetime
+from toasty import simple_interface
 
 from traitlets import HasTraits, validate, observe
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
@@ -118,7 +119,6 @@ UI_COLORMAPS = OrderedDict(
         ("Reds", "Reds"),
     ]
 )
-
 
 # Save string types for validating ISOT strings in time series tables
 if sys.version_info[0] == 2:
@@ -263,24 +263,21 @@ class LayerManager(object):
         Returns
         -------
         layer : :class:`~pywwt.layers.ImageLayer` or a subclass thereof
-
-        Add a FITS layer to the current view. 
         """
 
         if (isinstance(image, astropy.io.fits.ImageHDU) or
-            isinstance(image, astropy.io.fits.PrimaryHDU) or
-            isinstance(image, astropy.io.fits.HDUList)
-            ):
+                isinstance(image, astropy.io.fits.PrimaryHDU) or
+                isinstance(image, astropy.io.fits.HDUList)):
             unused_file_name = self._get_unused_fits_name()
             image.writeto(unused_file_name)
             image = unused_file_name
         if isinstance(image, str):
             image = [image]
-        if isinstance(image, list): 
+        if isinstance(image, list):
             if len(image) > 1 or Path(image[0]).stat().st_size > 20e6:  # 20 MB
                 nest_asyncio.apply()
                 loop = asyncio.get_event_loop()
-                return loop.run_until_complete(self._tile_and_serve(fits=image, **kwargs))
+                return loop.run_until_complete(self._tile_and_serve(fits_list=image, **kwargs))
             else:
                 return self._create_and_add_image_layer(image=image[0], **kwargs)
 
@@ -323,8 +320,8 @@ class LayerManager(object):
             file_index += 1
         return "hdu_fits_{}".format(file_index)
 
-    async def _tile_and_serve(self, fits, **kwargs):
-        name, url_name = self.toast(fits, **kwargs)
+    async def _tile_and_serve(self, fits_list, **kwargs):
+        name, url_name = simple_interface.toast_fits_list(fits_list, **kwargs)
         kwargs = self._remove_toasty_keywords(**kwargs)
         url = self._parent._serve_tree(path=name)
         self._parent.load_image_collection(
@@ -332,42 +329,6 @@ class LayerManager(object):
             remote_only=True
         )
         return self.add_preloaded_image_layer(url + url_name, **kwargs)
-
-    def toast(self, fits_list, **kwargs):
-        # TODO docs
-        # TODO move to toasty
-        from toasty import builder, collection, pyramid, multi_tan, multi_wcs
-        import reproject
-        if not isinstance(fits_list, list):
-            fits_list = [fits_list]
-
-        out_dir = fits_list[0].split('.')[0]
-
-        pio = pyramid.PyramidIO(out_dir, default_format='fits')
-        bld = builder.Builder(pio)
-        coll = collection.SimpleFitsCollection(fits_list, **kwargs)
-        if coll.is_multi_tan():
-            tile_processor = multi_tan.MultiTanProcessor(coll)
-            tile_processor.compute_global_pixelization(bld)
-            print('Processing FITS - Step 1 of 2')
-            tile_processor.tile(pio, cli_progress=True)
-
-        else:
-            # TODO require shapely during installation
-            tile_processor = multi_wcs.MultiWcsProcessor(coll)
-            tile_processor.compute_global_pixelization(bld)
-            print('Processing FITS - Step 1 of 2')
-            tile_processor.tile(pio, reproject.reproject_interp, cli_progress=True)
-
-        print('Processing FITS - Step 2 of 2')
-        bld.cascade(cli_progress=True)
-
-        # Using the file name of the first FITS file as the image collection name
-        bld.set_name(out_dir.split('/')[-1])
-
-        bld.write_index_rel_wtml()
-
-        return out_dir, bld.imgset.url
 
     def add_table_layer(self, table=None, frame="Sky", **kwargs):
         """
@@ -531,7 +492,7 @@ class TableLayer(HasTraits):
     coord_type = Unicode(
         "spherical",
         help="Whether to give the coordinates "
-        "in spherical or rectangular coordinates",
+             "in spherical or rectangular coordinates",
     ).tag(wwt="coordinatesType")
 
     # Attributes for spherical coordinates
@@ -578,15 +539,15 @@ class TableLayer(HasTraits):
     size_vmin = Float(
         None,
         help="The minimum point size. "
-        "Found automagically once size_att is set "
-        "(`float`)",
+             "Found automagically once size_att is set "
+             "(`float`)",
         allow_none=True,
     ).tag(wwt=None)
     size_vmax = Float(
         None,
         help="The maximum point size. "
-        "Found automagically once size_att is set "
-        "(`float`)",
+             "Found automagically once size_att is set "
+             "(`float`)",
         allow_none=True,
     ).tag(wwt=None)
 
@@ -596,13 +557,13 @@ class TableLayer(HasTraits):
     cmap_vmin = Float(
         None,
         help="The minimum level of the colormap. Found "
-        "automagically once cmap_att is set (`float`)",
+             "automagically once cmap_att is set (`float`)",
         allow_none=True,
     ).tag(wwt=None)
     cmap_vmax = Float(
         None,
         help="The maximum level of the colormap. Found "
-        "automagically once cmap_att is set (`float`)",
+             "automagically once cmap_att is set (`float`)",
         allow_none=True,
     ).tag(wwt=None)
     cmap = Any(
@@ -631,8 +592,8 @@ class TableLayer(HasTraits):
     far_side_visible = Bool(
         False,
         help="Whether markers on the far side "
-        "of a 3D object are visible "
-        "(`bool`)",
+             "of a 3D object are visible "
+             "(`bool`)",
     ).tag(wwt="showFarSide")
 
     # NOTE: we deliberately don't link time_att to startDateColumn here
@@ -645,9 +606,9 @@ class TableLayer(HasTraits):
     time_decay = AstropyQuantity(
         16 * u.day,
         help="How long a time series "
-        "point takes to fade away after appearing (0 "
-        "if never) "
-        "(:class:`~astropy.units.Quantity`)",
+             "point takes to fade away after appearing (0 "
+             "if never) "
+             "(:class:`~astropy.units.Quantity`)",
     ).tag(wwt="decay")
 
     # TODO: support:
@@ -659,13 +620,13 @@ class TableLayer(HasTraits):
     # zAxisReverse
 
     def __init__(
-        self,
-        parent=None,
-        table=None,
-        frame=None,
-        table_from_wwt_engine=False,
-        id=None,
-        **kwargs
+            self,
+            parent=None,
+            table=None,
+            frame=None,
+            table_from_wwt_engine=False,
+            id=None,
+            **kwargs
     ):
         self.table = table
         self.notify_changes = True
@@ -800,7 +761,7 @@ class TableLayer(HasTraits):
         col = self._get_table()[proposal["value"]]
 
         if all(isinstance(t, datetime) for t in col) or all(
-            isinstance(t, Time) for t in col
+                isinstance(t, Time) for t in col
         ):
             return proposal["value"]
 
@@ -1008,7 +969,6 @@ class TableLayer(HasTraits):
             return
 
         if len(self.cmap_att) == 0:
-
             self.parent._send_msg(
                 event="table_layer_set", id=self.id, setting="colorMapColumn", value=-1
             )
@@ -1129,9 +1089,9 @@ class TableLayer(HasTraits):
     def _on_time_att_change(self, *value):
 
         if (
-            not self.notify_changes
-            or len(self.time_att) == 0
-            or self.time_series is False
+                not self.notify_changes
+                or len(self.time_att) == 0
+                or self.time_series is False
         ):
             self.parent._send_msg(
                 event="table_layer_set", id=self.id, setting="startDateColumn", value=-1
@@ -1283,7 +1243,7 @@ class TableLayer(HasTraits):
         file_path = path.join(dir, "{0}.csv".format(self.id))
         table_str = csv_table_win_newline(self.table)
         with open(
-            file_path, "wb"
+                file_path, "wb"
         ) as file:  # binary mode to preserve windows line endings
             file.write(table_str.encode("ascii", errors="replace"))
 
