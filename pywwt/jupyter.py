@@ -289,7 +289,6 @@ class WWTLabApplication(BaseWWTWidget):
             )
         return get_relay_hub().serve_tree(path)
 
-
     def _create_image_layer(self, **kwargs):
         """Returns a specialized subclass of ImageLayer that has some extra hooks for
         creating UI control points.

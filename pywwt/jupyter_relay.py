@@ -102,7 +102,6 @@ class JupyterRelayHub(object):
 
         kernel.shell_handlers['wwtkdr_resource_request'] = self._handle_resource_request
 
-
     def get_static_files_url(self):
         """
         Get a partial URL where static files bundled with pywwt can be obtained.
@@ -134,7 +133,6 @@ class JupyterRelayHub(object):
 
         return self._static_files_url
 
-
     def _claim_key(self, prefixed_key, resource):
         """
         Claim a "key" used by the Kernel Data Relay to map URLs onto running
@@ -149,12 +147,11 @@ class JupyterRelayHub(object):
             self._kernel.iopub_socket,
             'wwtkdr_claim_key',
             {'key': prefixed_key},
-            parent = self._kernel.get_parent('shell'),
-            ident = self._kernel._topic('wwtkdr_claim_key'),
+            parent=self._kernel.get_parent('shell'),
+            ident=self._kernel._topic('wwtkdr_claim_key'),
         )
 
         return '{}wwtkdr/{}/'.format(self._base_url, urlquote(prefixed_key, safe=''))
-
 
     def serve_tree(self, path, key=None):
         """
@@ -189,7 +186,6 @@ class JupyterRelayHub(object):
 
         prefixed_key = self._key_prefix + key
         return self._claim_key(prefixed_key, FileTreeResource(path, public=True))
-
 
     def serve_file(self, path, extension='', key=None):
         """
@@ -236,7 +232,6 @@ class JupyterRelayHub(object):
         url = self._claim_key(prefixed_key, sfr)
         return url + urlquote(basename)
 
-
     def _handle_resource_request(self, stream, ident, message):
         """
         This callback is invoked when a ``wwtkdr_resource_request`` message
@@ -266,10 +261,10 @@ class JupyterRelayHub(object):
             self._kernel.session.send(
                 stream,
                 'wwtkdr_resource_reply',
-                content = content,
-                parent = message,
-                ident = ident,
-                buffers = buffers,
+                content=content,
+                parent=message,
+                ident=ident,
+                buffers=buffers,
             )
         except Exception as e:
             content = {
@@ -280,11 +275,10 @@ class JupyterRelayHub(object):
             self._kernel.session.send(
                 stream,
                 'wwtkdr_resource_reply',
-                content = content,
-                parent = message,
-                ident = ident,
+                content=content,
+                parent=message,
+                ident=ident,
             )
-
 
     def _handle_resource_request_inner(self, stream, ident, message):
         """
@@ -354,13 +348,13 @@ class JupyterRelayHub(object):
                     content['http_headers'] = headers
                     first = False
 
-                reply = self._kernel.session.send(
+                self._kernel.session.send(
                     stream,
                     'wwtkdr_resource_reply',
-                    content = content,
-                    parent = message,
-                    ident = ident,
-                    buffers = buffers,
+                    content=content,
+                    parent=message,
+                    ident=ident,
+                    buffers=buffers,
                 )
                 seqnum += 1
 
@@ -378,7 +372,7 @@ def _open_file_resource(path, path_for_mime=None):
     try:
         handle = open(path, 'rb')
     except FileNotFoundError:
-        raise HTTPExposedError(404, f'file not found')
+        raise HTTPExposedError(404, 'file not found')
 
     # Note that the "encoding" here is something like "gzip", not "UTF-8" --
     # it's about the file stream, not text.
@@ -467,7 +461,7 @@ class SingleFileResource(object):
         # TODO: handle non-public resources!!!
 
         if entry != self._url_basename:
-            raise HttpExposedError(404, 'file not found')
+            raise HTTPExposedError(404, 'file not found')
 
         # Use the URL basename here in case the `extension` argument was used
         # (e.g. the extension of the actual filesystem path is missing or
@@ -476,6 +470,7 @@ class SingleFileResource(object):
 
 
 _global_relay_hub = None
+
 
 def get_relay_hub(kernel=None):
     """
@@ -595,6 +590,7 @@ def _compute_notebook_server_base_url():
 
 
 _server_base_url = None
+
 
 def get_notebook_server_base_url():
     """

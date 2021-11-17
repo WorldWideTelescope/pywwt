@@ -526,7 +526,6 @@ class BaseWWTWidget(HasTraits):
     imagery = None
     "Access to the engine's available imagesets"
 
-
     def _serve_tree(self, path):
         raise DataPublishingNotAvailableError()
 

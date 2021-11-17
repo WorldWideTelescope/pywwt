@@ -35,14 +35,13 @@ def sanitize_image(image, output_file, overwrite=False, **kwargs):
         transform_to_wwt_supported_fits(image, output_file, overwrite)
 
 
-
-
 def transform_to_wwt_supported_fits(image, output_file, overwrite):
     wcs, shape_out = find_optimal_celestial_wcs([image], frame=ICRS(),
                                                 projection='TAN')
-    array, footprint = reproject_interp(image, wcs, shape_out=shape_out)
+    array = reproject_interp(image, wcs, shape_out=shape_out, return_footprint=False)
     fits.writeto(output_file, array.astype(np.float32),
                  wcs.to_header(), overwrite=overwrite)
+
 
 def validate_traits(cls, traits):
     '''
