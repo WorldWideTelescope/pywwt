@@ -29,7 +29,7 @@ from astropy.table import Column
 from astropy.table import Table
 from astropy.time import Time
 from datetime import datetime
-from toasty import simple_interface
+import toasty
 
 from traitlets import HasTraits, validate, observe
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
@@ -321,14 +321,14 @@ class LayerManager(object):
         return "hdu_fits_{}".format(file_index)
 
     async def _tile_and_serve(self, fits_list, **kwargs):
-        name, url_name = simple_interface.toast_fits_list(fits_list, **kwargs)
+        name, builder = toasty.tile_fits(fits_list, **kwargs)
         kwargs = self._remove_toasty_keywords(**kwargs)
         url = self._parent._serve_tree(path=name)
         self._parent.load_image_collection(
             url=url + 'index.wtml',
             remote_only=True
         )
-        return self.add_preloaded_image_layer(url + url_name, **kwargs)
+        return self.add_preloaded_image_layer(url + builder.imgset.url, **kwargs)
 
     def add_table_layer(self, table=None, frame="Sky", **kwargs):
         """
