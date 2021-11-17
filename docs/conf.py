@@ -180,19 +180,20 @@ texinfo_documents = [
 
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3/',
-               (None, 'http://data.astropy.org/intersphinx/python3.inv')),
-    'numpy': ('https://docs.scipy.org/doc/numpy/',
-              (None, 'https://numpy.org/doc/stable/objects.inv')),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference/',
-              (None, 'http://data.astropy.org/intersphinx/scipy.inv')),
-    'traitlets': ('https://traitlets.readthedocs.io/en/latest/',
-                  (None, 'https://traitlets.readthedocs.io/en/latest/objects.inv')),
-    # 'ipywidgets': ('http://ipywidgets.readthedocs.io/en/latest/',
-    #                (None, 'http://ipywidgets.readthedocs.io/en/latest/objects.inv')),
+    'astropy': ('https://docs.astropy.org/en/stable/', None),
     'matplotlib': ('https://matplotlib.org/',
                    (None, 'https://matplotlib.org/objects.inv')),
-    'astropy': ('https://docs.astropy.org/en/stable/', None)}
+    'numpy': ('https://docs.scipy.org/doc/numpy/',
+              (None, 'https://numpy.org/doc/stable/objects.inv')),
+    'python': ('https://docs.python.org/3/',
+               (None, 'http://data.astropy.org/intersphinx/python3.inv')),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/',
+              (None, 'http://data.astropy.org/intersphinx/scipy.inv')),
+    'toasty': ('https://toasty.readthedocs.io/en/latest/',
+                  (None, 'https://toasty.readthedocs.io/en/latest/objects.inv')),
+    'traitlets': ('https://traitlets.readthedocs.io/en/latest/',
+                  (None, 'https://traitlets.readthedocs.io/en/latest/objects.inv')),
+}
 
 numpydoc_show_class_members = False
 
