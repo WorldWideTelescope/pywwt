@@ -70,11 +70,11 @@ repository`_ on GitHub to suggest one.
 .. _pywwt-notebooks repository: https://github.com/WorldWideTelescope/pywwt-notebooks
 
 
-User guide
-----------
+Detailed Table of Contents
+--------------------------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    installation
    jupyter
