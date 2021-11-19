@@ -1,30 +1,28 @@
 API Documentation
 =================
 
-.. automodapi:: pywwt
-   :no-inheritance-diagram:
-   :no-inherited-members:
+.. toctree::
+   :maxdepth: 1
 
-.. automodapi:: pywwt.jupyter
-   :no-inheritance-diagram:
-   :no-inherited-members:
-
-.. automodapi:: pywwt.qt
-   :no-inheritance-diagram:
-   :no-inherited-members:
-
-.. automodapi:: pywwt.windows
-   :no-inheritance-diagram:
-   :no-inherited-members:
-
-.. automodapi:: pywwt.solar_system
-   :no-inheritance-diagram:
-   :no-inherited-members:
-
-.. automodapi:: pywwt.layers
-   :no-inheritance-diagram:
-   :no-inherited-members:
-
-.. automodapi:: pywwt.instruments
-   :no-inheritance-diagram:
-   :no-inherited-members:
+   api/pywwt
+   api/pywwt.annotation
+   api/pywwt.app
+   api/pywwt.core
+   api/pywwt.data_server
+   api/pywwt.imagery
+   api/pywwt.instruments
+   api/pywwt.jupyter
+   api/pywwt.jupyter_relay
+   api/pywwt.jupyter_server
+   api/pywwt.layers
+   api/pywwt.logger
+   api/pywwt.qt
+   api/pywwt.solar_system
+   api/pywwt.traits
+   api/pywwt.utils
+   api/pywwt.windows
+   api/pywwt.windows.client
+   api/pywwt.windows.layer
+   api/pywwt.windows.misc
+   api/pywwt.windows.mods
+   api/pywwt.windows.utils

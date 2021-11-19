@@ -2,7 +2,7 @@
 Routines for the pywwt notebook server extension.
 
 In order to make files available to the WWT engine, we need to serve them over
-HTTP. Most of this is now done using the `wwt_kernel_data_relay` server
+HTTP. Most of this is now done using the ``wwt_kernel_data_relay`` server
 extension, but we also provide a separate server extension that provides a
 static copy of the WWT research app, for environments where security cookies
 prevent an externally-hosted version of the app (i.e., wwtassets.org) from
