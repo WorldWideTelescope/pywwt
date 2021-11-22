@@ -41,23 +41,13 @@ are some examples:
 * `Visualize Imagery of W5 and SN2011fe
   <https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Visualizing%20Imagery.ipynb>`__
 
-To browse our complete collection of live example notebooks, go to `our index
+To browse the complete collection of live example notebooks, go to `the index
 page
 <https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Start%20Here.ipynb>`__.
 
 *Note: it is usually fast to launch these notebooks, but if the code has been
 recently updated, you may have to wait a few minutes for the backing software
 images to be rebuilt.*
-
-`This YouTube video <https://www.youtube.com/watch?v=gi2oC4AYrWU>`__
-demonstrates the process and shows how you can run upload and run your own
-notebooks as well. (Note that while it shows an older version of these
-materials, the general procedure still holds.)
-
-Contributed tutorial notebooks are welcome! Visit the `pywwt-notebooks
-repository`_ on GitHub to suggest one.
-
-.. _pywwt-notebooks repository: https://github.com/WorldWideTelescope/pywwt-notebooks
 
 
 Detailed Table of Contents
