@@ -1,5 +1,5 @@
 # Copyright 2021 the .NET Foundation
-# Licensed under the MIT License
+# Licensed under the three-clause BSD License
 
 """
 The toplevel pywwt package contains only a few miscellaneous types.

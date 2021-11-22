@@ -1,8 +1,13 @@
 # Copyright 2018-2021 the .NET Foundation
-# Licensed under the BSD license
+# Licensed under the three-clause BSD license
 
 """
 The core WWT widget implementation.
+
+The most important definition provided in this module is the `BaseWWTWidget`
+type, which defines the generic interface for controlling WWT viewers across the
+different backends supported by pywwt.
+
 """
 
 import asyncio
