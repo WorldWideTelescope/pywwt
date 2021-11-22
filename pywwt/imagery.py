@@ -1,3 +1,13 @@
+# Copyright 2021 the .NET Foundation
+# Licensed under the three-clause BSD License
+
+"""
+Utilities for dealing with WWT imagery collections.
+
+The code in this module is fairly old and in need of updating. You won't need to
+use its functionality directly if you're not a pywwt developer.
+"""
+
 import re
 
 from io import BytesIO

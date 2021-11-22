@@ -1,3 +1,10 @@
+# Copyright 2021 the .NET Foundation
+# Licensed under the three-clause BSD License
+
+"""
+For Qt desktop applications, a global singleton "QApp" instance.
+"""
+
 from qtpy import QtWidgets
 
 __all__ = ['get_qapp', 'cleanup_qapp']

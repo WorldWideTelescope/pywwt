@@ -2,12 +2,11 @@
 # Licensed under the three-clause BSD license
 
 """
-The core WWT widget implementation.
+The core WWT widget class.
 
 The most important definition provided in this module is the `BaseWWTWidget`
 type, which defines the generic interface for controlling WWT viewers across the
 different backends supported by pywwt.
-
 """
 
 import asyncio
