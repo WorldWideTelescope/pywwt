@@ -44,6 +44,7 @@ html_theme_options = {
     "astropy_project_menubar": False,
 }
 html_static_path = ["_static"]
+html_sidebars = { '**': ['localtoc.html', 'searchbox.html'] }
 
 htmlhelp_basename = "pywwtdoc"
 
