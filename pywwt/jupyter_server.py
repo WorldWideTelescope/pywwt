@@ -1,6 +1,8 @@
 """
 Routines for the pywwt notebook server extension.
 
+Most users of pywwt can ignore this module.
+
 In order to make files available to the WWT engine, we need to serve them over
 HTTP. Most of this is now done using the ``wwt_kernel_data_relay`` server
 extension, but we also provide a separate server extension that provides a
@@ -57,6 +59,9 @@ class WWTStaticFileHandler(IPythonHandler):
 
 
 def load_jupyter_server_extension(nb_server_app):
+    """
+    A support function used to integrate pywwt with Jupyter.
+    """
     web_app = nb_server_app.web_app
     host_pattern = ".*$"
 
