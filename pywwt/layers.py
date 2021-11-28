@@ -238,14 +238,13 @@ class LayerManager(object):
         self._layers = []
         self._parent = parent
 
-    def add_image_layer(self, image=None, **kwargs):
+    def add_image_layer(self, image=None, hdu_index=None, verbose=True, force_hipsgen=False, force_tan=False, **kwargs):
         """
         Add an image layer to the current view. This method can display any
         image data or FITS or list of FITS from the local environment. In case
         of a large FITS (> 20 MB), the file is preprocessed into tiles using
         the `toasty` library for smooth & fast visualization. You can also use
-        this method to combine multiple FITS files into a single image set with
-        a common tangential projection.
+        this method to combine multiple FITS files into a single image set.
 
         Parameters
         ----------
@@ -255,10 +254,33 @@ class LayerManager(object):
             object, or a tuple of the form ``(array, wcs)`` where ``array`` is
             a Numpy array and ``wcs`` is an astropy :class:`~astropy.wcs.WCS`
             object
+        hdu_index : optional int or list of int, defaults to None
+            Use this parameter to specify which HDU to tile. If the `fits`
+            input is a list of FITS, you can specify the hdu_index of each FITS
+            by using a list of integers like this: [0, 2, 1]. If hdu_index is
+            not set, toasty will use the first HDU with tilable content in each
+            FITS.
+        verbose : optional boolean, defaults True
+            If true, progress messages will be printed as the FITS files are
+            being processed.
+        force_hipsgen : optional boolean, defaults to False
+            Force the input FITS to be tiled with HiPSgen. If this and
+            `force_tan` is set to False, this method will figure out when to
+            split the input into tiles and also which type of projection to
+            use. Tangential projection for smaller angular areas and HiPSgen
+            larger regions of the sky.
+        force_tan : optional boolean, defaults to False
+            Force the input FITS to be tiled with a tangential projection. If
+            this and `force_hipsgen` is set to False, this method will figure
+            out when to split the input into tiles and also which type of
+            projection to use. Tangential projection for smaller angular areas
+            and HiPSgen larger regions of the sky.
         kwargs
             Additional keyword arguments can be used to set properties on the
             image layer or settings for the `toasty` tiling process. Common
-            toasty settings include 'hdu_index' and 'blankval'.
+            toasty settings include `out_dir`, `override`, and `blankval`.
+            See `~toasty.tile_fits`
+            https://toasty.readthedocs.io/en/latest/api/toasty.tile_fits.html#toasty.tile_fits
 
         Returns
         -------
@@ -274,10 +296,12 @@ class LayerManager(object):
         if isinstance(image, str):
             image = [image]
         if isinstance(image, list):
-            if len(image) > 1 or Path(image[0]).stat().st_size > 20e6:  # 20 MB
+            if force_hipsgen or force_tan or len(image) > 1 or Path(image[0]).stat().st_size > 20e6:  # 20 MB
                 nest_asyncio.apply()
                 loop = asyncio.get_event_loop()
-                return loop.run_until_complete(self._tile_and_serve(fits_list=image, **kwargs))
+                return loop.run_until_complete(self._tile_and_serve(fits_list=image, hdu_index=hdu_index,
+                                                                    cli_progress=verbose, force_hipsgen=force_hipsgen,
+                                                                    force_tan=force_tan, **kwargs))
             else:
                 return self._create_and_add_image_layer(image=image[0], **kwargs)
 
@@ -309,9 +333,10 @@ class LayerManager(object):
         self._add_layer(layer)
         return layer
 
+    # TODO this is not future proof
     def _remove_toasty_keywords(self, **kwargs):
-        kwargs.pop('hdu_index', None)
         kwargs.pop('blankval', None)
+        kwargs.pop('override', None)
         return kwargs
 
     def _get_unused_fits_name(self):
@@ -320,10 +345,13 @@ class LayerManager(object):
             file_index += 1
         return "hdu_fits_{}".format(file_index)
 
-    async def _tile_and_serve(self, fits_list, **kwargs):
-        name, builder = toasty.tile_fits(fits_list, **kwargs)
+    async def _tile_and_serve(self, fits_list, hdu_index=None, cli_progress=True, force_hipsgen=False,
+                              force_tan=False, **kwargs):
+        name, builder = toasty.tile_fits(fits_list, hdu_index=hdu_index, cli_progress=cli_progress,
+                                         force_hipsgen=force_hipsgen, force_tan=force_tan, **kwargs)
         kwargs = self._remove_toasty_keywords(**kwargs)
         url = self._parent._serve_tree(path=name)
+
         self._parent.load_image_collection(
             url=url + 'index.wtml',
             remote_only=True
