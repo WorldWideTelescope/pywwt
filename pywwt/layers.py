@@ -303,9 +303,9 @@ class LayerManager(object):
                                                                     cli_progress=verbose, force_hipsgen=force_hipsgen,
                                                                     force_tan=force_tan, **kwargs))
             else:
-                return self._create_and_add_image_layer(image=image[0], **kwargs)
+                return self._create_and_add_image_layer(image=image[0], hdu_index=hdu_index, **kwargs)
 
-        return self._create_and_add_image_layer(image=image, **kwargs)
+        return self._create_and_add_image_layer(image=image, hdu_index=hdu_index, **kwargs)
 
     def _create_and_add_image_layer(self, image, **kwargs):
         kwargs = self._remove_toasty_keywords(**kwargs)
@@ -1448,6 +1448,7 @@ class ImageLayer(HasTraits):
             # projection, double values) and write out to a temporary file.
             self._sanitized_image = tempfile.mktemp()
             sanitize_image(image, self._sanitized_image, **kwargs)
+            kwargs.pop('hdu_index', None)
 
             # The first thing we need to do is make sure the image is being served.
             # For now we assume that image is a filename, but we could do more
