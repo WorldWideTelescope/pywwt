@@ -337,6 +337,7 @@ class LayerManager(object):
     def _remove_toasty_keywords(self, **kwargs):
         kwargs.pop('blankval', None)
         kwargs.pop('override', None)
+        kwargs.pop('out_dir', None)
         return kwargs
 
     def _get_unused_fits_name(self):
