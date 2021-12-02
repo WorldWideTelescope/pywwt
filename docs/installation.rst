@@ -1,5 +1,5 @@
-Installation
-============
+Installing pywwt
+================
 
 Try without installing
 ----------------------
@@ -67,6 +67,7 @@ Qt widget you will need to install `PyQt
 <https://wiki.qt.io/PySide>`_ separately. See the full list of dependencies
 below.
 
+.. _setup-jupyterlab:
 
 Set Up pywwt’s JupyterLab Integration
 -------------------------------------
@@ -98,9 +99,10 @@ Clicking on this icon should open up the `WWT research app
 <https://docs.worldwidetelescope.org/research-app/latest/>`_, which you can then
 control using pywwt, via :func:`pywwt.jupyter.connect_to_app`.
 
+.. _setup-jupyter-widget:
 
-The pywwt Jupyter Widget
-------------------------
+Set up the pywwt Jupyter Widget
+-------------------------------
 
 If you are using a Jupyter notebook, either within JupyterLab or in “vanilla
 “Jupyter, you may also wish to set up pywwt’s “Jupyter widget” support. This

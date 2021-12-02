@@ -1,3 +1,12 @@
+# Copyright 2021 the .NET Foundation
+# Licensed under the three-clause BSD License
+
+"""
+An internal HTTP server for sending data to WWT when running outside of Jupyter.
+
+You do not need to use this module unless you are a pywwt developer.
+"""
+
 import asyncio
 from hashlib import md5
 import logging

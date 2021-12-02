@@ -443,6 +443,15 @@ class LayerManager(object):
         layer._manager = self
 
     def remove_layer(self, layer):
+        """
+        Remove a layer from the view.
+
+        Parameters
+        ----------
+        layer : :class:`TableLayer` or :class:`ImageLayer`
+            The layer to remove.
+        """
+
         if layer not in self._layers:
             raise ValueError("layer not in layer manager")
         layer.remove()

@@ -1,5 +1,5 @@
 # Copyright 2021 the .NET Foundation
-# Licensed under the MIT License
+# Licensed under the three-clause BSD License
 
 """
 pywwt client support for the WWT Jupyter Kernel Data Relay.

@@ -1,3 +1,13 @@
+# Copyright 2021 the .NET Foundation
+# Licensed under the three-clause BSD License
+
+"""
+Provides a helper class for managing a list of instrument fields-of-view (FOVs).
+
+You don't need to use this module directly. Access instrumental FOV information
+through your ``wwt`` variable with `~pywwt.core.BaseWWTWidget.instruments`.
+"""
+
 import requests
 
 
