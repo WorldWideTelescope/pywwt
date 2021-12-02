@@ -158,7 +158,7 @@ class ImageryLayers:
         # (string) to a valid Python name based on its first word.
         cut_left = re.search(r"^[_\W]+", string)
         if cut_left is not None:
-            string = string[cut_left.end() :]
+            string = string[cut_left.end():]
 
         cut_right = re.search(r"[_\W]", string)
         if cut_right is not None:
@@ -168,7 +168,7 @@ class ImageryLayers:
         if digit is not None:
             for i, num in enumerate(self.integers, 0):
                 if str(i) == digit.group(0):
-                    string = string[: digit.start()] + num + string[digit.end() :]
+                    string = string[: digit.start()] + num + string[digit.end():]
                     break
 
         return string
