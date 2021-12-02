@@ -50,23 +50,15 @@ recently updated, you may have to wait a few minutes for the backing software
 images to be rebuilt.*
 
 
-Detailed Table of Contents
---------------------------
+Table of Contents
+-----------------
 
 .. toctree::
    :maxdepth: 2
 
    installation
-   jupyter
-   qt
-   settings
-   views
-   annotations
-   layers
-   fov
-   shortcuts
-   tours
-   windows
+   opening
+   controlling
 
 
 API Reference

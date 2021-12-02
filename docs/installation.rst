@@ -1,5 +1,5 @@
-Installation
-============
+Installing pywwt
+================
 
 Try without installing
 ----------------------
@@ -99,8 +99,8 @@ Clicking on this icon should open up the `WWT research app
 control using pywwt, via :func:`pywwt.jupyter.connect_to_app`.
 
 
-The pywwt Jupyter Widget
-------------------------
+Set up the pywwt Jupyter Widget
+-------------------------------
 
 If you are using a Jupyter notebook, either within JupyterLab or in “vanilla
 “Jupyter, you may also wish to set up pywwt’s “Jupyter widget” support. This
