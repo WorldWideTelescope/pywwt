@@ -210,8 +210,7 @@ jobs:
       source activate-conda.sh
       conda activate build
       set -x
-      \conda install -y astropy jupyter_sphinx numpydoc sphinx sphinx-automodapi sphinx_rtd_theme
-      pip install astropy-sphinx-theme
+      \conda install -y astropy astropy-sphinx-theme jupyter_sphinx numpydoc sphinx sphinx-automodapi
       cd docs
       make html
     displayName: Build docs
