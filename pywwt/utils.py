@@ -10,7 +10,7 @@ from reproject.mosaicking import find_optimal_celestial_wcs
 __all__ = ['sanitize_image']
 
 
-def sanitize_image(image, output_file, overwrite=False, **kwargs):
+def sanitize_image(image, output_file, overwrite=False, hdu_index=None, **kwargs):
     """
     Transform a FITS image so that it is in equatorial coordinates with a TAN
     projection and floating-point values, all of which are required to work
@@ -22,8 +22,8 @@ def sanitize_image(image, output_file, overwrite=False, **kwargs):
     # In case of a FITS file with more than one HDU, we need to choose one
     if isinstance(image, str):
         with fits.open(image) as hdul:
-            if 'hdu_index' in kwargs:
-                image = hdul[kwargs.get('hdu_index')]
+            if hdu_index is not None:
+                image = hdul[hdu_index]
             else:
                 for hdu in hdul:
                     if (hasattr(hdu, 'shape') and len(hdu.shape) > 1
