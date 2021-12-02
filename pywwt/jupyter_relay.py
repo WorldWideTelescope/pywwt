@@ -99,6 +99,7 @@ class JupyterRelayHub(object):
         self._key_to_resource = {}
         self._base_url = get_notebook_server_base_url()
         self._static_files_url = None
+        self._ident_to_next_seqnum = {}
 
         kernel.shell_handlers['wwtkdr_resource_request'] = self._handle_resource_request
 
@@ -258,27 +259,20 @@ class JupyterRelayHub(object):
                 memoryview(e.message.encode('utf-8')),
             ]
 
-            self._kernel.session.send(
-                stream,
-                'wwtkdr_resource_reply',
-                content=content,
-                parent=message,
-                ident=ident,
-                buffers=buffers,
-            )
+            self._send_resource_reply(stream, content, message, ident, buffers)
         except Exception as e:
             content = {
                 'status': 'error',
                 'evalue': str(e),
             }
 
-            self._kernel.session.send(
-                stream,
-                'wwtkdr_resource_reply',
-                content=content,
-                parent=message,
-                ident=ident,
-            )
+            self._send_resource_reply(stream, content, message, ident, None)
+        finally:
+            try:
+                key = b''.join(ident)
+                del self._ident_to_next_seqnum[key]
+            except KeyError:
+                pass
 
     def _handle_resource_request_inner(self, stream, ident, message):
         """
@@ -325,7 +319,6 @@ class JupyterRelayHub(object):
         with contextlib.closing(handle) as handle:
             first = True
             keep_going = True
-            seqnum = 0
 
             while keep_going:
                 # The chunk size here is just a guess:
@@ -340,7 +333,6 @@ class JupyterRelayHub(object):
                 content = {
                     'status': 'ok',
                     'more': keep_going,
-                    'seq': seqnum,  # this isn't needed by the relay, but can be useful for debugging
                 }
 
                 if first:
@@ -348,15 +340,27 @@ class JupyterRelayHub(object):
                     content['http_headers'] = headers
                     first = False
 
-                self._kernel.session.send(
-                    stream,
-                    'wwtkdr_resource_reply',
-                    content=content,
-                    parent=message,
-                    ident=ident,
-                    buffers=buffers,
-                )
-                seqnum += 1
+                self._send_resource_reply(stream, content, message, ident, buffers)
+
+    def _send_resource_reply(self, stream, content, parent, ident, buffers):
+        """
+        Send a resource reply message. We centralize this in order to make sure
+        that we always send an appropriate sequence number for each message, in
+        the face of exceptions that can crop up at surprising times.
+        """
+        key = b''.join(ident)
+        seqnum = self._ident_to_next_seqnum.get(key, 0)
+        content['seq'] = seqnum
+        self._ident_to_next_seqnum[key] = seqnum + 1
+
+        self._kernel.session.send(
+            stream,
+            'wwtkdr_resource_reply',
+            content=content,
+            parent=parent,
+            ident=ident,
+            buffers=buffers,
+        )
 
 
 def _open_file_resource(path, path_for_mime=None):
