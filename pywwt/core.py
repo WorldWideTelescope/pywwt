@@ -96,32 +96,45 @@ class ViewerNotAvailableError(Exception):
 
 class BaseWWTWidget(HasTraits):
     """
-    The core WWT "widget" (client) implementation.
+    A class that can control a WWT viewer from Python.
 
-    Parameters
-    ----------
-    hide_all_chrome : optional `bool`
-        Configures the WWT frontend to hide all user-interface "chrome".
-        Defaults to true to maintain compatibility with the historical
-        pywwt user experience.
+    You should not create instances of this class directly. Instead, you should
+    obtain obtain an instance through one of the following mechanisms, depending
+    on the environment in which you're running Python and WWT:
 
-    Notes
-    -----
+    - In JupyterLab (the recommended approach), use
+      :func:`pywwt.jupyter.connect_to_app`. This requires that you have
+      :ref:`set up the WWT JupyterLab extension <setup-jupyterlab>`.
+    - In plain Jupyter, or if you want to use WWT in its widget mode, create an
+      instance of :class:`pywwt.jupyter.WWTJupyterWidget`. This requires that
+      you have :ref:`set up the pywwt Jupyter widget <setup-jupyter-widget>`.
+    - If using Qt, create an instance of :class:`pywwt.qt.WWTQtClient`.
+    - If you want to control the WWT Windows application, see the
+      :mod:`pywwt.windows` module.
 
-    This class provides a common interface to modify settings and interact with
-    the AAS WorldWide Telescope.
+    **Attributes:**
 
-    This client communications with the WWT "research application"
-    (@wwtelescope/research-app), which has a standardized control interface
-    (@wwtelescope/research-app-messages). This client is fundamentally concerned
-    with communicating using that messaging interface.
+    If you modify most of the attributes listed below, your changes will
+    automatically be reflected in the WWT view. However, there are a few special
+    attributes that collect important pieces of WWT functionality:
 
-    Subclasses need to set up some kind of mechanism that will call
-    ``_on_app_status_change`` when the app is ready to receive messages (at a
-    minimum), and ``_on_app_message_received`` when a message from the frontend
-    app is received. They need to implement ``_actually_send_msg`` which will
-    deliver a message to the app.
+    - :attr:`layers` (:class:`pywwt.layers.LayerManager`) allows you to add new
+      data layers to the view.
+    - :attr:`solar_system` (:class:`pywwt.solar_system.SolarSystem`) provides
+      controls related to WWT's 3D "solar system" mode (which can display much
+      more than just the solar system!)
 
+    The following attributes collect information about data and modes that are
+    available in the connected WWT viewer:
+
+    - :attr:`available_layers` (list of ``str``) lists available image sets in a
+      flat array
+    - :attr:`available_views` (list of ``str``) lists available view modes
+      (``"solar system"``, ``"jupiter"``, etc.) in a flat array
+    - :attr:`imagery` (:class:`pywwt.imagery.ImageryLayers`) lists available
+      imagery
+    - :attr:`instruments` (:class:`pywwt.instruments.Instruments`) lists available
+      instrument FOVs
     """
 
     _startupMessageQueue = None
@@ -138,6 +151,32 @@ class BaseWWTWidget(HasTraits):
     _timeRate = 1.0
 
     def __init__(self, hide_all_chrome=False):
+        """
+        (Note that this docstring is not exposed in the API docs. It is aimed at
+        developers.)
+
+        Parameters
+        ----------
+        hide_all_chrome : optional `bool`
+            Configures the WWT frontend to hide all user-interface "chrome".
+            Defaults to true to maintain compatibility with the historical
+            pywwt user experience.
+
+        Notes
+        -----
+
+        This class communicates with the WWT "research application"
+        (@wwtelescope/research-app), which has a standardized control interface
+        (@wwtelescope/research-app-messages). This client is fundamentally
+        concerned with communicating using that messaging interface.
+
+        Subclasses need to set up some kind of mechanism that will call
+        ``_on_app_status_change`` when the app is ready to receive messages (at
+        a minimum), and ``_on_app_message_received`` when a message from the
+        frontend app is received. They need to implement ``_actually_send_msg``
+        which will deliver a message to the app.
+        """
+
         super(BaseWWTWidget, self).__init__()
 
         self.observe(self._on_trait_change, type="change")

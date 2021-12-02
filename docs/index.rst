@@ -49,6 +49,9 @@ page
 recently updated, you may have to wait a few minutes for the backing software
 images to be rebuilt.*
 
+To browse the Python commands that can be used to control WWT once you've opened
+it up, see the documentation of the :class:`~pywwt.core.BaseWWTWidget` class.
+
 
 Table of Contents
 -----------------
