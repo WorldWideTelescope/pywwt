@@ -134,10 +134,10 @@ setup_args = dict(
             'pytest-remotedata>=0.3.1',
         ],
         'docs': [
+            'astropy-sphinx-theme',
             'sphinx>=1.6',
             'sphinx-automodapi',
             'numpydoc',
-            'sphinx_rtd_theme',
             'jupyter_sphinx',
         ],
         'qt': [
