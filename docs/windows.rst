@@ -298,7 +298,7 @@ returns something like::
      'Venus': {'Enabled': 'True'},
      'Ymir': {'Enabled': 'True'}}
 
-`LCAPI Reference: LayerList <https://docs.worldwidetelescope.org/lcapi-guide/1/lcapicommands/#layerlist>`_
+`LCAPI Reference: LayerList <https://docs.worldwidetelescope.org/lcapi-guide/1/lcapicommands/#layerlist>`__
 
 get_layer_list
 ++++++++++++++
