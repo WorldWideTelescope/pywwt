@@ -44,7 +44,7 @@ deadline.
 If you aren’t using a conda-based Python environment, it’s easy to set one up.
 The `Anaconda Distribution <https://www.anaconda.com/products/individual>`_ is
 popular and widely supported, or you can use `Miniforge
-<https://github.com/conda-forge/miniforge#install>`_ or `Miniconda
+<https://github.com/conda-forge/miniforge#user-content-install>`_ or `Miniconda
 <https://docs.conda.io/en/latest/miniconda.html>`_ for a smaller download. These
 environments install in a fully self-contained manner, so you can try them out
 without modifying your computer’s existing Python installation(s).
