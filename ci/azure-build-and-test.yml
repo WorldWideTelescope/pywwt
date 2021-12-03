@@ -113,9 +113,27 @@ jobs:
       env:
         PYWWT_TEST_IMAGE_DIR: $(Build.ArtifactStagingDirectory)
 
+    # We used to publish the test image artifacts regardless of whether the test
+    # succeeded or failed (using `condition: true`). This led to an annoying
+    # behavior, though, where if an image test failed spuriously, you'd have to
+    # rerun the entire build: if the test succeeded the next time, the
+    # publication step would fail because you can't upload artifacts under the
+    # same name more than once. So now, we only publish the images if the tests
+    # failed: that way, "rerun failed jobs" will be able to resolve a spurious
+    # failure efficiently. This is especially valuable in Cranko release and RC
+    # builds. If an image test fails *non*-spuriously, you'll only be able to
+    # obtain artifacts from the first failure in given build ... but that was
+    # what was happening with `condition: true` anyway.
+    #
+    # We might want to turn this into some kind of top-level pipeline parameter
+    # because I think there will be occasions where it would be nice to gather
+    # the image data for all of the image tests, including the successful ones.
+    # But that's more of a once-in-a-long-while thing, while the rerun issue
+    # rears in say ~5% of PR builds.
+
     - task: PublishPipelineArtifact@1
-      displayName: Publish generated test images
-      condition: true  # run even (especially!) if test fails
+      displayName: Publish failing test images
+      condition: not(succeeded())
       inputs:
         targetPath: $(Build.ArtifactStagingDirectory)
         artifactName: ${{ format('test_images_{0}', build.name) }}
