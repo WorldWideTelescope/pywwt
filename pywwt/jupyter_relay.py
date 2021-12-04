@@ -322,7 +322,7 @@ class JupyterRelayHub(object):
 
             while keep_going:
                 # The chunk size here is just a guess:
-                chunk = handle.read(32768)
+                chunk = handle.read(8388608)
 
                 if len(chunk):
                     buffers = [chunk]
