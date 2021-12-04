@@ -321,8 +321,14 @@ class JupyterRelayHub(object):
             keep_going = True
 
             while keep_going:
-                # The chunk size here is just a guess:
-                chunk = handle.read(8388608)
+                # There is some kind of message limit (max 2000 at the same time) on the receiving end.
+                # So we want so send as few messages as possible to never reach that limit.
+                # Even if the messages are sent correctly, only the first 2000 are received by KDR.
+                # We cannot just make sure that every single request consists of less than 2000 messages,
+                # since other requests seem to be fighting for the same 2000 spots.
+                # So I felt like it is safest to up the chunk size to something very, very high.
+                # At least until the root issue is found and resolved.
+                chunk = handle.read(8388608) # 8MB
 
                 if len(chunk):
                     buffers = [chunk]
