@@ -41,17 +41,20 @@ from urllib.parse import quote as urlquote
 from ipykernel.kernelbase import Kernel
 
 __all__ = [
-    'get_relay_hub',
-    'JupyterRelayHub',
+    "get_relay_hub",
+    "JupyterRelayHub",
 ]
 
 FIXED_HTTP_RESPONSE_HEADERS = [
-    ('Access-Control-Allow-Origin', '*'),
-    ('Access-Control-Allow-Methods', 'GET,HEAD'),
-    ('Access-Control-Allow-Headers', 'Content-Disposition,Content-Encoding,Content-Length,Content-Type'),
+    ("Access-Control-Allow-Origin", "*"),
+    ("Access-Control-Allow-Methods", "GET,HEAD"),
+    (
+        "Access-Control-Allow-Headers",
+        "Content-Disposition,Content-Encoding,Content-Length,Content-Type",
+    ),
 ]
 
-STATIC_DIR = os.path.join(os.path.dirname(__file__), 'web_static')
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "web_static")
 
 
 class HTTPExposedError(Exception):
@@ -59,6 +62,7 @@ class HTTPExposedError(Exception):
     Quick exception class for service errors that should be exposed to the user
     as specific HTTP error codes.
     """
+
     def __init__(self, http_status, message):
         self.http_status = http_status
         self.message = str(message)
@@ -80,7 +84,7 @@ def default_path_key(path):
     key is if they're trying to serve the same data.
     """
 
-    return md5(path.encode('utf-8')).hexdigest()
+    return md5(path.encode("utf-8")).hexdigest()
 
 
 class JupyterRelayHub(object):
@@ -90,7 +94,8 @@ class JupyterRelayHub(object):
     This is a singleton, per-process object, because Jupyter kernel-server
     connections are per-process.
     """
-    def __init__(self, kernel=None, key_prefix='pywwt_'):
+
+    def __init__(self, kernel=None, key_prefix="pywwt_"):
         if kernel is None:
             kernel = Kernel.instance()
 
@@ -101,7 +106,7 @@ class JupyterRelayHub(object):
         self._static_files_url = None
         self._ident_to_next_seqnum = {}
 
-        kernel.shell_handlers['wwtkdr_resource_request'] = self._handle_resource_request
+        kernel.shell_handlers["wwtkdr_resource_request"] = self._handle_resource_request
 
     def get_static_files_url(self):
         """
@@ -129,8 +134,9 @@ class JupyterRelayHub(object):
 
         if self._static_files_url is None:
             from . import version_info
-            vcode = '.'.join(str(x) for x in version_info)
-            self._static_files_url = self.serve_tree(STATIC_DIR, key='static' + vcode)
+
+            vcode = ".".join(str(x) for x in version_info)
+            self._static_files_url = self.serve_tree(STATIC_DIR, key="static" + vcode)
 
         return self._static_files_url
 
@@ -146,13 +152,13 @@ class JupyterRelayHub(object):
 
         self._kernel.session.send(
             self._kernel.iopub_socket,
-            'wwtkdr_claim_key',
-            {'key': prefixed_key},
-            parent=self._kernel.get_parent('shell'),
-            ident=self._kernel._topic('wwtkdr_claim_key'),
+            "wwtkdr_claim_key",
+            {"key": prefixed_key},
+            parent=self._kernel.get_parent("shell"),
+            ident=self._kernel._topic("wwtkdr_claim_key"),
         )
 
-        return '{}wwtkdr/{}/'.format(self._base_url, urlquote(prefixed_key, safe=''))
+        return "{}wwtkdr/{}/".format(self._base_url, urlquote(prefixed_key, safe=""))
 
     def serve_tree(self, path, key=None):
         """
@@ -188,7 +194,7 @@ class JupyterRelayHub(object):
         prefixed_key = self._key_prefix + key
         return self._claim_key(prefixed_key, FileTreeResource(path, public=True))
 
-    def serve_file(self, path, extension='', key=None):
+    def serve_file(self, path, extension="", key=None):
         """
         Request that a single specific file be published.
 
@@ -247,29 +253,30 @@ class JupyterRelayHub(object):
             # headers are present, so add them here. Note that this can
             # therefore leak some info about the kernel.
             content = {
-                'status': 'ok',  # this is the correct semantics
-                'more': False,
-                'http_status': e.http_status,
-                'http_headers': [
-                    ('Content-Type', 'text/plain; charset=utf-8'),
-                ] + FIXED_HTTP_RESPONSE_HEADERS,
+                "status": "ok",  # this is the correct semantics
+                "more": False,
+                "http_status": e.http_status,
+                "http_headers": [
+                    ("Content-Type", "text/plain; charset=utf-8"),
+                ]
+                + FIXED_HTTP_RESPONSE_HEADERS,
             }
 
             buffers = [
-                memoryview(e.message.encode('utf-8')),
+                memoryview(e.message.encode("utf-8")),
             ]
 
             self._send_resource_reply(stream, content, message, ident, buffers)
         except Exception as e:
             content = {
-                'status': 'error',
-                'evalue': str(e),
+                "status": "error",
+                "evalue": str(e),
             }
 
             self._send_resource_reply(stream, content, message, ident, None)
         finally:
             try:
-                key = b''.join(ident)
+                key = b"".join(ident)
                 del self._ident_to_next_seqnum[key]
             except KeyError:
                 pass
@@ -282,35 +289,35 @@ class JupyterRelayHub(object):
         dispatch.
         """
 
-        content = message['content']
+        content = message["content"]
 
-        method = content.get('method', 'unspecified')
-        if method != 'GET':
-            raise HTTPExposedError(400, f'unexpected request method {method}')
+        method = content.get("method", "unspecified")
+        if method != "GET":
+            raise HTTPExposedError(400, f"unexpected request method {method}")
 
-        key = content.get('key')
+        key = content.get("key")
         if key is None:
-            raise HTTPExposedError(500, 'no key in request')
+            raise HTTPExposedError(500, "no key in request")
 
         resource = self._key_to_resource.get(str(key))
         if resource is None:
-            raise HTTPExposedError(404, 'no such resource registered with kernel')
+            raise HTTPExposedError(404, "no such resource registered with kernel")
 
         # Note that on the server side, Tornado does some normalizations on the
         # input URL before it reaches the KDR handler; for instance,
         # `foo/../bar` is turned into `bar`. But other potentially-sketchy
         # constructs aren't normalized, and the KDR itself applies no
         # validation, so we should still treat `entry` cautiously.
-        entry = content.get('entry')
+        entry = content.get("entry")
         if entry is None:
-            raise HTTPExposedError(500, 'no entry in request')
+            raise HTTPExposedError(500, "no entry in request")
 
         # The URL experiences the same normalizations that apply to `entry`.
-        url = content.get('url')
+        url = content.get("url")
         if url is None:
-            raise HTTPExposedError(500, 'no url in request')
+            raise HTTPExposedError(500, "no url in request")
 
-        authenticated = content.get('authenticated', False)
+        authenticated = content.get("authenticated", False)
 
         # OK, we've got everything we need from the request. Delegate to the
         # resource.
@@ -328,7 +335,7 @@ class JupyterRelayHub(object):
                 # since other requests seem to be fighting for the same 2000 spots.
                 # So I felt like it is safest to up the chunk size to something very, very high.
                 # At least until the root issue is found and resolved.
-                chunk = handle.read(8388608) # 8MB
+                chunk = handle.read(8388608)  # 8MB
 
                 if len(chunk):
                     buffers = [chunk]
@@ -337,13 +344,13 @@ class JupyterRelayHub(object):
                     buffers = []
 
                 content = {
-                    'status': 'ok',
-                    'more': keep_going,
+                    "status": "ok",
+                    "more": keep_going,
                 }
 
                 if first:
-                    content['http_status'] = 200
-                    content['http_headers'] = headers
+                    content["http_status"] = 200
+                    content["http_headers"] = headers
                     first = False
 
                 self._send_resource_reply(stream, content, message, ident, buffers)
@@ -354,14 +361,14 @@ class JupyterRelayHub(object):
         that we always send an appropriate sequence number for each message, in
         the face of exceptions that can crop up at surprising times.
         """
-        key = b''.join(ident)
+        key = b"".join(ident)
         seqnum = self._ident_to_next_seqnum.get(key, 0)
-        content['seq'] = seqnum
+        content["seq"] = seqnum
         self._ident_to_next_seqnum[key] = seqnum + 1
 
         self._kernel.session.send(
             stream,
-            'wwtkdr_resource_reply',
+            "wwtkdr_resource_reply",
             content=content,
             parent=parent,
             ident=ident,
@@ -380,9 +387,9 @@ def _open_file_resource(path, path_for_mime=None):
     # TODO: don't give full CORS headers if resource is not public
 
     try:
-        handle = open(path, 'rb')
+        handle = open(path, "rb")
     except FileNotFoundError:
-        raise HTTPExposedError(404, 'file not found')
+        raise HTTPExposedError(404, "file not found")
 
     # Note that the "encoding" here is something like "gzip", not "UTF-8" --
     # it's about the file stream, not text.
@@ -391,10 +398,10 @@ def _open_file_resource(path, path_for_mime=None):
 
     content_type, _content_encoding = mimetypes.guess_type(path_for_mime)
     if content_type is None:
-        content_type = 'application/octet-stream'
+        content_type = "application/octet-stream"
 
     headers = FIXED_HTTP_RESPONSE_HEADERS + [
-        ('Content-Type', content_type),
+        ("Content-Type", content_type),
     ]
     return handle, headers
 
@@ -414,11 +421,11 @@ def _generate_absolute_wtml(rel_wtml_path, url):
 
     f = Folder.from_file(rel_wtml_path)
     f.mutate_urls(make_absolutizing_url_mutator(url))
-    resp = f.to_xml_string().encode('utf-8')
+    resp = f.to_xml_string().encode("utf-8")
     handle = BytesIO(resp)
 
     headers = FIXED_HTTP_RESPONSE_HEADERS + [
-        ('Content-Type', 'application/x-wtml'),
+        ("Content-Type", "application/x-wtml"),
     ]
     return handle, headers
 
@@ -432,24 +439,24 @@ class FileTreeResource(object):
     def __init__(self, root, public=False):
         self._root = root
         self._public = public
-        assert public, 'non-public resources not implemented'
+        assert public, "non-public resources not implemented"
 
     def entry_to_handle(self, authenticated, entry, url):
         # Lame-brained indexing support:
-        if entry.endswith('/'):
-            entry += 'index.html'
+        if entry.endswith("/"):
+            entry += "index.html"
 
-        items = entry.split('/')
+        items = entry.split("/")
 
-        if any(e == '..' or e.startswith('/') or not e for e in items):
-            raise HTTPExposedError(400, 'illegal kernel data tree path component')
+        if any(e == ".." or e.startswith("/") or not e for e in items):
+            raise HTTPExposedError(400, "illegal kernel data tree path component")
 
         # Special handling for `index_rel.wtml` files that make tiled data
         # available to the WWT frontend. We need to source `index.wtml` on the
         # fly in order to fill the file with absolute URL data, which the WWT
         # engine requires.
-        if entry.endswith('.wtml'):
-            rel_path = os.path.join(self._root, *items)[:-5] + '_rel.wtml'
+        if entry.endswith(".wtml"):
+            rel_path = os.path.join(self._root, *items)[:-5] + "_rel.wtml"
             if os.path.exists(rel_path):
                 return _generate_absolute_wtml(rel_path, url)
 
@@ -465,13 +472,13 @@ class SingleFileResource(object):
         self._path = path
         self._url_basename = url_basename
         self._public = public
-        assert public, 'non-public resources not implemented'
+        assert public, "non-public resources not implemented"
 
     def entry_to_handle(self, authenticated, entry, _url):
         # TODO: handle non-public resources!!!
 
         if entry != self._url_basename:
-            raise HTTPExposedError(404, 'file not found')
+            raise HTTPExposedError(404, "file not found")
 
         # Use the URL basename here in case the `extension` argument was used
         # (e.g. the extension of the actual filesystem path is missing or
@@ -495,10 +502,10 @@ def get_relay_hub(kernel=None):
 
     if _global_relay_hub is None:
         # This is a bit out-of-place, but whatever
-        mimetypes.add_type('image/fits', '.fits')
-        mimetypes.add_type('image/fits', '.fts')
-        mimetypes.add_type('image/fits', '.fit')
-        mimetypes.add_type('application/x-wtml', '.wtml')
+        mimetypes.add_type("image/fits", ".fits")
+        mimetypes.add_type("image/fits", ".fts")
+        mimetypes.add_type("image/fits", ".fit")
+        mimetypes.add_type("application/x-wtml", ".wtml")
 
         _global_relay_hub = JupyterRelayHub(kernel=kernel)
 
@@ -524,11 +531,13 @@ def _list_running_servers_jl3():
 
     for file_name in os.listdir(runtime_dir):
         # here is the fix:
-        if re.match('nbserver-(.+).json', file_name) or re.match('jpserver-(.+).json', file_name):
-            with io.open(os.path.join(runtime_dir, file_name), encoding='utf-8') as f:
+        if re.match("nbserver-(.+).json", file_name) or re.match(
+            "jpserver-(.+).json", file_name
+        ):
+            with io.open(os.path.join(runtime_dir, file_name), encoding="utf-8") as f:
                 info = json.load(f)
 
-            if ('pid' in info) and check_pid(info['pid']):
+            if ("pid" in info) and check_pid(info["pid"]):
                 yield info
             else:
                 try:
@@ -554,8 +563,7 @@ def _compute_notebook_server_base_url():
 
     # First, find our ID.
     kernel_id = re.search(
-        'kernel-(.*).json',
-        ipykernel.connect.get_connection_file()
+        "kernel-(.*).json", ipykernel.connect.get_connection_file()
     ).group(1)
 
     # Now, check all of the running servers known on this machine. We have to
@@ -568,11 +576,11 @@ def _compute_notebook_server_base_url():
         # server, it seems that the token is instead obtained from an
         # environment variable. Cf.
         # https://github.com/jupyterhub/jupyterhub/blob/master/jupyterhub/singleuser/mixins.py
-        token = s.get('token', '')
+        token = s.get("token", "")
         if not token:
-            token = os.environ.get('JUPYTERHUB_API_TOKEN', '')
+            token = os.environ.get("JUPYTERHUB_API_TOKEN", "")
         if not token:
-            token = os.environ.get('JPY_API_TOKEN', '')  # deprecated as of 0.7.2
+            token = os.environ.get("JPY_API_TOKEN", "")  # deprecated as of 0.7.2
 
         # Request/response paranoia due to "fun" figuring out how to fix the
         # JupyterHub single-user problem - the API call would fail due to auth
@@ -581,22 +589,24 @@ def _compute_notebook_server_base_url():
         # in the future, add a fallback mode.
         try:
             response = requests.get(
-                requests.compat.urljoin(s['url'], 'api/sessions'),
-                params={'token': token}
+                requests.compat.urljoin(s["url"], "api/sessions"),
+                params={"token": token},
             )
 
             for n in json.loads(response.text):
-                if n['kernel']['id'] == kernel_id:
-                    return s['base_url']  # Found it!
+                if n["kernel"]["id"] == kernel_id:
+                    return s["base_url"]  # Found it!
         except Exception:
             pass
 
     # If we got here, we might have auth issues with the api/sessions request.
     # If there's only one server, just give it a try.
     if len(running_server_info) == 1:
-        return running_server_info[0]['base_url']
+        return running_server_info[0]["base_url"]
 
-    raise Exception('cannot locate our notebook server; is this code running in a Jupyter kernel?')
+    raise Exception(
+        "cannot locate our notebook server; is this code running in a Jupyter kernel?"
+    )
 
 
 _server_base_url = None
@@ -611,7 +621,7 @@ def get_notebook_server_base_url():
 
     if _server_base_url is None:
         _server_base_url = _compute_notebook_server_base_url()
-        if not _server_base_url.endswith('/'):
-            _server_base_url = _server_base_url + '/'
+        if not _server_base_url.endswith("/"):
+            _server_base_url = _server_base_url + "/"
 
     return _server_base_url
