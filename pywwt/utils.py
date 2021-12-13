@@ -39,6 +39,50 @@ def sanitize_image(image, output_file, overwrite=False, hdu_index=None, **kwargs
 
 
 def transform_to_wwt_supported_fits(image, output_file, overwrite):
+    # Workaround because `reproject` currently only accepts 2D inputs. This is a
+    # hack and it would be better to update reproject to do this processing.
+    # Also, this logic is copy/pasting `toasty.collection.SimpleFitsCollection`.
+
+    import warnings
+    from reproject.utils import parse_input_data
+
+    with warnings.catch_warnings():
+        # Sorry, Astropy, no one cares if you fixed the FITS.
+        warnings.simplefilter("ignore")
+        data, wcs = parse_input_data(image)
+
+    if wcs.naxis != 2:
+        if not wcs.has_celestial:
+            raise Exception(
+                f"cannot process input `{image}`: WCS cannot be reduced to 2D celestial"
+            )
+
+        full_wcs = wcs
+        wcs = full_wcs.celestial
+
+        # note: get_axis_types returns axes in FITS order, innermost first
+        keep_axes = [
+            t.get("coordinate_type") == "celestial"
+            for t in full_wcs.get_axis_types()[::-1]
+        ]
+
+        for axnum, (keep, axlen) in enumerate(zip(keep_axes, data.shape)):
+            if not keep and axlen != 1:
+                # This is a non-celestial axis that we need to drop, but its
+                # size is not one. So in principle the user should tell us which
+                # plane to chose. We can't do that here, so just complain --
+                # that's better than giving a hard error since this way the user
+                # can at least see *something*.
+                warnings.warn(
+                    f"taking first plane (out of {axlen}) in non-celestial image axis #{axnum} in input `{image}`"
+                )
+
+        data = data[tuple(slice(None) if k else 0 for k in keep_axes)]
+
+    image = (data, wcs)
+
+    # End workaround.
+
     wcs, shape_out = find_optimal_celestial_wcs([image], frame=ICRS(), projection="TAN")
     array = reproject_interp(image, wcs, shape_out=shape_out, return_footprint=False)
     fits.writeto(
