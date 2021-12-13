@@ -126,7 +126,7 @@ setup_args = dict(
         "qtpy",
         "reproject>=0.8",
         "requests",
-        "toasty>=0.13.0",
+        "toasty>=0.14.0",
         "tornado",
         "traitlets>=5",
     ],
