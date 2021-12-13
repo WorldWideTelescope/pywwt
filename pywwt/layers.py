@@ -263,7 +263,7 @@ class LayerManager(object):
             a Numpy array and ``wcs`` is an astropy :class:`~astropy.wcs.WCS`
             object
         hdu_index : optional int or list of int, defaults to None
-            Use this parameter to specify which HDU to tile. If the `fits`
+            Use this parameter to specify which HDU to tile. If the *image*
             input is a list of FITS, you can specify the hdu_index of each FITS
             by using a list of integers like this: [0, 2, 1]. If hdu_index is
             not set, toasty will use the first HDU with tilable content in each
@@ -273,22 +273,21 @@ class LayerManager(object):
             being processed.
         force_hipsgen : optional boolean, defaults to False
             Force the input FITS to be tiled with HiPSgen. If this and
-            `force_tan` is set to False, this method will figure out when to
+            *force_tan* are set to False, this method will figure out when to
             split the input into tiles and also which type of projection to
             use. Tangential projection for smaller angular areas and HiPSgen
             larger regions of the sky.
         force_tan : optional boolean, defaults to False
             Force the input FITS to be tiled with a tangential projection. If
-            this and `force_hipsgen` is set to False, this method will figure
+            this and *force_hipsgen* are set to False, this method will figure
             out when to split the input into tiles and also which type of
             projection to use. Tangential projection for smaller angular areas
             and HiPSgen larger regions of the sky.
         kwargs
             Additional keyword arguments can be used to set properties on the
             image layer or settings for the `toasty` tiling process. Common
-            toasty settings include `out_dir`, `override`, and `blankval`.
-            See `~toasty.tile_fits`
-            https://toasty.readthedocs.io/en/latest/api/toasty.tile_fits.html#toasty.tile_fits
+            toasty settings include ``out_dir``, ``override``, and ``blankval``.
+            See `toasty.tile_fits`.
 
         Returns
         -------
