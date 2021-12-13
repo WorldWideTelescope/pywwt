@@ -380,14 +380,18 @@ class LayerManager(object):
         force_tan=False,
         **kwargs
     ):
-        name, builder = toasty.tile_fits(
-            fits_list,
-            hdu_index=hdu_index,
-            cli_progress=cli_progress,
-            force_hipsgen=force_hipsgen,
-            force_tan=force_tan,
-            **kwargs
-        )
+        with warnings.catch_warnings():
+            # Avoid annoying AstroPy FITS-fixed warnings
+            warnings.simplefilter("ignore")
+            name, builder = toasty.tile_fits(
+                fits_list,
+                hdu_index=hdu_index,
+                cli_progress=cli_progress,
+                force_hipsgen=force_hipsgen,
+                force_tan=force_tan,
+                **kwargs
+            )
+
         kwargs = self._remove_toasty_keywords(**kwargs)
         url = self._parent._serve_tree(path=name)
 
