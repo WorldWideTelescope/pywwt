@@ -238,7 +238,15 @@ class LayerManager(object):
         self._layers = []
         self._parent = parent
 
-    def add_image_layer(self, image=None, hdu_index=None, verbose=True, force_hipsgen=False, force_tan=False, **kwargs):
+    def add_image_layer(
+        self,
+        image=None,
+        hdu_index=None,
+        verbose=True,
+        force_hipsgen=False,
+        force_tan=False,
+        **kwargs
+    ):
         """
         Add an image layer to the current view. This method can display any
         image data or FITS or list of FITS from the local environment. In case
@@ -287,25 +295,43 @@ class LayerManager(object):
         layer : :class:`~pywwt.layers.ImageLayer` or a subclass thereof
         """
 
-        if (isinstance(image, astropy.io.fits.ImageHDU) or
-                isinstance(image, astropy.io.fits.PrimaryHDU) or
-                isinstance(image, astropy.io.fits.HDUList)):
+        if (
+            isinstance(image, astropy.io.fits.ImageHDU)
+            or isinstance(image, astropy.io.fits.PrimaryHDU)
+            or isinstance(image, astropy.io.fits.HDUList)
+        ):
             unused_file_name = self._get_unused_fits_name()
             image.writeto(unused_file_name)
             image = unused_file_name
         if isinstance(image, str):
             image = [image]
         if isinstance(image, list):
-            if force_hipsgen or force_tan or len(image) > 1 or Path(image[0]).stat().st_size > 20e6:  # 20 MB
+            if (
+                force_hipsgen
+                or force_tan
+                or len(image) > 1
+                or Path(image[0]).stat().st_size > 20e6
+            ):  # 20 MB
                 nest_asyncio.apply()
                 loop = asyncio.get_event_loop()
-                return loop.run_until_complete(self._tile_and_serve(fits_list=image, hdu_index=hdu_index,
-                                                                    cli_progress=verbose, force_hipsgen=force_hipsgen,
-                                                                    force_tan=force_tan, **kwargs))
+                return loop.run_until_complete(
+                    self._tile_and_serve(
+                        fits_list=image,
+                        hdu_index=hdu_index,
+                        cli_progress=verbose,
+                        force_hipsgen=force_hipsgen,
+                        force_tan=force_tan,
+                        **kwargs
+                    )
+                )
             else:
-                return self._create_and_add_image_layer(image=image[0], hdu_index=hdu_index, **kwargs)
+                return self._create_and_add_image_layer(
+                    image=image[0], hdu_index=hdu_index, **kwargs
+                )
 
-        return self._create_and_add_image_layer(image=image, hdu_index=hdu_index, **kwargs)
+        return self._create_and_add_image_layer(
+            image=image, hdu_index=hdu_index, **kwargs
+        )
 
     def _create_and_add_image_layer(self, image, **kwargs):
         kwargs = self._remove_toasty_keywords(**kwargs)
@@ -335,9 +361,9 @@ class LayerManager(object):
 
     # TODO this is not future proof
     def _remove_toasty_keywords(self, **kwargs):
-        kwargs.pop('blankval', None)
-        kwargs.pop('override', None)
-        kwargs.pop('out_dir', None)
+        kwargs.pop("blankval", None)
+        kwargs.pop("override", None)
+        kwargs.pop("out_dir", None)
         return kwargs
 
     def _get_unused_fits_name(self):
@@ -346,17 +372,27 @@ class LayerManager(object):
             file_index += 1
         return "hdu_fits_{}".format(file_index)
 
-    async def _tile_and_serve(self, fits_list, hdu_index=None, cli_progress=True, force_hipsgen=False,
-                              force_tan=False, **kwargs):
-        name, builder = toasty.tile_fits(fits_list, hdu_index=hdu_index, cli_progress=cli_progress,
-                                         force_hipsgen=force_hipsgen, force_tan=force_tan, **kwargs)
+    async def _tile_and_serve(
+        self,
+        fits_list,
+        hdu_index=None,
+        cli_progress=True,
+        force_hipsgen=False,
+        force_tan=False,
+        **kwargs
+    ):
+        name, builder = toasty.tile_fits(
+            fits_list,
+            hdu_index=hdu_index,
+            cli_progress=cli_progress,
+            force_hipsgen=force_hipsgen,
+            force_tan=force_tan,
+            **kwargs
+        )
         kwargs = self._remove_toasty_keywords(**kwargs)
         url = self._parent._serve_tree(path=name)
 
-        self._parent.load_image_collection(
-            url=url + 'index.wtml',
-            remote_only=True
-        )
+        self._parent.load_image_collection(url=url + "index.wtml", remote_only=True)
         return self.add_preloaded_image_layer(url + builder.imgset.url, **kwargs)
 
     def add_table_layer(self, table=None, frame="Sky", **kwargs):
@@ -530,7 +566,7 @@ class TableLayer(HasTraits):
     coord_type = Unicode(
         "spherical",
         help="Whether to give the coordinates "
-             "in spherical or rectangular coordinates",
+        "in spherical or rectangular coordinates",
     ).tag(wwt="coordinatesType")
 
     # Attributes for spherical coordinates
@@ -577,15 +613,15 @@ class TableLayer(HasTraits):
     size_vmin = Float(
         None,
         help="The minimum point size. "
-             "Found automagically once size_att is set "
-             "(`float`)",
+        "Found automagically once size_att is set "
+        "(`float`)",
         allow_none=True,
     ).tag(wwt=None)
     size_vmax = Float(
         None,
         help="The maximum point size. "
-             "Found automagically once size_att is set "
-             "(`float`)",
+        "Found automagically once size_att is set "
+        "(`float`)",
         allow_none=True,
     ).tag(wwt=None)
 
@@ -595,13 +631,13 @@ class TableLayer(HasTraits):
     cmap_vmin = Float(
         None,
         help="The minimum level of the colormap. Found "
-             "automagically once cmap_att is set (`float`)",
+        "automagically once cmap_att is set (`float`)",
         allow_none=True,
     ).tag(wwt=None)
     cmap_vmax = Float(
         None,
         help="The maximum level of the colormap. Found "
-             "automagically once cmap_att is set (`float`)",
+        "automagically once cmap_att is set (`float`)",
         allow_none=True,
     ).tag(wwt=None)
     cmap = Any(
@@ -630,8 +666,8 @@ class TableLayer(HasTraits):
     far_side_visible = Bool(
         False,
         help="Whether markers on the far side "
-             "of a 3D object are visible "
-             "(`bool`)",
+        "of a 3D object are visible "
+        "(`bool`)",
     ).tag(wwt="showFarSide")
 
     # NOTE: we deliberately don't link time_att to startDateColumn here
@@ -644,9 +680,9 @@ class TableLayer(HasTraits):
     time_decay = AstropyQuantity(
         16 * u.day,
         help="How long a time series "
-             "point takes to fade away after appearing (0 "
-             "if never) "
-             "(:class:`~astropy.units.Quantity`)",
+        "point takes to fade away after appearing (0 "
+        "if never) "
+        "(:class:`~astropy.units.Quantity`)",
     ).tag(wwt="decay")
 
     # TODO: support:
@@ -658,13 +694,13 @@ class TableLayer(HasTraits):
     # zAxisReverse
 
     def __init__(
-            self,
-            parent=None,
-            table=None,
-            frame=None,
-            table_from_wwt_engine=False,
-            id=None,
-            **kwargs
+        self,
+        parent=None,
+        table=None,
+        frame=None,
+        table_from_wwt_engine=False,
+        id=None,
+        **kwargs
     ):
         self.table = table
         self.notify_changes = True
@@ -799,7 +835,7 @@ class TableLayer(HasTraits):
         col = self._get_table()[proposal["value"]]
 
         if all(isinstance(t, datetime) for t in col) or all(
-                isinstance(t, Time) for t in col
+            isinstance(t, Time) for t in col
         ):
             return proposal["value"]
 
@@ -1127,9 +1163,9 @@ class TableLayer(HasTraits):
     def _on_time_att_change(self, *value):
 
         if (
-                not self.notify_changes
-                or len(self.time_att) == 0
-                or self.time_series is False
+            not self.notify_changes
+            or len(self.time_att) == 0
+            or self.time_series is False
         ):
             self.parent._send_msg(
                 event="table_layer_set", id=self.id, setting="startDateColumn", value=-1
@@ -1281,7 +1317,7 @@ class TableLayer(HasTraits):
         file_path = path.join(dir, "{0}.csv".format(self.id))
         table_str = csv_table_win_newline(self.table)
         with open(
-                file_path, "wb"
+            file_path, "wb"
         ) as file:  # binary mode to preserve windows line endings
             file.write(table_str.encode("ascii", errors="replace"))
 
@@ -1449,7 +1485,7 @@ class ImageLayer(HasTraits):
             # projection, double values) and write out to a temporary file.
             self._sanitized_image = tempfile.mktemp()
             sanitize_image(image, self._sanitized_image, **kwargs)
-            kwargs.pop('hdu_index', None)
+            kwargs.pop("hdu_index", None)
 
             # The first thing we need to do is make sure the image is being served.
             # For now we assume that image is a filename, but we could do more
