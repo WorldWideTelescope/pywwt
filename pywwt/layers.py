@@ -414,6 +414,11 @@ class LayerManager(object):
         image_layer = self.add_preloaded_image_layer(
             url + builder.imgset.url, name=display_name, **kwargs
         )
+        if builder.imgset.pixel_cut_low > 0 or builder.imgset.pixel_cut_low < 0:
+            image_layer.vmin = builder.imgset.pixel_cut_low
+            image_layer.vmax = builder.imgset.pixel_cut_high
+            image_layer._data_min = builder.imgset.data_min
+            image_layer._data_max = builder.imgset.data_max
 
         return image_layer
 
