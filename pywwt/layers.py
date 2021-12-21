@@ -310,7 +310,11 @@ class LayerManager(object):
         if isinstance(image, str):
             image = [image]
         if isinstance(image, list):
-            if (
+            force_untiled = False
+            if "force_untiled" in kwargs:
+                force_untiled = kwargs["force_untiled"]
+                kwargs.pop("force_untiled", None)
+            if not force_untiled and (
                 force_hipsgen
                 or force_tan
                 or len(image) > 1
