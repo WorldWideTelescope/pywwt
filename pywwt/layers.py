@@ -243,6 +243,7 @@ class LayerManager(object):
         image=None,
         hdu_index=None,
         verbose=True,
+        name=None,
         force_hipsgen=False,
         force_tan=False,
         **kwargs
@@ -271,6 +272,10 @@ class LayerManager(object):
         verbose : optional boolean, defaults True
             If true, progress messages will be printed as the FITS files are
             being processed.
+        name : optional str, defaults to None
+            Use this parameter to set a display name for the image set.
+            If not set, pywwt will set a name based on the file name of the
+            provided image.
         force_hipsgen : optional boolean, defaults to False
             Force the input FITS to be tiled with HiPSgen. If this and
             *force_tan* are set to False, this method will figure out when to
@@ -318,6 +323,7 @@ class LayerManager(object):
                         fits_list=image,
                         hdu_index=hdu_index,
                         cli_progress=verbose,
+                        display_name=name,
                         force_hipsgen=force_hipsgen,
                         force_tan=force_tan,
                         **kwargs
@@ -325,11 +331,11 @@ class LayerManager(object):
                 )
             else:
                 return self._create_and_add_image_layer(
-                    image=image[0], hdu_index=hdu_index, **kwargs
+                    image=image[0], hdu_index=hdu_index, name=name, **kwargs
                 )
 
         return self._create_and_add_image_layer(
-            image=image, hdu_index=hdu_index, **kwargs
+            image=image, hdu_index=hdu_index, name=name, **kwargs
         )
 
     def _create_and_add_image_layer(self, image, **kwargs):
@@ -376,6 +382,7 @@ class LayerManager(object):
         fits_list,
         hdu_index=None,
         cli_progress=True,
+        display_name=None,
         force_hipsgen=False,
         force_tan=False,
         **kwargs
@@ -383,7 +390,7 @@ class LayerManager(object):
         with warnings.catch_warnings():
             # Avoid annoying AstroPy FITS-fixed warnings
             warnings.simplefilter("ignore")
-            name, builder = toasty.tile_fits(
+            out_dir, builder = toasty.tile_fits(
                 fits_list,
                 hdu_index=hdu_index,
                 cli_progress=cli_progress,
@@ -393,10 +400,18 @@ class LayerManager(object):
             )
 
         kwargs = self._remove_toasty_keywords(**kwargs)
-        url = self._parent._serve_tree(path=name)
+        url = self._parent._serve_tree(path=out_dir)
 
         self._parent.load_image_collection(url=url + "index.wtml", remote_only=True)
-        return self.add_preloaded_image_layer(url + builder.imgset.url, **kwargs)
+
+        if display_name is None:
+            display_name = builder.imgset.name
+
+        image_layer = self.add_preloaded_image_layer(
+            url + builder.imgset.url, name=display_name, **kwargs
+        )
+
+        return image_layer
 
     def add_table_layer(self, table=None, frame="Sky", **kwargs):
         """
@@ -1483,6 +1498,15 @@ class ImageLayer(HasTraits):
         self._cmap_version = 0
 
         if image is not None:
+            if "name" in kwargs:
+                self.name = kwargs["name"]
+                kwargs.pop("name", None)
+            elif isinstance(image, str):
+                file_name = image.split("/")[-1].split(".gz")[0]
+                self.name = file_name[: file_name.rfind(".")]
+            else:
+                self.name = self.id
+
             # "Classic" mode, processing a single FITS-like input. Transform the
             # image so that it is always acceptable to WWT (Equatorial, TAN
             # projection, double values) and write out to a temporary file.
@@ -1502,18 +1526,28 @@ class ImageLayer(HasTraits):
             self.vmin, self.vmax = np.nanpercentile(data, [0.5, 99.5])
 
             self.parent._send_msg(
-                event="image_layer_create", id=self.id, url=self._image_url
+                event="image_layer_create",
+                id=self.id,
+                url=self._image_url,
+                mode="fits",
+                name=self.name,
             )
         elif url is not None:
             # Loading image by URL.
             self._sanitized_image = None
             self._image_url = url
+            if "name" in kwargs:
+                self.name = kwargs["name"]
+                kwargs.pop("name", None)
+            else:
+                self.name = url
 
             self.parent._send_msg(
                 event="image_layer_create",
                 id=self.id,
                 url=self._image_url,
                 mode="preloaded",
+                name=self.name,
             )
 
         # Check that all kwargs are valid -- throws error if not
