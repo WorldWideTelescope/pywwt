@@ -1528,6 +1528,8 @@ class ImageLayer(HasTraits):
 
             data = fits.getdata(self._sanitized_image)
             self.vmin, self.vmax = np.nanpercentile(data, [0.5, 99.5])
+            self._data_min = np.nanmin(data)
+            self._data_max = np.nanmax(data)
 
             self.parent._send_msg(
                 event="image_layer_create",
