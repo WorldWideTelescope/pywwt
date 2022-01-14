@@ -1,5 +1,5 @@
-Installation
-============
+Installing pywwt
+================
 
 Try without installing
 ----------------------
@@ -44,7 +44,7 @@ deadline.
 If you aren’t using a conda-based Python environment, it’s easy to set one up.
 The `Anaconda Distribution <https://www.anaconda.com/products/individual>`_ is
 popular and widely supported, or you can use `Miniforge
-<https://github.com/conda-forge/miniforge#install>`_ or `Miniconda
+<https://github.com/conda-forge/miniforge#user-content-install>`_ or `Miniconda
 <https://docs.conda.io/en/latest/miniconda.html>`_ for a smaller download. These
 environments install in a fully self-contained manner, so you can try them out
 without modifying your computer’s existing Python installation(s).
@@ -67,6 +67,7 @@ Qt widget you will need to install `PyQt
 <https://wiki.qt.io/PySide>`_ separately. See the full list of dependencies
 below.
 
+.. _setup-jupyterlab:
 
 Set Up pywwt’s JupyterLab Integration
 -------------------------------------
@@ -77,11 +78,19 @@ the JupyterLab web application is a separate thing than just “Jupyter,” the
 lower-level system upon which it is built. `Learn how to install JupyterLab here
 <https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html>`_.
 
-Once you’ve installed JupyterLab, the following commands should ensure that
-pywwt’s integration is set up:
+Once you’ve installed JupyterLab, you need to install a couple of other
+supporting components beyond pywwt to get the best experience: the `WWT Kernel
+Data Relay`_ (KDR) extension, the `WWT JupyterLab Extension`_, and the
+`JupyterLab widget manager extension`_. The following commands should ensure
+that everything is set up:
+
+.. _WWT Kernel Data Relay: https://github.com/WorldWideTelescope/wwt_kernel_data_relay/#readme
+.. _WWT JupyterLab Extension: https://github.com/WorldWideTelescope/wwt-jupyterlab#readme
+.. _JupyterLab widget manager extension: https://www.npmjs.com/package/@jupyter-widgets/jupyterlab-manager
 
 .. code-block:: sh
 
+    pip install wwt-kernel-data-relay  # or use conda
     jupyter labextension install --no-build @jupyter-widgets/jupyterlab-manager
     jupyter labextension install --no-build @wwtelescope/jupyterlab
     jupyter lab build
@@ -98,16 +107,23 @@ Clicking on this icon should open up the `WWT research app
 <https://docs.worldwidetelescope.org/research-app/latest/>`_, which you can then
 control using pywwt, via :func:`pywwt.jupyter.connect_to_app`.
 
+.. _setup-jupyter-widget:
 
-The pywwt Jupyter Widget
-------------------------
+Set up the pywwt Jupyter Widget
+-------------------------------
 
 If you are using a Jupyter notebook, either within JupyterLab or in “vanilla
 “Jupyter, you may also wish to set up pywwt’s “Jupyter widget” support. This
 integration *should* be set up automatically if you install pywwt through one of
-the standard methods, but it can be somewhat finicky. To check whether the
-widget is working, run the following Python commands inside of a Jupyter
-notebook::
+the standard methods, but it can be somewhat finicky. As with the JupyterLab support,
+you should install the `WWT Kernel Data Relay`_ (KDR) extension:
+
+.. code-block:: sh
+
+    pip install wwt-kernel-data-relay  # or use conda
+
+To check whether the widget is working, run the following Python commands inside
+of a Jupyter notebook::
 
     from pywwt.jupyter import WWTJupyterWidget
     wwt = WWTJupyterWidget()
@@ -123,8 +139,8 @@ notebook, like so:
 
 If you get any other result, some troubleshooting may be necessary.
 
-Troubleshooting the Widget Integration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Troubleshooting the Jupyter Integration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The first thing to check is the “notebook extension”. Run:
 
@@ -142,20 +158,29 @@ problem at this stage, there might be a lot of possible reasons. For help, try
 <https://github.com/WorldWideTelescope/pywwt/issues/new>`_ with a copy-paste of
 the output from the commands above.
 
-Next is the Jupyter “server extension”, which is controlled similarly but lacks
-an install step:
+Next are the Jupyter “server extension”s, which are controlled similarly:
 
 .. code-block:: sh
 
     jupyter serverextension enable --py --sys-prefix pywwt
     jupyter serverextension list
 
-Here too, the commands should report that the ``pywwt`` extension is installed
-and enabled, without any apparent errors.
+Here too, the commands should report that the ``pywwt`` and
+``wwt_kernel_data_relay`` extensions are installed and enabled, without any
+apparent errors.
+
+The recommended way to use pywwt inside of JupyterLab (not vanilla Jupyter) is
+with the help of the separate `WWT JupyterLab Extension`_:
+
+.. code-block:: sh
+
+    jupyter labextension install --no-build @wwtelescope/jupyterlab
+    jupyter labextension list
 
 Finally, if you wish to use the specific combination of the pywwt *widget* (not
 app) inside of JupyterLab (not vanilla Jupyter), you may also need to ensure
-that the secondary “lab extension” is installed:
+that pywwt is installed as its own, different, “lab extension”, along with
+additional helpers:
 
 .. code-block:: sh
 
@@ -164,7 +189,8 @@ that the secondary “lab extension” is installed:
     jupyter labextension install --no-build pywwt
     jupyter labextension list
 
-If the commands seem to be OK but report that a “build” is needed, that is OK:
+If the above commands seem to be OK but report that a “build” is needed, that is
+OK:
 
 .. code-block:: sh
 
@@ -231,5 +257,8 @@ And if you additionally want to use the widget in JupyterLab, run::
     jupyter labextension install frontend
     jupyter labextension list  # check that the output shows pywwt as enabled and OK
 
-Besides ``pywwt``, the ``@jupyter-widgets/jupyterlab-manager`` and
-``ipyevents`` lab-extensions must be installed and enabled.
+Besides ``pywwt``, the `WWT Kernel Data Relay`_ server extension and the `WWT
+JupyterLab extension`_ are both strongly recommended, but not technically
+necessary. If you want to use pywwt as a widget in JupyterLab, the
+``@jupyter-widgets/jupyterlab-manager`` and ``ipyevents`` lab-extensions must be
+installed and enabled.

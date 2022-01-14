@@ -4,6 +4,7 @@ channels:
 
 dependencies:
   - astropy
+  - astropy-sphinx-theme
   - commonmark
   - ipyevents
   - ipython
@@ -29,5 +30,4 @@ dependencies:
   - setuptools
   - sphinx
   - sphinx-automodapi
-  - sphinx_rtd_theme
   - widgetsnbextension

@@ -1,3 +1,20 @@
+# Copyright 2021 the .NET Foundation
+# Licensed under the three-clause BSD License
+
+"""
+This module defines types for controlling WWT on-screen "annotations".
+
+To actually create annotations in a WWT viewer, use methods on your ``wwt``
+variable, such as:
+
+- `~pywwt.core.BaseWWTWidget.add_circle`
+- `~pywwt.core.BaseWWTWidget.add_collection`
+- `~pywwt.core.BaseWWTWidget.add_fov`
+- `~pywwt.core.BaseWWTWidget.add_line`
+- `~pywwt.core.BaseWWTWidget.add_polygon`
+
+"""
+
 import uuid
 from traitlets import HasTraits, TraitError, validate
 from astropy import units as u
