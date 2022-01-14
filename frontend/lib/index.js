@@ -1,5 +1,5 @@
 // Copyright 2021 the .NET Foundation
-// Licensed under the MIT License
+// Licensed under the three-clause BSD License
 
 // This is the main index file for the pywwt Jupyter Widget frontend JavaScript
 // module. `widget.js` contains the main ipywidgets implementation, and

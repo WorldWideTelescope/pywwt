@@ -1,3 +1,9 @@
+# npm:pywwt 1.3.2 (2022-01-14)
+
+- Fix up license annotations
+- Require the latest research-app, version 0.9
+
+
 # npm:pywwt 1.3.1 (2021-10-14)
 
 - Fix a dumb string-processing bug in the URL canonicalization code that broke

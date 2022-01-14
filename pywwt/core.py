@@ -1,8 +1,12 @@
 # Copyright 2018-2021 the .NET Foundation
-# Licensed under the BSD license
+# Licensed under the three-clause BSD license
 
 """
-The core WWT widget implementation.
+The core WWT widget class.
+
+The most important definition provided in this module is the `BaseWWTWidget`
+type, which defines the generic interface for controlling WWT viewers across the
+different backends supported by pywwt.
 """
 
 import asyncio
@@ -16,6 +20,7 @@ from astropy.time import Time
 from astropy.coordinates import SkyCoord
 import numpy as np
 from traitlets import HasTraits, observe, validate, TraitError
+import nest_asyncio
 
 from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
@@ -27,37 +32,37 @@ from .traits import Color, Bool, Float, Unicode, AstropyQuantity
 from .utils import ensure_utc
 
 __all__ = [
-    'BaseWWTWidget',
-    'DataPublishingNotAvailableError',
-    'ViewerNotAvailableError',
+    "BaseWWTWidget",
+    "DataPublishingNotAvailableError",
+    "ViewerNotAvailableError",
 ]
 
-DEFAULT_SURVEYS_URL = 'https://worldwidetelescope.github.io/pywwt/surveys.xml'
+DEFAULT_SURVEYS_URL = "https://worldwidetelescope.github.io/pywwt/surveys.xml"
 
 VIEW_MODES_2D = [
-    'sky',
-    'sun',
-    'mercury',
-    'venus',
-    'earth',
-    'moon',
-    'mars',
-    'jupiter',
-    'callisto',
-    'europa',
-    'ganymede',
-    'io',
-    'saturn',
-    'uranus',
-    'neptune',
-    'pluto',
-    'panorama',
+    "sky",
+    "sun",
+    "mercury",
+    "venus",
+    "earth",
+    "moon",
+    "mars",
+    "jupiter",
+    "callisto",
+    "europa",
+    "ganymede",
+    "io",
+    "saturn",
+    "uranus",
+    "neptune",
+    "pluto",
+    "panorama",
 ]
 
 VIEW_MODES_3D = [
-    'solar system',
-    'milky way',
-    'universe',
+    "solar system",
+    "milky way",
+    "universe",
 ]
 
 R2D = 180 / np.pi
@@ -68,9 +73,10 @@ class DataPublishingNotAvailableError(Exception):
     """
     Raised if data need to be published, but publishing service isn't available.
     """
+
     def __init__(self, msg=None):
         if msg is None:
-            msg = 'there is no mechanism available for pywwt to publish data to the WWT frontend'
+            msg = "there is no mechanism available for pywwt to publish data to the WWT frontend"
         super(DataPublishingNotAvailableError, self).__init__(msg)
 
 
@@ -79,41 +85,58 @@ class ViewerNotAvailableError(Exception):
     Raised if an operation needs to communicate with the WWT viewer (app), but
     the app doesn't seem to be responding to messages.
     """
+
     def __init__(self, msg=None):
         if msg is None:
-            msg = 'cannot complete the operation because the WWT viewer isn\'t responding'
+            msg = (
+                "cannot complete the operation because the WWT viewer isn't responding"
+            )
         super(ViewerNotAvailableError, self).__init__(msg)
 
 
 class BaseWWTWidget(HasTraits):
     """
-    The core WWT "widget" (client) implementation.
+    A class that can control a WWT viewer from Python.
 
-    Parameters
-    ----------
-    hide_all_chrome : optional `bool`
-        Configures the WWT frontend to hide all user-interface "chrome".
-        Defaults to true to maintain compatibility with the historical
-        pywwt user experience.
+    You should not create instances of this class directly. Instead, you should
+    obtain obtain an instance through one of the following mechanisms, depending
+    on the environment in which you're running Python and WWT:
 
-    Notes
-    -----
+    - In JupyterLab (the recommended approach), use
+      :func:`pywwt.jupyter.connect_to_app`. This requires that you have
+      :ref:`set up the WWT JupyterLab extension <setup-jupyterlab>`.
+    - In plain Jupyter, or if you want to use WWT in its widget mode, create an
+      instance of :class:`pywwt.jupyter.WWTJupyterWidget`. This requires that
+      you have :ref:`set up the pywwt Jupyter widget <setup-jupyter-widget>`.
+    - If using Qt, create an instance of :class:`pywwt.qt.WWTQtClient`.
+    - If you want to control the WWT Windows application, see the
+      :mod:`pywwt.windows` module.
 
-    This class provides a common interface to modify settings and interact with
-    the AAS WorldWide Telescope.
+    **Attributes:**
 
-    This client communications with the WWT "research application"
-    (@wwtelescope/research-app), which has a standardized control interface
-    (@wwtelescope/research-app-messages). This client is fundamentally concerned
-    with communicating using that messaging interface.
+    If you modify most of the attributes listed below, your changes will
+    automatically be reflected in the WWT view. However, there are a few special
+    attributes that collect important pieces of WWT functionality:
 
-    Subclasses need to set up some kind of mechanism that will call
-    ``_on_app_status_change`` when the app is ready to receive messages (at a
-    minimum), and ``_on_app_message_received`` when a message from the frontend
-    app is received. They need to implement ``_actually_send_msg`` which will
-    deliver a message to the app.
+    - :attr:`layers` (:class:`pywwt.layers.LayerManager`) allows you to add new
+      data layers to the view.
+    - :attr:`solar_system` (:class:`pywwt.solar_system.SolarSystem`) provides
+      controls related to WWT's 3D "solar system" mode (which can display much
+      more than just the solar system!)
 
+    The following attributes collect information about data and modes that are
+    available in the connected WWT viewer:
+
+    - :attr:`available_layers` (list of ``str``) lists available image sets in a
+      flat array
+    - :attr:`available_views` (list of ``str``) lists available view modes
+      (``"solar system"``, ``"jupiter"``, etc.) in a flat array
+    - :attr:`imagery` (:class:`pywwt.imagery.ImageryLayers`) lists available
+      imagery
+    - :attr:`instruments` (:class:`pywwt.instruments.Instruments`) lists available
+      instrument FOVs
     """
+
     _startupMessageQueue = None
     _appAlive = False
     _readyFuture = None
@@ -123,14 +146,40 @@ class BaseWWTWidget(HasTraits):
     _raRad = 0.0
     _decRad = 0.0
     _fovDeg = 60.0
-    _engineTime = Time('2017-03-09T12:30:00', format='isot')
-    _systemTime = Time('2017-03-09T12:30:00', format='isot')
+    _engineTime = Time("2017-03-09T12:30:00", format="isot")
+    _systemTime = Time("2017-03-09T12:30:00", format="isot")
     _timeRate = 1.0
 
     def __init__(self, hide_all_chrome=False):
+        """
+        (Note that this docstring is not exposed in the API docs. It is aimed at
+        developers.)
+
+        Parameters
+        ----------
+        hide_all_chrome : optional `bool`
+            Configures the WWT frontend to hide all user-interface "chrome".
+            Defaults to true to maintain compatibility with the historical
+            pywwt user experience.
+
+        Notes
+        -----
+
+        This class communicates with the WWT "research application"
+        (@wwtelescope/research-app), which has a standardized control interface
+        (@wwtelescope/research-app-messages). This client is fundamentally
+        concerned with communicating using that messaging interface.
+
+        Subclasses need to set up some kind of mechanism that will call
+        ``_on_app_status_change`` when the app is ready to receive messages (at
+        a minimum), and ``_on_app_message_received`` when a message from the
+        frontend app is received. They need to implement ``_actually_send_msg``
+        which will deliver a message to the app.
+        """
+
         super(BaseWWTWidget, self).__init__()
 
-        self.observe(self._on_trait_change, type='change')
+        self.observe(self._on_trait_change, type="change")
 
         self._startupMessageQueue = []
         self._seqNum = 0
@@ -141,20 +190,20 @@ class BaseWWTWidget(HasTraits):
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
         self._instruments = Instruments()
-        self.current_mode = 'sky'
+        self.current_mode = "sky"
         self._paused = False
-        self._last_sent_view_mode = 'sky'
+        self._last_sent_view_mode = "sky"
         self.layers = LayerManager(parent=self)
         self._annotation_set = set()
         self._callbacks = {}
 
         if hide_all_chrome:
             self._send_msg(
-                event='modify_settings',
-                target='app',
+                event="modify_settings",
+                target="app",
                 settings=[
-                    ('hideAllChrome', True),
-                ]
+                    ("hideAllChrome", True),
+                ],
             )
 
         # pywwt's surveys.xml has slightly different contents than
@@ -162,7 +211,7 @@ class BaseWWTWidget(HasTraits):
         # that the frontend agrees with us about which named imagesets are
         # available.
         self._send_msg(
-            event='load_image_collection',
+            event="load_image_collection",
             url=DEFAULT_SURVEYS_URL,
             threadId=self._next_seq(),
         )
@@ -178,31 +227,31 @@ class BaseWWTWidget(HasTraits):
         # move to a system where this initializer can reliably sync its state
         # to the app's.
         self._send_msg(
-            event='set_background_by_name',
+            event="set_background_by_name",
             name=self.background,
         )
 
         self._send_msg(
-            event='set_foreground_by_name',
+            event="set_foreground_by_name",
             name=self.foreground,
         )
 
         self._send_msg(
-            event='set_foreground_opacity',
+            event="set_foreground_opacity",
             value=self.foreground_opacity * 100,
         )
 
         SETTINGS = [
-            'actual_planet_scale',
-            'constellation_boundary_color',
-            'constellation_figure_color',
-            'constellation_selection_color',
+            "actual_planet_scale",
+            "constellation_boundary_color",
+            "constellation_figure_color",
+            "constellation_selection_color",
         ]
 
         for s in SETTINGS:
-            wwt_name = self.trait_metadata(s, 'wwt')
+            wwt_name = self.trait_metadata(s, "wwt")
             self._send_msg(
-                event='setting_set',
+                event="setting_set",
                 setting=wwt_name,
                 value=getattr(self, s),
             )
@@ -220,16 +269,14 @@ class BaseWWTWidget(HasTraits):
         # its own, we only want to react to changes in traits that have the wwt
         # metadata attribute (which indicates the name of the corresponding WWT
         # setting).
-        wwt_name = self.trait_metadata(changed['name'], 'wwt')
-        new_value = changed['new']
+        wwt_name = self.trait_metadata(changed["name"], "wwt")
+        new_value = changed["new"]
 
         if wwt_name is not None:
             if isinstance(new_value, u.Quantity):
                 new_value = new_value.value
 
-            self._send_msg(event='setting_set',
-                           setting=wwt_name,
-                           value=new_value)
+            self._send_msg(event="setting_set", setting=wwt_name, value=new_value)
 
     def _next_seq(self):
         """
@@ -278,6 +325,7 @@ class BaseWWTWidget(HasTraits):
         self._send_msg(threadId=seq, **kwargs)
 
         if timeout is not None:
+
             def maybe_time_it_out():
                 if not fut.done():
                     fut.set_exception(asyncio.TimeoutError())
@@ -319,42 +367,42 @@ class BaseWWTWidget(HasTraits):
         the user.
         """
 
-        ptype = payload.get('type')
+        ptype = payload.get("type")
         # some events don't have type but do have: pevent = payload.get('event')
 
         updated_fields = []
 
-        if ptype == 'wwt_view_state':
+        if ptype == "wwt_view_state":
             try:
-                self._raRad = float(payload['raRad'])
-                self._decRad = float(payload['decRad'])
-                self._fovDeg = float(payload['fovDeg'])
-                self._engineTime = Time(payload['engineClockISOT'], format='isot')
-                self._systemTime = Time(payload['systemClockISOT'], format='isot')
-                self._timeRate = float(payload['engineClockRateFactor'])
+                self._raRad = float(payload["raRad"])
+                self._decRad = float(payload["decRad"])
+                self._fovDeg = float(payload["fovDeg"])
+                self._engineTime = Time(payload["engineClockISOT"], format="isot")
+                self._systemTime = Time(payload["systemClockISOT"], format="isot")
+                self._timeRate = float(payload["engineClockRateFactor"])
             except ValueError:
                 pass  # report a warning somehow?
-        elif ptype == 'wwt_application_state':
-            hipscat = payload.get('hipsCatalogNames')
+        elif ptype == "wwt_application_state":
+            hipscat = payload.get("hipsCatalogNames")
 
             if hipscat is not None:
                 self._available_hips_catalog_names = hipscat
 
-        elif ptype == 'wwt_selection_state':
-            most_recent = payload.get('mostRecentSource')
-            sources = payload.get('selectedSources')
+        elif ptype == "wwt_selection_state":
+            most_recent = payload.get("mostRecentSource")
+            sources = payload.get("selectedSources")
 
             if most_recent is not None:
                 self._most_recent_source = most_recent
-                updated_fields.append('most_recent_source')
+                updated_fields.append("most_recent_source")
 
             if sources is not None:
                 self._selected_sources = sources
-                updated_fields.append('selected_sources')
+                updated_fields.append("selected_sources")
 
         # Any relevant async future to resolve?
 
-        tid = payload.get('threadId')
+        tid = payload.get("threadId")
 
         if tid is not None:
             try:
@@ -371,7 +419,7 @@ class BaseWWTWidget(HasTraits):
             try:
                 callback(self, updated_fields)
             except:  # noqa: E722
-                logger.exception('unhandled Python exception during a callback')
+                logger.exception("unhandled Python exception during a callback")
 
     def _set_message_type_callback(self, ptype, callback):
         """
@@ -395,19 +443,19 @@ class BaseWWTWidget(HasTraits):
         callback:
             A callable object which takes two arguments: the WWT widget instance, and a list of updated properties.
         """
-        self._set_message_type_callback('wwt_selection_state', callback)
+        self._set_message_type_callback("wwt_selection_state", callback)
 
     def _get_view_data(self, field):
         if not self._appAlive:
             raise ViewerNotAvailableError()
 
-        if field == 'ra':
+        if field == "ra":
             return self._raRad * R2H
-        elif field == 'dec':
+        elif field == "dec":
             return self._decRad * R2D
-        elif field == 'fov':
+        elif field == "fov":
             return self._fovDeg
-        elif field == 'datetime':
+        elif field == "datetime":
             engine_delta = self._timeRate * (Time.now() - self._systemTime)
             return self._engineTime + engine_delta
         else:
@@ -422,7 +470,7 @@ class BaseWWTWidget(HasTraits):
         """
         raise NotImplementedError()
 
-    def _serve_file(self, filename, extension=''):
+    def _serve_file(self, filename, extension=""):
         """
         Publish a single file in a web server, for use by the WWT frontend.
 
@@ -472,6 +520,7 @@ class BaseWWTWidget(HasTraits):
 
         """
         from .layers import ImageLayer
+
         return ImageLayer(self, **kwargs)
 
     # Startup
@@ -520,6 +569,9 @@ class BaseWWTWidget(HasTraits):
     imagery = None
     "Access to the engine's available imagesets"
 
+    def _serve_tree(self, path):
+        raise DataPublishingNotAvailableError()
+
     @property
     def instruments(self):
         """
@@ -537,49 +589,57 @@ class BaseWWTWidget(HasTraits):
     #
     # TODO: implement the remaining ones that haven't been wired up yet.
 
-    actual_planet_scale = Bool(False,
-                               help='Whether to show planets to scale or as '
-                                    'points with a fixed size '
-                                    '(`bool`)').tag(wwt='actualPlanetScale', wwt_reset=True)
+    actual_planet_scale = Bool(
+        False,
+        help="Whether to show planets to scale or as "
+        "points with a fixed size "
+        "(`bool`)",
+    ).tag(wwt="actualPlanetScale", wwt_reset=True)
 
-    alt_az_grid = Bool(False, help='Whether to show an altitude-azimuth grid '
-                                   '(`bool`)').tag(wwt='showAltAzGrid', wwt_reset=True)
+    alt_az_grid = Bool(
+        False, help="Whether to show an altitude-azimuth grid " "(`bool`)"
+    ).tag(wwt="showAltAzGrid", wwt_reset=True)
 
     # alt_az_text = Bool(False,
     #                    help='Whether to show labels for the altitude-azimuth grid\'s text '
     #                         '(`bool`)').tag(wwt='showAltAzGridText', wwt_reset=True)
 
-    background = Unicode('Hydrogen Alpha Full Sky Map',
-                         help='The layer to show in the background (`str`)').tag(wwt=None, wwt_reset=True)
+    background = Unicode(
+        "Hydrogen Alpha Full Sky Map",
+        help="The layer to show in the background (`str`)",
+    ).tag(wwt=None, wwt_reset=True)
 
-    constellation_boundary_color = Color('blue',
-                                         help='The color of the constellation '
-                                         'boundaries (`str` or '
-                                         '`tuple`)').tag(wwt='constellationBoundryColor', wwt_reset=True)
+    constellation_boundary_color = Color(
+        "blue",
+        help="The color of the constellation " "boundaries (`str` or " "`tuple`)",
+    ).tag(wwt="constellationBoundryColor", wwt_reset=True)
 
-    constellation_figure_color = Color('red',
-                                       help='The color of the constellation '
-                                            'figure (`str` or '
-                                            '`tuple`)').tag(wwt='constellationFigureColor', wwt_reset=True)
+    constellation_figure_color = Color(
+        "red", help="The color of the constellation " "figure (`str` or " "`tuple`)"
+    ).tag(wwt="constellationFigureColor", wwt_reset=True)
 
-    constellation_selection_color = Color('yellow',
-                                          help='The color of the constellation '
-                                               'selection (`str` or '
-                                               '`tuple`)').tag(wwt='constellationSelectionColor', wwt_reset=True)
+    constellation_selection_color = Color(
+        "yellow",
+        help="The color of the constellation " "selection (`str` or " "`tuple`)",
+    ).tag(wwt="constellationSelectionColor", wwt_reset=True)
 
-    constellation_boundaries = Bool(False,
-                                    help='Whether to show boundaries for the '
-                                         'selected constellations '
-                                         '(`bool`)').tag(wwt='showConstellationBoundries', wwt_reset=True)
+    constellation_boundaries = Bool(
+        False,
+        help="Whether to show boundaries for the "
+        "selected constellations "
+        "(`bool`)",
+    ).tag(wwt="showConstellationBoundries", wwt_reset=True)
 
-    constellation_figures = Bool(False,
-                                 help='Whether to show the constellations '
-                                      '(`bool`)').tag(wwt='showConstellationFigures', wwt_reset=True)
+    constellation_figures = Bool(
+        False, help="Whether to show the constellations " "(`bool`)"
+    ).tag(wwt="showConstellationFigures", wwt_reset=True)
 
-    constellation_selection = Bool(False,
-                                   help='Whether to only show boundaries for '
-                                        'the selected constellation '
-                                        '(`bool`)').tag(wwt='showConstellationSelection', wwt_reset=True)
+    constellation_selection = Bool(
+        False,
+        help="Whether to only show boundaries for "
+        "the selected constellation "
+        "(`bool`)",
+    ).tag(wwt="showConstellationSelection", wwt_reset=True)
 
     # constellation_pictures = Bool(False,
     #                               help='Whether to show pictures of the constellations\' '
@@ -590,120 +650,140 @@ class BaseWWTWidget(HasTraits):
     #                             help='Whether to show labelss for constellations '
     #                                  '(`bool`)').tag(wwt='showConstellationLabels', wwt_reset=True)
 
-    crosshairs = Bool(False, help='Whether to show crosshairs at the center of '
-                                  'the field (`bool`)').tag(wwt='showCrosshairs', wwt_reset=True)
+    crosshairs = Bool(
+        False, help="Whether to show crosshairs at the center of " "the field (`bool`)"
+    ).tag(wwt="showCrosshairs", wwt_reset=True)
 
-    crosshairs_color = Color('white',
-                             help='The color of the crosshairs '
-                                  '(`str` or `tuple`)').tag(wwt='crosshairsColor', wwt_reset=True)
+    crosshairs_color = Color(
+        "white", help="The color of the crosshairs " "(`str` or `tuple`)"
+    ).tag(wwt="crosshairsColor", wwt_reset=True)
 
-    ecliptic = Bool(False, help='Whether to show the path of the ecliptic '
-                                '(`bool`)').tag(wwt='showEcliptic', wwt_reset=True)
+    ecliptic = Bool(
+        False, help="Whether to show the path of the ecliptic " "(`bool`)"
+    ).tag(wwt="showEcliptic", wwt_reset=True)
 
-    ecliptic_grid = Bool(False, help='Whether to show a grid relative to the '
-                                     'ecliptic plane (`bool`)').tag(wwt='showEclipticGrid', wwt_reset=True)
+    ecliptic_grid = Bool(
+        False, help="Whether to show a grid relative to the " "ecliptic plane (`bool`)"
+    ).tag(wwt="showEclipticGrid", wwt_reset=True)
 
-    foreground = Unicode('Digitized Sky Survey (Color)',
-                         help='The layer to show in the foreground (`str`)').tag(wwt=None, wwt_reset=True)
+    foreground = Unicode(
+        "Digitized Sky Survey (Color)",
+        help="The layer to show in the foreground (`str`)",
+    ).tag(wwt=None, wwt_reset=True)
 
-    foreground_opacity = Float(0.8, help='The opacity of the foreground layer '
-                                         '(`float`)').tag(wwt=None, wwt_reset=True)
+    foreground_opacity = Float(
+        0.8, help="The opacity of the foreground layer " "(`float`)"
+    ).tag(wwt=None, wwt_reset=True)
 
-    galactic_mode = Bool(False,
-                         help='Whether the galactic plane should be horizontal '
-                              'in the viewer (`bool`)').tag(wwt='galacticMode', wwt_reset=True)
+    galactic_mode = Bool(
+        False,
+        help="Whether the galactic plane should be horizontal "
+        "in the viewer (`bool`)",
+    ).tag(wwt="galacticMode", wwt_reset=True)
 
-    galactic_grid = Bool(False, help='Whether to show a grid relative to the '
-                                     'galactic plane (`bool`)').tag(wwt='showGalacticGrid', wwt_reset=True)
+    galactic_grid = Bool(
+        False, help="Whether to show a grid relative to the " "galactic plane (`bool`)"
+    ).tag(wwt="showGalacticGrid", wwt_reset=True)
 
     # galactic_text = Bool(False,
     #                      help='Whether to show labels for the galactic grid\'s text '
     #                           '(`bool`)').tag(wwt='showGalacticGridText', wwt_reset=True)
 
-    grid = Bool(False, help='Whether to show the equatorial grid '
-                            '(`bool`)').tag(wwt='showGrid', wwt_reset=True)
+    grid = Bool(False, help="Whether to show the equatorial grid " "(`bool`)").tag(
+        wwt="showGrid", wwt_reset=True
+    )
 
-    local_horizon_mode = Bool(False, help='Whether the view should be that of '
-                                          'a local latitude, longitude, and '
-                                          'altitude (`bool`)').tag(wwt='localHorizonMode', wwt_reset=True)
+    local_horizon_mode = Bool(
+        False,
+        help="Whether the view should be that of "
+        "a local latitude, longitude, and "
+        "altitude (`bool`)",
+    ).tag(wwt="localHorizonMode", wwt_reset=True)
 
-    location_altitude = AstropyQuantity(0 * u.m,
-                                        help='The altitude of the viewing '
-                                             'location in local horizon mode '
-                                             '(:class:`~astropy.units.Quantity`)').tag(wwt='locationAltitude', wwt_reset=True)
+    location_altitude = AstropyQuantity(
+        0 * u.m,
+        help="The altitude of the viewing "
+        "location in local horizon mode "
+        "(:class:`~astropy.units.Quantity`)",
+    ).tag(wwt="locationAltitude", wwt_reset=True)
 
-    location_latitude = AstropyQuantity(47.633 * u.deg,
-                                        help='The latitude of the viewing '
-                                             'location in local horizon mode '
-                                             '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLat', wwt_reset=True)
+    location_latitude = AstropyQuantity(
+        47.633 * u.deg,
+        help="The latitude of the viewing "
+        "location in local horizon mode "
+        "(:class:`~astropy.units.Quantity`)",
+    ).tag(wwt="locationLat", wwt_reset=True)
 
-    location_longitude = AstropyQuantity(122.133333 * u.deg,
-                                         help='The longitude of the viewing '
-                                              'location in local horizon mode '
-                                              '(:class:`~astropy.units.Quantity`)').tag(wwt='locationLng', wwt_reset=True)
+    location_longitude = AstropyQuantity(
+        122.133333 * u.deg,
+        help="The longitude of the viewing "
+        "location in local horizon mode "
+        "(:class:`~astropy.units.Quantity`)",
+    ).tag(wwt="locationLng", wwt_reset=True)
 
     # Validators / observers for the settings above that need custom support.
 
-    @observe('background')
+    @observe("background")
     def _on_background_change(self, changed):
-        self._send_msg(event='set_background_by_name', name=changed['new'])
+        self._send_msg(event="set_background_by_name", name=changed["new"])
         # Changing a layer resets the opacity, so we re-trigger the opacity setting
-        self._send_msg(event='set_foreground_opacity',
-                       value=self.foreground_opacity * 100)
+        self._send_msg(
+            event="set_foreground_opacity", value=self.foreground_opacity * 100
+        )
 
-    @validate('background')
+    @validate("background")
     def _validate_background(self, proposal):
-        if proposal['value'] in self.available_layers:
-            return proposal['value']
+        if proposal["value"] in self.available_layers:
+            return proposal["value"]
         else:
-            raise TraitError('background is not one of the available layers')
+            raise TraitError("background is not one of the available layers")
 
-    @observe('foreground')
+    @observe("foreground")
     def _on_foreground_change(self, changed):
-        self._send_msg(event='set_foreground_by_name', name=changed['new'])
+        self._send_msg(event="set_foreground_by_name", name=changed["new"])
         # Changing a layer resets the opacity, so we re-trigger the opacity setting
-        self._send_msg(event='set_foreground_opacity',
-                       value=self.foreground_opacity * 100)
+        self._send_msg(
+            event="set_foreground_opacity", value=self.foreground_opacity * 100
+        )
 
-    @validate('foreground')
+    @validate("foreground")
     def _validate_foreground(self, proposal):
-        if proposal['value'] in self.available_layers:
-            return proposal['value']
+        if proposal["value"] in self.available_layers:
+            return proposal["value"]
         else:
-            raise TraitError('foreground is not one of the available layers')
+            raise TraitError("foreground is not one of the available layers")
 
-    @observe('foreground_opacity')
+    @observe("foreground_opacity")
     def _on_foreground_opacity_change(self, changed):
-        self._send_msg(event='set_foreground_opacity',
-                       value=changed['new'] * 100)
+        self._send_msg(event="set_foreground_opacity", value=changed["new"] * 100)
 
-    @validate('foreground_opacity')
+    @validate("foreground_opacity")
     def _validate_foreground_opacity(self, proposal):
-        if 0 <= proposal['value'] <= 1:
-            return proposal['value']
+        if 0 <= proposal["value"] <= 1:
+            return proposal["value"]
         else:
-            raise TraitError('foreground_opacity should be between 0 and 1')
+            raise TraitError("foreground_opacity should be between 0 and 1")
 
-    @validate('location_altitude')
+    @validate("location_altitude")
     def _validate_altitude(self, proposal):
-        if proposal['value'].unit.physical_type == 'length':
-            return proposal['value'].to(u.meter)
+        if proposal["value"].unit.physical_type == "length":
+            return proposal["value"].to(u.meter)
         else:
-            raise TraitError('location_altitude not in units of length')
+            raise TraitError("location_altitude not in units of length")
 
-    @validate('location_latitude')
+    @validate("location_latitude")
     def _validate_latitude(self, proposal):
-        if proposal['value'].unit.physical_type == 'angle':
-            return proposal['value'].to(u.degree)
+        if proposal["value"].unit.physical_type == "angle":
+            return proposal["value"].to(u.degree)
         else:
-            raise TraitError('location_latitude not in angle units')
+            raise TraitError("location_latitude not in angle units")
 
-    @validate('location_longitude')
+    @validate("location_longitude")
     def _validate_longitude(self, proposal):
-        if proposal['value'].unit.physical_type == 'angle':
-            return proposal['value'].to(u.degree)
+        if proposal["value"].unit.physical_type == "angle":
+            return proposal["value"].to(u.degree)
         else:
-            raise TraitError('location_longitude not in angle units')
+            raise TraitError("location_longitude not in angle units")
 
     # Basic view controls
 
@@ -711,15 +791,17 @@ class BaseWWTWidget(HasTraits):
         """
         Return the view's current right ascension and declination in degrees.
         """
-        return SkyCoord(self._get_view_data('ra'),
-                        self._get_view_data('dec'),
-                        unit=(u.hourangle, u.deg))
+        return SkyCoord(
+            self._get_view_data("ra"),
+            self._get_view_data("dec"),
+            unit=(u.hourangle, u.deg),
+        )
 
     def get_fov(self):
         """
         Return the view's current field of view in degrees.
         """
-        return self._get_view_data('fov') * u.deg
+        return self._get_view_data("fov") * u.deg
 
     def center_on_coordinates(self, coord, fov=60 * u.deg, instant=True):
         """
@@ -738,11 +820,13 @@ class BaseWWTWidget(HasTraits):
             desired location.
         """
         coord_icrs = coord.icrs
-        self._send_msg(event='center_on_coordinates',
-                       ra=coord_icrs.ra.deg,
-                       dec=coord_icrs.dec.deg,
-                       fov=fov.to(u.deg).value,
-                       instant=instant)
+        self._send_msg(
+            event="center_on_coordinates",
+            ra=coord_icrs.ra.deg,
+            dec=coord_icrs.dec.deg,
+            fov=fov.to(u.deg).value,
+            instant=instant,
+        )
 
     def set_view(self, mode):
         """
@@ -764,26 +848,30 @@ class BaseWWTWidget(HasTraits):
 
         mode = mode.lower()
 
-        solar_system_mode = '3D Solar System View'
+        solar_system_mode = "3D Solar System View"
 
         if mode in VIEW_MODES_2D:
-            if mode == 'earth':
+            if mode == "earth":
                 # Switch to a daytime view of the earth
-                mode = 'Bing Maps Aerial'
-            elif mode == 'mars':
-                mode = 'Visible Imagery'
-            self._send_msg(event='set_viewer_mode', mode=mode)
+                mode = "Bing Maps Aerial"
+            elif mode == "mars":
+                mode = "Visible Imagery"
+            self._send_msg(event="set_viewer_mode", mode=mode)
             self._last_sent_view_mode = mode
-            if mode == 'sky' or mode == 'panorama':
+            if mode == "sky" or mode == "panorama":
                 self.current_mode = mode
             else:
-                self.current_mode = 'planet'
+                self.current_mode = "planet"
         elif mode in VIEW_MODES_3D:
-            self._send_msg(event='set_viewer_mode', mode=solar_system_mode)
+            self._send_msg(event="set_viewer_mode", mode=solar_system_mode)
             self.current_mode = mode
             self._last_sent_view_mode = solar_system_mode
         else:
-            raise ValueError('mode should be one of {0}'.format('/'.join(VIEW_MODES_2D + VIEW_MODES_3D)))
+            raise ValueError(
+                "mode should be one of {0}".format(
+                    "/".join(VIEW_MODES_2D + VIEW_MODES_3D)
+                )
+            )
 
         self.reset_view()
 
@@ -792,22 +880,27 @@ class BaseWWTWidget(HasTraits):
         Reset the current view mode's coordinates and field of view to
         their original states.
         """
-        if self.current_mode == 'sky':
-            self.center_on_coordinates(SkyCoord(0., 0., unit=u.deg),
-                                       fov=60*u.deg, instant=False)
-        if self.current_mode == 'planet':
-            self.center_on_coordinates(SkyCoord(35.55, 11.43, unit=u.deg),
-                                       fov=40*u.deg, instant=False)
-        if self.current_mode == 'solar system':
-            self.center_on_coordinates(SkyCoord(0., 0., unit=u.deg),
-                                       fov=50*u.deg, instant=False)
-        if self.current_mode == 'milky way':
-            self.center_on_coordinates(SkyCoord(114.85, -29.52, unit=u.deg),
-                                       fov=6e9*u.deg, instant=False)
-        if self.current_mode == 'universe':
-            self.center_on_coordinates(SkyCoord(16.67, 37.72, unit=u.deg),
-                                       fov=1e14*u.deg, instant=False)
-        if self.current_mode == 'panorama':
+        if self.current_mode == "sky":
+            self.center_on_coordinates(
+                SkyCoord(0.0, 0.0, unit=u.deg), fov=60 * u.deg, instant=False
+            )
+        if self.current_mode == "planet":
+            self.center_on_coordinates(
+                SkyCoord(35.55, 11.43, unit=u.deg), fov=40 * u.deg, instant=False
+            )
+        if self.current_mode == "solar system":
+            self.center_on_coordinates(
+                SkyCoord(0.0, 0.0, unit=u.deg), fov=50 * u.deg, instant=False
+            )
+        if self.current_mode == "milky way":
+            self.center_on_coordinates(
+                SkyCoord(114.85, -29.52, unit=u.deg), fov=6e9 * u.deg, instant=False
+            )
+        if self.current_mode == "universe":
+            self.center_on_coordinates(
+                SkyCoord(16.67, 37.72, unit=u.deg), fov=1e14 * u.deg, instant=False
+            )
+        if self.current_mode == "panorama":
             pass
 
     @property
@@ -827,12 +920,12 @@ class BaseWWTWidget(HasTraits):
             self.layers[0].remove()
 
         # Reset coordinates to initial view
-        gc = SkyCoord(0, 0, unit=('deg', 'deg'), frame='icrs')
+        gc = SkyCoord(0, 0, unit=("deg", "deg"), frame="icrs")
         self.center_on_coordinates(gc, 60 * u.deg)
 
         # Reset only traits with the wwt_reset tag
         for trait_name, trait in self.traits().items():
-            if trait.metadata.get('wwt_reset'):
+            if trait.metadata.get("wwt_reset"):
                 setattr(self, trait_name, trait.default_value)
 
     # Clock controls
@@ -841,7 +934,7 @@ class BaseWWTWidget(HasTraits):
         """
         Pause the progression of time in the viewer.
         """
-        self._send_msg(event='pause_time')
+        self._send_msg(event="pause_time")
 
     def play_time(self, rate=1):
         """
@@ -852,13 +945,13 @@ class BaseWWTWidget(HasTraits):
         rate : int or float
             The rate at which time passes (1 meaning real-time)
         """
-        self._send_msg(event='resume_time', rate=rate)
+        self._send_msg(event="resume_time", rate=rate)
 
     def get_current_time(self):
         """
         Return the viewer's current time as an `~astropy.time.Time` object.
         """
-        return Time(self._get_view_data('datetime'), format='isot')
+        return Time(self._get_view_data("datetime"), format="isot")
 
     def set_current_time(self, dt=None):
         """
@@ -881,11 +974,11 @@ class BaseWWTWidget(HasTraits):
         """
         # Ensure the object received is a datetime or Time; convert it to UTC
         utc_tm = ensure_utc(dt, str_allowed=False)
-        self._send_msg(event='set_datetime', isot=utc_tm)
+        self._send_msg(event="set_datetime", isot=utc_tm)
 
     # Data loading
 
-    def load_image_collection(self, url, recursive=False):
+    def load_image_collection(self, url, recursive=False, remote_only=False):
         """
         Load a collection of layers for possible use in the viewer.
 
@@ -899,6 +992,11 @@ class BaseWWTWidget(HasTraits):
             specified WTML file. The default behavior is only to load the
             single file and *not* recurse into subfolders. Recursive loading
             can potentially be very time-consuming.
+
+        remote_only : optional `bool`
+            ADASS hack! If true, will only send the load request to the app,
+            and not attempt to open the URL locally.
+
 
         Notes
         -----
@@ -914,13 +1012,16 @@ class BaseWWTWidget(HasTraits):
         # WTMLs by other clients that we don't even know about. Also, this
         # doesn't work for URLs that we serve ourselves, which may only be
         # fragments when we're running in the Jupyter context.
-        self._available_layers.update(get_imagery_layers(url))
-        self._send_msg(
-            event='load_image_collection',
+        if not remote_only:
+            self._available_layers.update(get_imagery_layers(url))
+
+        nest_asyncio.apply()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self._send_into_future(
+            event="load_image_collection",
             url=url,
-            loadChildFolders=recursive,
-            threadId=self._next_seq(),
-        )
+            loadChildFolders=recursive
+        ))
 
     @property
     def available_layers(self):
@@ -972,7 +1073,7 @@ class BaseWWTWidget(HasTraits):
         Clears all annotations from the current view.
         """
         self._annotation_set.clear()
-        return self._send_msg(event='clear_annotations')
+        return self._send_msg(event="clear_annotations")
 
     def add_circle(self, center=None, **kwargs):
         """
@@ -1063,26 +1164,26 @@ class BaseWWTWidget(HasTraits):
             The URL of the chosen tour -- must be a .wtt file.
         """
         # throw error if url doesn't end in .wtt
-        if url[-4:] == '.wtt':
-            self._send_msg(event='load_tour', url=url)
+        if url[-4:] == ".wtt":
+            self._send_msg(event="load_tour", url=url)
         else:
-            raise ValueError('url must end in \'.wwt\'')
+            raise ValueError("url must end in '.wwt'")
 
     def pause_tour(self):
         """
         Pause a loaded tour.
         """
-        self._send_msg(event='pause_tour')
+        self._send_msg(event="pause_tour")
 
     def resume_tour(self):
         """
         Resume a paused tour.
         """
-        self._send_msg(event='resume_tour')
+        self._send_msg(event="resume_tour")
 
     # Instrumental FOV support (built on the annotation support)
 
-    def add_fov(self, telescope, center=None, rotate=0*u.rad, **kwargs):
+    def add_fov(self, telescope, center=None, rotate=0 * u.rad, **kwargs):
         """
         Add a telescope's field of view (FOV) to the current view.
 
@@ -1128,10 +1229,10 @@ class BaseWWTWidget(HasTraits):
             If left blank, the WWT viewport will fill the enitre height of the browser.
         """
         dest_root, dest_extension = os.path.splitext(dest)
-        if (dest_extension and dest_extension != ".zip"):
+        if dest_extension and dest_extension != ".zip":
             raise ValueError("'dest' must be either a directory or a .zip file")
 
-        is_compressed = dest_extension == '.zip'
+        is_compressed = dest_extension == ".zip"
         if is_compressed:
             figure_dir = tempfile.mkdtemp()
         else:
@@ -1139,18 +1240,20 @@ class BaseWWTWidget(HasTraits):
                 os.makedirs(os.path.abspath(dest))
             figure_dir = dest
 
-        fig_src_dir = os.path.join(os.path.dirname(__file__), 'interactive_figure')
+        fig_src_dir = os.path.join(os.path.dirname(__file__), "interactive_figure")
         shutil.copy(os.path.join(fig_src_dir, "index.html"), figure_dir)
-        script_dir = os.path.join(figure_dir, 'scripts')
+        script_dir = os.path.join(figure_dir, "scripts")
         if not os.path.exists(script_dir):
             os.mkdir(script_dir)
         shutil.copy(os.path.join(fig_src_dir, "interactive_figure.js"), script_dir)
-        shutil.copy(os.path.join(fig_src_dir, 'wwt_json_api.js'), script_dir)
+        shutil.copy(os.path.join(fig_src_dir, "wwt_json_api.js"), script_dir)
 
-        self._serialize_to_json(os.path.join(figure_dir, 'wwt_figure.json'), title, max_width, max_height)
+        self._serialize_to_json(
+            os.path.join(figure_dir, "wwt_figure.json"), title, max_width, max_height
+        )
 
         if len(self.layers) > 0:
-            data_dir = os.path.join(figure_dir, 'data')
+            data_dir = os.path.join(figure_dir, "data")
             if not os.path.exists(data_dir):
                 os.mkdir(data_dir)
             self._save_added_data(data_dir)
@@ -1159,47 +1262,53 @@ class BaseWWTWidget(HasTraits):
             zip_parent_dir = os.path.abspath(os.path.dirname(dest_root))
             if not os.path.exists(zip_parent_dir):
                 os.makedirs(zip_parent_dir)
-            shutil.make_archive(dest_root, 'zip', root_dir=figure_dir)
+            shutil.make_archive(dest_root, "zip", root_dir=figure_dir)
 
     def _serialize_state(self, title, max_width, max_height):
         state = dict()
-        state['html_settings'] = {'title': title,
-                                  'max_width': max_width,
-                                  'max_height': max_height}
+        state["html_settings"] = {
+            "title": title,
+            "max_width": max_width,
+            "max_height": max_height,
+        }
 
-        state['wwt_settings'] = {}
+        state["wwt_settings"] = {}
         for trait in self.traits().values():
-            wwt_name = trait.metadata.get('wwt')
+            wwt_name = trait.metadata.get("wwt")
             if wwt_name:
                 trait_val = trait.get(self)
                 if isinstance(trait_val, u.Quantity):
                     trait_val = trait_val.value
-                state['wwt_settings'][wwt_name] = trait_val
+                state["wwt_settings"][wwt_name] = trait_val
 
         center = self.get_center()
         fov = self.get_fov()
-        state['view_settings'] = {'mode': self._last_sent_view_mode,
-                                  'ra': center.icrs.ra.deg,
-                                  'dec': center.icrs.dec.deg,
-                                  'fov': fov.to_value(u.deg)}
+        state["view_settings"] = {
+            "mode": self._last_sent_view_mode,
+            "ra": center.icrs.ra.deg,
+            "dec": center.icrs.dec.deg,
+            "fov": fov.to_value(u.deg),
+        }
 
-        state['foreground_settings'] = {'foreground': self.foreground,
-                                        'background': self.background,
-                                        'foreground_alpha': self.foreground_opacity * 100}
+        state["foreground_settings"] = {
+            "foreground": self.foreground,
+            "background": self.background,
+            "foreground_alpha": self.foreground_opacity * 100,
+        }
 
-        state['layers'] = self.layers._serialize_state()
+        state["layers"] = self.layers._serialize_state()
 
         if self.current_mode in VIEW_MODES_3D:
             self.solar_system._add_settings_to_serialization(state)
 
-        state['annotations'] = []
+        state["annotations"] = []
         for annot in self._annotation_set:
-            state['annotations'].append(annot._serialize_state())
+            state["annotations"].append(annot._serialize_state())
         return state
 
     def _serialize_to_json(self, file, title, max_width, max_height):
         state = self._serialize_state(title, max_width, max_height)
-        with open(file, 'w') as file_obj:
+        with open(file, "w") as file_obj:
             json.dump(state, file_obj)
 
     def _save_added_data(self, dir):

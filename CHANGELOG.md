@@ -1,3 +1,31 @@
+# pypa:pywwt 0.15.0 (2022-01-14)
+
+This release adds support for viewing arbitrarily-sized FITS files in pywwt,
+with automatic tiling provided by the [Toasty] library!
+
+[Toasty]: https://toasty.readthedocs.io/
+
+- Extend the existing FITS viewing support to automatically tile FITS images if
+  needed, using either Toasty or CDS' hipsgen depending on the angular size of
+  the image (#316, @imbasimba). While the Python interfaces don't look any
+  different, there is now a lot more machinery under the hood so that pywwt can
+  perform well whether your FITS file is a megabyte or a gigabyte in size.
+- Use the new [WWT Kernel Data Relay][kdr] (KDR) for serving up kernel-side data
+  in Jupyter (#316, @pkgw, @imbasimba). You will now need to install the Python
+  package `wwt_kernel_data_relay` as a Jupyter Server extension for FITS viewing
+  to work in pywwt. This extension is necessary for pywwt to be able to send
+  FITS data to the WWT web app on-demand, as you navigate an image. The KDR
+  extension should be useful for other similar visualization tools as well.
+- Lots of other under-the-hood work to get asynchronous tiling and data service
+  working smoothly.
+- Automatically use better default names and data cuts when viewing FITS files
+  (#323, @imbasimba).
+- Substantially clean up and (hopefully) improve the documentation (#318, #324,
+  @pkgw). This includes a new documentation theme based on the Astropy docs.
+
+[kdr]: https://github.com/WorldWideTelescope/wwt_kernel_data_relay/#readme
+
+
 # pypa:pywwt 0.14.0 (2021-11-01)
 
 - When pywwt is installed as a Jupyter server extension, have it provide its
@@ -17,7 +45,7 @@
 
 # pypa:pywwt 0.13.0 (2021-09-24)
 
-This is an important release, updating all variations of the pywwt UI ­— the Qt
+This is an important release, updating all variations of the pywwt UI — the Qt
 widget, the ipywidgets widget, and the JupyterLab integration — to use the WWT
 “research app”, instead of the old hand-coded HTML/JS wrapper that was specific
 to pywwt. This enables us to take advantage of the app's much more sophisticated

@@ -1,10 +1,14 @@
-Using the Qt widget
-===================
+WWT in Qt applications
+======================
+
+Along with the web-based `JupyterLab <jupyterlab>`_ or `Jupyter widget
+<jupyter>`_ options, you can also use WWT in Python-based desktop applications
+using its support for the `Qt <https://www.qt.io/>`__ graphical toolkit.
 
 IPython
 -------
 
-To use the Qt viewer from an IPython session, do::
+To use the WWT Qt viewer from an IPython session, do::
 
     In [1]: from pywwt.qt import WWTQtClient
 
@@ -12,7 +16,7 @@ To use the Qt viewer from an IPython session, do::
 
     In [3]: wwt = WWTQtClient()
 
-Note that the order is important - for now :class:`pywwt.qt.WWTQtClient` has to 
+Note that the order is important — for now :class:`pywwt.qt.WWTQtClient` has to 
 be imported before ``%gui qt`` is run. Once the AAS WorldWide Telescope viewer is
 visible, you can start to interact with the ``wwt`` object in the next cell of
 the notebook. You can find out more about interacting with this object in

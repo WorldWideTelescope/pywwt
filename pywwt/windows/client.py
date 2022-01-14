@@ -125,7 +125,7 @@ class WWTWindowsClient(object):
         Returns
         -------
         layer
-            A `WWTLayer` object corresponding to the layer just created.
+            A `~pywwt.windows.layer.WWTLayer` object corresponding to the layer just created.
         """
         params = {}
         params["cmd"] = "new"
@@ -188,7 +188,7 @@ class WWTWindowsClient(object):
         Returns
         -------
         layer
-            A `WWTLayer` object corresponding to the layer just created.
+            A `~pywwt.windows.layer.WWTLayer` object corresponding to the layer just created.
         """
         if self.host not in ["127.0.0.1", "localhost", "localhost.localdomain"]:
             raise WWTException("The 'load' method only works if you are on the same machine "
@@ -219,7 +219,7 @@ class WWTWindowsClient(object):
 
     def get_existing_layer(self, name):
         """
-        Return an existing layer as a `WWTLayer` object.
+        Return an existing layer as a `~pywwt.windows.layer.WWTLayer` object.
 
         Parameters
         ----------
@@ -231,7 +231,7 @@ class WWTWindowsClient(object):
         Returns
         -------
         layer
-            A ``WWTLayer`` object corresponding to the named layer.
+            A `~pywwt.windows.layer.WWTLayer` object corresponding to the named layer.
         """
         layers = self.get_layer_list()
         if "id" in layers[name]:

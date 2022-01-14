@@ -1,7 +1,12 @@
-Using the Jupyter widget
-===========================
+WWT's Jupyter widget
+====================
 
-The Jupyter widget can be used as follows in the Jupyter notebook::
+While we recommend `combining WWT with JupyterLab using the "research app"
+<jupyterlab>`_, pywwt also provides a traditional `Jupyter widget
+<https://ipywidgets.readthedocs.io/>`__ that can be embedded directly in your
+Python notebooks.
+
+You can create the WWT widget with the following code::
 
     In [1]: from pywwt.jupyter import WWTJupyterWidget
 
