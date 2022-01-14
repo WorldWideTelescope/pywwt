@@ -333,6 +333,15 @@ def connect_to_app():
     You can open the JupyterLab command palette by typing
     Control/Command-Shift-C.
 
+    The traditional way to use WWT in a JupyterLab notebook is with the
+    following commands in their own cell::
+
+        from pywwt.jupyter import connect_to_app
+        wwt = await connect_to_app().becomes_ready()
+
+    Once you have this *wwt* variable, you can control WWT using all of the
+    commands defined on the :class:`~pywwt.jupyter.WWTLabApplication` class.
+
     Returns
     -------
     app : :class:`~pywwt.jupyter.WWTLabApplication`
