@@ -92,8 +92,8 @@ setup_args = dict(
     version=version,
     cmdclass=cmdclass,
     packages=find_packages(),
-    author="Thomas P. Robitaille, O. Justin Otor, and John ZuHone",
-    author_email="thomas.robitaille@gmail.com",
+    author="AAS WorldWide Telescope  team",
+    author_email="wwt@aas.org",
     url="https://github.com/WorldWideTelescope/pywwt",
     license="BSD",
     platforms="Linux, Mac OS X, Windows",
@@ -126,9 +126,10 @@ setup_args = dict(
         "qtpy",
         "reproject>=0.8",
         "requests",
-        "toasty>=0.14.0",
+        "toasty>=0.15",
         "tornado",
         "traitlets>=5",
+        "wwt_data_formats>=0.12",
     ],
     extras_require={
         "test": [
