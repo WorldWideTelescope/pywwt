@@ -74,7 +74,7 @@ API Reference
    :maxdepth: 1
 
    api/pywwt
-   api/pywwt.annotation
+   api/pywwt.annotation_
    api/pywwt.app
    api/pywwt.core
    api/pywwt.data_server
