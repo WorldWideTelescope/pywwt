@@ -1,3 +1,10 @@
+# pypa:pywwt 0.15.1 (2022-01-17)
+
+- Fix installation on Python 3.10 (#325, @pkgw)
+- Fix a small logic error with imageset naming that prevented some imagesets
+  from loading in the app (#325, @pkgw)
+
+
 # pypa:pywwt 0.15.0 (2022-01-14)
 
 This release adds support for viewing arbitrarily-sized FITS files in pywwt,
