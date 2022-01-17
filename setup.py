@@ -1,15 +1,12 @@
 #! /usr/bin/env python
 # -*- mode: python; coding: utf-8 -*-
-# Copyright (c) Jupyter Development Team.
+# Copyright (c) Jupyter Development Team, AAS WorldWide Telescope team
 # Distributed under the terms of the Modified BSD License.
 
 from __future__ import print_function
 import io
-import os
-import sys
-
-from glob import glob
 from os.path import join as pjoin
+import sys
 
 sys.path.append(".")
 from setupbase import (
@@ -18,14 +15,11 @@ from setupbase import (
     ensure_targets,
     find_packages,
     combine_commands,
-    ensure_python,
     get_version,
     HERE,
 )
 
 from setuptools import setup
-
-ensure_python(">=3.7")
 
 # Gather package metadata.
 
