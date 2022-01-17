@@ -1507,14 +1507,14 @@ class ImageLayer(HasTraits):
         self._cmap_version = 0
 
         if image is not None:
-            if "name" in kwargs:
-                self.name = kwargs["name"]
-                kwargs.pop("name", None)
-            elif isinstance(image, str):
-                file_name = image.split("/")[-1].split(".gz")[0]
-                self.name = file_name[: file_name.rfind(".")]
-            else:
-                self.name = self.id
+            self.name = kwargs.pop("name", None)
+
+            if not self.name:
+                if isinstance(image, str):
+                    file_name = path.basename(image).split(".gz")[0]
+                    self.name = file_name[: file_name.rfind(".")]
+                else:
+                    self.name = self.id
 
             # "Classic" mode, processing a single FITS-like input. Transform the
             # image so that it is always acceptable to WWT (Equatorial, TAN
@@ -1547,10 +1547,9 @@ class ImageLayer(HasTraits):
             # Loading image by URL.
             self._sanitized_image = None
             self._image_url = url
-            if "name" in kwargs:
-                self.name = kwargs["name"]
-                kwargs.pop("name", None)
-            else:
+
+            self.name = kwargs.pop("name", None)
+            if not self.name:
                 self.name = url
 
             self.parent._send_msg(
