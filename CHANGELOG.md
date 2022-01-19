@@ -1,3 +1,9 @@
+# pypa:pywwt 0.15.2 (2022-01-19)
+
+- Update the bundled version of the research app to 0.9.2, to ensure we have
+  support for naming imageset layers (#326, @pkgw)
+
+
 # pypa:pywwt 0.15.1 (2022-01-17)
 
 - Fix installation on Python 3.10 (#325, @pkgw)

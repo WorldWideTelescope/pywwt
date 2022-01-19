@@ -1,3 +1,9 @@
+# npm:pywwt 1.3.3 (2022-01-19)
+
+- Require version 0.9.2 of the research app, to ensure we have support for
+  naming imageset layers (#326, @pkgw)
+
+
 # npm:pywwt 1.3.2 (2022-01-14)
 
 - Fix up license annotations
