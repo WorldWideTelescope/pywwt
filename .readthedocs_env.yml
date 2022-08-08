@@ -20,7 +20,7 @@ dependencies:
   - pip
   - pyopengl
   - pyqt
-  - pyqtwebengine
+  - pyqtwebkit
   - python=3.8
   - qt
   - qtpy
