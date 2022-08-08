@@ -37,7 +37,10 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
 
     hide_all_chrome : optional `bool`
         Configures the WWT frontend to hide all user-interface "chrome".
-
+    app_url : optional `str`
+        The URL from which to load the WWT "research app" web application.
+        By default, this points to a copy of the application bundled with
+        pywwt and made available through the WWT Kernel Data Relay system.
     """
 
     _view_name = Unicode("WWTView").tag(sync=True)
@@ -49,17 +52,18 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
 
     _appUrl = Unicode("").tag(sync=True)
 
-    def __init__(self, hide_all_chrome=False):
-        # Set up to serve the bundled app. In the future we might want to make
-        # it possible to use the WWT-hosted app instead of the bundled version.
-        #
-        # The JS frontend will automagically prepend the Jupyter base URL if
-        # needed and turn this into an absolute URL.
-
+    def __init__(self, hide_all_chrome=False, app_url=None):
+        # Set up Kernel Data Relay expedited message processing.
         _maybe_perpetrate_mega_kernel_hack()
 
-        hub = get_relay_hub()
-        self._appUrl = hub.get_static_files_url() + "research/"
+        # Serve the bundled app by default. Regardless of whether we're using
+        # that or a user-specified value, the JS frontend will automagically
+        # prepend the Jupyter base URL if needed so that the client always gets
+        # an absolute URL.
+        if app_url is None:
+            hub = get_relay_hub()
+            app_url = hub.get_static_files_url() + "research/"
+        self._appUrl = app_url
 
         widgets.DOMWidget.__init__(self)
         dom_listener.source = self
