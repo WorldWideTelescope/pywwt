@@ -28,7 +28,7 @@ from pywwt import __version__ as version
 # The full version, including alpha/beta/rc tags.
 release = version
 
-language = None
+language = "en"
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
@@ -44,7 +44,7 @@ html_theme_options = {
     "astropy_project_menubar": False,
 }
 html_static_path = ["_static"]
-html_sidebars = { '**': ['localtoc.html', 'searchbox.html'] }
+html_sidebars = {"**": ["localtoc.html", "searchbox.html"]}
 
 htmlhelp_basename = "pywwtdoc"
 
