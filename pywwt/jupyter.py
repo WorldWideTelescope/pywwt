@@ -38,9 +38,19 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     hide_all_chrome : optional `bool`
         Configures the WWT frontend to hide all user-interface "chrome".
     app_url : optional `str`
-        The URL from which to load the WWT "research app" web application.
-        By default, this points to a copy of the application bundled with
-        pywwt and made available through the WWT Kernel Data Relay system.
+        The URL from which to load the WWT "research app" web application. By
+        default, this points to a copy of the application bundled with pywwt and
+        made available through the WWT Kernel Data Relay system. If you know
+        that your Jupyter notebook server definitely has pywwt installed as a
+        server extension, you can specify ``"/wwtstatic/research/"`` here to get
+        a version loaded directly from the server, which will be somewhat more
+        reliable if you're doing tricky things with widgets and restarting your
+        kernels a lot. You can also specify an absolute URL, such as
+        ``"https://web.wwtassets.org/research/latest/"``, which is the canonical
+        location for the WWT-hosted version of the app — although at the moment
+        we can't think of any good reason to use it here. If the URL given here
+        does not contain a protocol (``https://...``), it will be combined with
+        the Jupyter server's "base URL".
     """
 
     _view_name = Unicode("WWTView").tag(sync=True)
