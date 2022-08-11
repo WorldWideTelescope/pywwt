@@ -1319,6 +1319,8 @@ class TableLayer(HasTraits):
             wwt_name = trait.metadata.get("wwt")
             if wwt_name:
                 value = trait.get(self)
+                if wwt_name == "decay" and value is not None:
+                    value = value.to(u.day).value
                 if wwt_name == "raUnits" and value is not None:
                     value = VALID_LON_UNITS[value]
                 elif wwt_name == "altUnit" and value is not None:
