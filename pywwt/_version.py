@@ -18,5 +18,5 @@ __version__ = "%s.%s.%s%s" % (
 )
 
 # The strings are auto-updated by Cranko during formal releases:
-version_doi = "xx.xxxx/dev-build.cranko.version"
-concept_doi = "xx.xxxx/dev-build.cranko.concept"
+version_doi = "xx.xxxx/dev-build.pypa:pywwt.version"
+concept_doi = "xx.xxxx/dev-build.pypa:pywwt.concept"
