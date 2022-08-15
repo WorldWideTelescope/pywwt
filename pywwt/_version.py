@@ -16,3 +16,7 @@ __version__ = "%s.%s.%s%s" % (
     if version_info[3] == "final"
     else _specifier_[version_info[3]] + str(version_info[4]),
 )
+
+# The strings are auto-updated by Cranko during formal releases:
+version_doi = "xx.xxxx/dev-build.cranko.version"
+concept_doi = "xx.xxxx/dev-build.cranko.concept"
