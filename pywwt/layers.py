@@ -712,6 +712,12 @@ class TableLayer(HasTraits):
         "(:class:`~astropy.units.Quantity`)",
     ).tag(wwt="decay")
 
+    selectable = Bool(
+        True,
+        help="Whether sources in the layer "
+        "are selectable (`bool`)"
+    ).tag(wwt=None)
+
     # TODO: support:
     # xAxisColumn
     # yAxisColumn
@@ -1218,6 +1224,15 @@ class TableLayer(HasTraits):
             id=self.id,
             setting="startDateColumn",
             value=TIME_COLUMN_NAME,
+        )
+
+    @observe("selectable")
+    def _on_selectable_change(self, changed):
+        if not self.notify_changes:
+            return
+
+        self.parent._send_msg(
+            type="modify_selectability", id=self.id, selectable=changed["new"]
         )
 
     def _get_table(self):
