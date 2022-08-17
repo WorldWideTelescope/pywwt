@@ -304,9 +304,10 @@ class LayerManager(object):
             or isinstance(image, astropy.io.fits.PrimaryHDU)
             or isinstance(image, astropy.io.fits.HDUList)
         ):
-            unused_file_name = self._get_unused_fits_name()
-            image.writeto(unused_file_name)
-            image = unused_file_name
+            filename = "fits_input_{}".format(hash(str(image.data.tobytes()) + image.header.tostring()))
+            if not Path(filename).is_file():
+                image.writeto(filename)
+            image = filename
         if isinstance(image, str):
             image = [image]
         if isinstance(image, list):
@@ -374,12 +375,6 @@ class LayerManager(object):
         kwargs.pop("override", None)
         kwargs.pop("out_dir", None)
         return kwargs
-
-    def _get_unused_fits_name(self):
-        file_index = 1
-        while Path("hdu_fits_{}".format(file_index)).is_file():
-            file_index += 1
-        return "hdu_fits_{}".format(file_index)
 
     async def _tile_and_serve(
         self,
