@@ -291,7 +291,8 @@ class LayerManager(object):
         kwargs
             Additional keyword arguments can be used to set properties on the
             image layer or settings for the `toasty` tiling process. Common
-            toasty settings include ``out_dir``, ``override``, and ``blankval``.
+            toasty settings include ``out_dir``, ``override``, ``blankval``,
+            and ``start``.
             See `toasty.tile_fits`.
 
         Returns
@@ -299,6 +300,10 @@ class LayerManager(object):
         layer : :class:`~pywwt.layers.ImageLayer` or a subclass thereof
         """
 
+        if isinstance(image, tuple):
+            image, wcs = image
+            from astropy.io.fits import PrimaryHDU
+            image = PrimaryHDU(image, wcs.to_header())
         if (
             isinstance(image, astropy.io.fits.ImageHDU)
             or isinstance(image, astropy.io.fits.PrimaryHDU)
@@ -339,10 +344,6 @@ class LayerManager(object):
                     image=image[0], hdu_index=hdu_index, name=name, **kwargs
                 )
 
-        return self._create_and_add_image_layer(
-            image=image, hdu_index=hdu_index, name=name, **kwargs
-        )
-
     def _create_and_add_image_layer(self, image, **kwargs):
         kwargs = self._remove_toasty_keywords(**kwargs)
         layer = self._parent._create_image_layer(image=image, **kwargs)
@@ -374,6 +375,7 @@ class LayerManager(object):
         kwargs.pop("blankval", None)
         kwargs.pop("override", None)
         kwargs.pop("out_dir", None)
+        kwargs.pop("start", None)
         return kwargs
 
     async def _tile_and_serve(
