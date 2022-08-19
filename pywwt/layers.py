@@ -30,6 +30,7 @@ from astropy.table import Table
 from astropy.time import Time
 from datetime import datetime
 import toasty
+from toasty import TilingMethod
 
 from traitlets import HasTraits, validate, observe
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
@@ -244,8 +245,7 @@ class LayerManager(object):
         hdu_index=None,
         verbose=True,
         name=None,
-        force_hipsgen=False,
-        force_tan=False,
+        tiling_method=TilingMethod.AUTO_DETECT,
         **kwargs
     ):
         """
@@ -276,18 +276,10 @@ class LayerManager(object):
             Use this parameter to set a display name for the image set.
             If not set, pywwt will set a name based on the file name of the
             provided image.
-        force_hipsgen : optional boolean, defaults to False
-            Force the input FITS to be tiled with HiPSgen. If this and
-            *force_tan* are set to False, this method will figure out when to
-            split the input into tiles and also which type of projection to
-            use. Tangential projection for smaller angular areas and HiPSgen
-            larger regions of the sky.
-        force_tan : optional boolean, defaults to False
-            Force the input FITS to be tiled with a tangential projection. If
-            this and *force_hipsgen* are set to False, this method will figure
-            out when to split the input into tiles and also which type of
-            projection to use. Tangential projection for smaller angular areas
-            and HiPSgen larger regions of the sky.
+        tiling_method : optional :class:`~toasty.TilingMethod`
+            Can be used to force a specific tiling method, i.e. tiled
+            tangential projection, TOAST, HiPS, or even untiled. Defatults
+            to auto detection, which choses the most apropriate method.
         kwargs
             Additional keyword arguments can be used to set properties on the
             image layer or settings for the `toasty` tiling process. Common
@@ -303,28 +295,29 @@ class LayerManager(object):
         if isinstance(image, tuple):
             image, wcs = image
             from astropy.io.fits import PrimaryHDU
+
             image = PrimaryHDU(image, wcs.to_header())
         if (
             isinstance(image, astropy.io.fits.ImageHDU)
             or isinstance(image, astropy.io.fits.PrimaryHDU)
             or isinstance(image, astropy.io.fits.HDUList)
         ):
-            filename = "fits_input_{}".format(hash(str(image.data.tobytes()) + image.header.tostring()))
+            filename = "fits_input_{}".format(
+                hash(str(image.data.tobytes()) + image.header.tostring())
+            )
             if not Path(filename).is_file():
                 image.writeto(filename)
             image = filename
         if isinstance(image, str):
             image = [image]
         if isinstance(image, list):
-            force_untiled = False
-            if "force_untiled" in kwargs:
-                force_untiled = kwargs["force_untiled"]
-                kwargs.pop("force_untiled", None)
-            if not force_untiled and (
-                force_hipsgen
-                or force_tan
-                or len(image) > 1
-                or Path(image[0]).stat().st_size > 20e6
+            if (
+                tiling_method == TilingMethod.TOAST
+                or tiling_method == TilingMethod.HIPS
+                or tiling_method == TilingMethod.TAN
+            ) or (
+                tiling_method == TilingMethod.AUTO_DETECT
+                and (len(image) > 1 or Path(image[0]).stat().st_size > 20e6)
             ):  # 20 MB
                 nest_asyncio.apply()
                 loop = asyncio.get_event_loop()
@@ -334,8 +327,7 @@ class LayerManager(object):
                         hdu_index=hdu_index,
                         cli_progress=verbose,
                         display_name=name,
-                        force_hipsgen=force_hipsgen,
-                        force_tan=force_tan,
+                        tiling_method=tiling_method,
                         **kwargs
                     )
                 )
@@ -384,8 +376,7 @@ class LayerManager(object):
         hdu_index=None,
         cli_progress=True,
         display_name=None,
-        force_hipsgen=False,
-        force_tan=False,
+        tiling_method=TilingMethod.AUTO_DETECT,
         **kwargs
     ):
         with warnings.catch_warnings():
@@ -395,8 +386,7 @@ class LayerManager(object):
                 fits_list,
                 hdu_index=hdu_index,
                 cli_progress=cli_progress,
-                force_hipsgen=force_hipsgen,
-                force_tan=force_tan,
+                tiling_method=tiling_method,
                 **kwargs
             )
 
@@ -710,9 +700,7 @@ class TableLayer(HasTraits):
     ).tag(wwt="decay")
 
     selectable = Bool(
-        True,
-        help="Whether sources in the layer "
-        "are selectable (`bool`)"
+        True, help="Whether sources in the layer " "are selectable (`bool`)"
     ).tag(wwt=None)
 
     # TODO: support:
