@@ -60,8 +60,13 @@ Telescope (WWT) from Python. Learn more at <a href="https://pywwt.readthedocs.io
     grants: [
       // National Science Foundation:
       {id: '10.13039/100000001::1550701'},
-      {id: '10.13039/100000001::1642446'},
-      {id: '10.13039/100000001::2004840'},
+
+      // As of 2022 August these grants are not in the OpenAIRE "Research Graph"
+      // and so Zenodo won't let us record them here. Test existence by
+      // GET'ing `https://zenodo.org/api/grants/$id`.
+      //
+      //{id: '10.13039/100000001::1642446'},
+      //{id: '10.13039/100000001::2004840'},
     ],
 
     // Keywords use an uncontrolled vocabulary (and so are of limited usefulness):
