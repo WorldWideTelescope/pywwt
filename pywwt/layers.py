@@ -278,8 +278,8 @@ class LayerManager(object):
             provided image.
         tiling_method : optional :class:`~toasty.TilingMethod`
             Can be used to force a specific tiling method, i.e. tiled
-            tangential projection, TOAST, HiPS, or even untiled. Defatults
-            to auto detection, which choses the most apropriate method.
+            tangential projection, TOAST, HiPS, or even untiled. Defaults
+            to auto-detection, which choses the most appropriate method.
         kwargs
             Additional keyword arguments can be used to set properties on the
             image layer or settings for the `toasty` tiling process. Common
