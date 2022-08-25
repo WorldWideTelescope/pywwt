@@ -294,47 +294,51 @@ class LayerManager(object):
 
         if isinstance(image, tuple):
             image, wcs = image
-            from astropy.io.fits import PrimaryHDU
-
-            image = PrimaryHDU(image, wcs.to_header())
+            image = astropy.io.fits.PrimaryHDU(image, wcs.to_header())
         if (
             isinstance(image, astropy.io.fits.ImageHDU)
             or isinstance(image, astropy.io.fits.PrimaryHDU)
             or isinstance(image, astropy.io.fits.HDUList)
         ):
-            filename = "fits_input_{}".format(
-                hash(str(image.data.tobytes()) + image.header.tostring())
-            )
+            # Creating a stable filename to allow caching. The caching is
+            # primarily useful to skip expensive processing inside Toasty
+            # in case this image has previously been processed.
+            from hashlib import md5
+
+            m = md5()
+            m.update(image.data[:65536])
+            m.update(image.header.tostring().encode("utf-8"))
+            hex_string = m.hexdigest()  # returns digest as a hex-encoded string
+            filename = "fits_input_{}".format(hex_string)
             if not Path(filename).is_file():
                 image.writeto(filename)
             image = filename
         if isinstance(image, str):
             image = [image]
-        if isinstance(image, list):
-            if (
-                tiling_method == TilingMethod.TOAST
-                or tiling_method == TilingMethod.HIPS
-                or tiling_method == TilingMethod.TAN
-            ) or (
-                tiling_method == TilingMethod.AUTO_DETECT
-                and (len(image) > 1 or Path(image[0]).stat().st_size > 20e6)
-            ):  # 20 MB
-                nest_asyncio.apply()
-                loop = asyncio.get_event_loop()
-                return loop.run_until_complete(
-                    self._tile_and_serve(
-                        fits_list=image,
-                        hdu_index=hdu_index,
-                        cli_progress=verbose,
-                        display_name=name,
-                        tiling_method=tiling_method,
-                        **kwargs
-                    )
+        if (
+            tiling_method == TilingMethod.TOAST
+            or tiling_method == TilingMethod.HIPS
+            or tiling_method == TilingMethod.TAN
+        ) or (
+            tiling_method == TilingMethod.AUTO_DETECT
+            and (len(image) > 1 or Path(image[0]).stat().st_size > 20e6)
+        ):  # 20 MB
+            nest_asyncio.apply()
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(
+                self._tile_and_serve(
+                    fits_list=image,
+                    hdu_index=hdu_index,
+                    cli_progress=verbose,
+                    display_name=name,
+                    tiling_method=tiling_method,
+                    **kwargs
                 )
-            else:
-                return self._create_and_add_image_layer(
-                    image=image[0], hdu_index=hdu_index, name=name, **kwargs
-                )
+            )
+        else:
+            return self._create_and_add_image_layer(
+                image=image[0], hdu_index=hdu_index, name=name, **kwargs
+            )
 
     def _create_and_add_image_layer(self, image, **kwargs):
         kwargs = self._remove_toasty_keywords(**kwargs)
@@ -510,7 +514,7 @@ class LayerManager(object):
         Deprecated, use ``add_table_layer`` instead.
         """
         warnings.warn(
-            "add_data_layer has been deprecated, use " "add_table_layer instead",
+            "add_data_layer has been deprecated, use add_table_layer instead",
             DeprecationWarning,
         )
         return self.add_table_layer(*args, **kwargs)
@@ -585,43 +589,43 @@ class TableLayer(HasTraits):
 
     # Attributes for spherical coordinates
 
-    lon_att = Unicode(help="The column to use for the longitude " "(`str`)").tag(
+    lon_att = Unicode(help="The column to use for the longitude (`str`)").tag(
         wwt="lngColumn"
     )
     lon_unit = Any(
-        help="The units to use for longitude " "(:class:`~astropy.units.Unit`)"
+        help="The units to use for longitude (:class:`~astropy.units.Unit`)"
     ).tag(wwt="raUnits")
-    lat_att = Unicode(help="The column to use for the latitude " "(`str`)").tag(
+    lat_att = Unicode(help="The column to use for the latitude (`str`)").tag(
         wwt="latColumn"
     )
 
-    alt_att = Unicode(help="The column to use for the altitude " "(`str`)").tag(
+    alt_att = Unicode(help="The column to use for the altitude (`str`)").tag(
         wwt="altColumn"
     )
     alt_unit = Any(
-        help="The units to use for the altitude " "(:class:`~astropy.units.Unit`)"
+        help="The units to use for the altitude (:class:`~astropy.units.Unit`)"
     ).tag(wwt="altUnit")
     alt_type = Unicode(help="The type of altitude (`str`)").tag(wwt="altType")
 
     # Attributes for cartesian coordinates
 
-    x_att = Unicode(help="The column to use for the x " "coordinate").tag(
+    x_att = Unicode(help="The column to use for the x coordinate").tag(
         wwt="xAxisColumn"
     )
-    y_att = Unicode(help="The column to use for the y " "coordinate").tag(
+    y_att = Unicode(help="The column to use for the y coordinate").tag(
         wwt="yAxisColumn"
     )
-    z_att = Unicode(help="The column to use for the z " "coordinate").tag(
+    z_att = Unicode(help="The column to use for the z coordinate").tag(
         wwt="zAxisColumn"
     )
-    xyz_unit = Any(help="The units to use for the x/y/z " "positions").tag(
+    xyz_unit = Any(help="The units to use for the x/y/z positions").tag(
         wwt="cartesianScale"
     )
 
     # NOTE: we deliberately don't link size_att to sizeColumn because we need
     # to compute the sizes ourselves based on the min/max and then use the
     # resulting column.
-    size_att = Unicode(help="The column to use for the marker size " "(`str`)").tag(
+    size_att = Unicode(help="The column to use for the marker size (`str`)").tag(
         wwt=None
     )
     size_vmin = Float(
@@ -639,9 +643,7 @@ class TableLayer(HasTraits):
         allow_none=True,
     ).tag(wwt=None)
 
-    cmap_att = Unicode(help="The column to use for the colormap " "(`str`)").tag(
-        wwt=None
-    )
+    cmap_att = Unicode(help="The column to use for the colormap (`str`)").tag(wwt=None)
     cmap_vmin = Float(
         None,
         help="The minimum level of the colormap. Found "
@@ -656,25 +658,25 @@ class TableLayer(HasTraits):
     ).tag(wwt=None)
     cmap = Any(
         cm.viridis,
-        help="The Matplotlib colormap " "(:class:`matplotlib.colors.ListedColormap`)",
+        help="The Matplotlib colormap (:class:`matplotlib.colors.ListedColormap`)",
     ).tag(wwt=None)
 
     # Visual attributes
 
     size_scale = Float(
-        10, help="The factor by which to scale the size " "of the points (`float`)"
+        10, help="The factor by which to scale the size of the points (`float`)"
     ).tag(wwt="scaleFactor")
-    color = Color("white", help="The color of the markers " "(`str` or `tuple`)").tag(
+    color = Color("white", help="The color of the markers (`str` or `tuple`)").tag(
         wwt="color"
     )
-    opacity = Float(1, help="The opacity of the markers " "(`str`)").tag(wwt="opacity")
+    opacity = Float(1, help="The opacity of the markers (`str`)").tag(wwt="opacity")
 
-    marker_type = Unicode("gaussian", help="The type of marker " "(`str`)").tag(
+    marker_type = Unicode("gaussian", help="The type of marker (`str`)").tag(
         wwt="plotType"
     )
     marker_scale = Unicode(
         "screen",
-        help="Whether the scale is " "defined in world or pixel coordinates " "(`str`)",
+        help="Whether the scale is defined in world or pixel coordinates (`str`)",
     ).tag(wwt="markerScale")
 
     far_side_visible = Bool(
@@ -689,7 +691,7 @@ class TableLayer(HasTraits):
     # passing the result on to WWT
     time_att = Unicode(help="The column to use for time (`str`)").tag(wwt=None)
     time_series = Bool(
-        False, help="Whether the layer contains time series " "elements (`bool`)"
+        False, help="Whether the layer contains time series elements (`bool`)"
     ).tag(wwt="timeSeries")
     time_decay = AstropyQuantity(
         16 * u.day,
@@ -700,7 +702,7 @@ class TableLayer(HasTraits):
     ).tag(wwt="decay")
 
     selectable = Bool(
-        True, help="Whether sources in the layer " "are selectable (`bool`)"
+        True, help="Whether sources in the layer are selectable (`bool`)"
     ).tag(wwt=None)
 
     # TODO: support:
@@ -1493,7 +1495,7 @@ class ImageLayer(HasTraits):
     opacity = Float(1, help="The opacity of the image").tag(wwt="opacity")
     cmap = Any(
         cm.viridis,
-        help="The Matplotlib colormap " "(:class:`matplotlib.colors.ListedColormap`)",
+        help="The Matplotlib colormap (:class:`matplotlib.colors.ListedColormap`)",
     ).tag(wwt=None)
 
     def __init__(self, parent=None, image=None, url=None, **kwargs):
