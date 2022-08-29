@@ -142,7 +142,10 @@ setup_args = dict(
             'PyQt5;python_version>="3"',
             'PyQtWebEngine;python_version>="3"',
         ],
-        "lab": ["jupyterlab"],
+        "lab": [
+            "jupyterlab",
+            "notebook",
+        ],
     },
     entry_points={},
 )
