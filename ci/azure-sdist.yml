@@ -6,6 +6,13 @@ jobs:
   pool:
     vmImage: ubuntu-20.04
 
+  # Need Zenodo credentials to generate DOIs during formal releases. But make
+  # sure not to provide credentials otherwise (although Azure has its own checks
+  # to not provide secrets during PR builds).
+  ${{ if and(eq(variables['Build.SourceBranchName'], 'rc'), ne(variables['build.reason'], 'PullRequest')) }}:
+    variables:
+    - group: Deployment Credentials
+
   steps:
 
   - checkout: self
@@ -18,9 +25,18 @@ jobs:
       echo "##vso[task.prependpath]$d"
     displayName: Install latest Cranko
 
+  - bash: cranko release-workflow apply-versions
+    displayName: Apply Cranko versions
+
+  - bash: |
+      cranko zenodo preregister --metadata=ci/zenodo.json5 pypa:pywwt pywwt/_version.py CHANGELOG.md
+    displayName: "Preregister Zenodo DOI"
+    ${{ if and(eq(variables['Build.SourceBranchName'], 'rc'), ne(variables['build.reason'], 'PullRequest')) }}:
+      env:
+          ZENODO_TOKEN: $(ZENODO_TOKEN)
+
   - bash: |
       set -xeuo pipefail
-      cranko release-workflow apply-versions
       git add .
       cranko release-workflow commit
       git show
