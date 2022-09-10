@@ -30,6 +30,7 @@ from astropy.table import Table
 from astropy.time import Time
 from datetime import datetime
 import toasty
+from toasty import TilingMethod
 
 from traitlets import HasTraits, validate, observe
 from .traits import Color, Bool, Float, Unicode, AstropyQuantity, Any, to_hex
@@ -244,8 +245,7 @@ class LayerManager(object):
         hdu_index=None,
         verbose=True,
         name=None,
-        force_hipsgen=False,
-        force_tan=False,
+        tiling_method=TilingMethod.AUTO_DETECT,
         **kwargs
     ):
         """
@@ -276,22 +276,15 @@ class LayerManager(object):
             Use this parameter to set a display name for the image set.
             If not set, pywwt will set a name based on the file name of the
             provided image.
-        force_hipsgen : optional boolean, defaults to False
-            Force the input FITS to be tiled with HiPSgen. If this and
-            *force_tan* are set to False, this method will figure out when to
-            split the input into tiles and also which type of projection to
-            use. Tangential projection for smaller angular areas and HiPSgen
-            larger regions of the sky.
-        force_tan : optional boolean, defaults to False
-            Force the input FITS to be tiled with a tangential projection. If
-            this and *force_hipsgen* are set to False, this method will figure
-            out when to split the input into tiles and also which type of
-            projection to use. Tangential projection for smaller angular areas
-            and HiPSgen larger regions of the sky.
+        tiling_method : optional :class:`~toasty.TilingMethod`
+            Can be used to force a specific tiling method, i.e. tiled
+            tangential projection, TOAST, HiPS, or even untiled. Defaults
+            to auto-detection, which choses the most appropriate method.
         kwargs
             Additional keyword arguments can be used to set properties on the
             image layer or settings for the `toasty` tiling process. Common
-            toasty settings include ``out_dir``, ``override``, and ``blankval``.
+            toasty settings include ``out_dir``, ``override``, ``blankval``,
+            and ``start``.
             See `toasty.tile_fits`.
 
         Returns
@@ -299,48 +292,53 @@ class LayerManager(object):
         layer : :class:`~pywwt.layers.ImageLayer` or a subclass thereof
         """
 
+        if isinstance(image, tuple):
+            image, wcs = image
+            image = astropy.io.fits.PrimaryHDU(image, wcs.to_header())
         if (
             isinstance(image, astropy.io.fits.ImageHDU)
             or isinstance(image, astropy.io.fits.PrimaryHDU)
             or isinstance(image, astropy.io.fits.HDUList)
         ):
-            unused_file_name = self._get_unused_fits_name()
-            image.writeto(unused_file_name)
-            image = unused_file_name
+            # Creating a stable filename to allow caching. The caching is
+            # primarily useful to skip expensive processing inside Toasty
+            # in case this image has previously been processed.
+            from hashlib import md5
+
+            m = md5()
+            m.update(image.data[:65536])
+            m.update(image.header.tostring().encode("utf-8"))
+            hex_string = m.hexdigest()  # returns digest as a hex-encoded string
+            filename = "fits_input_{}".format(hex_string)
+            if not Path(filename).is_file():
+                image.writeto(filename)
+            image = filename
         if isinstance(image, str):
             image = [image]
-        if isinstance(image, list):
-            force_untiled = False
-            if "force_untiled" in kwargs:
-                force_untiled = kwargs["force_untiled"]
-                kwargs.pop("force_untiled", None)
-            if not force_untiled and (
-                force_hipsgen
-                or force_tan
-                or len(image) > 1
-                or Path(image[0]).stat().st_size > 20e6
-            ):  # 20 MB
-                nest_asyncio.apply()
-                loop = asyncio.get_event_loop()
-                return loop.run_until_complete(
-                    self._tile_and_serve(
-                        fits_list=image,
-                        hdu_index=hdu_index,
-                        cli_progress=verbose,
-                        display_name=name,
-                        force_hipsgen=force_hipsgen,
-                        force_tan=force_tan,
-                        **kwargs
-                    )
+        if (
+            tiling_method == TilingMethod.TOAST
+            or tiling_method == TilingMethod.HIPS
+            or tiling_method == TilingMethod.TAN
+        ) or (
+            tiling_method == TilingMethod.AUTO_DETECT
+            and (len(image) > 1 or Path(image[0]).stat().st_size > 20e6)
+        ):  # 20 MB
+            nest_asyncio.apply()
+            loop = asyncio.get_event_loop()
+            return loop.run_until_complete(
+                self._tile_and_serve(
+                    fits_list=image,
+                    hdu_index=hdu_index,
+                    cli_progress=verbose,
+                    display_name=name,
+                    tiling_method=tiling_method,
+                    **kwargs
                 )
-            else:
-                return self._create_and_add_image_layer(
-                    image=image[0], hdu_index=hdu_index, name=name, **kwargs
-                )
-
-        return self._create_and_add_image_layer(
-            image=image, hdu_index=hdu_index, name=name, **kwargs
-        )
+            )
+        else:
+            return self._create_and_add_image_layer(
+                image=image[0], hdu_index=hdu_index, name=name, **kwargs
+            )
 
     def _create_and_add_image_layer(self, image, **kwargs):
         kwargs = self._remove_toasty_keywords(**kwargs)
@@ -373,13 +371,8 @@ class LayerManager(object):
         kwargs.pop("blankval", None)
         kwargs.pop("override", None)
         kwargs.pop("out_dir", None)
+        kwargs.pop("start", None)
         return kwargs
-
-    def _get_unused_fits_name(self):
-        file_index = 1
-        while Path("hdu_fits_{}".format(file_index)).is_file():
-            file_index += 1
-        return "hdu_fits_{}".format(file_index)
 
     async def _tile_and_serve(
         self,
@@ -387,8 +380,7 @@ class LayerManager(object):
         hdu_index=None,
         cli_progress=True,
         display_name=None,
-        force_hipsgen=False,
-        force_tan=False,
+        tiling_method=TilingMethod.AUTO_DETECT,
         **kwargs
     ):
         with warnings.catch_warnings():
@@ -398,8 +390,7 @@ class LayerManager(object):
                 fits_list,
                 hdu_index=hdu_index,
                 cli_progress=cli_progress,
-                force_hipsgen=force_hipsgen,
-                force_tan=force_tan,
+                tiling_method=tiling_method,
                 **kwargs
             )
 
@@ -523,7 +514,7 @@ class LayerManager(object):
         Deprecated, use ``add_table_layer`` instead.
         """
         warnings.warn(
-            "add_data_layer has been deprecated, use " "add_table_layer instead",
+            "add_data_layer has been deprecated, use add_table_layer instead",
             DeprecationWarning,
         )
         return self.add_table_layer(*args, **kwargs)
@@ -598,43 +589,43 @@ class TableLayer(HasTraits):
 
     # Attributes for spherical coordinates
 
-    lon_att = Unicode(help="The column to use for the longitude " "(`str`)").tag(
+    lon_att = Unicode(help="The column to use for the longitude (`str`)").tag(
         wwt="lngColumn"
     )
     lon_unit = Any(
-        help="The units to use for longitude " "(:class:`~astropy.units.Unit`)"
+        help="The units to use for longitude (:class:`~astropy.units.Unit`)"
     ).tag(wwt="raUnits")
-    lat_att = Unicode(help="The column to use for the latitude " "(`str`)").tag(
+    lat_att = Unicode(help="The column to use for the latitude (`str`)").tag(
         wwt="latColumn"
     )
 
-    alt_att = Unicode(help="The column to use for the altitude " "(`str`)").tag(
+    alt_att = Unicode(help="The column to use for the altitude (`str`)").tag(
         wwt="altColumn"
     )
     alt_unit = Any(
-        help="The units to use for the altitude " "(:class:`~astropy.units.Unit`)"
+        help="The units to use for the altitude (:class:`~astropy.units.Unit`)"
     ).tag(wwt="altUnit")
     alt_type = Unicode(help="The type of altitude (`str`)").tag(wwt="altType")
 
     # Attributes for cartesian coordinates
 
-    x_att = Unicode(help="The column to use for the x " "coordinate").tag(
+    x_att = Unicode(help="The column to use for the x coordinate").tag(
         wwt="xAxisColumn"
     )
-    y_att = Unicode(help="The column to use for the y " "coordinate").tag(
+    y_att = Unicode(help="The column to use for the y coordinate").tag(
         wwt="yAxisColumn"
     )
-    z_att = Unicode(help="The column to use for the z " "coordinate").tag(
+    z_att = Unicode(help="The column to use for the z coordinate").tag(
         wwt="zAxisColumn"
     )
-    xyz_unit = Any(help="The units to use for the x/y/z " "positions").tag(
+    xyz_unit = Any(help="The units to use for the x/y/z positions").tag(
         wwt="cartesianScale"
     )
 
     # NOTE: we deliberately don't link size_att to sizeColumn because we need
     # to compute the sizes ourselves based on the min/max and then use the
     # resulting column.
-    size_att = Unicode(help="The column to use for the marker size " "(`str`)").tag(
+    size_att = Unicode(help="The column to use for the marker size (`str`)").tag(
         wwt=None
     )
     size_vmin = Float(
@@ -652,9 +643,7 @@ class TableLayer(HasTraits):
         allow_none=True,
     ).tag(wwt=None)
 
-    cmap_att = Unicode(help="The column to use for the colormap " "(`str`)").tag(
-        wwt=None
-    )
+    cmap_att = Unicode(help="The column to use for the colormap (`str`)").tag(wwt=None)
     cmap_vmin = Float(
         None,
         help="The minimum level of the colormap. Found "
@@ -669,25 +658,25 @@ class TableLayer(HasTraits):
     ).tag(wwt=None)
     cmap = Any(
         cm.viridis,
-        help="The Matplotlib colormap " "(:class:`matplotlib.colors.ListedColormap`)",
+        help="The Matplotlib colormap (:class:`matplotlib.colors.ListedColormap`)",
     ).tag(wwt=None)
 
     # Visual attributes
 
     size_scale = Float(
-        10, help="The factor by which to scale the size " "of the points (`float`)"
+        10, help="The factor by which to scale the size of the points (`float`)"
     ).tag(wwt="scaleFactor")
-    color = Color("white", help="The color of the markers " "(`str` or `tuple`)").tag(
+    color = Color("white", help="The color of the markers (`str` or `tuple`)").tag(
         wwt="color"
     )
-    opacity = Float(1, help="The opacity of the markers " "(`str`)").tag(wwt="opacity")
+    opacity = Float(1, help="The opacity of the markers (`str`)").tag(wwt="opacity")
 
-    marker_type = Unicode("gaussian", help="The type of marker " "(`str`)").tag(
+    marker_type = Unicode("gaussian", help="The type of marker (`str`)").tag(
         wwt="plotType"
     )
     marker_scale = Unicode(
         "screen",
-        help="Whether the scale is " "defined in world or pixel coordinates " "(`str`)",
+        help="Whether the scale is defined in world or pixel coordinates (`str`)",
     ).tag(wwt="markerScale")
 
     far_side_visible = Bool(
@@ -702,7 +691,7 @@ class TableLayer(HasTraits):
     # passing the result on to WWT
     time_att = Unicode(help="The column to use for time (`str`)").tag(wwt=None)
     time_series = Bool(
-        False, help="Whether the layer contains time series " "elements (`bool`)"
+        False, help="Whether the layer contains time series elements (`bool`)"
     ).tag(wwt="timeSeries")
     time_decay = AstropyQuantity(
         16 * u.day,
@@ -713,9 +702,7 @@ class TableLayer(HasTraits):
     ).tag(wwt="decay")
 
     selectable = Bool(
-        True,
-        help="Whether sources in the layer "
-        "are selectable (`bool`)"
+        True, help="Whether sources in the layer are selectable (`bool`)"
     ).tag(wwt=None)
 
     # TODO: support:
@@ -1508,7 +1495,7 @@ class ImageLayer(HasTraits):
     opacity = Float(1, help="The opacity of the image").tag(wwt="opacity")
     cmap = Any(
         cm.viridis,
-        help="The Matplotlib colormap " "(:class:`matplotlib.colors.ListedColormap`)",
+        help="The Matplotlib colormap (:class:`matplotlib.colors.ListedColormap`)",
     ).tag(wwt=None)
 
     def __init__(self, parent=None, image=None, url=None, **kwargs):
