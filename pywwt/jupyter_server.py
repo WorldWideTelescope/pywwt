@@ -14,8 +14,18 @@ accessing data served up by the kernel.
 import os
 import mimetypes
 from tornado import web
-from notebook.utils import url_path_join
-from notebook.base.handlers import IPythonHandler
+
+# `load_jupyter_server_extension` has to be made available in the root module,
+# so let's try to fail gracefully if Jupyter modules are missing. `tornado` is a
+# hard requirement appearing in setup.py.
+try:
+    from notebook.utils import url_path_join
+    from notebook.base.handlers import IPythonHandler
+
+    HAVE_NOTEBOOK = True
+except ImportError:
+    IPythonHandler = object
+    HAVE_NOTEBOOK = False
 
 __all__ = [
     "load_jupyter_server_extension",
@@ -58,16 +68,23 @@ class WWTStaticFileHandler(IPythonHandler):
         self.finish(content)
 
 
-def load_jupyter_server_extension(nb_server_app):
-    """
-    A support function used to integrate pywwt with Jupyter.
-    """
-    web_app = nb_server_app.web_app
-    host_pattern = ".*$"
+if HAVE_NOTEBOOK:
 
-    mimetypes.add_type("image/fits", ".fits")
-    mimetypes.add_type("image/fits", ".fts")
-    mimetypes.add_type("image/fits", ".fit")
+    def load_jupyter_server_extension(nb_server_app):
+        """
+        A support function used to integrate pywwt with Jupyter.
+        """
+        web_app = nb_server_app.web_app
+        host_pattern = ".*$"
 
-    route_pattern = url_path_join(web_app.settings["base_url"], "/wwtstatic/(.*)")
-    web_app.add_handlers(host_pattern, [(route_pattern, WWTStaticFileHandler)])
+        mimetypes.add_type("image/fits", ".fits")
+        mimetypes.add_type("image/fits", ".fts")
+        mimetypes.add_type("image/fits", ".fit")
+
+        route_pattern = url_path_join(web_app.settings["base_url"], "/wwtstatic/(.*)")
+        web_app.add_handlers(host_pattern, [(route_pattern, WWTStaticFileHandler)])
+
+else:
+
+    def load_jupyter_server_extension(_nb_server_app):
+        raise NotImplementedError()

@@ -120,7 +120,7 @@ setup_args = dict(
         "qtpy",
         "reproject>=0.8",
         "requests",
-        "toasty>=0.15",
+        "toasty>=0.18",
         "tornado",
         "traitlets>=5",
         "wwt_data_formats>=0.12",
@@ -142,7 +142,10 @@ setup_args = dict(
             'PyQt5;python_version>="3"',
             'PyQtWebEngine;python_version>="3"',
         ],
-        "lab": ["jupyterlab"],
+        "lab": [
+            "jupyterlab",
+            "notebook",
+        ],
     },
     entry_points={},
 )

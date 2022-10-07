@@ -66,7 +66,7 @@ jobs:
         set -euo pipefail
         source activate-conda.sh
         set -x
-        \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' python="$PYTHON_SERIES" qtpy
+        \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebkit python="$PYTHON_SERIES" qtpy
         conda activate build
         pip install $BASH_WORKSPACE/sdist/*.tar.gz
       displayName: Install from sdist
@@ -89,7 +89,7 @@ jobs:
 
     - bash: |
         set -e
-        git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
+        git clone --depth 1 https://github.com/pyvista/gl-ci-helpers.git
         powershell gl-ci-helpers/appveyor/install_opengl.ps1
         echo "##vso[task.setvariable variable=QT_OPENGL;]software"
         echo "##vso[task.setvariable variable=QTWEBENGINE_CHROMIUM_FLAGS;]--enable-webgl-software-rendering"
@@ -169,7 +169,7 @@ jobs:
       set -euo pipefail
       source activate-conda.sh
       set -x
-      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' python=3.8 qtpy
+      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebkit python=3.8 qtpy
       conda activate build
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
@@ -215,7 +215,7 @@ jobs:
       set -euo pipefail
       source activate-conda.sh
       set -x
-      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' python=3.8 qtpy
+      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebkit python=3.8 qtpy
       conda activate build
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
