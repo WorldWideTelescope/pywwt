@@ -20,8 +20,8 @@ dependencies:
   - pip
   - pyopengl
   - pyqt
-  - pyqtwebkit
-  - python=3.8
+  - pyqtwebengine
+  - python=3.9
   - qt
   - qtpy
   - recommonmark
