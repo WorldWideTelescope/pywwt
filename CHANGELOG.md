@@ -1,3 +1,31 @@
+# pypa:pywwt 0.16.0 (2022-10-08)
+
+This release improves the support for viewing arbitrarily-sized FITS files in
+pywwt, taking advantage of the new support in the [Toasty] library for all-sky
+datasets! Version 0.18 of Toasty, or newer, is now required.
+
+[Toasty]: https://toasty.readthedocs.io/
+
+Another cool new change is that pywwt releases are now automatically deposited
+with [Zenodo] and assigned DOIs in the process. This makes it possible to cite
+the pywwt software, indicating exactly which version you were using, in
+scholarly contexts!
+
+[Zenodo]: https://zenodo.org/
+
+- Handle all-sky FITS files with TOAST rather than hipsgen, using the
+  newest Toasty features (#335, @imbasimba).
+- Allow toggling whether or not a table layer is selectable (#334, @Carifio24).
+- Allow the `time_decay` attribute of layers to be serialized (#332, @Carifio24).
+- Make it possible to customize the app URL used by the Jupter widget (#331,
+  @pkgw).
+- Implement automated Zenodo deposit with DOI registration (@pkgw)
+
+The DOI of this release is [10.5281/zenodo.7164148][vdoi].
+
+[vdoi]: https://doi/org/10.5281/zenodo.7164148
+
+
 # pypa:pywwt 0.15.2 (2022-01-19)
 
 - Update the bundled version of the research app to 0.9.2, to ensure we have

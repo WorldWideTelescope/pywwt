@@ -1,0 +1,68 @@
+{
+  "conceptrecid": "7164147",
+  "metadata": {
+    "access_right": "open",
+    "creators": [
+      {
+        "affiliation": "Center for Astrophysics | Harvard & Smithsonian",
+        "name": "Carifio, Jonathan",
+        "orcid": "0000-0002-7759-2601"
+      },
+      {
+        "affiliation": "Heidelberg Institute for Theoretical Studies",
+        "name": "Gaibler, Volker",
+        "orcid": "0000-0001-7581-7574"
+      },
+      {
+        "affiliation": "Winter Way",
+        "name": "Norman, Henrik",
+        "orcid": "0000-0003-4189-3450"
+      },
+      {
+        "affiliation": "Space Telescope Science Institute",
+        "name": "Otor, O. Justin",
+        "orcid": "0000-0002-4679-5692"
+      },
+      {
+        "affiliation": "Aperio Software",
+        "name": "Robitaille, Thomas P.",
+        "orcid": "0000-0002-8642-1329"
+      },
+      {
+        "name": "Subbarao, Jeffrey"
+      },
+      {
+        "affiliation": "Center for Astrophysics | Harvard & Smithsonian",
+        "name": "Williams, Peter K. G.",
+        "orcid": "0000-0003-3734-3587"
+      },
+      {
+        "affiliation": "Center for Astrophysics | Harvard & Smithsonian",
+        "name": "ZuHone, John",
+        "orcid": "0000-0003-3175-2347"
+      }
+    ],
+    "description": "pywwt is the official toolkit for accessing AAS WorldWide Telescope (WWT) from Python. Learn more at <a href=\"https://pywwt.readthedocs.io/\">the pywwt website</a>.",
+    "grants": [
+      {
+        "id": "10.13039/100000001::1550701"
+      }
+    ],
+    "keywords": [
+      "AAS WorldWide Telescope",
+      "Astronomy",
+      "Python",
+      "Visualization"
+    ],
+    "language": "eng",
+    "license": "BSD-3-Clause",
+    "publication_date": "2022-10-08",
+    "title": "pypa:pywwt 0.16.0",
+    "upload_type": "software",
+    "version": "0.16.0"
+  },
+  "conceptdoi": "10.5281/zenodo.7164147",
+  "record_id": "7164148",
+  "doi": "10.5281/zenodo.7164148",
+  "bucket_link": "https://zenodo.org/api/files/8d5f9fe3-0e0d-41bd-90ed-55c19cbbcd33"
+}

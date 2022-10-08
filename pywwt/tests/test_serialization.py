@@ -446,7 +446,7 @@ def test_table_setting_serialization():
                          'latColumn': 'dec',
                          'altColumn': 'flux',
                          'timeSeries': False,
-                         'decay': 16 * u.day,
+                         'decay': 16,
                          'altUnit': None,
                          'altType': 'distance',
                          'color': '#aacc00',

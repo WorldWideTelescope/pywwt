@@ -21,12 +21,12 @@ parameters:
       PYTHON_SERIES: "3.9"
 
   - name: macos_37
-    vmImage: macos-10.15
+    vmImage: macos-11
     vars:
       PYTHON_SERIES: "3.7"
 
   - name: macos_38
-    vmImage: macos-10.15
+    vmImage: macos-11
     vars:
       PYTHON_SERIES: "3.8"
 
@@ -66,7 +66,7 @@ jobs:
         set -euo pipefail
         source activate-conda.sh
         set -x
-        \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' python="$PYTHON_SERIES" qtpy
+        \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebengine python="$PYTHON_SERIES" qtpy
         conda activate build
         pip install $BASH_WORKSPACE/sdist/*.tar.gz
       displayName: Install from sdist
@@ -75,6 +75,7 @@ jobs:
     - bash: |
         set -euo pipefail
         echo "##vso[task.setvariable variable=DISPLAY;]:99"
+        echo "##vso[task.setvariable variable=QTWEBENGINE_CHROMIUM_FLAGS;]--ignore-gpu-blocklist"
         set -x
         sudo apt-get update
         sudo apt-get install -y \
@@ -87,17 +88,33 @@ jobs:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
       displayName: Set up Xvfb/OpenGL (Linux)
 
-    - bash: |
-        set -e
-        git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
-        powershell gl-ci-helpers/appveyor/install_opengl.ps1
+    # The Azure Pipelines build hosts don't have GPUs. In order to get WebGL
+    # rendering properly, we need to enable software OpenGL rendering through
+    # QtWebEngine, which is quite a hassle. This is the simplest recipe I can
+    # devise:
+    - pwsh: |
+        $webclient = New-Object System.Net.WebClient
+        $url = "https://chocolatey.org/7za.exe"
+        Write-Host "Downloading" $url
+        $webclient.DownloadFile($url, "7za.exe")
+        $url = "https://download.qt.io/development_releases/prebuilt/llvmpipe/windows/opengl32sw-64-mesa_11_2_2-signed.7z"
+        $dest = "opengl32sw-64.7z"
+        Write-Host "Downloading" $url
+        $webclient.DownloadFile($url, $dest)
+        .\7za x -bd -y $dest
+        $filepath = "C:\Windows\System32\opengl32.dll"
+        takeown /F $filepath /A
+        icacls $filepath /grant "${env:ComputerName}\${env:UserName}:F"
+        Remove-Item -LiteralPath $filepath
+        cp opengl32sw.dll $filepath
         echo "##vso[task.setvariable variable=QT_OPENGL;]software"
-        echo "##vso[task.setvariable variable=QTWEBENGINE_CHROMIUM_FLAGS;]--enable-webgl-software-rendering"
+        echo "##vso[task.setvariable variable=QT_OPENGL_DLL;]opengl32.dll"
+        echo "##vso[task.setvariable variable=QTWEBENGINE_CHROMIUM_FLAGS;]--enable-webgl-software-rendering --ignore-gpu-blocklist"
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
       displayName: Set up OpenGL (Windows)
 
     - bash: |
-        echo "##vso[task.setvariable variable=QTWEBENGINE_CHROMIUM_FLAGS;]--ignore-gpu-blacklist"
+        echo "##vso[task.setvariable variable=QTWEBENGINE_CHROMIUM_FLAGS;]--ignore-gpu-blocklist"
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       displayName: Set up OpenGL (macOS)
 
@@ -169,7 +186,7 @@ jobs:
       set -euo pipefail
       source activate-conda.sh
       set -x
-      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' python=3.8 qtpy
+      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebengine python=3.9 qtpy
       conda activate build
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
@@ -178,6 +195,7 @@ jobs:
   - bash: |
       set -euo pipefail
       echo "##vso[task.setvariable variable=DISPLAY;]:99"
+      echo "##vso[task.setvariable variable=QTWEBENGINE_CHROMIUM_FLAGS;]--ignore-gpu-blocklist"
       set -x
       sudo apt-get update
       sudo apt-get install -y \
@@ -215,7 +233,7 @@ jobs:
       set -euo pipefail
       source activate-conda.sh
       set -x
-      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' python=3.8 qtpy
+      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebengine python=3.9 qtpy
       conda activate build
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
@@ -245,7 +263,7 @@ jobs:
       set -euo pipefail
       source activate-conda.sh
       set -x
-      \conda create -y -n build setuptools pip python=3.8
+      \conda create -y -n build setuptools pip python=3.9
       conda activate build
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
