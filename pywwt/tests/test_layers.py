@@ -372,9 +372,9 @@ def test_table_layers_image(tmpdir, wwt_qt_client):
     table["ra"] = [250, 260, 270, 280, 290] * u.deg
     table["other"] = [255, 265, 275, 285, 295] * u.deg
 
-    layer2 = wwt.layers.add_table_layer(
+    wwt.layers.add_table_layer(
         table=table, color="red", lon_att="other", size_scale=100, opacity=0.5
-    )  # noqa
+    )
 
     # Case where we change the values after initialization
 
@@ -401,9 +401,9 @@ def test_table_layers_image(tmpdir, wwt_qt_client):
     table["ra"] = [250, 260, 270, 280, 290] * u.deg
     table["other"] = [255, 265, 275, 285, 295] * u.deg
 
-    layer4 = wwt.layers.add_table_layer(
+    wwt.layers.add_table_layer(
         table=table, cmap_att="other", size_att="flux", size_scale=100
-    )  # noqa
+    )
 
     # Case with size and color encoding where we change the values after initialization
 
@@ -447,9 +447,9 @@ def test_table_layers_cartesian_image(tmpdir, wwt_qt_client):
     table["y"] = [0, 0.2, 0.4, 0.6, 0.8] * u.au
     table["z"] = [0, 0.1, 0.2, 0.3, 0.4] * u.au
 
-    layer1 = wwt.layers.add_table_layer(
+    wwt.layers.add_table_layer(
         table=table, coord_type="rectangular", size_scale=100, frame="Sky"
-    )  # noqa
+    )
 
     table = Table()
     table["x"] = [1, 2, 3, 4, 5] * u.au
