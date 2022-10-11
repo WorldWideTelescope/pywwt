@@ -1,7 +1,9 @@
-from astropy.wcs import WCS
-from astropy.table import Table
 from astropy import units as u
+from astropy.io import fits
 from astropy.coordinates import SkyCoord
+from astropy.table import Table
+from astropy.wcs import WCS
+
 import numpy as np
 import os.path
 import pytest
@@ -465,19 +467,7 @@ def test_table_layers_cartesian_image(tmpdir, wwt_qt_client):
     assert_widget_image(tmpdir, wwt, "sky_layers_cartesian.png")
 
 
-@pytest.mark.skipif("not QT_INSTALLED")
-def test_image_layer_equ(tmpdir, wwt_qt_client_isolated):
-
-    # A series of tests that excercise the image layer functionality and compare
-    # the results with a set of baseline images.
-
-    # NOTE: due to an unknown issue, we need to run this using an isolated
-    # Qt client and we can't re-use the usual wwt_qt_client fixture, as loading
-    # the image layer appears to have some kind of irreversible impact on the
-    # state of the Qt widget.
-
-    wwt = wwt_qt_client_isolated
-
+def _setup_image_layer_equ(wwt):
     wwt.foreground = "Black Sky Background"
     wwt.background = "Black Sky Background"
 
@@ -491,8 +481,72 @@ def test_image_layer_equ(tmpdir, wwt_qt_client_isolated):
     wcs.wcs.crpix = 50.5, 50.5
     wcs.wcs.cdelt = -0.1, 0.1
 
-    wwt.layers.add_image_layer(image=(array, wcs))
+    return array, wcs
 
+
+@pytest.mark.skipif("not QT_INSTALLED")
+def test_image_layer_equ(tmpdir, wwt_qt_client_isolated):
+    # NOTE: due to an unknown issue, we need to run this using an isolated
+    # Qt client and we can't re-use the usual wwt_qt_client fixture, as loading
+    # the image layer appears to have some kind of irreversible impact on the
+    # state of the Qt widget.
+
+    wwt = wwt_qt_client_isolated
+    array, wcs = _setup_image_layer_equ(wwt)
+    wwt.layers.add_image_layer(image=(array, wcs))
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+    assert_widget_image(tmpdir, wwt, "image_layer_equ.png")
+
+
+@pytest.mark.skipif("not QT_INSTALLED")
+def test_image_layer_equ_hdu(tmpdir, wwt_qt_client_isolated):
+    # Like `test_image_layer_equ`, but passing the image as an Astropy HDU
+    wwt = wwt_qt_client_isolated
+    array, wcs = _setup_image_layer_equ(wwt)
+    hdu = fits.PrimaryHDU(array)
+    hdu.header.update(wcs.to_header())
+    wwt.layers.add_image_layer(image=hdu)
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+    assert_widget_image(tmpdir, wwt, "image_layer_equ.png")
+
+
+@pytest.mark.skipif("not QT_INSTALLED")
+def test_image_layer_equ_hdulist(tmpdir, wwt_qt_client_isolated):
+    # Like `test_image_layer_equ`, but passing the image as an Astropy HDUList
+    wwt = wwt_qt_client_isolated
+    array, wcs = _setup_image_layer_equ(wwt)
+    hdu = fits.PrimaryHDU(array)
+    hdu.header.update(wcs.to_header())
+    hdulist = fits.HDUList([hdu])
+    wwt.layers.add_image_layer(image=hdulist)
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+    assert_widget_image(tmpdir, wwt, "image_layer_equ.png")
+
+
+@pytest.mark.skipif("not QT_INSTALLED")
+def test_image_layer_equ_path(tmpdir, wwt_qt_client_isolated):
+    # Like `test_image_layer_equ`, but passing the image as a FITS path
+    wwt = wwt_qt_client_isolated
+    array, wcs = _setup_image_layer_equ(wwt)
+    hdu = fits.PrimaryHDU(array)
+    hdu.header.update(wcs.to_header())
+    dest = os.path.join(tmpdir, "testinput.fits")
+    hdu.writeto(dest)
+    wwt.layers.add_image_layer(image=dest)
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+    assert_widget_image(tmpdir, wwt, "image_layer_equ.png")
+
+
+@pytest.mark.skipif("not QT_INSTALLED")
+def test_image_layer_equ_pathlist(tmpdir, wwt_qt_client_isolated):
+    # Like `test_image_layer_equ`, but passing the image as a list of FITS paths
+    wwt = wwt_qt_client_isolated
+    array, wcs = _setup_image_layer_equ(wwt)
+    hdu = fits.PrimaryHDU(array)
+    hdu.header.update(wcs.to_header())
+    dest = os.path.join(tmpdir, "testinput.fits")
+    hdu.writeto(dest)
+    wwt.layers.add_image_layer(image=[dest])
     wait_for_test(wwt, WAIT_TIME, for_render=True)
     assert_widget_image(tmpdir, wwt, "image_layer_equ.png")
 
@@ -546,7 +600,7 @@ def test_image_layer_gal(tmpdir, wwt_qt_client_isolated):
 
 
 @pytest.mark.skipif("not QT_INSTALLED")
-def test_image_layer_fitsfile(tmpdir, wwt_qt_client_isolated):
+def test_image_layer_fitsfile(wwt_qt_client_isolated):
     """Currently just a smoketest for the FITS data server."""
 
     wwt = wwt_qt_client_isolated
