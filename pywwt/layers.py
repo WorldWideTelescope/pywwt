@@ -260,7 +260,8 @@ class LayerManager(object):
         image : str or list of str or :class:`~astropy.io.fits.ImageHDU` or tuple
             The image to show, which should be given either as a filename,
             a list of FITS file paths, an :class:`~astropy.io.fits.ImageHDU`
-            object, or a tuple of the form ``(array, wcs)`` where ``array`` is
+            object, an :class:`~astropy.io.fits.HDUList`, or a tuple of the form
+            ``(array, wcs)`` where ``array`` is
             a Numpy array and ``wcs`` is an astropy :class:`~astropy.wcs.WCS`
             object
         hdu_index : optional int or list of int, defaults to None
@@ -295,26 +296,66 @@ class LayerManager(object):
         if isinstance(image, tuple):
             image, wcs = image
             image = astropy.io.fits.PrimaryHDU(image, wcs.to_header())
-        if (
-            isinstance(image, astropy.io.fits.ImageHDU)
-            or isinstance(image, astropy.io.fits.PrimaryHDU)
-            or isinstance(image, astropy.io.fits.HDUList)
+
+        # For FITS-y inputs, we create a stable filename to allow caching, which
+        # can help to skip expensive processing inside Toasty in case this image
+        # has previously been processed. As usual, the logic is a bit
+        # complicated since we aim to allow the user to give us just about
+        # anything as an input.
+
+        if isinstance(image, astropy.io.fits.HDUList):
+            if hdu_index:
+                image = image[hdu_index]  # delegate to the next stanza
+            else:
+                # NOTE: this is repeating `utils.sanitize_image()`. We do *not*
+                # delegate to the next stanza in case Toasty can do something
+                # with the full HDU list that is better than just picking one
+                # HDU -- so we must write out the full HDUList to disk, not just
+                # the first/best image HDU. That being said, we try to make it
+                # so that the cache key for `HDUList([hdu])` is the same as the
+                # cache key for `hdu`.
+                from hashlib import md5
+
+                m = md5()
+
+                for hdu in image:
+                    if (
+                        hasattr(hdu, "shape")
+                        and len(hdu.shape) > 1
+                        and not isinstance(hdu, astropy.io.fits.BinTableHDU)
+                    ):
+                        # We could `break` here, but it seems safer not to? And
+                        # the performance impact should be minimal.
+                        m.update(hdu.data[:65536])
+                        m.update(hdu.header.tostring().encode("utf-8"))
+
+                hex_string = m.hexdigest()
+                filename = "toasty_input_{}.fits".format(hex_string)
+
+                if not Path(filename).is_file():
+                    image.writeto(filename)
+
+                image = filename
+
+        if isinstance(image, astropy.io.fits.ImageHDU) or isinstance(
+            image, astropy.io.fits.PrimaryHDU
         ):
-            # Creating a stable filename to allow caching. The caching is
-            # primarily useful to skip expensive processing inside Toasty
-            # in case this image has previously been processed.
             from hashlib import md5
 
             m = md5()
             m.update(image.data[:65536])
             m.update(image.header.tostring().encode("utf-8"))
-            hex_string = m.hexdigest()  # returns digest as a hex-encoded string
-            filename = "fits_input_{}".format(hex_string)
+            hex_string = m.hexdigest()
+            filename = "toasty_input_{}.fits".format(hex_string)
+
             if not Path(filename).is_file():
                 image.writeto(filename)
+
             image = filename
+
         if isinstance(image, str):
             image = [image]
+
         if (
             tiling_method == TilingMethod.TOAST
             or tiling_method == TilingMethod.HIPS

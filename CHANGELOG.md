@@ -1,4 +1,13 @@
-# rc: minor bump
+# rc: micro bump
+
+- Fix loading of HDULists as image layers (#337, @pkgw)
+
+The DOI of this release is [xx.xxxx/dev-build.pypa:pywwt.version][vdoi].
+
+[vdoi]: https://doi.org/xx.xxxx/dev-build.pypa:pywwt.version
+
+
+# pypa:pywwt 0.16.0 (2022-10-08)
 
 This release improves the support for viewing arbitrarily-sized FITS files in
 pywwt, taking advantage of the new support in the [Toasty] library for all-sky
@@ -21,9 +30,9 @@ scholarly contexts!
   @pkgw).
 - Implement automated Zenodo deposit with DOI registration (@pkgw)
 
-The DOI of this release is [xx.xxxx/dev-build.pypa:pywwt.version][vdoi].
+The DOI of this release is [10.5281/zenodo.7164148][vdoi].
 
-[vdoi]: https://doi/org/xx.xxxx/dev-build.pypa:pywwt.version
+[vdoi]: https://doi.org/10.5281/zenodo.7164148
 
 
 # pypa:pywwt 0.15.2 (2022-01-19)
