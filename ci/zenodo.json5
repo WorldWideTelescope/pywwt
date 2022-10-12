@@ -56,13 +56,13 @@
     ],
     "language": "eng",
     "license": "BSD-3-Clause",
-    "publication_date": "2022-10-08",
-    "title": "pypa:pywwt 0.16.0",
+    "publication_date": "2022-10-12",
+    "title": "pypa:pywwt 0.16.1",
     "upload_type": "software",
-    "version": "0.16.0"
+    "version": "0.16.1"
   },
   "conceptdoi": "10.5281/zenodo.7164147",
-  "record_id": "7164148",
-  "doi": "10.5281/zenodo.7164148",
-  "bucket_link": "https://zenodo.org/api/files/8d5f9fe3-0e0d-41bd-90ed-55c19cbbcd33"
+  "record_id": "7187355",
+  "doi": "10.5281/zenodo.7187355",
+  "bucket_link": "https://zenodo.org/api/files/e8650cbe-d6c7-4dc2-8c67-97ba58bc50b5"
 }

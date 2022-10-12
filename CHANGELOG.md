@@ -1,3 +1,12 @@
+# pypa:pywwt 0.16.1 (2022-10-12)
+
+- Fix loading of HDULists as image layers (#337, @pkgw)
+
+The DOI of this release is [10.5281/zenodo.7187355][vdoi].
+
+[vdoi]: https://doi.org/10.5281/zenodo.7187355
+
+
 # pypa:pywwt 0.16.0 (2022-10-08)
 
 This release improves the support for viewing arbitrarily-sized FITS files in
@@ -23,7 +32,7 @@ scholarly contexts!
 
 The DOI of this release is [10.5281/zenodo.7164148][vdoi].
 
-[vdoi]: https://doi/org/10.5281/zenodo.7164148
+[vdoi]: https://doi.org/10.5281/zenodo.7164148
 
 
 # pypa:pywwt 0.15.2 (2022-01-19)
