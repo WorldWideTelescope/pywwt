@@ -1371,11 +1371,20 @@ class TableLayer(HasTraits):
                 state["settings"][wwt_name] = value
 
         if self._uniform_color():
-            state["settings"]["_colorMap"] = 0
+            state["settings"]["colorMap"] = 0
             state["settings"]["colorMapColumn"] = -1
+        elif self.cmap.name.lower() in VALID_COLORMAPS:
+            state["settings"]["colorMap"] = 3
+            state["settings"]["colorMapperName"] = self.cmap.name
+            state["settings"]["dynamicColor"] = True
+            state["settings"]["normalizeColorMap"] = True
+            state["settings"]["normalizeColorMapMin"] = self.cmap_vmin
+            state["settings"]["normalizeColorMapMax"] = self.cmap_vmax
+            state["settings"]["colorMapColumn"] = self.cmap_att
         else:
-            state["settings"]["_colorMap"] = 3
+            state["settings"]["colorMap"] = 3
             state["settings"]["colorMapColumn"] = CMAP_COLUMN_NAME
+            state["settings"]["dynamicColor"] = False
 
         if self._uniform_size():
             state["settings"]["sizeColumn"] = -1
