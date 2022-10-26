@@ -1,3 +1,15 @@
+# pypa:pywwt 0.16.2 (2022-10-26)
+
+- Update a construct in `setupbase.py` to fix installation with Python 3.11
+  (#340, @dhomeier).
+- Update the export of interactive figure data to work with named
+  colormaps (#339, @Carifio24).
+
+The DOI of this release is [10.5281/zenodo.7255701][vdoi].
+
+[vdoi]: https://doi.org/10.5281/zenodo.7255701
+
+
 # pypa:pywwt 0.16.1 (2022-10-12)
 
 - Fix loading of HDULists as image layers (#337, @pkgw)
