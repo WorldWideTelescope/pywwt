@@ -21,6 +21,11 @@
         orcid: '0000-0001-7581-7574',
       },
       {
+        affiliation: 'Aperio Software',
+        name: 'Homeier, Derek',
+        orcid: '0000-0002-8546-9128',
+      },
+      {
         affiliation: 'Winter Way',
         name: 'Norman, Henrik',
         orcid: '0000-0003-4189-3450',
@@ -47,11 +52,6 @@
         affiliation: 'Center for Astrophysics | Harvard & Smithsonian',
         name: 'ZuHone, John',
         orcid: '0000-0003-3175-2347',
-      },
-      {
-        affiliation: 'Aperio Software',
-        name: 'Homeier, Derek',
-        orcid: '0000-0002-8546-9128',
       },
     ],
 
