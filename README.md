@@ -1,3 +1,7 @@
+[![pywwt on PyPI](https://badge.fury.io/py/pywwt.svg)](https://badge.fury.io/py/pywwt)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7164147.svg)](https://doi.org/10.5281/zenodo.7164147)
+[![Build Status](https://dev.azure.com/aasworldwidetelescope/WWT/_apis/build/status/WorldWideTelescope.pywwt?branchName=master)](https://dev.azure.com/aasworldwidetelescope/WWT/_build/latest?definitionId=2&branchName=master)
+
 # pywwt: AAS WorldWide Telescope from Python/Jupyter
 
 🚀🚀 [Click here to try out pywwt in the cloud!][go-cloud] 🚀🚀
