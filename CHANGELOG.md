@@ -1,10 +1,22 @@
 # rc: micro bump
 
-- Fix loading of HDULists as image layers (#337, @pkgw)
+- Update a construct in `setupbase.py` to fix installation with Python 3.11
+  (#340, @dhomeier).
+- Update the export of interactive figure data to work with named
+  colormaps (#339, @Carifio24).
 
 The DOI of this release is [xx.xxxx/dev-build.pypa:pywwt.version][vdoi].
 
 [vdoi]: https://doi.org/xx.xxxx/dev-build.pypa:pywwt.version
+
+
+# pypa:pywwt 0.16.1 (2022-10-12)
+
+- Fix loading of HDULists as image layers (#337, @pkgw)
+
+The DOI of this release is [10.5281/zenodo.7187355][vdoi].
+
+[vdoi]: https://doi.org/10.5281/zenodo.7187355
 
 
 # pypa:pywwt 0.16.0 (2022-10-08)

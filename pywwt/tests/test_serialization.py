@@ -1,7 +1,7 @@
 import pytest
 
 from ..core import BaseWWTWidget
-from ..layers import SIZE_COLUMN_NAME, CMAP_COLUMN_NAME
+from ..layers import SIZE_COLUMN_NAME
 
 import numpy as np
 import os
@@ -456,7 +456,7 @@ def test_table_setting_serialization():
                          'markerScale': 'world',
                          'showFarSide': True,
                          'sizeColumn': -1,
-                         '_colorMap': 0,
+                         'colorMap': 0,
                          'colorMapColumn': -1,
                          'xAxisColumn': '',
                          'yAxisColumn': '',
@@ -472,9 +472,14 @@ def test_table_setting_serialization():
 
     expected_settings['sizeColumn'] = SIZE_COLUMN_NAME
     expected_settings['pointScaleType'] = 0
-    expected_settings['colorMapColumn'] = CMAP_COLUMN_NAME
-    expected_settings['_colorMap'] = 3
+    expected_settings['colorMapColumn'] = layer.cmap_att
+    expected_settings['colorMap'] = 3
     expected_settings['altUnit'] = 'megaParsecs'
+    expected_settings['dynamicColor'] = True
+    expected_settings['colorMapperName'] = 'viridis'
+    expected_settings["normalizeColorMap"] = True
+    expected_settings["normalizeColorMapMin"] = layer.cmap_vmin
+    expected_settings["normalizeColorMapMax"] = layer.cmap_vmax
 
     assert widget.quick_serialize()['layers'][0]['settings'] == expected_settings
 
