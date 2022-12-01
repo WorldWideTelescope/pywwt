@@ -1,3 +1,9 @@
+# npm:pywwt 1.4.0 (2022-12-01)
+
+- Require version 0.12 of the research app, to get the latest improvements
+  including the Vue 3 update (#342, @pkgw).
+
+
 # npm:pywwt 1.3.3 (2022-01-19)
 
 - Require version 0.9.2 of the research app, to ensure we have support for

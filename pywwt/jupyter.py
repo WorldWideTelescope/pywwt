@@ -17,7 +17,7 @@ from .jupyter_relay import get_relay_hub
 
 __all__ = ["WWTJupyterWidget", "WWTLabApplication", "connect_to_app"]
 
-_npm_version = "^1.3.2"  # cranko internal-req npm:pywwt
+_npm_version = "^1.4.0"  # cranko internal-req npm:pywwt
 VIEW_MODULE_VERSION = _npm_version
 MODEL_MODULE_VERSION = _npm_version
 
