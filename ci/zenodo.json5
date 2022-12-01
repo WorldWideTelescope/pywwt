@@ -62,12 +62,12 @@
     "language": "eng",
     "license": "BSD-3-Clause",
     "publication_date": "2022-12-01",
-    "title": "pypa:pywwt 0.16.2",
+    "title": "pypa:pywwt 0.17.0",
     "upload_type": "software",
-    "version": "0.16.2"
+    "version": "0.17.0"
   },
-  "conceptdoi": "xx.xxxx/dev-build.pypa:pywwt.concept",
-  "record_id": "dev.pypa:pywwt.v0.16.2",
-  "doi": "xx.xxxx/dev-build.pypa:pywwt.v0.16.2",
-  "bucket_link": ""
+  "conceptdoi": "10.5281/zenodo.7164147",
+  "record_id": "7388030",
+  "doi": "10.5281/zenodo.7388030",
+  "bucket_link": "https://zenodo.org/api/files/0bf5b0fe-1185-462b-9845-5db1603c9554"
 }

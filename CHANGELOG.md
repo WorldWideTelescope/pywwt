@@ -1,3 +1,13 @@
+# pypa:pywwt 0.17.0 (2022-12-01)
+
+- Require version 0.12 of the research app, to get the latest improvements
+  including the Vue 3 update (#342, @pkgw).
+
+The DOI of this release is [10.5281/zenodo.7388030][vdoi].
+
+[vdoi]: https://doi.org/10.5281/zenodo.7388030
+
+
 # pypa:pywwt 0.16.2 (2022-10-26)
 
 - Update a construct in `setupbase.py` to fix installation with Python 3.11
