@@ -1,7 +1,7 @@
 import sys
 import uuid
 import tempfile
-from os import path
+from os import path, access, W_OK, getcwd
 import shutil
 import asyncio
 
@@ -238,6 +238,20 @@ class LayerManager(object):
     def __init__(self, parent=None):
         self._layers = []
         self._parent = parent
+        self._tmpdir = None
+
+    def __del__(self):
+        if self._tmpdir is not None:
+            shutil.rmtree(self._tmpdir)
+
+    def _toasty_input_filepath(self, hex_string):
+        filename = "toasty_input_{}.fits".format(hex_string)
+        if access(getcwd(), W_OK):
+            return filename
+
+        if self._tmpdir is None:
+            self._tmpdir = tempfile.mkdtemp()
+        return path.join(self._tmpdir, filename)
 
     def add_image_layer(
         self,
@@ -330,12 +344,12 @@ class LayerManager(object):
                         m.update(hdu.header.tostring().encode("utf-8"))
 
                 hex_string = m.hexdigest()
-                filename = "toasty_input_{}.fits".format(hex_string)
+                filepath = self._toasty_input_filepath(hex_string)
 
-                if not Path(filename).is_file():
-                    image.writeto(filename)
+                if not Path(filepath).is_file():
+                    image.writeto(filepath)
 
-                image = filename
+                image = filepath
 
         if isinstance(image, astropy.io.fits.ImageHDU) or isinstance(
             image, astropy.io.fits.PrimaryHDU
@@ -346,12 +360,12 @@ class LayerManager(object):
             m.update(image.data[:65536])
             m.update(image.header.tostring().encode("utf-8"))
             hex_string = m.hexdigest()
-            filename = "toasty_input_{}.fits".format(hex_string)
+            filepath = self._toasty_input_filepath(hex_string)
 
-            if not Path(filename).is_file():
-                image.writeto(filename)
+            if not Path(filepath).is_file():
+                image.writeto(filepath)
 
-            image = filename
+            image = filepath
 
         if isinstance(image, str):
             image = [image]
