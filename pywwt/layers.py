@@ -240,18 +240,23 @@ class LayerManager(object):
         self._parent = parent
         self._tmpdir = None
 
-    def __del__(self):
-        if self._tmpdir is not None:
-            shutil.rmtree(self._tmpdir)
-
-    def _toasty_input_filepath(self, hex_string):
+    def _write_image_for_toasty(self, image, m):
+        hex_string = m.hexdigest()
         filename = "toasty_input_{}.fits".format(hex_string)
-        if access(getcwd(), W_OK):
+        if Path(filename).is_file():
             return filename
 
-        if self._tmpdir is None:
-            self._tmpdir = tempfile.mkdtemp()
-        return path.join(self._tmpdir, filename)
+        try:
+            image.writeto(filename)
+            return filename
+        except OSError:
+            if self._tmpdir is None:
+                self._tmpdir = tempfile.TemporaryDirectory()
+            filepath = path.join(self._tmpdir.name, filename)
+
+            if not Path(filepath).is_file():
+                image.writeto(filepath)
+            return filepath
 
     def add_image_layer(
         self,
@@ -343,13 +348,7 @@ class LayerManager(object):
                         m.update(hdu.data[:65536])
                         m.update(hdu.header.tostring().encode("utf-8"))
 
-                hex_string = m.hexdigest()
-                filepath = self._toasty_input_filepath(hex_string)
-
-                if not Path(filepath).is_file():
-                    image.writeto(filepath)
-
-                image = filepath
+                image = self._write_image_for_toasty(image, m)
 
         if isinstance(image, astropy.io.fits.ImageHDU) or isinstance(
             image, astropy.io.fits.PrimaryHDU
@@ -359,13 +358,7 @@ class LayerManager(object):
             m = md5()
             m.update(image.data[:65536])
             m.update(image.header.tostring().encode("utf-8"))
-            hex_string = m.hexdigest()
-            filepath = self._toasty_input_filepath(hex_string)
-
-            if not Path(filepath).is_file():
-                image.writeto(filepath)
-
-            image = filepath
+            image = self._write_image_for_toasty(image, m)
 
         if isinstance(image, str):
             image = [image]
