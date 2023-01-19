@@ -7,6 +7,8 @@ from astropy.wcs import WCS
 import numpy as np
 import os.path
 import pytest
+from stat import S_IWGRP, S_IWOTH, S_IWUSR, S_IMODE
+from tempfile import TemporaryDirectory
 
 from . import assert_widget_image, wait_for_test, DATA
 from ..conftest import RUNNING_ON_CI, QT_INSTALLED  # noqa
@@ -609,3 +611,31 @@ def test_image_layer_fitsfile(wwt_qt_client_isolated):
     # lengthy to give the viewer time to pan to the image. Unless we wire up a
     # way to snap right there.
     wait_for_test(wwt, WAIT_TIME, for_render=True)
+
+
+@pytest.mark.skipif("not QT_INSTALLED")
+def test_image_tmpdir_fallback(wwt_qt_client_isolated):
+    
+    wwt = wwt_qt_client_isolated
+    tmpdir = TemporaryDirectory()
+    path = tmpdir.name
+    os.chdir(path)
+
+    array, wcs = _setup_image_layer_equ(wwt)
+    hdu = fits.PrimaryHDU(array)
+    hdu.header.update(wcs.to_header())
+    hdulist = fits.HDUList([hdu])
+
+    filepath = wwt.layers._write_image_for_toasty(hdulist)
+    toasty_filename = wwt.layers._toasty_filename(hdulist)
+    assert filepath == toasty_filename
+
+    os.remove(filepath)
+    nowrite = ~S_IWUSR & ~S_IWGRP & ~S_IWOTH
+    current = S_IMODE(os.lstat(path).st_mode)
+    os.chmod(path, current & nowrite)
+
+    filepath = wwt.layers._write_image_for_toasty(hdulist)
+    assert filepath == os.path.join(wwt.layers._tmpdir.name, toasty_filename)
+
+    os.chmod(path, current)
