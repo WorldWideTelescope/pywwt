@@ -619,6 +619,7 @@ def test_image_tmpdir_fallback(wwt_qt_client_isolated):
     wwt = wwt_qt_client_isolated
     tmpdir = TemporaryDirectory()
     path = tmpdir.name
+    cwd = os.getcwd()
     os.chdir(path)
 
     array, wcs = _setup_image_layer_equ(wwt)
@@ -639,3 +640,4 @@ def test_image_tmpdir_fallback(wwt_qt_client_isolated):
     assert filepath == os.path.join(wwt.layers._tmpdir.name, toasty_filename)
 
     os.chmod(path, current)
+    os.chdir(cwd)
