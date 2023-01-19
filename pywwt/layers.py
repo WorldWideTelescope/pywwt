@@ -240,14 +240,16 @@ class LayerManager(object):
         self._parent = parent
         self._tmpdir = None
 
-    def _write_image_for_toasty(self, image, m):
+    def _toasty_filename(self, image, hdu_index=None):
+        m = self._image_md5(image, hdu_index=hdu_index)
         hex_string = m.hexdigest()
-        filename = "toasty_input_{}.fits".format(hex_string)
-        if Path(filename).is_file():
-            return filename
+        return "toasty_input_{}.fits".format(hex_string)
 
+    def _write_image_for_toasty(self, image, hdu_index=None):
+        filename = self._toasty_filename(image, hdu_index=hdu_index)
         try:
-            image.writeto(filename)
+            if not Path(filename).is_file():
+                image.writeto(filename)
             return filename
         except OSError:
             if self._tmpdir is None:
@@ -257,6 +259,40 @@ class LayerManager(object):
             if not Path(filepath).is_file():
                 image.writeto(filepath)
             return filepath
+
+    def _image_md5(self, image, hdu_index=None):
+        from hashlib import md5
+
+        m = md5()
+        if isinstance(image, astropy.io.fits.HDUList):
+            if hdu_index:
+                image = image[hdu_index]  # delegate to the next stanza
+            else:
+                # NOTE: this is repeating `utils.sanitize_image()`. We do *not*
+                # delegate to the next stanza in case Toasty can do something
+                # with the full HDU list that is better than just picking one
+                # HDU -- so we must write out the full HDUList to disk, not just
+                # the first/best image HDU. That being said, we try to make it
+                # so that the cache key for `HDUList([hdu])` is the same as the
+                # cache key for `hdu`.
+
+                for hdu in image:
+                    if (
+                        hasattr(hdu, "shape")
+                        and len(hdu.shape) > 1
+                        and not isinstance(hdu, astropy.io.fits.BinTableHDU)
+                    ):
+                        # We could `break` here, but it seems safer not to? And
+                        # the performance impact should be minimal.
+                        m.update(hdu.data[:65536])
+                        m.update(hdu.header.tostring().encode("utf-8"))
+
+        if isinstance(image, astropy.io.fits.ImageHDU) or isinstance(
+            image, astropy.io.fits.PrimaryHDU
+        ):
+            m.update(image.data[:65536])
+            m.update(image.header.tostring().encode("utf-8"))
+        return m
 
     def add_image_layer(
         self,
@@ -321,44 +357,7 @@ class LayerManager(object):
         # has previously been processed. As usual, the logic is a bit
         # complicated since we aim to allow the user to give us just about
         # anything as an input.
-
-        if isinstance(image, astropy.io.fits.HDUList):
-            if hdu_index:
-                image = image[hdu_index]  # delegate to the next stanza
-            else:
-                # NOTE: this is repeating `utils.sanitize_image()`. We do *not*
-                # delegate to the next stanza in case Toasty can do something
-                # with the full HDU list that is better than just picking one
-                # HDU -- so we must write out the full HDUList to disk, not just
-                # the first/best image HDU. That being said, we try to make it
-                # so that the cache key for `HDUList([hdu])` is the same as the
-                # cache key for `hdu`.
-                from hashlib import md5
-
-                m = md5()
-
-                for hdu in image:
-                    if (
-                        hasattr(hdu, "shape")
-                        and len(hdu.shape) > 1
-                        and not isinstance(hdu, astropy.io.fits.BinTableHDU)
-                    ):
-                        # We could `break` here, but it seems safer not to? And
-                        # the performance impact should be minimal.
-                        m.update(hdu.data[:65536])
-                        m.update(hdu.header.tostring().encode("utf-8"))
-
-                image = self._write_image_for_toasty(image, m)
-
-        if isinstance(image, astropy.io.fits.ImageHDU) or isinstance(
-            image, astropy.io.fits.PrimaryHDU
-        ):
-            from hashlib import md5
-
-            m = md5()
-            m.update(image.data[:65536])
-            m.update(image.header.tostring().encode("utf-8"))
-            image = self._write_image_for_toasty(image, m)
+        image = self._write_image_for_toasty(image, hdu_index=hdu_index)
 
         if isinstance(image, str):
             image = [image]
