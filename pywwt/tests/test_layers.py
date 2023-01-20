@@ -615,7 +615,9 @@ def test_image_layer_fitsfile(wwt_qt_client_isolated):
 
 @pytest.mark.skipif("not QT_INSTALLED")
 def test_image_tmpdir_fallback(wwt_qt_client_isolated):
-    
+    """Ideally this test wouldn't require Qt, but we don't have the
+    infrastructure to avoid that right now."""
+
     wwt = wwt_qt_client_isolated
     tmpdir = TemporaryDirectory()
     path = tmpdir.name

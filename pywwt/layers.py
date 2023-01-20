@@ -1,7 +1,7 @@
 import sys
 import uuid
 import tempfile
-from os import path, access, W_OK, getcwd
+from os import path
 import shutil
 import asyncio
 
@@ -247,7 +247,13 @@ class LayerManager(object):
 
     def _write_image_for_toasty(self, image, hdu_index=None):
         filename = self._toasty_filename(image, hdu_index=hdu_index)
+
         try:
+            # If the magic filename already exists, assume that we've already
+            # written out the image, and save time by not rewriting this.
+            # Ideally we'd write out the image to a temporary path and rename
+            # atomically to avoid the risk of trying to read an image that some
+            # other process has only half-written.
             if not Path(filename).is_file():
                 image.writeto(filename)
             return filename
