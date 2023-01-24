@@ -363,7 +363,12 @@ class LayerManager(object):
         # has previously been processed. As usual, the logic is a bit
         # complicated since we aim to allow the user to give us just about
         # anything as an input.
-        image = self._write_image_for_toasty(image, hdu_index=hdu_index)
+        if any(isinstance(image, fitsy_type) for fitsy_type in [
+            astropy.io.fits.HDUList,
+            astropy.io.fits.ImageHDU,
+            image, astropy.io.fits.PrimaryHDU
+        ]):
+            image = self._write_image_for_toasty(image, hdu_index=hdu_index)
 
         if isinstance(image, str):
             image = [image]
