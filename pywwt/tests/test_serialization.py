@@ -1,7 +1,6 @@
 import pytest
 
 from ..core import BaseWWTWidget
-from ..layers import SIZE_COLUMN_NAME
 
 import numpy as np
 import os
@@ -470,7 +469,11 @@ def test_table_setting_serialization():
     layer.size_att = 'dec'
     layer.alt_unit = u.Mpc
 
-    expected_settings['sizeColumn'] = SIZE_COLUMN_NAME
+    expected_settings['sizeColumn'] = 'dec'
+    expected_settings['normalizeSize'] = True
+    expected_settings["normalizeSizeMin"] = layer.size_vmin
+    expected_settings["normalizeSizeMax"] = layer.size_vmax
+    expected_settings["normalizeSizeClip"] = True
     expected_settings['pointScaleType'] = 0
     expected_settings['colorMapColumn'] = layer.cmap_att
     expected_settings['colorMap'] = 3
