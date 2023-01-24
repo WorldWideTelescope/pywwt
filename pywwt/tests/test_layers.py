@@ -6,7 +6,10 @@ from astropy.wcs import WCS
 
 import numpy as np
 import os.path
+import sys
 import pytest
+from stat import S_IWGRP, S_IWOTH, S_IWUSR, S_IMODE
+from tempfile import TemporaryDirectory
 
 from . import assert_widget_image, wait_for_test, DATA
 from ..conftest import RUNNING_ON_CI, QT_INSTALLED  # noqa
@@ -609,3 +612,44 @@ def test_image_layer_fitsfile(wwt_qt_client_isolated):
     # lengthy to give the viewer time to pan to the image. Unless we wire up a
     # way to snap right there.
     wait_for_test(wwt, WAIT_TIME, for_render=True)
+
+
+@pytest.mark.skipif("not QT_INSTALLED")
+def test_image_tmpdir_fallback(wwt_qt_client_isolated):
+    """Ideally this test wouldn't require Qt, but we don't have the
+    infrastructure to avoid that right now."""
+
+    wwt = wwt_qt_client_isolated
+    tmpdir = TemporaryDirectory()
+    path = tmpdir.name
+    cwd = os.getcwd()
+    os.chdir(path)
+
+    array, wcs = _setup_image_layer_equ(wwt)
+    hdu = fits.PrimaryHDU(array)
+    hdu.header.update(wcs.to_header())
+    hdulist = fits.HDUList([hdu])
+
+    filepath = wwt.layers._write_image_for_toasty(hdulist)
+    toasty_filename = wwt.layers._toasty_filename(hdulist)
+    assert filepath == toasty_filename
+
+    os.remove(filepath)
+    nowrite = ~S_IWUSR & ~S_IWGRP & ~S_IWOTH
+
+    # On Windows, assigning directory-level permissions via os.chmod doesn't seem to work
+    # So we use this workaround, where we create a directory with the same name as where
+    # we would want to write the file
+    windows = 'win' in sys.platform
+    if windows:
+        os.mkdir(toasty_filename)
+    else:
+        current = S_IMODE(os.lstat(path).st_mode)
+        os.chmod(path, current & nowrite)
+
+    filepath = wwt.layers._write_image_for_toasty(hdulist)
+    assert filepath == os.path.join(wwt.layers._tmpdir.name, toasty_filename)
+
+    if not windows:
+        os.chmod(path, current)
+    os.chdir(cwd)

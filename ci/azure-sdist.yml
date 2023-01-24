@@ -59,12 +59,12 @@ jobs:
   # alternatives but nothing is official yet.
 
   - bash: |
-      set -eo pipefail  # no -u to work around Conda activatio bug (2021 July)
+      set -eo pipefail  # no -u to work around Conda activation bug (2021 July)
       eval "$($CONDA/bin/conda shell.bash hook)"
       set -x
       conda activate
       conda config --add channels conda-forge
-      conda install -y \
+      conda create -n pywwt -y \
         astropy \
         beautifulsoup4 \
         ipyevents \
@@ -73,6 +73,7 @@ jobs:
         matplotlib \
         numpy \
         python-dateutil \
+        'python =3.10' \
         pytz \
         qtpy \
         reproject \
@@ -84,7 +85,7 @@ jobs:
   - bash: |
       set -euo pipefail
       eval "$($CONDA/bin/conda shell.bash hook)"
-      conda activate
+      conda activate pywwt
       set -x
       python setup.py sdist
       tar tzf dist/*.tar.gz |sort
