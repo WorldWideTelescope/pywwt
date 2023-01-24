@@ -6,6 +6,7 @@ from astropy.wcs import WCS
 
 import numpy as np
 import os.path
+import sys
 import pytest
 from stat import S_IWGRP, S_IWOTH, S_IWUSR, S_IMODE
 from tempfile import TemporaryDirectory
@@ -635,11 +636,20 @@ def test_image_tmpdir_fallback(wwt_qt_client_isolated):
 
     os.remove(filepath)
     nowrite = ~S_IWUSR & ~S_IWGRP & ~S_IWOTH
-    current = S_IMODE(os.lstat(path).st_mode)
-    os.chmod(path, current & nowrite)
+
+    # On Windows, assigning directory-level permissions via os.chmod doesn't seem to work
+    # So we use this workaround, where we create a directory with the same name as where
+    # we would want to write the file
+    windows = 'win' in sys.platform
+    if windows:
+        os.mkdir(toasty_filename)
+    else:
+        current = S_IMODE(os.lstat(path).st_mode)
+        os.chmod(path, current & nowrite)
 
     filepath = wwt.layers._write_image_for_toasty(hdulist)
     assert filepath == os.path.join(wwt.layers._tmpdir.name, toasty_filename)
 
-    os.chmod(path, current)
+    if not windows:
+        os.chmod(path, current)
     os.chdir(cwd)
