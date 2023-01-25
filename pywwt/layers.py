@@ -131,7 +131,6 @@ else:
 
 # The following are columns that we add dynamically and internally, so we need
 # to make sure they have unique names that won't clash with existing columns
-SIZE_COLUMN_NAME = str(uuid.uuid4())
 CMAP_COLUMN_NAME = str(uuid.uuid4())
 TIME_COLUMN_NAME = str(uuid.uuid4())
 
@@ -1406,7 +1405,11 @@ class TableLayer(HasTraits):
         if self._uniform_size():
             state["settings"]["sizeColumn"] = -1
         else:
-            state["settings"]["sizeColumn"] = SIZE_COLUMN_NAME
+            state["settings"]["sizeColumn"] = self.size_att
+            state["settings"]["normalizeSize"] = True
+            state["settings"]["normalizeSizeMin"] = self.size_vmin
+            state["settings"]["normalizeSizeMax"] = self.size_vmax
+            state["settings"]["normalizeSizeClip"] = True
             state["settings"]["pointScaleType"] = 0
 
         return state
