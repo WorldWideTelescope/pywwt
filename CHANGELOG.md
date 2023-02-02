@@ -1,11 +1,21 @@
 # rc: minor bump
 
+- Update the FITS viewing code to use a temporary directory as a fallback if
+  it's not possible to write to the directory containing the FITS input(s)
+  (#344, @Carifio24).
+- Update pywwt's serialization of table size attributes to match the current
+  implementation (#345, @Carifio24). They weren't being properly saved and
+  loaded before.
+
+
+# pypa:pywwt 0.17.0 (2022-12-01)
+
 - Require version 0.12 of the research app, to get the latest improvements
   including the Vue 3 update (#342, @pkgw).
 
-The DOI of this release is [xx.xxxx/dev-build.pypa:pywwt.version][vdoi].
+The DOI of this release is [10.5281/zenodo.7388030][vdoi].
 
-[vdoi]: https://doi.org/xx.xxxx/dev-build.pypa:pywwt.version
+[vdoi]: https://doi.org/10.5281/zenodo.7388030
 
 
 # pypa:pywwt 0.16.2 (2022-10-26)
