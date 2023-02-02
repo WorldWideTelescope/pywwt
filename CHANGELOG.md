@@ -1,3 +1,13 @@
+# pypa:pywwt 0.18.0 (2023-02-02)
+
+- Update the FITS viewing code to use a temporary directory as a fallback if
+  it's not possible to write to the directory containing the FITS input(s)
+  (#344, @Carifio24).
+- Update pywwt's serialization of table size attributes to match the current
+  implementation (#345, @Carifio24). They weren't being properly saved and
+  loaded before.
+
+
 # pypa:pywwt 0.17.0 (2022-12-01)
 
 - Require version 0.12 of the research app, to get the latest improvements
