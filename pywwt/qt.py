@@ -13,7 +13,7 @@ import json
 import time
 
 from qtpy.QtWebEngineWidgets import QWebEngineView, QWebEnginePage, WEBENGINE
-from qtpy import QtWidgets, QtGui, QtCore
+from qtpy import QtWidgets, QtGui, QtCore, PYQT6, PYSIDE6
 
 from .app import get_qapp
 from .core import BaseWWTWidget
@@ -148,10 +148,13 @@ class WWTQtWidget(QtWidgets.QWidget):
     def __init__(self, url, parent=None):
         super(WWTQtWidget, self).__init__(parent=parent)
 
-        self.web = WWTWebEngineView()
         self.page = WWTQWebEnginePage()
-        self.page.setView(self.web)
-        self.web.setPage(self.page)
+        if PYQT6 or PYSIDE6:
+            self.web = WWTWebEngineView(self.page)
+        else:
+            self.web = WWTWebEngineView()
+            self.page.setView(self.web)
+            self.web.setPage(self.page)
         self.web.setUrl(QtCore.QUrl(url))
 
         layout = QtWidgets.QVBoxLayout()
