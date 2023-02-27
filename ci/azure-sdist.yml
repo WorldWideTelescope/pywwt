@@ -78,6 +78,7 @@ jobs:
         qtpy \
         reproject \
         requests \
+        scipy \
         tornado \
         traitlets
     displayName: Set up dependencies
