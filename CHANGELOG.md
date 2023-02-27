@@ -1,3 +1,8 @@
+# pypa:pywwt 0.18.1 (2023-02-27)
+
+- Make pywwt compatible with Qt6 (#346, @astrofrog)
+
+
 # pypa:pywwt 0.18.0 (2023-02-02)
 
 - Update the FITS viewing code to use a temporary directory as a fallback if
