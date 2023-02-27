@@ -1,6 +1,6 @@
 # rc: micro bump
 
-- Fix compatibility with Qt6 (#346, @astrofrog)
+- Make pywwt compatible with Qt6 (#346, @astrofrog)
 
 
 # pypa:pywwt 0.18.0 (2023-02-02)

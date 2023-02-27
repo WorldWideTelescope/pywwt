@@ -66,7 +66,7 @@ jobs:
         set -euo pipefail
         source activate-conda.sh
         set -x
-        \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebengine python="$PYTHON_SERIES" qtpy
+        \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebengine python="$PYTHON_SERIES" qtpy scipy shapely
         conda activate build
         pip install $BASH_WORKSPACE/sdist/*.tar.gz
       displayName: Install from sdist
@@ -85,6 +85,9 @@ jobs:
           --make-pidfile --background --exec /usr/bin/Xvfb \
           -- :99 -screen 0 1920x1200x24 -ac \
           +extension GLX +render -noreset
+        source activate-conda.sh
+        conda activate build
+        conda install -y xcb-util-keysyms xcb-util-image xcb-util-renderutil xcb-util-wm  # needed to load Qt XCB backend
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
       displayName: Set up Xvfb/OpenGL (Linux)
 
@@ -186,7 +189,7 @@ jobs:
       set -euo pipefail
       source activate-conda.sh
       set -x
-      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebengine python=3.9 qtpy
+      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebengine python=3.9 qtpy scipy shapely
       conda activate build
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
@@ -233,7 +236,7 @@ jobs:
       set -euo pipefail
       source activate-conda.sh
       set -x
-      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebengine python=3.9 qtpy
+      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebengine python=3.9 qtpy scipy shapely
       conda activate build
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
