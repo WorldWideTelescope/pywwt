@@ -1,4 +1,9 @@
-# rc: minor bump
+# rc: micro bump
+
+- Fix compatibility with Qt6 (#346, @astrofrog)
+
+
+# pypa:pywwt 0.18.0 (2023-02-02)
 
 - Update the FITS viewing code to use a temporary directory as a fallback if
   it's not possible to write to the directory containing the FITS input(s)

@@ -142,6 +142,10 @@ setup_args = dict(
             'PyQt5;python_version>="3"',
             'PyQtWebEngine;python_version>="3"',
         ],
+        "qt6": [
+            'PyQt6;python_version>="3"',
+            'PyQt6-WebEngine;python_version>="3"',
+        ],
         "lab": [
             "jupyterlab",
             "notebook",
