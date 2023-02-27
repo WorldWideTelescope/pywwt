@@ -101,6 +101,8 @@ steps:
       source activate-conda.sh
       set -x
       conda config --add channels conda-forge
+      conda config --set channel_priority strict
+      conda update -y --all
     displayName: Activate conda-forge
 
 - ${{ if parameters.setupGit }}:
