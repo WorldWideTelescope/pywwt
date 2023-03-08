@@ -39,11 +39,11 @@ class TestWWTWidget:
     def test_roll(self, capsys, wwt_qt_client):
         wwt_qt_client.center_on_coordinates(M42, fov=10 * u.deg, roll=15 * u.deg)
         wait_for_test(wwt_qt_client, WAIT_TIME)
-        assert wwt_qt_client.get_roll() == 15 * u.deg
+        assert u.isclose(wwt_qt_client.get_roll(), 15 * u.deg)
         # Check that passing no roll argument leaves the roll angle unchanged
         wwt_qt_client.center_on_coordinates(SkyCoord(0, 0, unit=u.deg), fov=20 * u.deg)
         wait_for_test(wwt_qt_client, WAIT_TIME)
-        assert wwt_qt_client.get_roll() == 15 * u.deg
+        assert u.isclose(wwt_qt_client.get_roll(), 15 * u.deg)
         check_silent_output(capsys)
 
     def test_annotations(self, capsys, wwt_qt_client):
