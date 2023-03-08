@@ -36,6 +36,16 @@ class TestWWTWidget:
         wait_for_test(wwt_qt_client, WAIT_TIME)
         check_silent_output(capsys)
 
+    def test_roll(self, capsys, wwt_qt_client):
+        wwt_qt_client.center_on_coordinates(M42, fov=10 * u.deg, roll=15 * u.deg)
+        wait_for_test(wwt_qt_client, WAIT_TIME)
+        assert u.isclose(wwt_qt_client.get_roll(), 15 * u.deg)
+        # Check that passing no roll argument leaves the roll angle unchanged
+        wwt_qt_client.center_on_coordinates(SkyCoord(0, 0, unit=u.deg), fov=20 * u.deg)
+        wait_for_test(wwt_qt_client, WAIT_TIME)
+        assert u.isclose(wwt_qt_client.get_roll(), 15 * u.deg)
+        check_silent_output(capsys)
+
     def test_annotations(self, capsys, wwt_qt_client):
         circle = wwt_qt_client.add_circle()
         circle.opacity = 0.8
@@ -166,6 +176,16 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     wait_for_test(wwt, WAIT_TIME, for_render=True)
 
     msg = assert_widget_image(tmpdir, wwt, 'qt_full_step5.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Step 6
+
+    wwt.center_on_coordinates(wwt.get_center(), fov=wwt.get_fov(), roll=37 * u.deg)
+
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step6.png', fail_now=False)
     if msg:
         failures.append(msg)
 

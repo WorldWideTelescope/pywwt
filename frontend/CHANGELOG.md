@@ -1,3 +1,9 @@
+# npm:pywwt 1.5.0 (2023-03-08)
+
+- Require version 0.14 of the research app, to get messages allowing the roll
+  state of the WWT camera to be read and written (#349, @Carifio24).
+
+
 # npm:pywwt 1.4.0 (2022-12-01)
 
 - Require version 0.12 of the research app, to get the latest improvements
