@@ -1298,11 +1298,13 @@ class BaseWWTWidget(HasTraits):
 
         center = self.get_center()
         fov = self.get_fov()
+        roll = self.get_roll()
         state["view_settings"] = {
             "mode": self._last_sent_view_mode,
             "ra": center.icrs.ra.deg,
             "dec": center.icrs.dec.deg,
             "fov": fov.to_value(u.deg),
+            "roll": roll.to_value(u.deg)
         }
 
         state["foreground_settings"] = {
