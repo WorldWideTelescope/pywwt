@@ -28,7 +28,7 @@ class MockWWTWidget(BaseWWTWidget):
         return self._serialize_state(None, None, None)
 
     def _get_view_data(self, field):
-        mock_vals = {'ra': 5. * DEGREES_TO_HOURS, 'dec': 10., 'fov': 15.}
+        mock_vals = {'ra': 5. * DEGREES_TO_HOURS, 'dec': 10., 'fov': 15., 'roll': 20.}
         return mock_vals[field]
 
     def _serve_file(self, filename, extension=''):
@@ -60,6 +60,7 @@ def test_basic_serialization():
     assert view_settings['ra'] == pytest.approx(5.)  # Behind the scenes unit conversion
     assert view_settings['dec'] == 10.
     assert view_settings['fov'] == 15.
+    assert view_settings['roll'] == 20.
 
     assert 'foreground_settings' in test_state
     foreground_settings = test_state['foreground_settings']

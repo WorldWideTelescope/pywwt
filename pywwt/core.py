@@ -146,6 +146,7 @@ class BaseWWTWidget(HasTraits):
     _raRad = 0.0
     _decRad = 0.0
     _fovDeg = 60.0
+    _rollDeg = 0.0
     _engineTime = Time("2017-03-09T12:30:00", format="isot")
     _systemTime = Time("2017-03-09T12:30:00", format="isot")
     _timeRate = 1.0
@@ -377,6 +378,7 @@ class BaseWWTWidget(HasTraits):
                 self._raRad = float(payload["raRad"])
                 self._decRad = float(payload["decRad"])
                 self._fovDeg = float(payload["fovDeg"])
+                self._rollDeg = float(payload["rollDeg"])
                 self._engineTime = Time(payload["engineClockISOT"], format="isot")
                 self._systemTime = Time(payload["systemClockISOT"], format="isot")
                 self._timeRate = float(payload["engineClockRateFactor"])
@@ -455,6 +457,8 @@ class BaseWWTWidget(HasTraits):
             return self._decRad * R2D
         elif field == "fov":
             return self._fovDeg
+        elif field == "roll":
+            return self._rollDeg
         elif field == "datetime":
             engine_delta = self._timeRate * (Time.now() - self._systemTime)
             return self._engineTime + engine_delta
@@ -803,7 +807,13 @@ class BaseWWTWidget(HasTraits):
         """
         return self._get_view_data("fov") * u.deg
 
-    def center_on_coordinates(self, coord, fov=60 * u.deg, instant=True):
+    def get_roll(self):
+        """
+        Return the view's roll angle in degrees.
+        """
+        return self._get_view_data("roll") * u.deg
+
+    def center_on_coordinates(self, coord, fov=60 * u.deg, roll=None, instant=True):
         """
         Center the view on a particular object or point in the sky.
 
@@ -815,18 +825,23 @@ class BaseWWTWidget(HasTraits):
         fov : `~astropy.units.Quantity`, optional
             The desired field of view.
 
+        roll: `~astropy.units.Quantity`, optional
+            The desired roll angle of the camera. If not specified, the
+            roll angle is not changed.
+
         instant : `bool`, optional
             Whether the view changes instantly or smoothly scrolls to the
             desired location.
         """
         coord_icrs = coord.icrs
-        self._send_msg(
-            event="center_on_coordinates",
-            ra=coord_icrs.ra.deg,
-            dec=coord_icrs.dec.deg,
-            fov=fov.to(u.deg).value,
-            instant=instant,
-        )
+        msg = dict(event="center_on_coordinates",
+                   ra=coord_icrs.ra.deg,
+                   dec=coord_icrs.dec.deg,
+                   fov=fov.to(u.deg).value,
+                   instant=instant)
+        if roll is not None:
+            msg["roll"] = roll.to(u.deg).value
+        self._send_msg(**msg)
 
     def set_view(self, mode):
         """
@@ -1283,11 +1298,13 @@ class BaseWWTWidget(HasTraits):
 
         center = self.get_center()
         fov = self.get_fov()
+        roll = self.get_roll()
         state["view_settings"] = {
             "mode": self._last_sent_view_mode,
             "ra": center.icrs.ra.deg,
             "dec": center.icrs.dec.deg,
             "fov": fov.to_value(u.deg),
+            "roll": roll.to_value(u.deg)
         }
 
         state["foreground_settings"] = {
