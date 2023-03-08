@@ -1,4 +1,10 @@
-# rc: micro bump
+# rc: minor bump
+
+- Allow the roll angle of the WWT camera to be both read and written (#349,
+  @Carifio24).
+
+
+# pypa:pywwt 0.18.1 (2023-02-27)
 
 - Make pywwt compatible with Qt6 (#346, @astrofrog)
 
