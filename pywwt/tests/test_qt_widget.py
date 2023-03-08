@@ -179,6 +179,16 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     if msg:
         failures.append(msg)
 
+    # Step 6
+
+    wwt.center_on_coordinates(wwt.get_center(), fov=wwt.get_fov(), roll=37 * u.deg)
+
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step6.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
     # Summarize
 
     if failures:
