@@ -6,48 +6,34 @@ parameters:
   default:
 
   - name: linux_37
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     vars:
       PYTHON_SERIES: "3.7"
 
   - name: linux_38
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     vars:
       PYTHON_SERIES: "3.8"
 
   - name: linux_39
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-22.04
     vars:
       PYTHON_SERIES: "3.9"
 
-  - name: macos_37
-    vmImage: macos-11
-    vars:
-      PYTHON_SERIES: "3.7"
-
-  - name: macos_38
-    vmImage: macos-11
-    vars:
-      PYTHON_SERIES: "3.8"
-
-  - name: windows_37
-    vmImage: windows-2019
-    vars:
-      PYTHON_SERIES: "3.7"
-
-  - name: windows_39
-    vmImage: windows-2019
+  - name: macos_39
+    vmImage: macos-12
     vars:
       PYTHON_SERIES: "3.9"
 
-  # 2020 Oct: the Windows / Python 3.8 build seems to hang forever in the test
-  # suite. No clues as to why, and the package complement is virtually identical
-  # to what's used for 3.7. Just skip the test for now.
-  #
-  #- name: windows_38
-  #  vmImage: windows-2019
-  #  vars:
-  #    PYTHON_SERIES: "3.8"
+  - name: macos_310
+    vmImage: macos-12
+    vars:
+      PYTHON_SERIES: "3.10"
+
+  - name: windows_310
+    vmImage: windows-2022
+    vars:
+      PYTHON_SERIES: "3.10"
 
 jobs:
 - ${{ each build in parameters.builds }}:
@@ -163,7 +149,7 @@ jobs:
         source activate-conda.sh
         conda activate build
         set -x
-        \conda install -y jupyterlab
+        \conda install -y jupyterlab jupyter_contrib_nbextensions
         jupyter nbextension list
         jupyter serverextension list
         jupyter labextension list

@@ -4,7 +4,7 @@ jobs:
 
 - job: sdist
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-latest
 
   # Need Zenodo credentials to generate DOIs during formal releases. But make
   # sure not to provide credentials otherwise (although Azure has its own checks

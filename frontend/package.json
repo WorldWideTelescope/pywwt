@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^2  || ^3 || ^4 || ^5 || ^6",
-    "@wwtelescope/research-app": "^0.14",
+    "@wwtelescope/research-app": "^0.14.2",
     "underscore": "^1"
   },
   "description": "AAS WorldWide Telescope from Python",
