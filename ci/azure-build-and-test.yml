@@ -149,7 +149,7 @@ jobs:
         source activate-conda.sh
         conda activate build
         set -x
-        \conda install -y jupyterlab
+        \conda install -y jupyterlab jupyter_contrib_nbextensions
         jupyter nbextension list
         jupyter serverextension list
         jupyter labextension list
