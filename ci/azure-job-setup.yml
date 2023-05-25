@@ -103,8 +103,6 @@ steps:
       conda config --add channels conda-forge
       conda config --set channel_priority strict
       conda update -y --all
-      # workaround for an error on Windows:
-      conda install -y brotlipy
     displayName: Activate conda-forge
 
 - ${{ if parameters.setupGit }}:
