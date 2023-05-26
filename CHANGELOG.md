@@ -1,3 +1,9 @@
+# pypa:pywwt 0.19.1 (2023-05-26)
+
+- Use version 0.14.2 of the research app in the bundled widget frontend, to get
+  a fix for HiPS catalogs loaded in HTTPS contexts (#352, @pkgw).
+
+
 # pypa:pywwt 0.19.0 (2023-03-08)
 
 - Allow the roll angle of the WWT camera to be both read and written (#349,
