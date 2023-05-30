@@ -6,9 +6,10 @@ jobs:
   pool:
     vmImage: ubuntu-latest
 
-  # Need Zenodo credentials to generate DOIs during formal releases. But make
-  # sure not to provide credentials otherwise (although Azure has its own checks
-  # to not provide secrets during PR builds).
+  # Need Zenodo credentials to generate DOIs during formal releases. Try not to
+  # provide credentials otherwise, but note that a malicious PR could just
+  # remove this filter -- that's why modern CI systems don't provide secrets
+  # during PR builds in the first place.
   ${{ if and(eq(variables['Build.SourceBranchName'], 'rc'), ne(variables['build.reason'], 'PullRequest')) }}:
     variables:
     - group: Deployment Credentials
