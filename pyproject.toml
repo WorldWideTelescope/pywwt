@@ -9,4 +9,4 @@ annotated_files = [
 ]
 
 [tool.cranko.internal_dep_versions]
-"npm:pywwt" = "thiscommit:2023-05-25:53DGAAv"
+"npm:pywwt" = "thiscommit:2023-05-30:zDqoE1g"
