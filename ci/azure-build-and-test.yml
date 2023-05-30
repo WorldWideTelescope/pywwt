@@ -5,11 +5,6 @@ parameters:
   type: object
   default:
 
-  - name: linux_37
-    vmImage: ubuntu-22.04
-    vars:
-      PYTHON_SERIES: "3.7"
-
   - name: linux_38
     vmImage: ubuntu-22.04
     vars:
@@ -20,10 +15,10 @@ parameters:
     vars:
       PYTHON_SERIES: "3.9"
 
-  - name: macos_39
-    vmImage: macos-12
+  - name: linux_310
+    vmImage: ubuntu-22.04
     vars:
-      PYTHON_SERIES: "3.9"
+      PYTHON_SERIES: "3.10"
 
   - name: macos_310
     vmImage: macos-12
@@ -165,7 +160,7 @@ jobs:
 
 - job: coverage
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-latest
   steps:
   - template: azure-job-setup.yml
     parameters:
@@ -212,7 +207,7 @@ jobs:
 
 - job: docs
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-latest
   steps:
   - template: azure-job-setup.yml
     parameters:
@@ -242,7 +237,7 @@ jobs:
 
 - job: codestyle
   pool:
-    vmImage: ubuntu-20.04
+    vmImage: ubuntu-latest
   steps:
   - template: azure-job-setup.yml
     parameters:
