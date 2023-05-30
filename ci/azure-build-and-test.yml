@@ -20,11 +20,6 @@ parameters:
     vars:
       PYTHON_SERIES: "3.9"
 
-  - name: macos_39
-    vmImage: macos-12
-    vars:
-      PYTHON_SERIES: "3.9"
-
   - name: macos_310
     vmImage: macos-12
     vars:
