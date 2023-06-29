@@ -12,11 +12,13 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 
 DEGREES_TO_HOURS = 1. / 15.
-STARDARD_WWT_SETTINGS = ['actualPlanetScale', 'showAltAzGrid', 'showConstellationBoundries', 'constellationBoundryColor',
-                         'constellationFigureColor', 'showConstellationFigures', 'showConstellationSelection',
+STARDARD_WWT_SETTINGS = ['actualPlanetScale', 'showAltAzGrid', 'showaltAzGridText', 'showConstellationBoundries',
+                         'constellationBoundryColor', 'constellationFigureColor', 'showConstellationFigures',
+                         'showConstellationSelection', 'showConstellationLabels', 'showConstellationPictures',
                          'constellationSelectionColor', 'showCrosshairs', 'crosshairsColor', 'showEcliptic',
-                         'showEclipticGrid', 'showGalacticGrid', 'galacticMode', 'showGrid', 'localHorizonMode',
-                         'locationAltitude', 'locationLat', 'locationLng']
+                         'showEclipticGrid', 'showEclipticGridText', 'showGalacticGrid', 'showGalacticGridText',
+                         'galacticMode', 'showGrid', 'showEquatorialGridText', 'localHorizonMode', 'locationAltitude',
+                         'locationLat', 'locationLng']
 
 
 class MockWWTWidget(BaseWWTWidget):
@@ -81,38 +83,50 @@ def test_widget_settings_serialization():
     widget = MockWWTWidget()
     widget.actual_planet_scale = True
     widget.alt_az_grid = False
+    widget.alt_az_text = False
     widget.constellation_boundaries = True
     widget.constellation_boundary_color = 'red'
     widget.constellation_figure_color = '#24680b'
     widget.constellation_figures = False
     widget.constellation_selection = True
     widget.constellation_selection_color = 'c'  # cyan
+    widget.constellation_labels = False
+    widget.constellation_pictures = False
     widget.crosshairs = True
     widget.crosshairs_color = (128./255., 64./255., 16./255.)
     widget.ecliptic = False
     widget.ecliptic_grid = True
+    widget.ecliptic_text = False
     widget.galactic_grid = False
+    widget.galactic_text = False
     widget.galactic_mode = True
     widget.grid = False
+    widget.grid_text = False
     widget.local_horizon_mode = True
     widget.location_altitude = 7*u.m
     widget.location_latitude = 12*u.deg
     widget.location_longitude = -18*u.deg
     expected_settings = {'actualPlanetScale': True,
                          'showAltAzGrid': False,
+                         'showAltAzGridText': False,
                          'showConstellationBoundries': True,
                          'constellationBoundryColor': '#ff0000',
                          'constellationFigureColor': '#24680b',
                          'showConstellationFigures': False,
                          'showConstellationSelection': True,
                          'constellationSelectionColor': '#00bfbf',
+                         'showConstellationLabels': False,
+                         'showConstellationPictures': False,
                          'showCrosshairs': True,
                          'crosshairsColor': '#804010',
                          'showEcliptic': False,
                          'showEclipticGrid': True,
+                         'showEclipticGridText': False,
                          'showGalacticGrid': False,
+                         'showGalacticGridText': False,
                          'galacticMode': True,
                          'showGrid': False,
+                         'showEquatorialGridText': False,
                          'localHorizonMode': True,
                          'locationAltitude': 7,
                          'locationLat': 12.,
