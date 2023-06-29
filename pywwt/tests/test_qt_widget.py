@@ -189,6 +189,50 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     if msg:
         failures.append(msg)
 
+    # Step 7
+
+    wwt.clear_annotations()
+    wwt.grid = False
+    wwt.constellation_labels = True
+    wwt.constellation_figures = True
+    wwt.constellation_pictures = True
+    wwt.constellation_boundaries = True
+    wwt.constellation_boundary_color = "pink"
+    wwt.constellation_selection_color = "blue"
+    wwt.constellation_figure_color = "teal"
+
+    wwt.center_on_coordinates(wwt.get_center(), fov=60 * u.deg)
+
+    # The constellation images take some time to load
+    wait_for_test(wwt, 10 * WAIT_TIME, for_render=True)
+
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step7.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Step 8
+
+    wwt.constellation_labels = False
+    wwt.constellation_figures = False
+    wwt.constellation_pictures = False
+    wwt.constellation_boundaries = False
+    wwt.grid = True
+    wwt.grid_text = True
+    wwt.alt_az_grid = True
+    wwt.alt_az_text = True
+    wwt.ecliptic_grid = True
+    wwt.ecliptic_text = True
+    wwt.galactic_grid = True
+    wwt.galactic_text = True
+
+    wwt.center_on_coordinates(wwt.get_center(), fov=20 * u.deg)
+
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step8.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
     # Summarize
 
     if failures:
