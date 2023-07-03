@@ -12,14 +12,14 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 
 DEGREES_TO_HOURS = 1. / 15.
-STARDARD_WWT_SETTINGS = ['actualPlanetScale', 'showAltAzGrid', 'showaltAzGridText', 'altAzGridColor', 
-                         'showConstellationBoundries', 'constellationBoundryColor', 'constellationFigureColor', 
-                         'showConstellationFigures', 'showConstellationSelection', 'showConstellationLabels', 
-                         'showConstellationPictures', 'constellationSelectionColor', 'showCrosshairs', 
-                         'crosshairsColor', 'showEcliptic', 'eclipticColor', 'showEclipticGrid', 
-                         'showEclipticGridText', 'eclipticGridColor', 'showGalacticGrid', 'showGalacticGridText', 
-                         'galacticGridColor', 'galacticMode', 'showGrid', 'showEquatorialGridText', 
-                         'equatorialGridColor', 'showPrecessionChart', 'precessionChartColor', 
+STARDARD_WWT_SETTINGS = ['actualPlanetScale', 'showAltAzGrid', 'showaltAzGridText', 'altAzGridColor',
+                         'showConstellationBoundries', 'constellationBoundryColor', 'constellationFigureColor',
+                         'showConstellationFigures', 'showConstellationSelection', 'showConstellationLabels',
+                         'showConstellationPictures', 'constellationSelectionColor', 'showCrosshairs',
+                         'crosshairsColor', 'showEcliptic', 'eclipticColor', 'showEclipticGrid',
+                         'showEclipticGridText', 'eclipticGridColor', 'showGalacticGrid', 'showGalacticGridText',
+                         'galacticGridColor', 'galacticMode', 'showGrid', 'showEquatorialGridText',
+                         'equatorialGridColor', 'showPrecessionChart', 'precessionChartColor',
                          'localHorizonMode', 'locationAltitude', 'locationLat', 'locationLng']
 
 

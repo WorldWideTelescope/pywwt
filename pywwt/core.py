@@ -707,7 +707,7 @@ class BaseWWTWidget(HasTraits):
     ).tag(wwt="showGalacticGrid", wwt_reset=True)
 
     galactic_grid_color = Color(
-        "cyan", help="The color of the equatorial grid " "(`str` or `tuple`)"
+        "cyan", help="The color of the galactic grid " "(`str` or `tuple`)"
     ).tag(wwt="galacticGridColor", wwt_reset=True)
 
     galactic_text = Bool(
