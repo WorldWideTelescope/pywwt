@@ -238,13 +238,31 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     wwt.ecliptic = True
     wwt.ecliptic_color = "#55AAEE"
     wwt.grid_color = "#964B00"
-    wwt.alt_az_grid_color = "cyan"
+    wwt.alt_az_grid_color = (0, 1, 1)
     wwt.ecliptic_grid_color = "orange"
     wwt.galactic_grid_color = "red"
 
     wait_for_test(wwt, WAIT_TIME, for_render=True)
 
     msg = assert_widget_image(tmpdir, wwt, 'qt_full_step9.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Step 10
+    wwt.ecliptic = False
+    wwt.ecliptic_grid = False
+    wwt.alt_az_grid = False
+    wwt.grid = False
+    wwt.galactic_grid = False
+    wwt.precession_chart = True
+    wwt.precession_chart_color = (1, 0, 0)
+
+    coord = SkyCoord(100, 65, unit=('deg', 'deg'))
+    wwt.center_on_coordinates(coord, fov=60 * u.deg)
+
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step10.png', fail_now=False)
     if msg:
         failures.append(msg)
 
