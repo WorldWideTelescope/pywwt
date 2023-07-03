@@ -233,6 +233,21 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     if msg:
         failures.append(msg)
 
+    # Step 9
+
+    wwt.ecliptic = True
+    wwt.ecliptic_color = "#55AAEE"
+    wwt.grid_color = "#964B00"
+    wwt.alt_az_grid_color = "cyan"
+    wwt.ecliptic_grid_color = "orange"
+    wwt.galactic_grid_color = "red"
+
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step9.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
     # Summarize
 
     if failures:
