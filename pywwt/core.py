@@ -754,6 +754,14 @@ class BaseWWTWidget(HasTraits):
         "(:class:`~astropy.units.Quantity`)",
     ).tag(wwt="locationLng", wwt_reset=True)
 
+    precession_chart = Bool(
+        False, help="Whether to show the precession chart " "(`bool`)"
+    ).tag(wwt="showPrecessionChart", wwt_reset=True)
+
+    precession_chart_color = Color(
+        "orange", help="The color of the precession chart " "(`str` or `tuple`)"
+    ).tag(wwt="precessionChartColor", wwt_reset=True)
+
     # Validators / observers for the settings above that need custom support.
 
     @observe("background")
