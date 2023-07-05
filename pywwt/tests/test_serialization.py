@@ -12,13 +12,15 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 
 DEGREES_TO_HOURS = 1. / 15.
-STARDARD_WWT_SETTINGS = ['actualPlanetScale', 'showAltAzGrid', 'showaltAzGridText', 'showConstellationBoundries',
-                         'constellationBoundryColor', 'constellationFigureColor', 'showConstellationFigures',
-                         'showConstellationSelection', 'showConstellationLabels', 'showConstellationPictures',
-                         'constellationSelectionColor', 'showCrosshairs', 'crosshairsColor', 'showEcliptic',
-                         'showEclipticGrid', 'showEclipticGridText', 'showGalacticGrid', 'showGalacticGridText',
-                         'galacticMode', 'showGrid', 'showEquatorialGridText', 'localHorizonMode', 'locationAltitude',
-                         'locationLat', 'locationLng']
+STARDARD_WWT_SETTINGS = ['actualPlanetScale', 'showAltAzGrid', 'showaltAzGridText', 'altAzGridColor',
+                         'showConstellationBoundries', 'constellationBoundryColor', 'constellationFigureColor',
+                         'showConstellationFigures', 'showConstellationSelection', 'showConstellationLabels',
+                         'showConstellationPictures', 'constellationSelectionColor', 'showCrosshairs',
+                         'crosshairsColor', 'showEcliptic', 'eclipticColor', 'showEclipticGrid',
+                         'showEclipticGridText', 'eclipticGridColor', 'showGalacticGrid', 'showGalacticGridText',
+                         'galacticGridColor', 'galacticMode', 'showGrid', 'showEquatorialGridText',
+                         'equatorialGridColor', 'showPrecessionChart', 'precessionChartColor',
+                         'localHorizonMode', 'locationAltitude', 'locationLat', 'locationLng']
 
 
 class MockWWTWidget(BaseWWTWidget):
@@ -84,6 +86,7 @@ def test_widget_settings_serialization():
     widget.actual_planet_scale = True
     widget.alt_az_grid = False
     widget.alt_az_text = False
+    widget.alt_az_grid_color = "#ff00ff"
     widget.constellation_boundaries = True
     widget.constellation_boundary_color = 'red'
     widget.constellation_figure_color = '#24680b'
@@ -95,13 +98,19 @@ def test_widget_settings_serialization():
     widget.crosshairs = True
     widget.crosshairs_color = (128./255., 64./255., 16./255.)
     widget.ecliptic = False
+    widget.ecliptic_color = "#ff0000"
     widget.ecliptic_grid = True
     widget.ecliptic_text = False
+    widget.ecliptic_grid_color = "#ffa500"
     widget.galactic_grid = False
     widget.galactic_text = False
+    widget.galactic_grid_color = "#55aaee"
     widget.galactic_mode = True
     widget.grid = False
     widget.grid_text = False
+    widget.grid_color = "#583927"
+    widget.precession_chart = True
+    widget.precession_chart_color = "#ffff00"
     widget.local_horizon_mode = True
     widget.location_altitude = 7*u.m
     widget.location_latitude = 12*u.deg
@@ -109,6 +118,7 @@ def test_widget_settings_serialization():
     expected_settings = {'actualPlanetScale': True,
                          'showAltAzGrid': False,
                          'showAltAzGridText': False,
+                         'altAzGridColor': "#ff00ff",
                          'showConstellationBoundries': True,
                          'constellationBoundryColor': '#ff0000',
                          'constellationFigureColor': '#24680b',
@@ -120,13 +130,19 @@ def test_widget_settings_serialization():
                          'showCrosshairs': True,
                          'crosshairsColor': '#804010',
                          'showEcliptic': False,
+                         'eclipticColor': "#ff0000",
                          'showEclipticGrid': True,
                          'showEclipticGridText': False,
+                         'eclipticGridColor': "#ffa500",
                          'showGalacticGrid': False,
                          'showGalacticGridText': False,
+                         'galacticGridColor': "#55aaee",
                          'galacticMode': True,
                          'showGrid': False,
                          'showEquatorialGridText': False,
+                         'equatorialGridColor': "#583927",
+                         'showPrecessionChart': True,
+                         'precessionChartColor': "#ffff00",
                          'localHorizonMode': True,
                          'locationAltitude': 7,
                          'locationLat': 12.,
