@@ -604,9 +604,14 @@ class BaseWWTWidget(HasTraits):
         False, help="Whether to show an altitude-azimuth grid " "(`bool`)"
     ).tag(wwt="showAltAzGrid", wwt_reset=True)
 
-    # alt_az_text = Bool(False,
-    #                    help='Whether to show labels for the altitude-azimuth grid\'s text '
-    #                         '(`bool`)').tag(wwt='showAltAzGridText', wwt_reset=True)
+    alt_az_grid_color = Color(
+        "magenta",
+        help="The color of the altitude-azimuth grid " "(`str` or " "`tuple`)",
+    ).tag(wwt="altAzGridColor", wwt_reset=True)
+
+    alt_az_text = Bool(
+        False, help='Whether to show labels for the altitude-azimuth grid\'s text ' '(`bool`)'
+    ).tag(wwt='showAltAzGridText', wwt_reset=True)
 
     background = Unicode(
         "Hydrogen Alpha Full Sky Map",
@@ -645,14 +650,14 @@ class BaseWWTWidget(HasTraits):
         "(`bool`)",
     ).tag(wwt="showConstellationSelection", wwt_reset=True)
 
-    # constellation_pictures = Bool(False,
-    #                               help='Whether to show pictures of the constellations\' '
-    #                                    'mythological representations '
-    #                                    '(`bool`)').tag(wwt='showConstellationPictures', wwt_reset=True)
+    constellation_pictures = Bool(
+        False, help='Whether to show pictures of the constellations\' '
+                    'mythological representations ' '(`bool`)'
+    ).tag(wwt='showConstellationPictures', wwt_reset=True)
 
-    # constellation_labels = Bool(False,
-    #                             help='Whether to show labelss for constellations '
-    #                                  '(`bool`)').tag(wwt='showConstellationLabels', wwt_reset=True)
+    constellation_labels = Bool(
+        False, help='Whether to show labels for constellations ' '(`bool`)'
+    ).tag(wwt='showConstellationLabels', wwt_reset=True)
 
     crosshairs = Bool(
         False, help="Whether to show crosshairs at the center of " "the field (`bool`)"
@@ -666,9 +671,21 @@ class BaseWWTWidget(HasTraits):
         False, help="Whether to show the path of the ecliptic " "(`bool`)"
     ).tag(wwt="showEcliptic", wwt_reset=True)
 
+    ecliptic_color = Color(
+        "blue", help="The color of the ecliptic " "(`str` or `tuple`)"
+    ).tag(wwt="eclipticColor", wwt_reset=True)
+
     ecliptic_grid = Bool(
         False, help="Whether to show a grid relative to the " "ecliptic plane (`bool`)"
     ).tag(wwt="showEclipticGrid", wwt_reset=True)
+
+    ecliptic_grid_color = Color(
+        "blue", help="The color of the ecliptic grid " "(`str` or `tuple`)"
+    ).tag(wwt="eclipticGridColor", wwt_reset=True)
+
+    ecliptic_text = Bool(
+        False, help="Whether to show labels for the ecliptic grid " "(`bool`)"
+    ).tag(wwt="showEclipticGridText", wwt_reset=True)
 
     foreground = Unicode(
         "Digitized Sky Survey (Color)",
@@ -689,13 +706,25 @@ class BaseWWTWidget(HasTraits):
         False, help="Whether to show a grid relative to the " "galactic plane (`bool`)"
     ).tag(wwt="showGalacticGrid", wwt_reset=True)
 
-    # galactic_text = Bool(False,
-    #                      help='Whether to show labels for the galactic grid\'s text '
-    #                           '(`bool`)').tag(wwt='showGalacticGridText', wwt_reset=True)
+    galactic_grid_color = Color(
+        "cyan", help="The color of the galactic grid " "(`str` or `tuple`)"
+    ).tag(wwt="galacticGridColor", wwt_reset=True)
+
+    galactic_text = Bool(
+        False, help='Whether to show labels for the galactic grid\'s text ' '(`bool`)'
+    ).tag(wwt='showGalacticGridText', wwt_reset=True)
 
     grid = Bool(False, help="Whether to show the equatorial grid " "(`bool`)").tag(
         wwt="showGrid", wwt_reset=True
     )
+
+    grid_color = Color(
+        "white", help="The color of the equatorial grid " "(`str` or `tuple`)"
+    ).tag(wwt="equatorialGridColor", wwt_reset=True)
+
+    grid_text = Bool(
+        False, help="Whether to show labels for the equatorial grid " "(`bool`)"
+    ).tag(wwt="showEquatorialGridText", wwt_reset=True)
 
     local_horizon_mode = Bool(
         False,
@@ -724,6 +753,14 @@ class BaseWWTWidget(HasTraits):
         "location in local horizon mode "
         "(:class:`~astropy.units.Quantity`)",
     ).tag(wwt="locationLng", wwt_reset=True)
+
+    precession_chart = Bool(
+        False, help="Whether to show the precession chart " "(`bool`)"
+    ).tag(wwt="showPrecessionChart", wwt_reset=True)
+
+    precession_chart_color = Color(
+        "orange", help="The color of the precession chart " "(`str` or `tuple`)"
+    ).tag(wwt="precessionChartColor", wwt_reset=True)
 
     # Validators / observers for the settings above that need custom support.
 

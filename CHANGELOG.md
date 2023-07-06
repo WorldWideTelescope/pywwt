@@ -1,4 +1,16 @@
-# rc: micro bump
+# rc: minor bump
+
+- Expose new engine settings relating to the display of constellations,
+  coordinate grids, and their colors (#354, #355, @Carifio24). New properties
+  are `alt_az_grid_color`, `alt_az_text`, `constellation_pictures`,
+  `constellation_labels`, `ecliptic_color`, `ecliptic_grid_color`,
+  `ecliptic_text`, `galactic_grid_color`, `galactic_text`, `grid_color`,
+  `grid_text`, `precession_chart`, and `precession_chart_color`.
+- The new version of the engine also adds the ability to rotate the WWT view on
+  touch devices with a two-finger twist gesture.
+
+
+# pypa:pywwt 0.19.2 (2023-05-30)
 
 - Require the version 0.14.3 of the research app, to get a fix for communicating
   information about catalog sources (#353, @pkgw; pulls in

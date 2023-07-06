@@ -1,5 +1,11 @@
 # rc: micro bump
 
+- Require the version 0.15.0 of the research app, to get new settings for
+  various grid colors (#355, @Carifio24).
+
+
+# npm:pywwt 1.5.2 (2023-05-30)
+
 - Require the version 0.14.3 of the research app, to get a fix for communicating
   information about catalog sources (#353, @pkgw; pulls in
   WorldWideTelescope/wwt-webgl-engine#251, @Carifio24).
