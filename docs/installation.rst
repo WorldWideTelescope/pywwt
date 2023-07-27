@@ -244,13 +244,18 @@ this repository and install the package manually (note that this requires `npm
     cd pywwt
     pip install -e .
 
-If you want to use the Jupyter widget, you will also need to run::
+If you want to use the Jupyter widget with a recent installation of the Jupyter
+stack, you will also need to run::
 
-    jupyter nbextension install --py --symlink --sys-prefix pywwt
-    jupyter nbextension enable --py --sys-prefix pywwt
-    jupyter nbextension list  # check that the output shows pywwt as enabled and OK
-    jupyter serverextension enable --py --sys-prefix pywwt
-    jupyter serverextension list  # check that the output shows pywwt as enabled and OK
+    jupyter nbclassic-extension install --py --symlink --sys-prefix pywwt
+    jupyter nbclassic-extension enable --py --sys-prefix pywwt
+    jupyter nbclassic-extension list  # check that the output shows pywwt as enabled and OK
+    jupyter nbclassic-serverextension enable --py --sys-prefix pywwt
+    jupyter nbclassic-serverextension list  # check that the output shows pywwt as enabled and OK
+
+On older versions of Jupyter, use the ``nbextension`` subcommand instead of
+``nbclassic-extension``, and use just ``serverextension`` instead of
+``nbclassic-serverextension``.
 
 And if you additionally want to use the widget in JupyterLab, run::
 
