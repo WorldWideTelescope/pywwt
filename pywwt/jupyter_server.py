@@ -19,12 +19,21 @@ from tornado import web
 # so let's try to fail gracefully if Jupyter modules are missing. `tornado` is a
 # hard requirement appearing in setup.py.
 try:
-    from notebook.utils import url_path_join
-    from notebook.base.handlers import IPythonHandler
+    try:
+        from jupyter_server.utils import url_path_join
+    except ImportError:
+        # `notebook` <= 6
+        from notebook.utils import url_path_join
+
+    try:
+        from jupyter_server.base.handlers import JupyterHandler
+    except ImportError:
+        # `notebook` <= 6
+        from notebook.base.handlers import IPythonHandler as JupyterHandler
 
     HAVE_NOTEBOOK = True
 except ImportError:
-    IPythonHandler = object
+    JupyterHandler = object
     HAVE_NOTEBOOK = False
 
 __all__ = [
@@ -35,7 +44,7 @@ __all__ = [
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "web_static")
 
 
-class WWTStaticFileHandler(IPythonHandler):
+class WWTStaticFileHandler(JupyterHandler):
     def get(self, filename):
         static_path = os.path.join(STATIC_DIR, filename)
 

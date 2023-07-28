@@ -519,10 +519,15 @@ def get_relay_hub(kernel=None):
 def _list_running_servers_jl3():
     import io
     import json
-    from notebook.utils import check_pid
     from jupyter_core.paths import jupyter_runtime_dir
     import os.path
     import re
+
+    try:
+        from jupyter_server.utils import check_pid
+    except ImportError:
+        # `notebook` <= 6
+        from notebook.utils import check_pid
 
     runtime_dir = jupyter_runtime_dir()
 
