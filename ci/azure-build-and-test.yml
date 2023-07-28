@@ -144,9 +144,9 @@ jobs:
         source activate-conda.sh
         conda activate build
         set -x
-        \conda install -y jupyterlab jupyter_contrib_nbextensions
-        jupyter nbextension list
-        jupyter serverextension list
+        \conda install -y jupyterlab nbclassic
+        jupyter nbclassic-extension list
+        jupyter nbclassic-serverextension list
         jupyter labextension list
       displayName: Print Jupyter extension status
 
