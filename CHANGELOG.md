@@ -1,3 +1,13 @@
+# pypa:pywwt 0.21.0 (2023-07-28)
+
+- Update `pywwt` to work with version 7 of the Jupyter `notebook` package (#356,
+  @Carifio24, @pkgw). This new version is a major update on the Jupyter side,
+  but it is only used in a few minor places within `pywwt`. The `pywwt` package
+  should remain compatible with older versions of `notebook`.
+- Fix pywwt’s default ecliptic grid color to match the engine (#356,
+  @Carifio24).
+
+
 # pypa:pywwt 0.20.0 (2023-07-06)
 
 - Expose new engine settings relating to the display of constellations,

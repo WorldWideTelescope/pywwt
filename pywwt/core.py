@@ -680,7 +680,7 @@ class BaseWWTWidget(HasTraits):
     ).tag(wwt="showEclipticGrid", wwt_reset=True)
 
     ecliptic_grid_color = Color(
-        "blue", help="The color of the ecliptic grid " "(`str` or `tuple`)"
+        "green", help="The color of the ecliptic grid " "(`str` or `tuple`)"
     ).tag(wwt="eclipticGridColor", wwt_reset=True)
 
     ecliptic_text = Bool(
