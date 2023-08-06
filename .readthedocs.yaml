@@ -1,18 +1,17 @@
 version: 2
 
 build:
-  image: latest
+  os: ubuntu-22.04
+  tools:
+    python: mambaforge-4.10
+    nodejs: "18"
   apt_packages:
     - libpci-dev
-
-# As of June 2021, We need to set up a conda environment to install
-# a sufficiently new Node.js: https://github.com/readthedocs/readthedocs.org/issues/8249
 
 conda:
   environment: .readthedocs_env.yml
 
 python:
-  version: 3.8
   install:
     - method: pip
       path: .
