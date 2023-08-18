@@ -3,3 +3,15 @@ upstream_urls = [
   'git@github.com:WorldWideTelescope/pywwt.git',
   'https://github.com/WorldWideTelescope/pywwt.git',
 ]
+
+[projects."npm:@wwtelescope/engine"]
+ignore = true
+
+[projects."npm:@wwtelescope/engine-helpers"]
+ignore = true
+
+[projects."npm:@wwtelescope/engine-pinia"]
+ignore = true
+
+[projects."npm:@wwtelescope/research-app"]
+ignore = true
