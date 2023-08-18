@@ -109,6 +109,10 @@ jobs:
         set -x
         \conda install -y pytest-qt pytest-remotedata pytest-timeout
         python setup.py build
+        echo ENGINE DEBUG HACK
+        (cd DEBUGHACK && for d in * ; do rm -rf ../frontend/node_modules/@wwtelescope/$d && cp -r $d ../frontend/node_modules/@wwtelescope/ ; done)
+        (cd frontend && npm run clean && npm run build && npm run pywwt-export)
+        echo END DEBUG HACK
         pytest -v -s pywwt -p no:warnings --timeout=1800 --timeout_method=thread
       displayName: Test
       env:
@@ -199,6 +203,10 @@ jobs:
       set -x
       \conda install -y pytest-cov pytest-remotedata pytest-timeout
       python setup.py build
+      echo ENGINE DEBUG HACK
+      (cd DEBUGHACK && for d in * ; do rm -rf ../frontend/node_modules/@wwtelescope/$d && cp -r $d ../frontend/node_modules/@wwtelescope/ ; done)
+      (cd frontend && npm run clean && npm run build && npm run pywwt-export)
+      echo END DEBUG HACK
       pytest -v -s pywwt -p no:warnings --timeout=180 --timeout_method=thread --cov-report=xml --cov=pywwt
     displayName: Test with coverage
 

@@ -1,0 +1,21 @@
+<testsuite name="Mocha Tests" tests="19" failures="0" errors="0" skipped="0" timestamp="Fri, 18 Aug 2023 20:37:03 GMT" time="0.039">
+<testcase classname="Color" name="should parse strings" time="0.001"/>
+<testcase classname="Color" name="should parse simple hex" time="0"/>
+<testcase classname="Color" name="should convert to simple hex" time="0.001"/>
+<testcase classname="ColorMapContainer" name="should initialize from nested ARGB lists" time="0"/>
+<testcase classname="ColorMapContainer" name="should initialize from a list of strings" time="0"/>
+<testcase classname="ColorMapContainer" name="should find the closest color" time="0"/>
+<testcase classname="ColorMapContainer" name="should get a colormap by name" time="0.001"/>
+<testcase classname="FitsImage" name="should include colormap name in XML serialization" time="0.006"/>
+<testcase classname="FitsImage" name="should error when specifying an incorrect colormap name" time="0.002"/>
+<testcase classname="Table" name="should load data from CSV strings" time="0"/>
+<testcase classname="Table" name="should save an existing table correctly" time="0.001"/>
+<testcase classname="Table" name="should copy cleanly when using clone()" time="0"/>
+<testcase classname="Table" name="should include a new column when calling addColumn" time="0"/>
+<testcase classname="Table" name="should remove a column when calling removeColumn" time="0"/>
+<testcase classname="Layer" name="Layer.getStringFromGzipBlob should keep non-compressed strings as-is" time="0.002"/>
+<testcase classname="Layer" name="Layer.getStringFromGzipBlob should decompress compressed strings" time="0.001"/>
+<testcase classname="SpreadSheetLayer" name="should export XML with backward-compatibility for size normalization" time="0.004"/>
+<testcase classname="SpreadSheetLayer" name="should export XML with backward-compatibility for dynamic color calculation" time="0.002"/>
+<testcase classname="SpreadSheetLayer" name="should error when specifying an incorrect colormap name" time="0.001"/>
+</testsuite>
