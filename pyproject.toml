@@ -4,9 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.cranko]
 main_version_file = "pywwt/_version.py"
-annotated_files = [
-  "pywwt/jupyter.py",
-]
+annotated_files = ["pywwt/jupyter.py"]
 
 [tool.cranko.internal_dep_versions]
-"npm:pywwt" = "thiscommit:2023-05-30:zDqoE1g"
+"npm:pywwt" = "thiscommit:2023-09-15:VaRzh3C"
