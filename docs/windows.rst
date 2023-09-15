@@ -4,7 +4,7 @@ Connecting to the WWT Windows application
 About
 -----
 
-The :mod:`pywwt.windows` sub-package includes a Python interface for the AAS
+The :mod:`pywwt.windows` sub-package includes a Python interface for the
 `WorldWide Telescope <http://www.worldwidetelescope.org/home>`_
 (WWT) Windows client, using the
 `Layer Control API (LCAPI) <https://docs.worldwidetelescope.org/lcapi-guide/1/lcapicommands/#load>`_.

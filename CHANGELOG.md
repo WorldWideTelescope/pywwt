@@ -1,5 +1,17 @@
 # rc: minor bump
 
+- When using the bundled version of the WWT research app, make sure that we pull
+  in the new ESM-based WebGL rendering engine, by requiring the 0.16.x version
+  series of the research app (#366, #367, @pkgw). This shouldn't lead to any
+  user-visible changes (or even developer-visible ones), but in an effort to
+  smoke out any oversights, we take this step to help ensure that we're using
+  the new code.
+- Various sponsorship branding updates (#364, #366, @pkgw).
+- Various build system and CI/CD improvements (#362, #363, @pkgw)
+
+
+# pypa:pywwt 0.21.0 (2023-07-28)
+
 - Update `pywwt` to work with version 7 of the Jupyter `notebook` package (#356,
   @Carifio24, @pkgw). This new version is a major update on the Jupyter side,
   but it is only used in a few minor places within `pywwt`. The `pywwt` package

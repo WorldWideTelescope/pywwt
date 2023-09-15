@@ -5,30 +5,21 @@ channels:
 dependencies:
   - astropy
   - astropy-sphinx-theme
-  - commonmark
   - ipyevents
-  - ipython
+  - ipykernel
   - ipywidgets
-  - jupyterlab
-  - jupyterlab_widgets
-  - krb5
   - lxml
   - matplotlib
   - nbclassic
-  - nodejs
-  - notebook
   - numpydoc
   - pip
   - pyopengl
   - pyqt
   - pyqtwebengine
-  - python=3.9
+  - python =3.10
   - qt
   - qtpy
-  - recommonmark
   - reproject
-  - scipy
   - setuptools
   - sphinx
   - sphinx-automodapi
-  - widgetsnbextension

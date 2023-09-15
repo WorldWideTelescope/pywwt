@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 # -*- mode: python; coding: utf-8 -*-
-# Copyright (c) Jupyter Development Team, AAS WorldWide Telescope team
+# Copyright (c) Jupyter Development Team, WorldWide Telescope team
 # Distributed under the terms of the Modified BSD License.
 
 from __future__ import print_function
@@ -80,14 +80,14 @@ cmdclass["js-content"] = js_content_command
 
 setup_args = dict(
     name=name,
-    description="The AAS WorldWide Telescope from Python",
+    description="Interactively visualize astronomy data in WorldWide Telescope",
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     version=version,
     cmdclass=cmdclass,
-    packages=find_packages(),
-    author="AAS WorldWide Telescope  team",
-    author_email="wwt@aas.org",
+    packages=find_packages("pywwt"),
+    author="WorldWide Telescope team",
+    author_email="hello@worldwidetelescope.org",
     url="https://github.com/WorldWideTelescope/pywwt",
     license="BSD",
     platforms="Linux, Mac OS X, Windows",
@@ -133,6 +133,7 @@ setup_args = dict(
         ],
         "docs": [
             "astropy-sphinx-theme",
+            "ipykernel",
             "sphinx>=1.6",
             "sphinx-automodapi",
             "numpydoc",
@@ -148,6 +149,7 @@ setup_args = dict(
         ],
         "lab": [
             "jupyterlab",
+            "nbclassic",
             "notebook",
         ],
     },
