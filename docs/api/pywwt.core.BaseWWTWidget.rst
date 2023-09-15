@@ -12,6 +12,8 @@ BaseWWTWidget
 
       ~BaseWWTWidget.actual_planet_scale
       ~BaseWWTWidget.alt_az_grid
+      ~BaseWWTWidget.alt_az_grid_color
+      ~BaseWWTWidget.alt_az_text
       ~BaseWWTWidget.available_hips_catalog_names
       ~BaseWWTWidget.available_layers
       ~BaseWWTWidget.available_views
@@ -20,18 +22,27 @@ BaseWWTWidget
       ~BaseWWTWidget.constellation_boundary_color
       ~BaseWWTWidget.constellation_figure_color
       ~BaseWWTWidget.constellation_figures
+      ~BaseWWTWidget.constellation_labels
+      ~BaseWWTWidget.constellation_pictures
       ~BaseWWTWidget.constellation_selection
       ~BaseWWTWidget.constellation_selection_color
       ~BaseWWTWidget.crosshairs
       ~BaseWWTWidget.crosshairs_color
       ~BaseWWTWidget.current_mode
       ~BaseWWTWidget.ecliptic
+      ~BaseWWTWidget.ecliptic_color
       ~BaseWWTWidget.ecliptic_grid
+      ~BaseWWTWidget.ecliptic_grid_color
+      ~BaseWWTWidget.ecliptic_text
       ~BaseWWTWidget.foreground
       ~BaseWWTWidget.foreground_opacity
       ~BaseWWTWidget.galactic_grid
+      ~BaseWWTWidget.galactic_grid_color
       ~BaseWWTWidget.galactic_mode
+      ~BaseWWTWidget.galactic_text
       ~BaseWWTWidget.grid
+      ~BaseWWTWidget.grid_color
+      ~BaseWWTWidget.grid_text
       ~BaseWWTWidget.imagery
       ~BaseWWTWidget.instruments
       ~BaseWWTWidget.layers
@@ -40,6 +51,8 @@ BaseWWTWidget
       ~BaseWWTWidget.location_latitude
       ~BaseWWTWidget.location_longitude
       ~BaseWWTWidget.most_recent_source
+      ~BaseWWTWidget.precession_chart
+      ~BaseWWTWidget.precession_chart_color
       ~BaseWWTWidget.selected_sources
       ~BaseWWTWidget.solar_system
 
@@ -58,6 +71,7 @@ BaseWWTWidget
       ~BaseWWTWidget.get_center
       ~BaseWWTWidget.get_current_time
       ~BaseWWTWidget.get_fov
+      ~BaseWWTWidget.get_roll
       ~BaseWWTWidget.load_image_collection
       ~BaseWWTWidget.load_tour
       ~BaseWWTWidget.pause_time
@@ -75,6 +89,8 @@ BaseWWTWidget
 
    .. autoattribute:: actual_planet_scale
    .. autoattribute:: alt_az_grid
+   .. autoattribute:: alt_az_grid_color
+   .. autoattribute:: alt_az_text
    .. autoattribute:: available_hips_catalog_names
    .. autoattribute:: available_layers
    .. autoattribute:: available_views
@@ -83,18 +99,27 @@ BaseWWTWidget
    .. autoattribute:: constellation_boundary_color
    .. autoattribute:: constellation_figure_color
    .. autoattribute:: constellation_figures
+   .. autoattribute:: constellation_labels
+   .. autoattribute:: constellation_pictures
    .. autoattribute:: constellation_selection
    .. autoattribute:: constellation_selection_color
    .. autoattribute:: crosshairs
    .. autoattribute:: crosshairs_color
    .. autoattribute:: current_mode
    .. autoattribute:: ecliptic
+   .. autoattribute:: ecliptic_color
    .. autoattribute:: ecliptic_grid
+   .. autoattribute:: ecliptic_grid_color
+   .. autoattribute:: ecliptic_text
    .. autoattribute:: foreground
    .. autoattribute:: foreground_opacity
    .. autoattribute:: galactic_grid
+   .. autoattribute:: galactic_grid_color
    .. autoattribute:: galactic_mode
+   .. autoattribute:: galactic_text
    .. autoattribute:: grid
+   .. autoattribute:: grid_color
+   .. autoattribute:: grid_text
    .. autoattribute:: imagery
    .. autoattribute:: instruments
    .. autoattribute:: layers
@@ -103,6 +128,8 @@ BaseWWTWidget
    .. autoattribute:: location_latitude
    .. autoattribute:: location_longitude
    .. autoattribute:: most_recent_source
+   .. autoattribute:: precession_chart
+   .. autoattribute:: precession_chart_color
    .. autoattribute:: selected_sources
    .. autoattribute:: solar_system
 
@@ -119,6 +146,7 @@ BaseWWTWidget
    .. automethod:: get_center
    .. automethod:: get_current_time
    .. automethod:: get_fov
+   .. automethod:: get_roll
    .. automethod:: load_image_collection
    .. automethod:: load_tour
    .. automethod:: pause_time
