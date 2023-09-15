@@ -17,7 +17,7 @@ from .jupyter_relay import get_relay_hub
 
 __all__ = ["WWTJupyterWidget", "WWTLabApplication", "connect_to_app"]
 
-_npm_version = "^1.5.2"  # cranko internal-req npm:pywwt
+_npm_version = "^1.6.0"  # cranko internal-req npm:pywwt
 VIEW_MODULE_VERSION = _npm_version
 MODEL_MODULE_VERSION = _npm_version
 
@@ -30,7 +30,7 @@ dom_listener = DOMListener()
 @widgets.register
 class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
     """
-    An AAS WorldWide Telescope Jupyter widget.
+    A WorldWide Telescope (WWT) Jupyter widget.
 
     Parameters
     ----------
@@ -341,9 +341,9 @@ def connect_to_app():
     Connect to a WWT application running inside a JupyterLab computational
     environment. This is your preferred gateway to using WWT in JupyterLab.
 
-    For the time being, you must have opened the AAS WorldWide Telescope app
+    For the time being, you must have opened the WorldWide Telescope app
     inside JupyterLab. You can do this by clicking the large WWT icon in the
-    JupyterLab launcher, or by invoking the "AAS WorldWide Telescope" command.
+    JupyterLab launcher, or by invoking the "WorldWide Telescope" command.
     You can open the JupyterLab command palette by typing
     Control/Command-Shift-C.
 

@@ -19,8 +19,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 project = "pywwt"
-author = "AAS WorldWide Telescope team, John ZuHone"
-copyright = "2017-2021, " + author
+author = "WorldWide Telescope Team, John ZuHone"
+copyright = "2017-2023, " + author
 
 # The short X.Y version.
 from pywwt import __version__ as version

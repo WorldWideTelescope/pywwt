@@ -1,14 +1,14 @@
 {
-  "author": "",
+  "author": "The WorldWide Telescope Team <hello@worldwidetelescope.org>",
   "bugs": {
     "url": "https://github.com/WorldWideTelescope/pywwt/issues"
   },
   "dependencies": {
     "@jupyter-widgets/base": "^2  || ^3 || ^4 || ^5 || ^6",
-    "@wwtelescope/research-app": "^0.15.0",
+    "@wwtelescope/research-app": "^0.16.0",
     "underscore": "^1"
   },
-  "description": "AAS WorldWide Telescope from Python",
+  "description": "WorldWide Telescope from Python",
   "devDependencies": {
     "shelljs": "^0.8",
     "shx": "^0.3",
@@ -42,5 +42,5 @@
     "clean": "shx rm -rf dist",
     "pywwt-export": "npm run build && npm pack && node pywwt-export.js"
   },
-  "version": "1.5.3"
+  "version": "1.6.0"
 }

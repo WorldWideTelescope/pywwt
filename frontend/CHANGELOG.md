@@ -1,3 +1,12 @@
+# npm:pywwt 1.6.0 (2023-09-15)
+
+- Require the new ESM-based engine through the 0.16.x series of the research app
+  (#366, @pkgw). This shouldn't lead to any user-visible changes (or even
+  developer-visible ones), but in an effort to smoke out any oversights, we take
+  this step to ensure that we're using the new code. This change also brings in
+  a few sponsorship branding updates.
+
+
 # npm:pywwt 1.5.3 (2023-07-06)
 
 - Require the version 0.15.0 of the research app, to get new settings for

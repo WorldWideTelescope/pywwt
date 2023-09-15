@@ -47,27 +47,27 @@
         "orcid": "0000-0003-3175-2347"
       }
     ],
-    "description": "pywwt is the official toolkit for accessing AAS WorldWide Telescope (WWT) from Python. Learn more at <a href=\"https://pywwt.readthedocs.io/\">the pywwt website</a>.",
+    "description": "pywwt is the official toolkit for accessing WorldWide Telescope (WWT) from Python. Learn more at <a href=\"https://pywwt.readthedocs.io/\">the pywwt website</a>.",
     "grants": [
       {
         "id": "10.13039/100000001::1550701"
       }
     ],
     "keywords": [
-      "AAS WorldWide Telescope",
       "Astronomy",
       "Python",
-      "Visualization"
+      "Visualization",
+      "WorldWide Telescope"
     ],
     "language": "eng",
     "license": "BSD-3-Clause",
-    "publication_date": "2023-07-28",
-    "title": "pypa:pywwt 0.21.0",
+    "publication_date": "2023-09-15",
+    "title": "pypa:pywwt 0.22.0",
     "upload_type": "software",
-    "version": "0.21.0"
+    "version": "0.22.0"
   },
   "conceptdoi": "10.5281/zenodo.7164147",
-  "record_id": "8193603",
-  "doi": "10.5281/zenodo.8193603",
-  "bucket_link": "https://zenodo.org/api/files/7fe44d30-f757-497f-8468-df0bf078b6af"
+  "record_id": "8350627",
+  "doi": "10.5281/zenodo.8350627",
+  "bucket_link": "https://zenodo.org/api/files/4d1eeef7-6d48-44b1-a8eb-ee7127b1eba4"
 }

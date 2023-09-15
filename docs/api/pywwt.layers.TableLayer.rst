@@ -26,6 +26,7 @@ TableLayer
       ~TableLayer.marker_scale
       ~TableLayer.marker_type
       ~TableLayer.opacity
+      ~TableLayer.selectable
       ~TableLayer.size_att
       ~TableLayer.size_scale
       ~TableLayer.size_vmax
@@ -63,6 +64,7 @@ TableLayer
    .. autoattribute:: marker_scale
    .. autoattribute:: marker_type
    .. autoattribute:: opacity
+   .. autoattribute:: selectable
    .. autoattribute:: size_att
    .. autoattribute:: size_scale
    .. autoattribute:: size_vmax
