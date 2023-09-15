@@ -2,30 +2,27 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7164147.svg)](https://doi.org/10.5281/zenodo.7164147)
 [![Build Status](https://dev.azure.com/aasworldwidetelescope/WWT/_apis/build/status/WorldWideTelescope.pywwt?branchName=master)](https://dev.azure.com/aasworldwidetelescope/WWT/_build/latest?definitionId=2&branchName=master)
 
-# pywwt: AAS WorldWide Telescope from Python/Jupyter
+# pywwt: WorldWide Telescope from Python/Jupyter
 
 🚀🚀 [Click here to try out pywwt in the cloud!][go-cloud] 🚀🚀
 
 [go-cloud]: https://mybinder.org/v2/gh/WorldWideTelescope/pywwt-notebooks/master?urlpath=lab/tree/Start%20Here.ipynb
 
-*Note: our cloud servers usually start up quickly, but if they were recently
+*Note: the cloud servers usually start up quickly, but if they were recently
 updated you may have to wait a few minutes for the backing software images to be
 rebuilt.*
+
 
 ## About
 
 The [pywwt] package is the official toolkit for visualizing astronomical data in
-Python using [AAS][aas] [WorldWide Telescope][wwt] (WWT). WWT is a free,
-open-source tool for visually exploring humanity’s scientific understanding of
-the Universe. It includes a sophisticated 4D WebGL rendering engine and a
-cloud-based web service for sharing and visualizing terabytes of astronomical
-data. WWT is brought to you by the non-profit [American Astronomical Society][aas]
-(AAS), the major organization of professional astronomers in North America, and
-the [.NET Foundation][dnf].
+Python using [WorldWide Telescope][wwt] (WWT), a free, open-source astronomy
+visualization system. WWT includes a sophisticated 4D WebGL rendering engine and
+a cloud-based web service for sharing and visualizing terabytes of astronomical
+data.
 
 [pywwt]: https://pywwt.readthedocs.io/
-[aas]: https://aas.org/
-[wwt]: http://www.worldwidetelescope.org/home
+[wwt]: https://worldwidetelescope.org/home
 [dnf]: https://dotnetfoundation.org/
 
 ![A WWT screenshot showing exoplanets in the Kepler field overlaid on a background sky map.](docs/images/data_layers_kepler.png "Kepler exoplanets in pywwt")
@@ -43,8 +40,32 @@ With [pywwt] you can:
 [qt]: https://www.qt.io/
 [tables]: https://docs.astropy.org/en/stable/table/
 
-The full documentation, including installation instructions, can be found at
-<http://pywwt.readthedocs.io/>.
+[//]: # (numfocus-fiscal-sponsor-attribution)
+
+The WorldWide Telescope project uses an [open governance
+model](https://worldwidetelescope.org/about/governance/) and is fiscally
+sponsored by [NumFOCUS](https://numfocus.org/). Consider making a
+[tax-deductible donation](https://numfocus.org/donate-for-worldwide-telescope)
+to help the project pay for developer time, professional services, travel,
+workshops, and a variety of other needs.
+
+<div align="center">
+  <a href="https://numfocus.org/donate-for-worldwide-telescope">
+    <img height="60px"
+         src="https://raw.githubusercontent.com/numfocus/templates/master/images/numfocus-logo.png">
+  </a>
+</div>
+
+
+## Installation
+
+The full pywwt documentation, including installation instructions, can be found
+at <https://pywwt.readthedocs.io/>.
+
+
+## Reporting issues
+
+If you run into any issues, please open an issue [here](https://github.com/WorldWideTelescope/pywwt/issues).
 
 
 ## For Developers: Testing
@@ -95,22 +116,50 @@ the Git repository doesn't actually make it smaller, so removing old reference
 images only helps a bit with housekeeping.
 
 
-## Reporting issues
+## Continuous Integration and Deployment
 
-If you run into any issues, please open an issue [here](https://github.com/WorldWideTelescope/pywwt/issues).
+This repository uses [Cranko] to automate release workflows. This automation is
+essential to the smooth and reproducible deployment of the WWT web services.
+
+[Cranko]: https://pkgw.github.io/cranko/
+
+
+## Getting involved
+
+We love it when people get involved in the WWT community! You can get started
+by [participating in our user forum] or by
+[signing up for our low-traffic newsletter]. If you would like to help make
+WWT better, our [Contributor Hub] aims to be your one-stop shop for
+information about how to contribute to the project, with the
+[Contributors’ Guide] being the first thing you should read. Here on GitHub we
+operate with a standard [fork-and-pull] model.
+
+[participating in our user forum]: https://wwt-forum.org/
+[signing up for our low-traffic newsletter]: https://bit.ly/wwt-signup
+[Contributor Hub]: https://worldwidetelescope.github.io/
+[Contributors’ Guide]: https://worldwidetelescope.github.io/contributing/
+[fork-and-pull]: https://help.github.com/en/articles/about-collaborative-development-models
+
+All participation in WWT communities is conditioned on your adherence to the
+[WWT Code of Conduct], which basically says that you should not be a jerk.
+
+[WWT Code of Conduct]: https://worldwidetelescope.github.io/code-of-conduct/
 
 
 ## Acknowledgments
 
-The AAS WorldWide Telescope (WWT) system, including pywwt, is a [.NET
-Foundation][dnf] project. Work on WWT and pywwt has been supported by the
-[American Astronomical Society][aas] (AAS), the US [National Science Foundation][nsf]
-(grants [1550701], [1642446], and [2004840]), the [Gordon and Betty Moore Foundation][moore], and
-[Microsoft][msft].
+Work on the WorldWide Telescope system has been supported by the [American
+Astronomical Society] (AAS), the [.NET Foundation], and other partners. See [the
+WWT user website][acks] for details.
 
-[nsf]: https://www.nsf.gov/
-[1550701]: https://www.nsf.gov/awardsearch/showAward?AWD_ID=1550701
-[1642446]: https://www.nsf.gov/awardsearch/showAward?AWD_ID=1642446
-[2004840]: https://www.nsf.gov/awardsearch/showAward?AWD_ID=2004840
-[moore]: https://www.moore.org/
-[msft]: https://microsoft.com/
+[American Astronomical Society]: https://aas.org/
+[.NET Foundation]: https://dotnetfoundation.org/
+[acks]: https://worldwidetelescope.org/about/acknowledgments/
+
+
+## Legalities
+
+The WWT code is licensed under the [MIT License]. The copyright to the code is
+owned by the [.NET Foundation].
+
+[MIT License]: https://opensource.org/licenses/MIT

@@ -96,7 +96,7 @@ that everything is set up:
     jupyter lab build
 
 If the installation is successful, then the next time you start up JupyterLab
-the “Launcher” display should now contain an AAS WorldWide Telescope icon:
+the “Launcher” display should now contain a WorldWide Telescope icon:
 
 .. image:: images/jlab-launcher.jpg
    :scale: 50%

@@ -1,11 +1,12 @@
 pywwt Reference Documentation
 =============================
 
-pywwt is the official toolkit for accessing AAS_ `WorldWide Telescope`_ (WWT)
-from Python. WWT is a tool for showcasing astronomical data and knowledge
-brought to you by the non-profit `American Astronomical Society`_ (AAS), the
-major organization of professional astronomers in North America. To learn more
-about WWT, visit `the WWT homepage`_ or `the WWT documentation hub`_.
+The pywwt package is the official toolkit for visualizing astronomical data in
+Python using `WorldWide Telescope`_ (WWT), a free, open-source astronomy
+visualization system. WWT includes a sophisticated 4D WebGL rendering engine and
+a cloud-based web service for sharing and visualizing terabytes of astronomical
+data. To learn more about WWT, visit `the WWT homepage`_ or `the WWT
+documentation hub`_.
 
 Here's a **live, interactive** copy of the WWT research app that lets you
 explore `a 25-gigabyte mosaic of the Andromeda galaxy
@@ -13,8 +14,6 @@ explore `a 25-gigabyte mosaic of the Andromeda galaxy
 <https://panstarrs.stsci.edu/>`__ with sources from the `Gaia DR2 catalog
 <https://www.cosmos.esa.int/web/gaia/data-release-2>`__ overlaid:
 
-.. _AAS: https://aas.org/
-.. _American Astronomical Society: https://aas.org/
 .. _WorldWide Telescope: https://worldwidetelescope.org/home
 .. _the WWT homepage: https://worldwidetelescope.org/home
 .. _the WWT documentation hub: https://docs.worldwidetelescope.org/
@@ -111,11 +110,10 @@ discussion forum`_ site.
 Acknowledgments
 ---------------
 
-pywwt is part of the AAS WorldWide Telescope system, a `.NET Foundation`_
-project managed by the non-profit `American Astronomical Society`_ (AAS). Work
-on WWT has been supported by the AAS, the US `National Science Foundation`_, and
-other partners. See `the WWT user website`_ for details.
+Work on the WorldWide Telescope system has been supported by the `American
+Astronomical Society`_ (AAS), the `.NET Foundation`_, and other partners. See `the
+WWT user website`_ for details.
 
+.. _American Astronomical Society: https://aas.org/
 .. _.NET Foundation: https://dotnetfoundation.org/
-.. _National Science Foundation: https://www.nsf.gov/
 .. _the WWT user website: https://worldwidetelescope.org/about/acknowledgments/

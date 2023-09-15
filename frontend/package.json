@@ -8,7 +8,7 @@
     "@wwtelescope/research-app": "^0.15.0",
     "underscore": "^1"
   },
-  "description": "AAS WorldWide Telescope from Python",
+  "description": "WorldWide Telescope from Python",
   "devDependencies": {
     "shelljs": "^0.8",
     "shx": "^0.3",
