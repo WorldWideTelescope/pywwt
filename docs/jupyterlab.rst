@@ -9,7 +9,7 @@ built. `Learn how to set up pywwt's JupyerLab integration JupyterLab here
 <installation>`_.
 
 Once the ingration is set up, then the next time you start up JupyterLab the
-“Launcher” display should now contain an AAS WorldWide Telescope icon:
+“Launcher” display should now contain a WorldWide Telescope icon:
 
 .. image:: images/jlab-launcher.jpg
    :scale: 50%

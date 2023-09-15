@@ -7,7 +7,7 @@ detail.
 [pywwt]: https://pywwt.readthedocs.io/
 [Jupyter Widget]: https://ipywidgets.readthedocs.io/
 
-To use the [AAS][aas] [WorldWide Telescope][wwt] (WWT) technology inside the
+To use the [WorldWide Telescope][wwt] (WWT) technology inside the
 [JupyterLab] computational environment (NB: JupyterLab is distinct from
 “vanilla” Jupyter), we recommend that you skip this widget and instead use the
 [wwt-jupyterlab] extension. The dedicated extension installs the more powerful
@@ -15,7 +15,6 @@ WWT “[research app]” into your JupyterLab environment. That being said, this
 package also includes a small JupyterLab extension that makes the pywwt widget
 available within the JupyterLab context, if that’s what you want to use.
 
-[aas]: https://aas.org/
 [wwt]: https://worldwidetelescope.org/home
 [JupyterLab]: https://jupyterlab.readthedocs.io/
 [wwt-jupyterlab]: https://github.com/WorldWideTelescope/wwt-jupyterlab/
@@ -26,11 +25,14 @@ stack][web-docs].
 
 [web-docs]: https://docs.worldwidetelescope.org/webgl-reference/latest/
 
-WWT is a free, open-source tool for visually exploring humanity’s scientific
-understanding of the Universe. WWT is brought to you by the non-profit [American
-Astronomical Society][aas] (AAS), the major organization of professional
-astronomers in North America, and the [.NET Foundation][dnf].
+The WorldWide Telescope project is fiscally sponsored by
+[NumFOCUS](https://numfocus.org/). Consider making a [tax-deductible
+donation](https://numfocus.org/donate-for-worldwide-telescope) to help support
+the project. Work on WWT has been supported by the [American Astronomical
+Society] (AAS), the [.NET Foundation], and other organizational partners. See
+[the WWT user website][acks] for details.
 
-[pywwt]: https://pywwt.readthedocs.io/
-[dnf]: https://dotnetfoundation.org/
+[American Astronomical Society]: https://aas.org/
+[.NET Foundation]: https://dotnetfoundation.org/
+[acks]: https://worldwidetelescope.org/about/acknowledgments/
 

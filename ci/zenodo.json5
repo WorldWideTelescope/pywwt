@@ -56,7 +56,7 @@
     ],
 
     // Subset of HTML allowed here:
-    description: 'pywwt is the official toolkit for accessing AAS WorldWide \
+    description: 'pywwt is the official toolkit for accessing WorldWide \
 Telescope (WWT) from Python. Learn more at <a href="https://pywwt.readthedocs.io/">the pywwt website</a>.',
 
     access_right: 'open',
@@ -76,10 +76,10 @@ Telescope (WWT) from Python. Learn more at <a href="https://pywwt.readthedocs.io
 
     // Keywords use an uncontrolled vocabulary (and so are of limited usefulness):
     keywords: [
-      'AAS WorldWide Telescope',
       'Astronomy',
       'Python',
       'Visualization',
+      'WorldWide Telescope',
     ],
   },
 }
