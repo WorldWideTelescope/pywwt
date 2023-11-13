@@ -67,21 +67,24 @@ var version = require('./index').version;
 // Which is a hairy busines, because not only does our one widget potentially
 // have multiple views, but there are also potentially multiple active widgets,
 // and we'll see all of their messages.
-var WWTModel = widgets.DOMWidgetModel.extend({
-    defaults: _.extend(widgets.DOMWidgetModel.prototype.defaults(), {
-        _model_name: 'WWTModel',
-        _model_module: 'pywwt',
-        _model_module_version: version,
+class WWTModel extends widgets.DOMWidgetModel {
+    defaults() {
+        return {
+            ...super.defaults(),
+            _model_name: 'WWTModel',
+            _model_module: 'pywwt',
+            _model_module_version: version,
 
-        _view_name: 'WWTView',
-        _view_module: 'pywwt',
-        _view_module_version: version,
+            _view_name: 'WWTView',
+            _view_module: 'pywwt',
+            _view_module_version: version,
 
-        _appUrl: ''
-    }),
+            _appUrl: ''
+        }
+    }
 
-    initialize: function () {
-        WWTModel.__super__.initialize.apply(this, arguments);
+    initialize() {
+        widgets.DOMWidgetModel.prototype.initialize.apply(this, arguments);
 
         // NOTE: we deliberately call the following twice to make sure that it
         // is properly set, due to a caching bug in some versions of JupyterLab.
@@ -112,12 +115,12 @@ var WWTModel = widgets.DOMWidgetModel.extend({
             function (event) { self.processDomWindowMessage(event); },
             false
         );
-    },
+    }
 
     // The kernel can generate partial URLs, but doesn't (and can't) know the
     // full URL where data are ultimately exposed. So in various places we need
     // to edit URLs emerging from the client to make them complete.
-    canonicalizeUrl: function (url) {
+    canonicalizeUrl(url) {
         // Sketchy heuristic to deal with the Jupyter "base URL", which still
         // isn't an absolute URL. It's a URL path used by multi-user Jupyter
         // servers and the like. The Python kernel code can determine the base
@@ -132,19 +135,19 @@ var WWTModel = widgets.DOMWidgetModel.extend({
         }
 
         return new URL(url, location.toString()).toString();
-    },
+    }
 
     // Get a unique ID and sequence number for distinguishing views. Note that
     // while each model might have multiple views, there might also be multiple
     // widget models too, and we have to distinguish them all.
-    mintViewIds: function() {
+    mintViewIds() {
         var seq = this._nextViewSeqNumber;
         this._nextViewSeqNumber++;
         return [this.model_id + "v" + seq, seq];
-    },
+    }
 
     // Called by a widget view when the "liveness" state of its app changes.
-    onViewStatusChange: function(view, alive) {
+    onViewStatusChange(view, alive) {
         if (alive) {
             // Should this view become the current view?
             //
@@ -187,14 +190,14 @@ var WWTModel = widgets.DOMWidgetModel.extend({
                 }
             }
         }
-    },
+    }
 
     // Relay a message from the kernel to the active view. In order to keep
     // things tractable, we only route messages to the "current" view. For
     // instance, if the client were to issue a data-request message and we
     // routed it to multiple views, we'd get multiple responses, with no
     // sensible way to know which to prefer.
-    processIpyWidgetsMessage: function (msg) {
+    processIpyWidgetsMessage(msg) {
         if (this._currentView === null) {
             // We could queue up messages here. The kernel "shouldn't" send us
             // any messages until a view is ready, but it's always possible that
@@ -224,7 +227,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
         }
 
         this._currentView.relayIpyWidgetsMessage(msg);
-    },
+    }
 
     // Process messages from the WWT apps, potentially relaying them to the
     // kernel.
@@ -234,7 +237,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
     //
     // The message is relayed to the kernel using ipywidgets "custom" messages,
     // which is basically trivial once we've dealt with the above.
-    processDomWindowMessage: function (event) {
+    processDomWindowMessage(event) {
         var payload = event.data;
 
         if (event.origin !== this._appOrigin)
@@ -270,7 +273,7 @@ var WWTModel = widgets.DOMWidgetModel.extend({
         payload['_pywwtExpedite'] = true;
         this.send(payload);
     }
-});
+}
 
 // The pywwt ipywidget view implementation.
 //
@@ -282,8 +285,8 @@ var WWTModel = widgets.DOMWidgetModel.extend({
 // destroy the element. However, re-adding an iframe to the DOM causes it to
 // reload, so hiding and re-showing a WWT view causes its internal state to be
 // reset :-(
-var WWTView = widgets.DOMWidgetView.extend({
-    render: function () {
+class WWTView extends widgets.DOMWidgetView {
+    render() {
         this._appUrl = this.model.canonicalizeUrl(this.model.get('_appUrl'));
         this._appOrigin = new URL(this._appUrl).origin;
 
@@ -324,9 +327,9 @@ var WWTView = widgets.DOMWidgetView.extend({
         );
 
         setInterval(function () { self.checkApp(); }, 1000);
-    },
+    }
 
-    checkApp: function() {
+    checkApp() {
         // Send our next ping ...
 
         var window = this.tryGetWindow();
@@ -346,13 +349,13 @@ var WWTView = widgets.DOMWidgetView.extend({
             this._alive = alive;
             this.model.onViewStatusChange(this, alive);
         }
-    },
+    }
 
     // Process a message sent to the browser window. This function's only job is
     // to look for responses to our pings. It will be called for messages from
     // all views of all widgets, though, so it needs to be careful about which
     // messages to process.
-    processDomWindowMessage: function (event) {
+    processDomWindowMessage(event) {
         var payload = event.data;
 
         if (event.origin !== this._appOrigin)
@@ -365,12 +368,12 @@ var WWTView = widgets.DOMWidgetView.extend({
                 this._lastPongTimestamp = ts;
             }
         }
-    },
+    }
 
     // Called by the model when there's a message from the kernel that should go
     // to this view. The model "shouldn't" give us any messages if/when our
     // window is nonfunctional, but the window might always die underneath us.
-    relayIpyWidgetsMessage: function (msg) {
+    relayIpyWidgetsMessage(msg) {
         var window = this.tryGetWindow();
         if (!window) {
             // TODO? Tell the model that we failed?
@@ -378,38 +381,34 @@ var WWTView = widgets.DOMWidgetView.extend({
         }
 
         window.postMessage(msg, this._appUrl);
-    },
+    }
 
     // Note: processPhosphorMessage is needed for Jupyter Lab <2 and
     // processLuminoMessage is needed for Jupyter Lab 2.0+
 
-    processPhosphorMessage: function (msg) {
+    // See https://ipywidgets.readthedocs.io/en/latest/migration_guides.html#phosphor-lumino
+    _processLuminoMessage(msg, _super) {
         // We listen for phosphor resize events so that when Jupyter Lab is
         // used, we adjust the canvas size to the tab/panel in Jupyter Lab.
         // See relayout for more details.
-        WWTView.__super__.processPhosphorMessage.apply(this, arguments);
+        _super.call(this, msg);
         switch (msg.type) {
             case 'resize':
             case 'after-show':
                 this.relayout();
                 break;
         }
-    },
+    }
 
-    processLuminoMessage: function (msg) {
-        // We listen for lumino resize events so that when Jupyter Lab is
-        // used, we adjust the canvas size to the tab/panel in Jupyter Lab.
-        // See relayout for more details.
-        WWTView.__super__.processLuminoMessage.apply(this, arguments);
-        switch (msg.type) {
-            case 'resize':
-            case 'after-show':
-                this.relayout();
-                break;
-        }
-    },
+    processPhosphorMessage(msg) {
+      this._processLuminoMessage(msg, super.processPhosphorMessage);
+    }
 
-    relayout: function () {
+    processLuminoMessage(msg) {
+      this._processLuminoMessage(msg, super.processLuminoMessage);
+    }
+
+    relayout() {
         // Only do resizing if we are not in the notebook context but in a
         // split panel context. We find this out by checking if one of the
         // parents of the current element has the jp-MainAreaWidget class --
@@ -459,13 +458,13 @@ var WWTView = widgets.DOMWidgetView.extend({
         // need to find a better solution in the long term.
         iframe.width = width - 10;
         iframe.height = height - 10;
-    },
+    }
 
     // Get the WWT window, if it is actually fully initialized. Note that in
     // JupyterLab if this widget view is hidden and then re-shown, the iframe
     // will reload, and the contentWindow will acquire a new value. So we can't
     // cache too aggressively.
-    tryGetWindow: function () {
+    tryGetWindow() {
         var iframe = this.el.getElementsByTagName('iframe')[0];
         if (!iframe)
             return null;
@@ -476,7 +475,7 @@ var WWTView = widgets.DOMWidgetView.extend({
 
         return window;
     }
-});
+}
 
 module.exports = {
     WWTModel: WWTModel,
