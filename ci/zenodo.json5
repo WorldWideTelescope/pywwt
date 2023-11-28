@@ -1,73 +1,85 @@
+// See https://pkgw.github.io/cranko/book/latest/integrations/zenodo.html
+// and https://developers.zenodo.org/#representation
+
 {
-  "conceptrecid": "7164147",
-  "metadata": {
-    "access_right": "open",
-    "creators": [
+  conceptrecid: '7164147',
+
+  metadata: {
+    upload_type: 'software',
+    language: 'eng',
+
+    // ** Keep this alphabetical by family name!!! **
+    creators: [
       {
-        "affiliation": "Center for Astrophysics | Harvard & Smithsonian",
-        "name": "Carifio, Jonathan",
-        "orcid": "0000-0002-7759-2601"
+        affiliation: 'Center for Astrophysics | Harvard & Smithsonian',
+        name: 'Carifio, Jonathan',
+        orcid: '0000-0002-7759-2601',
       },
       {
-        "affiliation": "Heidelberg Institute for Theoretical Studies",
-        "name": "Gaibler, Volker",
-        "orcid": "0000-0001-7581-7574"
+        affiliation: 'Heidelberg Institute for Theoretical Studies',
+        name: 'Gaibler, Volker',
+        orcid: '0000-0001-7581-7574',
       },
       {
-        "affiliation": "Aperio Software",
-        "name": "Homeier, Derek",
-        "orcid": "0000-0002-8546-9128"
+        affiliation: 'Aperio Software',
+        name: 'Homeier, Derek',
+        orcid: '0000-0002-8546-9128',
       },
       {
-        "affiliation": "Winter Way",
-        "name": "Norman, Henrik",
-        "orcid": "0000-0003-4189-3450"
+        affiliation: 'Winter Way',
+        name: 'Norman, Henrik',
+        orcid: '0000-0003-4189-3450',
       },
       {
-        "affiliation": "Space Telescope Science Institute",
-        "name": "Otor, O. Justin",
-        "orcid": "0000-0002-4679-5692"
+        affiliation: 'Space Telescope Science Institute',
+        name: 'Otor, O. Justin',
+        orcid: '0000-0002-4679-5692',
       },
       {
-        "affiliation": "Aperio Software",
-        "name": "Robitaille, Thomas P.",
-        "orcid": "0000-0002-8642-1329"
+        affiliation: 'Aperio Software',
+        name: 'Robitaille, Thomas P.',
+        orcid: '0000-0002-8642-1329',
       },
       {
-        "name": "Subbarao, Jeffrey"
+        name: 'Subbarao, Jeffrey',
       },
       {
-        "affiliation": "Center for Astrophysics | Harvard & Smithsonian",
-        "name": "Williams, Peter K. G.",
-        "orcid": "0000-0003-3734-3587"
+        affiliation: 'Center for Astrophysics | Harvard & Smithsonian',
+        name: 'Williams, Peter K. G.',
+        orcid: '0000-0003-3734-3587',
       },
       {
-        "affiliation": "Center for Astrophysics | Harvard & Smithsonian",
-        "name": "ZuHone, John",
-        "orcid": "0000-0003-3175-2347"
-      }
+        affiliation: 'Center for Astrophysics | Harvard & Smithsonian',
+        name: 'ZuHone, John',
+        orcid: '0000-0003-3175-2347',
+      },
     ],
-    "description": "pywwt is the official toolkit for accessing WorldWide Telescope (WWT) from Python. Learn more at <a href=\"https://pywwt.readthedocs.io/\">the pywwt website</a>.",
-    "grants": [
-      {
-        "id": "10.13039/100000001::1550701"
-      }
+
+    // Subset of HTML allowed here:
+    description: 'pywwt is the official toolkit for accessing WorldWide \
+Telescope (WWT) from Python. Learn more at <a href="https://pywwt.readthedocs.io/">the pywwt website</a>.',
+
+    access_right: 'open',
+    license: 'BSD-3-Clause', // see https://spdx.org/licenses/
+
+    grants: [
+      // National Science Foundation:
+      {id: '10.13039/100000001::1550701'},
+
+      // As of 2022 August these grants are not in the OpenAIRE "Research Graph"
+      // and so Zenodo won't let us record them here. Test existence by
+      // GET'ing `https://zenodo.org/api/grants/$id`.
+      //
+      //{id: '10.13039/100000001::1642446'},
+      //{id: '10.13039/100000001::2004840'},
     ],
-    "keywords": [
-      "Astronomy",
-      "Python",
-      "Visualization",
-      "WorldWide Telescope"
+
+    // Keywords use an uncontrolled vocabulary (and so are of limited usefulness):
+    keywords: [
+      'Astronomy',
+      'Python',
+      'Visualization',
+      'WorldWide Telescope',
     ],
-    "language": "eng",
-    "license": "BSD-3-Clause",
-    "publication_date": "2023-09-15",
-    "title": "pypa:pywwt 0.22.0",
-    "upload_type": "software",
-    "version": "0.22.0"
   },
-  "conceptdoi": "10.5281/zenodo.7164147",
-  "record_id": "8350627",
-  "doi": "10.5281/zenodo.8350627",
-  "bucket_link": "https://zenodo.org/api/files/4d1eeef7-6d48-44b1-a8eb-ee7127b1eba4"
 }

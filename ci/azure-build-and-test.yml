@@ -213,11 +213,31 @@ jobs:
     parameters:
       setupBuild: true
 
+  # We install some extra deps here to make the docs build happy (it needs to
+  # import everything) while avoiding clashes between Conda and pip.
   - bash: |
       set -euo pipefail
       source activate-conda.sh
       set -x
-      \conda create -y -n build setuptools matplotlib pip pyopengl 'pyqt>=5.12' pyqtwebengine python=3.9 qtpy scipy shapely
+      \conda create -y -n build \
+        astropy \
+        astropy-sphinx-theme \
+        ipykernel \
+        jupyter_sphinx \
+        matplotlib \
+        nbclassic \
+        numpydoc \
+        pip \
+        pyopengl \
+        'pyqt>=5.12' \
+        pyqtwebengine \
+        python=3.9 \
+        qtpy \
+        scipy \
+        setuptools \
+        shapely \
+        sphinx \
+        sphinx-automodapi
       conda activate build
       pip install $BASH_WORKSPACE/sdist/*.tar.gz
     displayName: Install from sdist
@@ -230,7 +250,6 @@ jobs:
       source activate-conda.sh
       conda activate build
       set -x
-      \conda install -y astropy astropy-sphinx-theme ipykernel jupyter_sphinx nbclassic numpydoc sphinx sphinx-automodapi
       cd docs
       make html
     displayName: Build docs

@@ -1,3 +1,18 @@
+# pypa:pywwt 0.23.0 (2023-11-28)
+
+- Update the Jupyter widget implementation to use ES6 class syntax (#368,
+  @Carifio24). This should fix up compatibility with the 8.x series of
+  `ipywidgets`.
+
+We have temporarily disabled DOI registration with this release (#369, @pkgw).
+The associated release artifacts will report (obviously) bogus DOIs. This is due
+to a recent major update to Zenodo, which seems to have broken their APIs. Our
+Cranko release automation tool has not yet been updated to handle the new
+system. We intend to address that soon, but we have internal motivations to get
+this release out soon (see above), so we are going ahead without the Zenodo
+deposition.
+
+
 # pypa:pywwt 0.22.0 (2023-09-15)
 
 - When using the bundled version of the WWT research app, make sure that we pull

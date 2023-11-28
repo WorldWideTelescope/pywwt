@@ -1,3 +1,10 @@
+# npm:pywwt 1.7.0 (2023-11-28)
+
+- Update the Jupyter widget implementation to use ES6 class syntax (#368,
+  @Carifio24). This should fix up compatibility with the 8.x series of
+  `ipywidgets`.
+
+
 # npm:pywwt 1.6.0 (2023-09-15)
 
 - Require the new ESM-based engine through the 0.16.x series of the research app
