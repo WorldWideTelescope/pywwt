@@ -610,8 +610,9 @@ class BaseWWTWidget(HasTraits):
     ).tag(wwt="altAzGridColor", wwt_reset=True)
 
     alt_az_text = Bool(
-        False, help='Whether to show labels for the altitude-azimuth grid\'s text ' '(`bool`)'
-    ).tag(wwt='showAltAzGridText', wwt_reset=True)
+        False,
+        help="Whether to show labels for the altitude-azimuth grid's text " "(`bool`)",
+    ).tag(wwt="showAltAzGridText", wwt_reset=True)
 
     background = Unicode(
         "Hydrogen Alpha Full Sky Map",
@@ -651,13 +652,15 @@ class BaseWWTWidget(HasTraits):
     ).tag(wwt="showConstellationSelection", wwt_reset=True)
 
     constellation_pictures = Bool(
-        False, help='Whether to show pictures of the constellations\' '
-                    'mythological representations ' '(`bool`)'
-    ).tag(wwt='showConstellationPictures', wwt_reset=True)
+        False,
+        help="Whether to show pictures of the constellations' "
+        "mythological representations "
+        "(`bool`)",
+    ).tag(wwt="showConstellationPictures", wwt_reset=True)
 
     constellation_labels = Bool(
-        False, help='Whether to show labels for constellations ' '(`bool`)'
-    ).tag(wwt='showConstellationLabels', wwt_reset=True)
+        False, help="Whether to show labels for constellations " "(`bool`)"
+    ).tag(wwt="showConstellationLabels", wwt_reset=True)
 
     crosshairs = Bool(
         False, help="Whether to show crosshairs at the center of " "the field (`bool`)"
@@ -711,8 +714,8 @@ class BaseWWTWidget(HasTraits):
     ).tag(wwt="galacticGridColor", wwt_reset=True)
 
     galactic_text = Bool(
-        False, help='Whether to show labels for the galactic grid\'s text ' '(`bool`)'
-    ).tag(wwt='showGalacticGridText', wwt_reset=True)
+        False, help="Whether to show labels for the galactic grid's text " "(`bool`)"
+    ).tag(wwt="showGalacticGridText", wwt_reset=True)
 
     grid = Bool(False, help="Whether to show the equatorial grid " "(`bool`)").tag(
         wwt="showGrid", wwt_reset=True
@@ -871,11 +874,13 @@ class BaseWWTWidget(HasTraits):
             desired location.
         """
         coord_icrs = coord.icrs
-        msg = dict(event="center_on_coordinates",
-                   ra=coord_icrs.ra.deg,
-                   dec=coord_icrs.dec.deg,
-                   fov=fov.to(u.deg).value,
-                   instant=instant)
+        msg = dict(
+            event="center_on_coordinates",
+            ra=coord_icrs.ra.deg,
+            dec=coord_icrs.dec.deg,
+            fov=fov.to(u.deg).value,
+            instant=instant,
+        )
         if roll is not None:
             msg["roll"] = roll.to(u.deg).value
         self._send_msg(**msg)
@@ -1069,11 +1074,11 @@ class BaseWWTWidget(HasTraits):
 
         nest_asyncio.apply()
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(self._send_into_future(
-            event="load_image_collection",
-            url=url,
-            loadChildFolders=recursive
-        ))
+        loop.run_until_complete(
+            self._send_into_future(
+                event="load_image_collection", url=url, loadChildFolders=recursive
+            )
+        )
 
     @property
     def available_layers(self):
@@ -1341,7 +1346,7 @@ class BaseWWTWidget(HasTraits):
             "ra": center.icrs.ra.deg,
             "dec": center.icrs.dec.deg,
             "fov": fov.to_value(u.deg),
-            "roll": roll.to_value(u.deg)
+            "roll": roll.to_value(u.deg),
         }
 
         state["foreground_settings"] = {

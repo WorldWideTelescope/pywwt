@@ -29,12 +29,14 @@ jobs:
   - bash: cranko release-workflow apply-versions
     displayName: Apply Cranko versions
 
-  - bash: |
-      cranko zenodo preregister --metadata=ci/zenodo.json5 pypa:pywwt pywwt/_version.py CHANGELOG.md
-    displayName: "Preregister Zenodo DOI"
-    ${{ if and(eq(variables['Build.SourceBranchName'], 'rc'), ne(variables['build.reason'], 'PullRequest')) }}:
-      env:
-          ZENODO_TOKEN: $(ZENODO_TOKEN)
+  # 2023 Nov: temporarily disabling Zenodo; they have just updated their API and broken
+  # everything, and we want to ge a release out.
+  # - bash: |
+  #     cranko zenodo preregister --metadata=ci/zenodo.json5 pypa:pywwt pywwt/_version.py CHANGELOG.md
+  #   displayName: "Preregister Zenodo DOI"
+  #   ${{ if and(eq(variables['Build.SourceBranchName'], 'rc'), ne(variables['build.reason'], 'PullRequest')) }}:
+  #     env:
+  #         ZENODO_TOKEN: $(ZENODO_TOKEN)
 
   - bash: |
       set -xeuo pipefail
