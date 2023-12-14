@@ -1,4 +1,17 @@
-# rc: minor bump
+# rc: micro bump
+
+- Add kernel data relay to JupyterLab install requirements, and a `notebook` set
+  of named dependencies (#370, @Carifio24).
+
+This release once again has DOI registration and Zenodo deposition (#371,
+@pkgw).
+
+The DOI of this release is [xx.xxxx/dev-build.pypa:pywwt.version][vdoi].
+
+[vdoi]: https://doi.org/xx.xxxx/dev-build.pypa:pywwt.version
+
+
+# pypa:pywwt 0.23.0 (2023-11-28)
 
 - Update the Jupyter widget implementation to use ES6 class syntax (#368,
   @Carifio24). This should fix up compatibility with the 8.x series of

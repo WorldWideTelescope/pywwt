@@ -147,10 +147,15 @@ setup_args = dict(
             'PyQt6;python_version>="3"',
             'PyQt6-WebEngine;python_version>="3"',
         ],
+        "notebook": [
+            "wwt_kernel_data_relay",
+            "notebook",
+        ],
         "lab": [
             "jupyterlab",
             "nbclassic",
             "notebook",
+            "wwt_kernel_data_relay",
         ],
     },
     entry_points={},
