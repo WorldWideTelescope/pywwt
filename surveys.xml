@@ -675,4 +675,9 @@ TOAST-formatted mosaics were obtained using facilities of NASA's SkyView Virtual
     <CreditsUrl>http://cossc.gsfc.nasa.gov/docs/cgro/egret/</CreditsUrl>
   </ImageSet>
 
+  <ImageSet BandPass="Visible" BaseDegreesPerTile="328.0617509514105" BaseTileLevel="0" BottomsUp="False" CenterX="200" CenterY="-62.6" DataSetType="Sky" ElevationModel="False" FileType=".png" Generic="False" Name="DECaPS2 grz Color Composite" Projection="Toast" QuadTreeMap="" Rotation="0" Sparse="True" StockSet="False" TileLevels="14" Url="http://data1.wwtassets.org/packages/2022/09_decaps2/{1}/{3}/{3}_{2}.png" WidthFactor="2">
+    <Credits>Andrew Saydjari, etc.</Credits>
+    <ThumbnailUrl>http://data1.wwtassets.org/packages/2022/09_decaps2/thumb.jpg</ThumbnailUrl>
+  </ImageSet>
+
 </Folder>
