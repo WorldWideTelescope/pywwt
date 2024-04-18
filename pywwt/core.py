@@ -1372,3 +1372,13 @@ class BaseWWTWidget(HasTraits):
 
     def _save_added_data(self, dir):
         self.layers._save_all_data_for_serialization(dir)
+
+    # Miscellaneous
+
+    def refresh_tile_cache(self):
+        """
+        Clear the current cache of tiles.
+        Note that this should only be used when necessary, as any
+        previously downloaded tiles will need to be re-fetched.
+        """
+        self._send_msg(event="clear_tile_cache")
