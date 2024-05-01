@@ -100,8 +100,6 @@ steps:
       set -euo pipefail
       source activate-conda.sh
       set -x
-      # workaround for the Windows CI image:
-      conda install -y brotlipy
       conda config --add channels conda-forge
       conda config --set channel_priority strict
       conda update -y --all
