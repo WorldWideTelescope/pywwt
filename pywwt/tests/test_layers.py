@@ -285,7 +285,7 @@ class TestLayers:
 
         # Make sure adding the layer doesn't emit any warnings, which previously
         # happened due to a bug with the logic in the table layer initialization
-        with pytest.warns(None) as record:
+        with pytest.warns(Warning) as record:
             layer = self.client.layers.add_table_layer(
                 table=table, coord_type="rectangular", x_att="x", y_att="y", z_att="z"
             )
