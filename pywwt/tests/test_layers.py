@@ -10,6 +10,7 @@ import sys
 import pytest
 from stat import S_IWGRP, S_IWOTH, S_IWUSR, S_IMODE
 from tempfile import TemporaryDirectory
+from warnings import catch_warnings
 
 from . import assert_widget_image, wait_for_test, DATA
 from ..conftest import RUNNING_ON_CI, QT_INSTALLED  # noqa
@@ -285,7 +286,7 @@ class TestLayers:
 
         # Make sure adding the layer doesn't emit any warnings, which previously
         # happened due to a bug with the logic in the table layer initialization
-        with pytest.warns(Warning) as record:
+        with catch_warnings(record=True) as record:
             layer = self.client.layers.add_table_layer(
                 table=table, coord_type="rectangular", x_att="x", y_att="y", z_att="z"
             )
