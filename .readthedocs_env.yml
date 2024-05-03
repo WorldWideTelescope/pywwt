@@ -22,4 +22,4 @@ dependencies:
   - reproject
   - setuptools
   - sphinx
-  - sphinx-automodapi
+  - sphinx-automodapi=0.16
