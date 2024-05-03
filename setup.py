@@ -135,7 +135,7 @@ setup_args = dict(
             "astropy-sphinx-theme",
             "ipykernel",
             "sphinx>=1.6",
-            "sphinx-automodapi",
+            "sphinx-automodapi<=0.16",
             "numpydoc",
             "jupyter_sphinx",
         ],
