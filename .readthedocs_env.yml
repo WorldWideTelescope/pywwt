@@ -22,4 +22,8 @@ dependencies:
   - reproject
   - setuptools
   - sphinx
+  # This pin is to work around a conda verification error
+  # that first appeared in the CI for https://github.com/WorldWideTelescope/pywwt/pull/375.
+  # At the time of writing this, the issue only occurs with sphinx-automodapi==0.17,
+  # which is the newest version.
   - sphinx-automodapi=0.16
