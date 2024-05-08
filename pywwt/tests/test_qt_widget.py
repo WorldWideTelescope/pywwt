@@ -6,7 +6,7 @@ from . import assert_widget_image, wait_for_test
 from ..conftest import RUNNING_ON_CI
 
 
-WAIT_TIME = 5 if RUNNING_ON_CI else 1
+WAIT_TIME = 10 if RUNNING_ON_CI else 1
 M42 = SkyCoord.from_name('M42')
 
 
