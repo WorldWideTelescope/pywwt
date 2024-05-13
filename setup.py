@@ -117,7 +117,6 @@ setup_args = dict(
         "numpy>=1.9",
         "python-dateutil",
         "pytz",
-        "qtpy",
         "reproject>=0.8",
         "requests",
         "toasty>=0.18",
@@ -142,10 +141,12 @@ setup_args = dict(
         "qt": [
             'PyQt5;python_version>="3"',
             'PyQtWebEngine;python_version>="3"',
+            "qtpy",
         ],
         "qt6": [
             'PyQt6;python_version>="3"',
             'PyQt6-WebEngine;python_version>="3"',
+            "qtpy",
         ],
         "notebook": [
             "wwt_kernel_data_relay",
