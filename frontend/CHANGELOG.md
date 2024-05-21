@@ -1,3 +1,9 @@
+# npm:pywwt 1.8.0 (2024-05-21)
+
+- Require version 0.17 of the research app, which adds an API for refreshing
+  the tile cache (#375, @Carifio24).
+
+
 # npm:pywwt 1.7.0 (2023-11-28)
 
 - Update the Jupyter widget implementation to use ES6 class syntax (#368,

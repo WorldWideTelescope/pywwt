@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^2  || ^3 || ^4 || ^5 || ^6",
-    "@wwtelescope/research-app": "^0.16.0",
+    "@wwtelescope/research-app": "^0.17.0",
     "underscore": "^1"
   },
   "description": "WorldWide Telescope from Python",
@@ -42,5 +42,5 @@
     "clean": "shx rm -rf dist",
     "pywwt-export": "npm run build && npm pack && node pywwt-export.js"
   },
-  "version": "1.7.0"
+  "version": "1.8.0"
 }

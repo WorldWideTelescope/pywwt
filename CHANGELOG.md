@@ -1,3 +1,19 @@
+# pypa:pywwt 0.24.0 (2024-05-21)
+
+- Add an API to allow refreshing of the engine's tile cache (#375, @Carifio24).
+  This is not something that should be needed in any kind of regular usage, but
+  for long-lived applications that want to avoid page reloads, it can provide
+  an emergency means to unstick the data flow.
+- Only require `qtpy` if one of the Qt options is enabled (#376, @Carifio24).
+- Update Jupyter install requirements (#370, @Carifio24).
+- Re-enable DOI registration (#371, @pkgw). The Cranko Zenodo support has been
+  updated to work with the new Zenodo API contracts.
+
+The DOI of this release is [10.5281/zenodo.10385538][vdoi].
+
+[vdoi]: 10.5281/zenodo.10385538
+
+
 # pypa:pywwt 0.23.0 (2023-11-28)
 
 - Update the Jupyter widget implementation to use ES6 class syntax (#368,
