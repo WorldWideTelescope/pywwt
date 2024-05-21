@@ -1,4 +1,4 @@
-version_info = (0, 24, 0, 'final', 0)  # cranko project-version tuple
+version_info = (0, 24, 1, 'final', 0)  # cranko project-version tuple
 
 _specifier_ = {
     "alpha": ".a",
@@ -18,5 +18,5 @@ __version__ = "%s.%s.%s%s" % (
 )
 
 # The strings are auto-updated by Cranko during formal releases:
-version_doi = "10.5281/zenodo.10385538"
+version_doi = "10.5281/zenodo.11236314"
 concept_doi = "10.5281/zenodo.7164147"

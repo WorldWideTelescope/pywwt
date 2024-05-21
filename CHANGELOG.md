@@ -1,3 +1,13 @@
+# pypa:pywwt 0.24.1 (2024-05-21)
+
+No code changes from the prior release; the PyPI upload needs to be
+re-attempted.
+
+The DOI of this release is [10.5281/zenodo.11236314][vdoi].
+
+[vdoi]: https://doi.org/10.5281/zenodo.11236314
+
+
 # pypa:pywwt 0.24.0 (2024-05-21)
 
 - Add an API to allow refreshing of the engine's tile cache (#375, @Carifio24).
@@ -11,7 +21,7 @@
 
 The DOI of this release is [10.5281/zenodo.10385538][vdoi].
 
-[vdoi]: 10.5281/zenodo.10385538
+[vdoi]: https://doi.org/10.5281/zenodo.10385538
 
 
 # pypa:pywwt 0.23.0 (2023-11-28)
