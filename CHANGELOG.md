@@ -1,14 +1,17 @@
-# rc: micro bump
+# rc: minor bump
 
-- Add kernel data relay to JupyterLab install requirements, and a `notebook` set
-  of named dependencies (#370, @Carifio24).
-
-This release once again has DOI registration and Zenodo deposition (#371,
-@pkgw).
+- Add an API to allow refreshing of the engine's tile cache (#375, @Carifio24).
+  This is not something that should be needed in any kind of regular usage, but
+  for long-lived applications that want to avoid page reloads, it can provide
+  an emergency means to unstick the data flow.
+- Only require `qtpy` if one of the Qt options is enabled (#376, @Carifio24).
+- Update Jupyter install requirements (#370, @Carifio24).
+- Re-enable DOI registration (#371, @pkgw). The Cranko Zenodo support has been
+  updated to work with the new Zenodo API contracts.
 
 The DOI of this release is [xx.xxxx/dev-build.pypa:pywwt.version][vdoi].
 
-[vdoi]: https://doi.org/xx.xxxx/dev-build.pypa:pywwt.version
+[vdoi]: xx.xxxx/dev-build.pypa:pywwt.version
 
 
 # pypa:pywwt 0.23.0 (2023-11-28)

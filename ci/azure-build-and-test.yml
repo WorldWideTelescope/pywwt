@@ -199,7 +199,7 @@ jobs:
       set -x
       \conda install -y pytest-cov pytest-remotedata pytest-timeout
       python setup.py build
-      pytest -v -s pywwt -p no:warnings --timeout=180 --timeout_method=thread --cov-report=xml --cov=pywwt
+      pytest -v -s pywwt -p no:warnings --timeout=1800 --timeout_method=thread --cov-report=xml --cov=pywwt
     displayName: Test with coverage
 
   - bash: bash <(curl -s https://codecov.io/bash)
