@@ -127,7 +127,7 @@ if sys.version_info[0] == 2:
     NP_STR_TYPE = np.string_
 else:
     STR_TYPE = str
-    NP_STR_TYPE = np.unicode_
+    NP_STR_TYPE = np.str_
 
 # The following are columns that we add dynamically and internally, so we need
 # to make sure they have unique names that won't clash with existing columns
@@ -302,11 +302,14 @@ class LayerManager(object):
         # has previously been processed. As usual, the logic is a bit
         # complicated since we aim to allow the user to give us just about
         # anything as an input.
-        if any(isinstance(image, fitsy_type) for fitsy_type in [
-            astropy.io.fits.HDUList,
-            astropy.io.fits.ImageHDU,
-            astropy.io.fits.PrimaryHDU
-        ]):
+        if any(
+            isinstance(image, fitsy_type)
+            for fitsy_type in [
+                astropy.io.fits.HDUList,
+                astropy.io.fits.ImageHDU,
+                astropy.io.fits.PrimaryHDU,
+            ]
+        ):
             image = self._write_image_for_toasty(image, hdu_index=hdu_index)
 
         if isinstance(image, str):

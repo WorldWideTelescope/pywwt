@@ -1,11 +1,21 @@
 # rc: micro bump
 
-No code changes from the prior release; the PyPI upload needs to be
-re-attempted.
+- Fix compatibility with Numpy 2.0 (#377, @pkgw). It appears that we only
+  need one small change to achieve this.
 
 The DOI of this release is [xx.xxxx/dev-build.pypa:pywwt.version][vdoi].
 
 [vdoi]: https://doi.org/xx.xxxx/dev-build.pypa:pywwt.version
+
+
+# pypa:pywwt 0.24.1 (2024-05-21)
+
+No code changes from the prior release; the PyPI upload needs to be
+re-attempted.
+
+The DOI of this release is [10.5281/zenodo.11236314][vdoi].
+
+[vdoi]: https://doi.org/10.5281/zenodo.11236314
 
 
 # pypa:pywwt 0.24.0 (2024-05-21)
