@@ -1,3 +1,13 @@
+# pypa:pywwt 0.24.2 (2024-06-25)
+
+- Fix compatibility with Numpy 2.0 (#377, @pkgw). It appears that we only
+  need one small change to achieve this.
+
+The DOI of this release is [10.5281/zenodo.12536733][vdoi].
+
+[vdoi]: https://doi.org/10.5281/zenodo.12536733
+
+
 # pypa:pywwt 0.24.1 (2024-05-21)
 
 No code changes from the prior release; the PyPI upload needs to be
