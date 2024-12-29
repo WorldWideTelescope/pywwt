@@ -77,6 +77,7 @@ BaseWWTWidget
       ~BaseWWTWidget.pause_time
       ~BaseWWTWidget.pause_tour
       ~BaseWWTWidget.play_time
+      ~BaseWWTWidget.refresh_tile_cache
       ~BaseWWTWidget.reset
       ~BaseWWTWidget.reset_view
       ~BaseWWTWidget.resume_tour
@@ -152,6 +153,7 @@ BaseWWTWidget
    .. automethod:: pause_time
    .. automethod:: pause_tour
    .. automethod:: play_time
+   .. automethod:: refresh_tile_cache
    .. automethod:: reset
    .. automethod:: reset_view
    .. automethod:: resume_tour

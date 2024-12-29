@@ -79,15 +79,18 @@ steps:
   - bash: |
       set -euo pipefail
 
-      if [[ $AGENT_OS == Windows_NT ]] ; then
+      if [[ $AGENT_OS == Darwin ]] ; then
+        # As of macos-14, these no longer have Anaconda built in.
+        CONDA="$TMPDIR/conda"
+        curl -fsSL https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-x86_64.sh >miniforge.sh
+        bash miniforge.sh -f -b -p "$CONDA"
+        rm -f miniforge.sh
+        condabin="$CONDA/bin"
+      elif [[ $AGENT_OS == Windows_NT ]] ; then
         CONDA=$(echo "$CONDA" | sed -e 's|\\|\/|g' -e 's|^\([A-Za-z]\)\:/\(.*\)|/\L\1\E/\2|')
         condabin="$CONDA/Scripts"
       else
         condabin="$CONDA/bin"
-      fi
-
-      if [[ $AGENT_OS == Darwin ]] ; then
-        sudo chown -R $USER $CONDA
       fi
 
       cat >activate-conda.sh <<EOF
