@@ -243,6 +243,7 @@ class LayerManager(object):
         self,
         image=None,
         hdu_index=None,
+        wcs_key=" ",
         verbose=True,
         name=None,
         tiling_method=TilingMethod.AUTO_DETECT,
@@ -270,6 +271,11 @@ class LayerManager(object):
             by using a list of integers like this: [0, 2, 1]. If hdu_index is
             not set, toasty will use the first HDU with tilable content in each
             FITS.
+        wcs_key : optional str or list of str, defaults to " "
+            Specify which set of WCS keywords to load from each input HDU. If
+            the *image* input is a list of FITS, you can specify the wcs_key of
+            each FITS by using a list of letters like this: [" ", "C", "A"]. If
+            If a scalar value is given, the same value will be used for all inputs.
         verbose : optional boolean, defaults True
             If true, progress messages will be printed as the FITS files are
             being processed.
@@ -316,7 +322,8 @@ class LayerManager(object):
             image = [image]
 
         if (
-            tiling_method == TilingMethod.TOAST
+            wcs_key != " "
+            or tiling_method == TilingMethod.TOAST
             or tiling_method == TilingMethod.HIPS
             or tiling_method == TilingMethod.TAN
         ) or (
@@ -329,6 +336,7 @@ class LayerManager(object):
                 self._tile_and_serve(
                     fits_list=image,
                     hdu_index=hdu_index,
+                    wcs_key=wcs_key,
                     cli_progress=verbose,
                     display_name=name,
                     tiling_method=tiling_method,
@@ -438,6 +446,7 @@ class LayerManager(object):
         self,
         fits_list,
         hdu_index=None,
+        wcs_key=" ",
         cli_progress=True,
         display_name=None,
         tiling_method=TilingMethod.AUTO_DETECT,
@@ -449,6 +458,7 @@ class LayerManager(object):
             out_dir, builder = toasty.tile_fits(
                 fits_list,
                 hdu_index=hdu_index,
+                wcs_key=wcs_key,
                 cli_progress=cli_progress,
                 tiling_method=tiling_method,
                 **kwargs
