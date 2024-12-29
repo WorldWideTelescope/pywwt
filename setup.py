@@ -119,7 +119,7 @@ setup_args = dict(
         "pytz",
         "reproject>=0.8",
         "requests",
-        "toasty>=0.18",
+        "toasty>=0.20",
         "tornado",
         "traitlets>=5",
         "wwt_data_formats>=0.12",

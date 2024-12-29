@@ -1,6 +1,7 @@
 import numpy as np
 import pytz
 from astropy.io import fits
+from astropy.io.fits import CompImageHDU, ImageHDU, PrimaryHDU
 from astropy.coordinates import ICRS
 from astropy.time import Time
 from datetime import datetime
@@ -49,7 +50,26 @@ def transform_to_wwt_supported_fits(image, output_file, overwrite):
     with warnings.catch_warnings():
         # Sorry, Astropy, no one cares if you fixed the FITS.
         warnings.simplefilter("ignore")
+
+        # Inner workaround: as of October 2024, `reproject` will crash with
+        # integer-valued images that have the "BLANK" keyword set:
+        # https://github.com/astropy/reproject/issues/475 . This issue should of
+        # course be fixed upstream, but a fix will take a while to propagate
+        # through the ecosystem. In the meantime, fiddle with things to avoid
+        # the issue if it looks like it might be relevant.
+        do_blank_workaround = (
+            isinstance(image, (PrimaryHDU, ImageHDU, CompImageHDU))
+            and image.header.get("BLANK") is not None
+            and hasattr(image, "_data_replaced")
+        )
+        if do_blank_workaround:
+            old_data_replaced = image._data_replaced
+            image._data_replaced = True
+
         data, wcs = parse_input_data(image)
+
+        if do_blank_workaround:
+            image._data_replaced = old_data_replaced
 
     if wcs.naxis != 2:
         if not wcs.has_celestial:

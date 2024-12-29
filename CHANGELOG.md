@@ -1,3 +1,25 @@
+# pypa:pywwt 0.25.0 (2024-12-29)
+
+- Support selection of which WCS solution to use in FITS files that contain
+  multiple solutions (#378, @pkgw). One HDU can contain multiple sets of WCS
+  parameters stored using different single-letter "keys", and this is now
+  specifiable as the keyword argument `wcs_key` to
+  `LayerManager.add_image_layer()`. This functionality increases the toasty
+  version requirement to 0.20 or newer, since that is where the underlying
+  support is implemented.
+- Properly handle integer-valued images that use the `BLANK` keyword (#378,
+  @pkgw). The `reproject` library currently has a bug in how it handles these
+  (see [reproject#475]; it might be Astropy's fault). That should get fixed, but
+  in the meantime, we can work around it here.
+
+Both of these changes support handling the FITS images that come out of DASCH
+Data Release 7.
+
+The DOI of this release is [10.5281/zenodo.14572987][vdoi].
+
+[vdoi]: https://doi.org/10.5281/zenodo.14572987
+
+
 # pypa:pywwt 0.24.2 (2024-06-25)
 
 - Fix compatibility with Numpy 2.0 (#377, @pkgw). It appears that we only
