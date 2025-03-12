@@ -109,6 +109,7 @@ jobs:
         set -x
         \conda install -y pytest-qt pytest-remotedata pytest-timeout
         python setup.py build
+        pip freeze
         pytest -v -s pywwt -p no:warnings --timeout=1800 --timeout_method=thread
       displayName: Test
       env:
