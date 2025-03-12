@@ -6,17 +6,17 @@ parameters:
   default:
 
   - name: linux_38
-    vmImage: ubuntu-22.04
+    vmImage: ubuntu-24.04
     vars:
       PYTHON_SERIES: "3.8"
 
   - name: linux_39
-    vmImage: ubuntu-22.04
+    vmImage: ubuntu-24.04
     vars:
       PYTHON_SERIES: "3.9"
 
   - name: linux_310
-    vmImage: ubuntu-22.04
+    vmImage: ubuntu-24.04
     vars:
       PYTHON_SERIES: "3.10"
 
