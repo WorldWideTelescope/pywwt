@@ -161,7 +161,7 @@ jobs:
 
 - job: coverage
   pool:
-    vmImage: ubuntu-latest
+    vmImage: ubuntu-24.04
   steps:
   - template: azure-job-setup.yml
     parameters:
@@ -208,7 +208,7 @@ jobs:
 
 - job: docs
   pool:
-    vmImage: ubuntu-latest
+    vmImage: ubuntu-24.04
   steps:
   - template: azure-job-setup.yml
     parameters:
@@ -257,7 +257,7 @@ jobs:
 
 - job: codestyle
   pool:
-    vmImage: ubuntu-latest
+    vmImage: ubuntu-24.04
   steps:
   - template: azure-job-setup.yml
     parameters:
