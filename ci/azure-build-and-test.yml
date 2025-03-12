@@ -6,17 +6,17 @@ parameters:
   default:
 
   - name: linux_38
-    vmImage: ubuntu-22.04
+    vmImage: ubuntu-24.04
     vars:
       PYTHON_SERIES: "3.8"
 
   - name: linux_39
-    vmImage: ubuntu-22.04
+    vmImage: ubuntu-24.04
     vars:
       PYTHON_SERIES: "3.9"
 
   - name: linux_310
-    vmImage: ubuntu-22.04
+    vmImage: ubuntu-24.04
     vars:
       PYTHON_SERIES: "3.10"
 
@@ -109,6 +109,7 @@ jobs:
         set -x
         \conda install -y pytest-qt pytest-remotedata pytest-timeout
         python setup.py build
+        pip freeze
         pytest -v -s pywwt -p no:warnings --timeout=1800 --timeout_method=thread
       displayName: Test
       env:
@@ -160,7 +161,7 @@ jobs:
 
 - job: coverage
   pool:
-    vmImage: ubuntu-latest
+    vmImage: ubuntu-24.04
   steps:
   - template: azure-job-setup.yml
     parameters:
@@ -207,7 +208,7 @@ jobs:
 
 - job: docs
   pool:
-    vmImage: ubuntu-latest
+    vmImage: ubuntu-24.04
   steps:
   - template: azure-job-setup.yml
     parameters:
@@ -256,7 +257,7 @@ jobs:
 
 - job: codestyle
   pool:
-    vmImage: ubuntu-latest
+    vmImage: ubuntu-24.04
   steps:
   - template: azure-job-setup.yml
     parameters:
