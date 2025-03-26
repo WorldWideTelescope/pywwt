@@ -151,7 +151,7 @@ class BaseWWTWidget(HasTraits):
     _systemTime = Time("2017-03-09T12:30:00", format="isot")
     _timeRate = 1.0
 
-    def __init__(self, hide_all_chrome=False):
+    def __init__(self, hide_all_chrome=False, surveys_url=None):
         """
         (Note that this docstring is not exposed in the API docs. It is aimed at
         developers.)
@@ -186,7 +186,7 @@ class BaseWWTWidget(HasTraits):
         self._seqNum = 0
         self._futures = {}
 
-        self._available_layers = get_imagery_layers(DEFAULT_SURVEYS_URL)
+        self._available_layers = get_imagery_layers(surveys_url or DEFAULT_SURVEYS_URL)
         self._available_hips_catalog_names = []
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
