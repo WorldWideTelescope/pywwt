@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<Folder Name="All-Sky Surveys"  Group="Explorer"  Searchable="True" Type="Sky" Thumbnail="http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=aitoff">
+
+  <ImageSet Generic="False" DataSetType="Sky" BandPass="Visible" Name="Digitized Sky Survey (Color)" AltUrl="http://r{S:0}.ortho.tiles.virtualearth.net/tiles/wtl00{Q}?g=121&amp;band=wwt_rgb" Url="http://cdn.worldwidetelescope.org/wwtweb/dss.aspx?q={1},{2},{3}" BaseTileLevel="0" TileLevels="12" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="True">
+    <ThumbnailUrl>http://www.worldwidetelescope.org/thumbnails/DSS.png</ThumbnailUrl>
+    <Credits>Copyright DSS Consortium</Credits>
+    <CreditsUrl>http://gsss.stsci.edu/Acknowledgements/DataCopyrights.htm</CreditsUrl>
+  </ImageSet>
+
+  <ImageSet Generic="False" DataSetType="Sky" BandPass="Visible" Name="Planck CMB" Url="http://www.worldwidetelescope.org/wwtweb/tiles.aspx?q={1},{2},{3},planck" BaseTileLevel="0" TileLevels="6" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False">
+    <Credits>Planck is a European Space Agency mission, with significant participation from NASA. NASAs Planck Project Office is based at JPL. JPL contributed mission-enabling technology for both of Plancks science instruments. European, Canadian and U.S. Planck scientists work together to analyze the Planck data.</Credits>
+    <CreditsUrl>http://www.nasa.gov/mission_pages/planck/index.html</CreditsUrl>
+    <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=planck</ThumbnailUrl>
+    <Description />
+  </ImageSet>
+
+  <ImageSet Generic="False" DataSetType="Sky" BandPass="Gamma" Name="EGRET Hard (Gamma)" Url="http://r{S:1}.ortho.tiles.virtualearth.net/tiles/wts0000000231{Q}?g=131" BaseTileLevel="0" TileLevels="5" BaseDegreesPerTile="180" FileType=".png" BottomsUp="False" Projection="Toast" QuadTreeMap="0123" CenterX="0" CenterY="0" OffsetX="0" OffsetY="0" Rotation="0" Sparse="False" ElevationModel="False" StockSet="False">
+       <ThumbnailUrl>http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=egretmap</ThumbnailUrl>
+    <Credits>EGRET Instrument team, NASA Goddard Space Flight Center. TOAST-formatted data was obtained from NASA's SkyView Virtual Telescope (EGREThard, Min=0.00002, Max=0.005).</Credits>
+    <CreditsUrl>http://cossc.gsfc.nasa.gov/docs/cgro/egret/</CreditsUrl>
+  </ImageSet>
+
+</Folder>
