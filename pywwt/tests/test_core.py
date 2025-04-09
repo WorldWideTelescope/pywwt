@@ -12,7 +12,7 @@ from ..core import BaseWWTWidget
 
 
 def test_initial_surveys_url():
-    surveys_url = "https://raw.githubusercontent.com/WorldWideTelescope/pywwt/refs/heads/gh-pages/test_surveys.xml"
+    surveys_url = "https://worldwidetelescope.github.io/pywwt/test_surveys.xml"
     widget = BaseWWTWidget(surveys_url=surveys_url)
 
     layers_data = {
