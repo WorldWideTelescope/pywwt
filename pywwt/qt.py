@@ -206,9 +206,14 @@ class WWTQtClient(BaseWWTWidget):
         Configures the WWT frontend to hide all user-interface "chrome".
         Defaults to true to maintain compatibility with the historical
         pywwt user experience.
+
+    surveys_url: optional `str`
+        The URL from which to load a WTML containing the default set of
+        surveys to load. By default, this points to a pywwt-specific WTML
+        file hosted on a WWT server.
     """
 
-    def __init__(self, block_until_ready=False, size=None, hide_all_chrome=True):
+    def __init__(self, block_until_ready=False, size=None, hide_all_chrome=True, surveys_url=None):
         app = get_qapp()
 
         self._data_server = get_data_server()
@@ -224,6 +229,7 @@ class WWTQtClient(BaseWWTWidget):
 
         super(WWTQtClient, self).__init__(
             hide_all_chrome=hide_all_chrome,
+            surveys_url=surveys_url,
         )
 
         # Start polling for the app to start responding to messages
