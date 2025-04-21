@@ -14,7 +14,6 @@ from os.path import join as pjoin
 import io
 import os
 import functools
-import pipes
 import re
 import shlex
 import subprocess
@@ -50,7 +49,7 @@ if sys.platform == "win32":
 else:
 
     def list2cmdline(cmd_list):
-        return " ".join(map(pipes.quote, cmd_list))
+        return " ".join(map(shlex.quote, cmd_list))
 
 
 __version__ = "0.2.0"

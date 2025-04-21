@@ -51,6 +51,10 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
         we can't think of any good reason to use it here. If the URL given here
         does not contain a protocol (``https://...``), it will be combined with
         the Jupyter server's "base URL".
+    surveys_url: optional `str`
+        The URL from which to load a WTML containing the default set of
+        surveys to load. By default, this points to a pywwt-specific WTML
+        file hosted on a WWT server.
     """
 
     _view_name = Unicode("WWTView").tag(sync=True)
@@ -62,7 +66,7 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
 
     _appUrl = Unicode("").tag(sync=True)
 
-    def __init__(self, hide_all_chrome=False, app_url=None):
+    def __init__(self, hide_all_chrome=False, app_url=None, surveys_url=None):
         # Set up Kernel Data Relay expedited message processing.
         _maybe_perpetrate_mega_kernel_hack()
 
@@ -84,7 +88,7 @@ class WWTJupyterWidget(widgets.DOMWidget, BaseWWTWidget):
 
         self.on_msg(self._on_ipywidgets_message)
 
-        BaseWWTWidget.__init__(self, hide_all_chrome=hide_all_chrome)
+        BaseWWTWidget.__init__(self, hide_all_chrome=hide_all_chrome, surveys_url=surveys_url)
 
     def _on_ipywidgets_message(self, widget, content, buffers):
         """

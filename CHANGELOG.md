@@ -1,3 +1,14 @@
+# pypa:pywwt 0.26.0 (2025-04-21)
+
+- Allow specifying URL of surveys to initially load in (#382, @Carifio24).
+  This can be specified with the new `surveys_url` keyword argument to
+  the pywwt client class constructors.
+
+The DOI of this release is [10.5281/zenodo.15256744][vdoi].
+
+[vdoi]: https://doi.org/10.5281/zenodo.15256744
+
+
 # pypa:pywwt 0.25.0 (2024-12-29)
 
 - Support selection of which WCS solution to use in FITS files that contain
