@@ -1,5 +1,16 @@
 # rc: minor bump
 
+- Allow specifying URL of surveys to initially load in (#382, @Carifio24).
+  This can be specified with the new `surveys_url` keyword argument to
+  the pywwt client class constructors.
+
+The DOI of this release is [xx.xxxx/dev-build.pypa:pywwt.version][vdoi].
+
+[vdoi]: https://doi.org/xx.xxxx/dev-build.pypa:pywwt.version
+
+
+# pypa:pywwt 0.25.0 (2024-12-29)
+
 - Support selection of which WCS solution to use in FITS files that contain
   multiple solutions (#378, @pkgw). One HDU can contain multiple sets of WCS
   parameters stored using different single-letter "keys", and this is now
@@ -15,9 +26,9 @@
 Both of these changes support handling the FITS images that come out of DASCH
 Data Release 7.
 
-The DOI of this release is [xx.xxxx/dev-build.pypa:pywwt.version][vdoi].
+The DOI of this release is [10.5281/zenodo.14572987][vdoi].
 
-[vdoi]: https://doi.org/xx.xxxx/dev-build.pypa:pywwt.version
+[vdoi]: https://doi.org/10.5281/zenodo.14572987
 
 
 # pypa:pywwt 0.24.2 (2024-06-25)

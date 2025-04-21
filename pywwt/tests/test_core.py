@@ -11,6 +11,34 @@ from traitlets import TraitError
 from ..core import BaseWWTWidget
 
 
+def test_initial_surveys_url():
+    surveys_url = "https://worldwidetelescope.github.io/pywwt/test_surveys.xml"
+    widget = BaseWWTWidget(surveys_url=surveys_url)
+
+    layers_data = {
+            "Digitized Sky Survey (Color)": "http://www.worldwidetelescope.org/thumbnails/DSS.png",
+            "EGRET Hard (Gamma)": "http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=egretmap",
+            "Planck CMB": "http://www.worldwidetelescope.org/wwtweb/thumbnail.aspx?name=planck",
+    }
+    assert widget.available_layers == sorted(list(layers_data.keys()))
+    assert dir(widget.imagery.gamma) == ["egret"]
+    assert dir(widget.imagery.other) == ["digitized"]
+    assert dir(widget.imagery.micro) == ["planck"]
+
+    # Check that these are allowed
+    widget.foreground = "Planck CMB"
+    widget.background = "EGRET Hard (Gamma)"
+
+    # Check that these aren't
+    # (Imageset names come from the default pywwt surveys XML)
+    with pytest.raises(TraitError) as exc:
+        widget.foreground = "Tycho (Synthetic, Optical)"
+    assert exc.value.args[0] == "foreground is not one of the available layers"
+    with pytest.raises(TraitError) as exc:
+        widget.background = "Fermi LAT 8-year (gamma)"
+    assert exc.value.args[0] == "background is not one of the available layers"
+
+
 def test_color_validation():
     widget = BaseWWTWidget()
 
