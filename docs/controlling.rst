@@ -1,7 +1,7 @@
 Controlling WWT from Python
 ===========================
 
-Once you've `opened up your WWT viewer <opening>`_, you can control nearly every
+Once you've :doc:`opened up your WWT viewer <opening>`, you can control nearly every
 aspect of it programmatically with pywwt.
 
 .. toctree::
