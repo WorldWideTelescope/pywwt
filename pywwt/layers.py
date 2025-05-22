@@ -127,7 +127,7 @@ if sys.version_info[0] == 2:
     NP_STR_TYPE = np.string_
 else:
     STR_TYPE = str
-    NP_STR_TYPE = np.unicode_
+    NP_STR_TYPE = np.str_
 
 # The following are columns that we add dynamically and internally, so we need
 # to make sure they have unique names that won't clash with existing columns
