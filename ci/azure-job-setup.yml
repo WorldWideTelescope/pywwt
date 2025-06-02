@@ -105,6 +105,7 @@ steps:
       set -x
       conda config --add channels conda-forge
       conda config --set channel_priority strict
+      conda install libffi --channel conda-forge
       conda update -y --all
     displayName: Activate conda-forge
 
