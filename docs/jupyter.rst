@@ -1,8 +1,8 @@
 WWT's Jupyter widget
 ====================
 
-While we recommend `combining WWT with JupyterLab using the "research app"
-<jupyterlab>`_, pywwt also provides a traditional `Jupyter widget
+While we recommend :doc:`combining WWT with JupyterLab using the "research app"
+<jupyterlab>`, pywwt also provides a traditional `Jupyter widget
 <https://ipywidgets.readthedocs.io/>`__ that can be embedded directly in your
 Python notebooks.
 
