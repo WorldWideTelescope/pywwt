@@ -106,7 +106,9 @@ steps:
       export CONDA_PLUGINS_AUTO_ACCEPT_TOS=yes  # See https://www.anaconda.com/docs/getting-started/tos-plugin#troubleshooting
       conda config --add channels conda-forge
       conda config --set channel_priority strict
-      conda install libffi --channel conda-forge
+      if [[ $AGENT_OS == Windows_NT ]] ; then
+        conda install libffi --channel conda-forge
+      fi
       conda update -y --all
     displayName: Activate conda-forge
 
