@@ -108,6 +108,7 @@ steps:
       conda config --set channel_priority strict
       if [[ $AGENT_OS == Windows_NT ]] ; then
         conda install -y libffi --channel conda-forge
+        conda install -y python
       fi
       conda update -y --all
     displayName: Activate conda-forge
