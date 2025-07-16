@@ -10,10 +10,12 @@ different backends supported by pywwt.
 """
 
 import asyncio
+from contextlib import suppress
 import json
 import os
 import shutil
 import tempfile
+from xml.etree.ElementTree import ParseError, fromstring
 
 from astropy import units as u
 from astropy.time import Time
@@ -21,6 +23,7 @@ from astropy.coordinates import SkyCoord
 import numpy as np
 from traitlets import HasTraits, observe, validate, TraitError
 import nest_asyncio
+from wwt_data_formats.place import Place
 
 from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
@@ -403,17 +406,13 @@ class BaseWWTWidget(HasTraits):
                 updated_fields.append("selected_sources")
 
         elif ptype == "finder_scope_place":
+            place = None
             xml_string = payload.get("placeXml", None)
-            if xml_string is None:
-                self._finder_scope_place = None
-            else:
-                from xml.etree.ElementTree import ParseError, fromstring
-                from wwt_data_formats.place import Place
-                try:
+            if xml_string is not None:
+                with suppress(ParseError):
                     xml = fromstring(xml_string)
-                    self._finder_scope_place = Place(xml)
-                except ParseError:
-                    self._finder_scope_place = None
+                    place = Place(xml)
+            self._finder_scope_place = place
 
         # Any relevant async future to resolve?
 
@@ -1407,3 +1406,12 @@ class BaseWWTWidget(HasTraits):
         previously downloaded tiles will need to be re-fetched.
         """
         self._send_msg(event="clear_tile_cache")
+
+    def set_finder_scope_active(self, active):
+        self._send_msg(
+            event="modify_settings",
+            target="app",
+            settings=[
+                ("showFinderScope", active),
+            ],
+        )
