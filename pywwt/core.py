@@ -402,6 +402,19 @@ class BaseWWTWidget(HasTraits):
                 self._selected_sources = sources
                 updated_fields.append("selected_sources")
 
+        elif ptype == "finder_scope_place":
+            xml_string = payload.get("placeXml", None)
+            if xml_string is None:
+                self._finder_scope_place = None
+            else:
+                from xml.etree.ElementTree import ParseError, fromstring
+                from wwt_data_formats.place import Place
+                try:
+                    xml = fromstring(xml_string)
+                    self._finder_scope_place = Place(xml)
+                except ParseError:
+                    self._finder_scope_place = None
+
         # Any relevant async future to resolve?
 
         tid = payload.get("threadId")
@@ -1122,6 +1135,18 @@ class BaseWWTWidget(HasTraits):
         `here <https://docs.worldwidetelescope.org/webgl-reference/latest/apiref/research-app-messages/interfaces/selections.source.html>`_.
         """
         return self._selected_sources
+
+    # Finder Scope
+
+    _finder_scope_place = None
+
+    @property
+    def finder_scope_place(self):
+        """
+        The current `Place` selected by the Finder Scope.
+        This value is `None` if the Finder Scope has nothing selected (e.g. if closed).
+        """
+        return self._finder_scope_place
 
     # Annotations
 
