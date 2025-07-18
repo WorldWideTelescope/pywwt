@@ -788,6 +788,10 @@ class BaseWWTWidget(HasTraits):
         "orange", help="The color of the precession chart " "(`str` or `tuple`)"
     ).tag(wwt="precessionChartColor", wwt_reset=True)
 
+    finder_scope_enabled = Bool(
+        False, help="Whether or not the Finder Scope component is enabled" "(`bool`)"
+    ).tag(wwt=None, wwt_reset=True)
+
     # Validators / observers for the settings above that need custom support.
 
     @observe("background")
@@ -851,6 +855,16 @@ class BaseWWTWidget(HasTraits):
             return proposal["value"].to(u.degree)
         else:
             raise TraitError("location_longitude not in angle units")
+
+    @observe("finder_scope_enabled")
+    def _on_finder_scope_enabled_change(self, changed):
+        self._send_msg(
+            event="modify_settings",
+            target="app",
+            settings=[
+                ("showFinderScope", changed["new"]),
+            ],
+        )
 
     # Basic view controls
 
@@ -1158,12 +1172,6 @@ class BaseWWTWidget(HasTraits):
         """
         return self._finder_scope_place
 
-    _finder_scope_enabled = False
-
-    @property
-    def finder_scope_enabled(self):
-        return self._finder_scope_enabled
-
     # Annotations
 
     def clear_annotations(self):
@@ -1423,13 +1431,3 @@ class BaseWWTWidget(HasTraits):
         previously downloaded tiles will need to be re-fetched.
         """
         self._send_msg(event="clear_tile_cache")
-
-    def set_finder_scope_enabled(self, enabled):
-        self._finder_scope_enabled = enabled
-        self._send_msg(
-            event="modify_settings",
-            target="app",
-            settings=[
-                ("showFinderScope", enabled),
-            ],
-        )
