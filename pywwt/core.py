@@ -1158,11 +1158,11 @@ class BaseWWTWidget(HasTraits):
         """
         return self._finder_scope_place
 
-    _finder_scope_active = False
+    _finder_scope_enabled = False
 
     @property
-    def finder_scope_active(self):
-        return self._finder_scope_active
+    def finder_scope_enabled(self):
+        return self._finder_scope_enabled
 
     # Annotations
 
@@ -1424,12 +1424,12 @@ class BaseWWTWidget(HasTraits):
         """
         self._send_msg(event="clear_tile_cache")
 
-    def set_finder_scope_active(self, active):
-        self._finder_scope_active = active
+    def set_finder_scope_enabled(self, enabled):
+        self._finder_scope_enabled = enabled
         self._send_msg(
             event="modify_settings",
             target="app",
             settings=[
-                ("showFinderScope", active),
+                ("showFinderScope", enabled),
             ],
         )
