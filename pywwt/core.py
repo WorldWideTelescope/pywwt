@@ -459,6 +459,17 @@ class BaseWWTWidget(HasTraits):
         """
         self._set_message_type_callback("wwt_selection_state", callback)
 
+    def set_finder_scope_place_callback(self, callback):
+        """
+        Set a callback function that will be executed when the widget receives a Finder Scope place update message.
+
+        Parameters
+        ----------
+        callback:
+            A callable object which takes two arguments: the WWT widget instance, and a list of updated properties.
+        """
+        self._set_message_type_callback("finder_scope_place", callback)
+
     def _get_view_data(self, field):
         if not self._appAlive:
             raise ViewerNotAvailableError()
@@ -1147,6 +1158,12 @@ class BaseWWTWidget(HasTraits):
         """
         return self._finder_scope_place
 
+    _finder_scope_active = False
+
+    @property
+    def finder_scope_active(self):
+        return self._finder_scope_active
+
     # Annotations
 
     def clear_annotations(self):
@@ -1408,6 +1425,7 @@ class BaseWWTWidget(HasTraits):
         self._send_msg(event="clear_tile_cache")
 
     def set_finder_scope_active(self, active):
+        self._finder_scope_active = active
         self._send_msg(
             event="modify_settings",
             target="app",
