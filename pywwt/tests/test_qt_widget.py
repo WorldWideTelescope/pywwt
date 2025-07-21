@@ -314,6 +314,9 @@ def test_full(tmpdir, wwt_qt_client_isolated):
 
     wait_for_test(wwt, WAIT_TIME, for_render=True)
 
+    assert wwt.finder_scope_place is not None
+    assert wwt.finder_scope_place.name == "M43"  # The closest place in the search data
+
     msg = assert_widget_image(tmpdir, wwt, 'qt_full_step11.png', fail_now=False)
     if msg:
         failures.append(msg)
