@@ -1,6 +1,8 @@
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 import pytest
+from qtpy import QtCore, QtGui, QtWidgets
+from qtpy.QtCore import Qt
 
 from . import assert_widget_image, wait_for_test
 from ..conftest import RUNNING_ON_CI
@@ -263,6 +265,65 @@ def test_full(tmpdir, wwt_qt_client_isolated):
     wait_for_test(wwt, WAIT_TIME, for_render=True)
 
     msg = assert_widget_image(tmpdir, wwt, 'qt_full_step10.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Step 11
+    wwt.center_on_coordinates(M42, 60 * u.deg)
+    wwt.finder_scope_enabled = True
+
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+
+    app = QtWidgets.QApplication.instance()
+
+    click_location = QtCore.QPointF(wwt.widget.rect().center())
+    global_click_location = QtCore.QPointF(wwt.widget.mapToGlobal(click_location))
+
+    # We need to get the Qt widget that's handling events for the web engine view
+    web_engine_view = wwt.widget.web
+    event_widget = None
+    for obj in web_engine_view.children():
+        if isinstance(obj, QtWidgets.QWidget):
+            event_widget = obj
+            break
+
+    assert event_widget is not None
+
+    right_click_press_event = QtGui.QMouseEvent(
+        QtCore.QEvent.MouseButtonPress,
+        click_location,
+        global_click_location,
+        Qt.RightButton,
+        Qt.RightButton,
+        Qt.NoModifier
+    )
+    app.postEvent(event_widget, right_click_press_event)
+
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+    
+    right_click_release_event = QtGui.QMouseEvent(
+        QtCore.QEvent.MouseButtonRelease,
+        click_location,
+        global_click_location,
+        Qt.RightButton,
+        Qt.NoButton,
+        Qt.NoModifier
+    )
+    app.postEvent(event_widget, right_click_release_event)
+    app.processEvents()
+
+    wait_for_test(wwt, WAIT_TIME, for_render=True)
+
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step11.png', fail_now=False)
+    if msg:
+        failures.append(msg)
+
+    # Step 12
+    wwt.finder_scope_enabled = False
+    wait_for_test(wwt, WAIT_TIME * 2, for_render=True)
+    app.processEvents()
+
+    msg = assert_widget_image(tmpdir, wwt, 'qt_full_step12.png', fail_now=False)
     if msg:
         failures.append(msg)
 
