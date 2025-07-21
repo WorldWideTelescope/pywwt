@@ -411,7 +411,7 @@ class BaseWWTWidget(HasTraits):
             if xml_string is not None:
                 with suppress(ParseError):
                     xml = fromstring(xml_string)
-                    place = Place(xml)
+                    place = Place.from_xml(xml)
             self._finder_scope_place = place
 
         # Any relevant async future to resolve?
