@@ -15,7 +15,6 @@ import json
 import os
 import shutil
 import tempfile
-from xml.etree.ElementTree import ParseError, fromstring
 
 from astropy import units as u
 from astropy.time import Time
@@ -407,11 +406,10 @@ class BaseWWTWidget(HasTraits):
 
         elif ptype == "finder_scope_place":
             place = None
-            xml_string = payload.get("placeXml", None)
-            if xml_string is not None:
-                with suppress(ParseError):
-                    xml = fromstring(xml_string)
-                    place = Place.from_xml(xml)
+            xml = payload.get("placeXml", None)
+            if xml is not None:
+                with suppress(ValueError):
+                    place = Place.from_text(xml)
             self._finder_scope_place = place
 
         # Any relevant async future to resolve?
