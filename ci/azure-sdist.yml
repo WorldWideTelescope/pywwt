@@ -64,6 +64,7 @@ jobs:
       eval "$($CONDA/bin/conda shell.bash hook)"
       set -x
       conda activate
+      export CONDA_PLUGINS_AUTO_ACCEPT_TOS=yes  # See https://www.anaconda.com/docs/getting-started/tos-plugin#troubleshooting
       conda config --add channels conda-forge
       conda create -n pywwt -y \
         astropy \
