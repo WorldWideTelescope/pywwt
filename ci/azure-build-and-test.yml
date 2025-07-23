@@ -26,7 +26,7 @@ parameters:
       PYTHON_SERIES: "3.10"
 
   - name: windows_310
-    vmImage: windows-2022
+    vmImage: windows-2025
     vars:
       PYTHON_SERIES: "3.10"
 
