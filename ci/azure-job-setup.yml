@@ -103,6 +103,7 @@ steps:
       set -euo pipefail
       source activate-conda.sh
       set -x
+      export CONDA_PLUGINS_AUTO_ACCEPT_TOS=yes  # See https://www.anaconda.com/docs/getting-started/tos-plugin#troubleshooting
       conda config --add channels conda-forge
       conda config --set channel_priority strict
       conda update -y --all
