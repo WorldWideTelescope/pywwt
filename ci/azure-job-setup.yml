@@ -87,7 +87,7 @@ steps:
         rm -f miniforge.sh
         condabin="$CONDA/bin"
       elif [[ $AGENT_OS == Windows_NT ]] ; then
-        curl -L -o miniconda.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
+        curl -o miniconda.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
         ./miniconda.exe /InstallationType=JustMe /RegisterPython=0 /AddToPath=0 /S /D=$HOME/miniconda
     
         # Add conda to PATH
