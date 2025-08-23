@@ -78,7 +78,7 @@ steps:
 
   - powershell: |
       $url = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe"
-      $out = "$env:USERPROFILE\miniconda.exe"
+      $out = "miniconda.exe"
       Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
       Start-Process -FilePath $out -ArgumentList "/InstallationType=JustMe", "/RegisterPython=0", "/AddToPath=0", "/S", "/D=$env:USERPROFILE\Miniconda3" -Wait
     displayName: 'Download & Install Miniconda (PowerShell)'
