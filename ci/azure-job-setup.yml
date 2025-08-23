@@ -76,6 +76,14 @@ steps:
     inputs:
       versionSpec: '>=12'
 
+  - powershell: |
+      $url = "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe"
+      $out = "$env:USERPROFILE\miniconda.exe"
+      Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
+      Start-Process -FilePath $out -ArgumentList "/InstallationType=JustMe", "/RegisterPython=0", "/AddToPath=0", "/S", "/D=$env:USERPROFILE\Miniconda3" -Wait
+    displayName: 'Download & Install Miniconda (PowerShell)'
+    condition: eq( variables['Agent.OS'], 'Windows_NT')
+
   - bash: |
       set -euo pipefail
 
@@ -87,7 +95,6 @@ steps:
         rm -f miniforge.sh
         condabin="$CONDA/bin"
       elif [[ $AGENT_OS == Windows_NT ]] ; then
-        curl -o miniconda.exe https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
         ./miniconda.exe /InstallationType=JustMe /RegisterPython=0 /AddToPath=0 /S /D=$HOME/miniconda
     
         # Add conda to PATH
