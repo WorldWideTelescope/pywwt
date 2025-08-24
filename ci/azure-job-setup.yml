@@ -100,7 +100,7 @@ steps:
         export PATH="$HOME/miniconda/Scripts:$HOME/miniconda:$PATH"
 
         # Set Conda location
-        CONDA = $HOME/miniconda
+        $CONDA = $HOME/miniconda
         
         # Activate Conda
         source "$HOME/miniconda/etc/profile.d/conda.sh"
