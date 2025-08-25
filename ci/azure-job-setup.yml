@@ -104,7 +104,7 @@ steps:
         
         # Activate Conda
         source "$HOME/miniconda/etc/profile.d/conda.sh"
-        CONDA=$(echo "$CONDA" | sed -e 's|\\|\/|g' -e 's|^\([A-Za-z]\)\:/\(.*\)|/\L\1\E/\2|')
+        $CONDA=$(echo "$CONDA" | sed -e 's|\\|\/|g' -e 's|^\([A-Za-z]\)\:/\(.*\)|/\L\1\E/\2|')
         condabin="$CONDA/Scripts"
       else
         condabin="$CONDA/bin"
