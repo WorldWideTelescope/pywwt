@@ -81,7 +81,7 @@ steps:
       $out = "miniconda.exe"
       Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
       Start-Process -FilePath $out -ArgumentList "/InstallationType=JustMe", "/RegisterPython=0", "/AddToPath=0", "/S", "/D=$env:USERPROFILE\Miniconda3" -Wait
-      ./miniconda.exe /InstallationType=JustMe /RegisterPython=0 /AddToPath=0 /S /D=$HOME/miniconda
+      ./miniconda.exe /InstallationType=JustMe /RegisterPython=0 /AddToPath=0 /S /D=$HOME\miniconda
     displayName: 'Download & Install Miniconda (PowerShell)'
     condition: eq( variables['Agent.OS'], 'Windows_NT')
 
