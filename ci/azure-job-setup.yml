@@ -100,18 +100,20 @@ steps:
         export PATH="$HOME/miniconda/Scripts:$HOME/miniconda:$PATH"
 
         # Set Conda location
-        $CONDA = $HOME/miniconda
+        CONDA=$HOME/miniconda
         
         # Activate Conda
         source "$HOME/miniconda/etc/profile.d/conda.sh"
-        $CONDA=$(echo "$CONDA" | sed -e 's|\\|\/|g' -e 's|^\([A-Za-z]\)\:/\(.*\)|/\L\1\E/\2|')
+        CONDA=$(echo "$CONDA" | sed -e 's|\\|\/|g' -e 's|^\([A-Za-z]\)\:/\(.*\)|/\L\1\E/\2|')
         condabin="$CONDA/Scripts"
+        condaex="$condabin/conda.exe"
       else
         condabin="$CONDA/bin"
+        condaex="$condabin/conda"
       fi
 
       cat >activate-conda.sh <<EOF
-      eval "\$($condabin/conda shell.bash hook)"
+      eval "\$($condaex shell.bash hook)"
       conda activate
       EOF
     displayName: Set up Conda activation
