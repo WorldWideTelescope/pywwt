@@ -16,7 +16,6 @@ from setupbase import (
     find_packages,
     combine_commands,
     get_version,
-    HERE,
 )
 
 from setuptools import setup
