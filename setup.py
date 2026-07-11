@@ -110,6 +110,7 @@ setup_args = dict(
         "astropy>=1.0,!=4.0.1",
         "beautifulsoup4",
         "ipyevents",
+        "ipykernel",
         "ipywidgets>=7.0.0",
         "lxml",
         "matplotlib>1.5",
@@ -132,7 +133,6 @@ setup_args = dict(
         ],
         "docs": [
             "astropy-sphinx-theme",
-            "ipykernel",
             "sphinx>=1.6",
             "sphinx-automodapi",
             "numpydoc",
