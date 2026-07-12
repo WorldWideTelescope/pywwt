@@ -70,6 +70,7 @@ jobs:
         astropy \
         beautifulsoup4 \
         ipyevents \
+        ipykernel \
         ipywidgets \
         lxml \
         matplotlib \
@@ -81,6 +82,7 @@ jobs:
         reproject \
         requests \
         scipy \
+        setuptools \
         shapely \
         tornado \
         traitlets

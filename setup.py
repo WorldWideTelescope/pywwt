@@ -16,7 +16,6 @@ from setupbase import (
     find_packages,
     combine_commands,
     get_version,
-    HERE,
 )
 
 from setuptools import setup
@@ -149,10 +148,12 @@ setup_args = dict(
             "qtpy",
         ],
         "notebook": [
+            "ipykernel",
             "wwt_kernel_data_relay",
             "notebook",
         ],
         "lab": [
+            "ipykernel",
             "jupyterlab",
             "nbclassic",
             "notebook",
