@@ -10,6 +10,7 @@ different backends supported by pywwt.
 """
 
 import asyncio
+from contextlib import suppress
 import json
 import os
 import shutil
@@ -21,6 +22,7 @@ from astropy.coordinates import SkyCoord
 import numpy as np
 from traitlets import HasTraits, observe, validate, TraitError
 import nest_asyncio
+from wwt_data_formats.place import Place
 
 from .annotation import Circle, Polygon, Line, FieldOfView, CircleCollection
 from .imagery import get_imagery_layers, ImageryLayers
@@ -402,6 +404,14 @@ class BaseWWTWidget(HasTraits):
                 self._selected_sources = sources
                 updated_fields.append("selected_sources")
 
+        elif ptype == "finder_scope_place":
+            place = None
+            xml = payload.get("placeXml", None)
+            if xml is not None:
+                with suppress(ValueError):
+                    place = Place.from_text(xml)
+            self._finder_scope_place = place
+
         # Any relevant async future to resolve?
 
         tid = payload.get("threadId")
@@ -446,6 +456,17 @@ class BaseWWTWidget(HasTraits):
             A callable object which takes two arguments: the WWT widget instance, and a list of updated properties.
         """
         self._set_message_type_callback("wwt_selection_state", callback)
+
+    def set_finder_scope_place_callback(self, callback):
+        """
+        Set a callback function that will be executed when the widget receives a Finder Scope place update message.
+
+        Parameters
+        ----------
+        callback:
+            A callable object which takes two arguments: the WWT widget instance, and a list of updated properties.
+        """
+        self._set_message_type_callback("finder_scope_place", callback)
 
     def _get_view_data(self, field):
         if not self._appAlive:
@@ -765,6 +786,10 @@ class BaseWWTWidget(HasTraits):
         "orange", help="The color of the precession chart " "(`str` or `tuple`)"
     ).tag(wwt="precessionChartColor", wwt_reset=True)
 
+    finder_scope_enabled = Bool(
+        False, help="Whether or not the Finder Scope component is enabled" "(`bool`)"
+    ).tag(wwt=None, wwt_reset=True)
+
     # Validators / observers for the settings above that need custom support.
 
     @observe("background")
@@ -828,6 +853,16 @@ class BaseWWTWidget(HasTraits):
             return proposal["value"].to(u.degree)
         else:
             raise TraitError("location_longitude not in angle units")
+
+    @observe("finder_scope_enabled")
+    def _on_finder_scope_enabled_change(self, changed):
+        self._send_msg(
+            event="modify_settings",
+            target="app",
+            settings=[
+                ("showFinderScope", changed["new"]),
+            ],
+        )
 
     # Basic view controls
 
@@ -1122,6 +1157,18 @@ class BaseWWTWidget(HasTraits):
         `here <https://docs.worldwidetelescope.org/webgl-reference/latest/apiref/research-app-messages/interfaces/selections.source.html>`_.
         """
         return self._selected_sources
+
+    # Finder Scope
+
+    _finder_scope_place = None
+
+    @property
+    def finder_scope_place(self):
+        """
+        The current `Place` selected by the Finder Scope.
+        This value is `None` if the Finder Scope has nothing selected (e.g. if closed).
+        """
+        return self._finder_scope_place
 
     # Annotations
 
