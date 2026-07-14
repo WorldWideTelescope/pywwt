@@ -276,8 +276,8 @@ def test_full(tmpdir, wwt_qt_client_isolated):
 
     app = QtWidgets.QApplication.instance()
 
-    click_location = QtCore.QPointF(wwt.widget.rect().center())
-    global_click_location = QtCore.QPointF(wwt.widget.mapToGlobal(click_location))
+    click_location = wwt.widget.rect().center()
+    global_click_location = wwt.widget.mapToGlobal(click_location)
 
     # We need to get the Qt widget that's handling events for the web engine view
     web_engine_view = wwt.widget.web
