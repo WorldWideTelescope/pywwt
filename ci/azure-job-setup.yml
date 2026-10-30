@@ -71,10 +71,10 @@ steps:
   displayName: Restore release commit
 
 - ${{ if parameters.setupBuild }}:
-  - task: NodeTool@0
+  - task: UseNode@1
     displayName: Set up node.js
     inputs:
-      versionSpec: '>=12'
+      version: '>=12'
 
   - bash: |
       set -euo pipefail
