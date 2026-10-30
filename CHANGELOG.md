@@ -1,3 +1,18 @@
+# pypa:pywwt 0.26.1 (2026-10-30)
+
+- Fix a bug with the `surveys_url` parameter which caused the survey URL to not
+  get loaded (#393, @Carifio24).
+- Add `ipykernel` as an explicit dependency, as it's no longer picked up
+  via `ipywidgets` (#391, @Carifio24).
+- Update to use `np.str_` rather than `np._unicode` for numpy 2
+  compatibility (#386, @Carifio24).
+- Various build system and CI/CD improvements (#391, #394, @Carifio24).
+
+The DOI of this release is [10.5281/zenodo.23819240][vdoi]
+
+[vdoi]: https://doi.org/10.5281/zenodo.23819240
+
+
 # pypa:pywwt 0.26.0 (2025-04-21)
 
 - Allow specifying URL of surveys to initially load in (#382, @Carifio24).

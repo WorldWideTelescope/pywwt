@@ -1,8 +1,8 @@
 WWT in Qt applications
 ======================
 
-Along with the web-based `JupyterLab <jupyterlab>`_ or `Jupyter widget
-<jupyter>`_ options, you can also use WWT in Python-based desktop applications
+Along with the web-based :doc:`JupyterLab <jupyterlab>` or :doc:`Jupyter widget
+<jupyter>` options, you can also use WWT in Python-based desktop applications
 using its support for the `Qt <https://www.qt.io/>`__ graphical toolkit.
 
 IPython
