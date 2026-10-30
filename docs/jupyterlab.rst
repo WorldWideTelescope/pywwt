@@ -5,8 +5,8 @@ To use WWT in an interactive Python environment, we *strongly* recommend
 combining it with `JupyterLab <https://jupyterlab.readthedocs.io/>`_ using WWT's
 "research app". It’s worth noting that the JupyterLab web application is a
 separate thing than just “Jupyter,” the lower-level system upon which it is
-built. `Learn how to set up pywwt's JupyerLab integration JupyterLab here
-<installation>`_.
+built. :doc:`Learn how to set up pywwt's JupyerLab integration JupyterLab here
+<installation>`.
 
 Once the ingration is set up, then the next time you start up JupyterLab the
 “Launcher” display should now contain a WorldWide Telescope icon:

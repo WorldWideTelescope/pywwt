@@ -186,7 +186,8 @@ class BaseWWTWidget(HasTraits):
         self._seqNum = 0
         self._futures = {}
 
-        self._available_layers = get_imagery_layers(surveys_url or DEFAULT_SURVEYS_URL)
+        initial_surveys_url = surveys_url or DEFAULT_SURVEYS_URL
+        self._available_layers = get_imagery_layers(initial_surveys_url)
         self._available_hips_catalog_names = []
         self.imagery = ImageryLayers(self._available_layers)
         self.solar_system = SolarSystem(self)
@@ -210,10 +211,11 @@ class BaseWWTWidget(HasTraits):
         # pywwt's surveys.xml has slightly different contents than
         # builtin-image-sets.wtml (for the time being), so we want to make sure
         # that the frontend agrees with us about which named imagesets are
-        # available.
+        # available. We also need to account for the case in which the user
+        # has passed in their own URL for a surveys collection
         self._send_msg(
             event="load_image_collection",
-            url=DEFAULT_SURVEYS_URL,
+            url=initial_surveys_url,
             threadId=self._next_seq(),
         )
 

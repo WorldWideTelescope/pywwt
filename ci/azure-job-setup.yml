@@ -71,10 +71,10 @@ steps:
   displayName: Restore release commit
 
 - ${{ if parameters.setupBuild }}:
-  - task: NodeTool@0
+  - task: UseNode@1
     displayName: Set up node.js
     inputs:
-      versionSpec: '>=12'
+      version: '>=12'
 
   - bash: |
       set -euo pipefail
@@ -103,9 +103,9 @@ steps:
       set -euo pipefail
       source activate-conda.sh
       set -x
+      export CONDA_PLUGINS_AUTO_ACCEPT_TOS=yes  # See https://www.anaconda.com/docs/getting-started/tos-plugin#troubleshooting
       conda config --add channels conda-forge
       conda config --set channel_priority strict
-      conda update -y --all
     displayName: Activate conda-forge
 
 - ${{ if parameters.setupGit }}:

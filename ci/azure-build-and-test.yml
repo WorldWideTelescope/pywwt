@@ -5,10 +5,10 @@ parameters:
   type: object
   default:
 
-  - name: linux_38
-    vmImage: ubuntu-24.04
-    vars:
-      PYTHON_SERIES: "3.8"
+  ## - name: linux_38
+  ##   vmImage: ubuntu-24.04
+  ##   vars:
+  ##     PYTHON_SERIES: "3.8"
 
   - name: linux_39
     vmImage: ubuntu-24.04
